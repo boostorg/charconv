@@ -3,9 +3,12 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/from_chars.hpp>
+#include <string>
+#include <cstdlib>
 
-boost::charconv::from_chars_result boost::charconv::from_chars( char const* first, char const* /*last*/, int& value, int /*base*/ )
+boost::charconv::from_chars_result boost::charconv::from_chars( char const* first, char const* last, int& value, int /*base*/ )
 {
-	value = 0;
-	return { first, 0 };
+    std::string tmp( first, last );
+    value = std::atoi( tmp.c_str() );
+    return { last, 0 };
 }
