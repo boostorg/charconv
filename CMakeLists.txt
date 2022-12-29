@@ -8,7 +8,8 @@ cmake_minimum_required(VERSION 3.8...3.20)
 project(boost_charconv VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
 add_library(boost_charconv
-  src/renderer.cpp
+  src/from_chars.cpp
+  src/to_chars.cpp
 )
 
 add_library(Boost::charconv ALIAS boost_charconv)
