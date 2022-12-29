@@ -1,0 +1,26 @@
+////
+Copyright 2022 Peter Dimov
+Distributed under the Boost Software License, Version 1.0.
+https://www.boost.org/LICENSE_1_0.txt
+////
+
+[#overview]
+# Overview
+:idprefix: overview_
+
+## Description
+
+...
+
+## Usage Examples
+
+...
+
+## Supported Compilers
+
+* GCC 5 or later with `-std=c++11` or above
+* Clang 3.9 or later with `-std=c++11` or above
+* Visual Studio 2015, 2017, 2019
+
+Tested on https://github.com/cppalliance/charconv/actions[Github Actions] and
+https://ci.appveyor.com/project/cppalliance/charconv[Appveyor].

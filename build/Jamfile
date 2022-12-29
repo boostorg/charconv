@@ -1,0 +1,29 @@
+# Copyright 2022 Peter Dimov
+# Distributed under the Boost Software License, Version 1.0.
+# https://www.boost.org/LICENSE_1_0.txt
+
+import ../../config/checks/config : requires ;
+
+project boost/charconv ;
+
+local SOURCES = from_chars.cpp to_chars.cpp ;
+
+lib boost_charconv
+
+  # sources
+  : ../src/$(SOURCES)
+
+  # requirements
+  : <link>shared:<define>BOOST_CHARCONV_DYN_LINK=1
+    <define>BOOST_CHARCONV_SOURCE=1
+
+    [ requires cxx11_variadic_templates cxx11_decltype ]
+
+  # default-build
+  :
+
+  # usage-requirements
+  : <link>shared:<define>BOOST_CHARCONV_DYN_LINK=1
+;
+
+boost-install boost_charconv ;
