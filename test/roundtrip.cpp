@@ -12,7 +12,7 @@ static void test_roundtrip( int value, int base )
 
     auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ) - 1, value, base );
 
-    BOOST_TEST(!std::make_error_code(r.ec));
+    BOOST_TEST_EQ(r.ec, 0);
 
     int v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );

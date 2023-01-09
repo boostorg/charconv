@@ -6,7 +6,6 @@
 #ifndef BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 #define BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 
-#include <system_error>
 #include <boost/charconv/config.hpp>
 
 namespace boost { namespace charconv {
@@ -16,19 +15,17 @@ namespace boost { namespace charconv {
 struct to_chars_result
 {
     char* ptr;
-    std::errc ec;
-    friend bool operator==(const to_chars_result&, const to_chars_result&);
-};
-
-bool operator==(const to_chars_result& lhs, const to_chars_result& rhs)
-{
-    if (lhs.ptr == rhs.ptr && lhs.ec == rhs.ec)
+    int ec;
+    friend bool operator==(const to_chars_result& lhs, const to_chars_result& rhs)
     {
-        return true;
+        return lhs.ptr == rhs.ptr && lhs.ec == rhs.ec;
     }
 
-    return false;
-}
+    friend bool operator!=(const to_chars_result& lhs, const to_chars_result& rhs)
+    {
+        return !(lhs == rhs);
+    }
+};
 
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, int value, int base = 10);
 
