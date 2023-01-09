@@ -13,7 +13,8 @@ int main()
     int v = 1048576;
     auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ) - 1, v );
 
-    BOOST_TEST_EQ( r.ec, 0 ) && BOOST_TEST_CSTR_EQ( buffer, "1048576" );
+    BOOST_TEST(!std::make_error_code(r.ec));
+    BOOST_TEST_CSTR_EQ(buffer, "1048576");
 
     return boost::report_errors();
 }
