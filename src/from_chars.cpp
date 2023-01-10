@@ -15,10 +15,10 @@
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type>
 boost::charconv::from_chars_result boost::charconv::detail::from_chars(const char* first, const char* last, Integer& value, int base) noexcept
 {
-    using Unsinged_Integer = typename std::make_unsigned<Integer>::type;
-    Unsinged_Integer result = 0;
-    Unsinged_Integer overflow_value = 0;
-    Unsinged_Integer max_digit = 0;
+    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
+    Unsigned_Integer result = 0;
+    Unsigned_Integer overflow_value = 0;
+    Unsigned_Integer max_digit = 0;
     
     // Check pre-conditions
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
@@ -48,8 +48,8 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
 
         if (is_negative)
         {
-            overflow_value = (static_cast<Unsinged_Integer>((std::numeric_limits<Integer>::max)()) + 1);
-            max_digit = (static_cast<Unsinged_Integer>((std::numeric_limits<Integer>::max)()) + 1);
+            overflow_value = (static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)()) + 1);
+            max_digit = (static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)()) + 1);
         }
         else
         {
@@ -59,8 +59,8 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
     }
     else
     {
-        overflow_value = (std::numeric_limits<Unsinged_Integer>::max)();
-        max_digit = (std::numeric_limits<Unsinged_Integer>::max)();
+        overflow_value = (std::numeric_limits<Unsigned_Integer>::max)();
+        max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
     }
 
     overflow_value /= base;
@@ -84,7 +84,7 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
 
         if (result < overflow_value || (result == overflow_value && current_digit <= max_digit))
         {
-            result = static_cast<Unsinged_Integer>(result * base + current_digit);
+            result = static_cast<Unsigned_Integer>(result * base + current_digit);
         }
         else
         {
