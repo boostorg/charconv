@@ -1,14 +1,13 @@
 // Copyright 2022 Peter Dimov
+// Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/from_chars.hpp>
-#include <string>
 #include <cstdlib>
 
-boost::charconv::from_chars_result boost::charconv::from_chars( char const* first, char const* last, int& value, int /*base*/ )
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, int& value, int base)
 {
-    std::string tmp( first, last );
-    value = std::atoi( tmp.c_str() );
+    value = static_cast<int>(std::strtol(first, const_cast<char**>(&last), base));
     return { last, 0 };
 }
