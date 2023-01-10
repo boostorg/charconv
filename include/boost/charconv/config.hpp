@@ -6,6 +6,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
+#include <cassert>
 
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
@@ -33,5 +34,8 @@
 #include <boost/config/auto_link.hpp>
 
 #endif
+
+#define BOOST_CHARCONV_ASSERT(expr) assert(expr)
+#define BOOST_CHARCONV_ASSERT_MSG(expr, msg) assert((expr)&&(msg))
 
 #endif // BOOST_CHARCONV_CONFIG_HPP_INCLUDED

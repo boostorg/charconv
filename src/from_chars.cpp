@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/from_chars.hpp>
+#include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <type_traits>
 #include <cstdlib>
@@ -11,6 +12,9 @@
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type>
 boost::charconv::from_chars_result boost::charconv::detail::from_chars(const char* first, const char* last, Integer& value, int base)
 {
+    // Check pre-conditions
+    BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
+    
     BOOST_IF_CONSTEXPR(std::is_same<Integer, int>::value)
     {
         value = static_cast<int>(std::strtol(first, const_cast<char**>(&last), base));
