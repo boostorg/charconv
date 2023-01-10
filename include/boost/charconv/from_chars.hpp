@@ -9,6 +9,7 @@
 #include <boost/charconv/config.hpp>
 #include <type_traits>
 #include <array>
+#include <cerrno>
 #include <cstdint>
 
 namespace boost { namespace charconv {
@@ -21,8 +22,8 @@ struct from_chars_result
 
     // Values:
     // 0 = no error
-    // 1 = invalid_argument
-    // 2 = result_out_of_range
+    // EINVAL = invalid_argument
+    // ERANGE = result_out_of_range
     int ec;
 
     friend bool operator==(const from_chars_result& lhs, const from_chars_result& rhs)
