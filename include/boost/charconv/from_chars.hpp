@@ -26,12 +26,12 @@ struct from_chars_result
     // ERANGE = result_out_of_range
     int ec;
 
-    friend bool operator==(const from_chars_result& lhs, const from_chars_result& rhs)
+    friend bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
     {
         return lhs.ptr == rhs.ptr && lhs.ec == rhs.ec;
     }
 
-    friend bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs)
+    friend bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
     {
         return !(lhs == rhs);
     }
@@ -58,26 +58,26 @@ static constexpr std::array<unsigned char, 256> uchar_values =
      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
 
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
-unsigned char digit_from_char(char val)
+unsigned char digit_from_char(char val) noexcept
 {
     return uchar_values[static_cast<std::size_t>(val)];
 }
 
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-boost::charconv::from_chars_result from_chars(const char* first, const char* last, Integer& value, int base);
+boost::charconv::from_chars_result from_chars(const char* first, const char* last, Integer& value, int base) noexcept;
 
 } // Namespace detail
 
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, char& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned char& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, short& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned short& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, int& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned int& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned long& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long long& value, int base = 10);
-BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned long long& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, char& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned char& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, short& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned short& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, int& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned int& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned long& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long long& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned long long& value, int base = 10) noexcept;
 
 } // namespace charconv
 } // namespace boost

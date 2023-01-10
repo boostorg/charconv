@@ -10,7 +10,7 @@
 #include <cstdlib>
 
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type>
-boost::charconv::from_chars_result boost::charconv::detail::from_chars(const char* first, const char* last, Integer& value, int base)
+boost::charconv::from_chars_result boost::charconv::detail::from_chars(const char* first, const char* last, Integer& value, int base) noexcept
 {
     // Check pre-conditions
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
@@ -24,52 +24,52 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
     return {last, 0};
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, char& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, char& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned char& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned char& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, short& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, short& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned short& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned short& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, int& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, int& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned int& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned int& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned long& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned long& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long long& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long long& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned long long& value, int base)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned long long& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
