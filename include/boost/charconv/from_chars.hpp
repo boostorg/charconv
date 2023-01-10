@@ -7,6 +7,7 @@
 #define BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
 
 #include <boost/charconv/config.hpp>
+#include <type_traits>
 
 namespace boost { namespace charconv {
 
@@ -15,6 +16,11 @@ namespace boost { namespace charconv {
 struct from_chars_result
 {
     const char* ptr;
+
+    // Values:
+    // 0 = no error
+    // 1 = invalid_argument
+    // 2 = result_out_of_range
     int ec;
     
     friend bool operator==(const from_chars_result& lhs, const from_chars_result& rhs)
@@ -28,7 +34,23 @@ struct from_chars_result
     }
 };
 
+namespace detail {
+
+template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
+boost::charconv::from_chars_result from_chars(const char* first, const char* last, Integer& value, int base);
+
+} // Namespace detail
+
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, char& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned char& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, short& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned short& value, int base = 10);
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, int& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned int& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned long& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long long& value, int base = 10);
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned long long& value, int base = 10);
 
 } // namespace charconv
 } // namespace boost
