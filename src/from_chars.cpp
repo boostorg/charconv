@@ -14,7 +14,7 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
 {
     // Check pre-conditions
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
-    
+
     BOOST_IF_CONSTEXPR(std::is_same<Integer, int>::value)
     {
         value = static_cast<int>(std::strtol(first, const_cast<char**>(&last), base));

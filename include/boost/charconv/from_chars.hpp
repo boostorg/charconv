@@ -8,6 +8,8 @@
 
 #include <boost/charconv/config.hpp>
 #include <type_traits>
+#include <array>
+#include <cstdint>
 
 namespace boost { namespace charconv {
 
@@ -22,7 +24,7 @@ struct from_chars_result
     // 1 = invalid_argument
     // 2 = result_out_of_range
     int ec;
-    
+
     friend bool operator==(const from_chars_result& lhs, const from_chars_result& rhs)
     {
         return lhs.ptr == rhs.ptr && lhs.ec == rhs.ec;
@@ -35,6 +37,30 @@ struct from_chars_result
 };
 
 namespace detail {
+
+static constexpr std::array<unsigned char, 256> uchar_values =
+    {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+       0,   1,   2,   3,   4,   5,   6,   7,   8,   9, 255, 255, 255, 255, 255, 255,
+     255,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
+      25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35, 255, 255, 255, 255, 255,
+     255,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
+      25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+
+// Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
+unsigned char digit_from_char(char val)
+{
+    return uchar_values[static_cast<std::size_t>(val)];
+}
 
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
 boost::charconv::from_chars_result from_chars(const char* first, const char* last, Integer& value, int base);
