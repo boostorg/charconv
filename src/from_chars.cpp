@@ -62,15 +62,13 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
             }
         }
 
+        overflow_value = (std::numeric_limits<Integer>::max)();
+        max_digit = (std::numeric_limits<Integer>::max)();
+
         if (is_negative)
         {
-            overflow_value = (static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)()) + 1);
-            max_digit = (static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)()) + 1);
-        }
-        else
-        {
-            overflow_value = (std::numeric_limits<Integer>::max)();
-            max_digit = (std::numeric_limits<Integer>::max)();
+            ++overflow_value;
+            ++max_digit;
         }
     }
     else
