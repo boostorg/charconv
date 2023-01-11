@@ -37,37 +37,6 @@ struct from_chars_result
     }
 };
 
-namespace detail {
-
-static constexpr std::array<unsigned char, 256> uchar_values =
-    {{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        0,   1,   2,   3,   4,   5,   6,   7,   8,   9, 255, 255, 255, 255, 255, 255,
-      255,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
-       25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35, 255, 255, 255, 255, 255,
-      255,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
-       25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}};
-
-// Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
-inline unsigned char digit_from_char(char val) noexcept
-{
-    return uchar_values[static_cast<std::size_t>(val)];
-}
-
-template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-boost::charconv::from_chars_result from_chars(const char* first, const char* last, Integer& value, int base) noexcept;
-
-} // Namespace detail
-
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, char& value, int base = 10) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned char& value, int base = 10) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, short& value, int base = 10) noexcept;
