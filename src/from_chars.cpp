@@ -29,7 +29,7 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
 
     // Strip sign if the type is signed
     // Negative sign will be appended at the end of parsing
-    bool is_negative = false;
+    BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     auto next = first;
     BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
     {
