@@ -12,6 +12,22 @@
 #include <cerrno>
 #include <cstddef>
 
+namespace boost { namespace charconv { namespace detail {
+
+template <typename Integer, typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
+inline Integer apply_sign(Integer val) noexcept
+{
+    return -val;
+}
+
+template <typename Integer, typename std::enable_if<std::is_unsigned<Integer>::value, bool>::type = true>
+inline Integer apply_sign(Integer val) noexcept
+{
+    return val;
+}
+
+}}} // Namespaces
+
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type>
 boost::charconv::from_chars_result boost::charconv::detail::from_chars(const char* first, const char* last, Integer& value, int base) noexcept
 {
@@ -63,7 +79,7 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
         max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
     }
 
-    overflow_value /= base;
+    overflow_value /= static_cast<Unsigned_Integer>(base);
     max_digit %= base;
 
     // If the only character was a sign abort now
@@ -105,7 +121,7 @@ boost::charconv::from_chars_result boost::charconv::detail::from_chars(const cha
     {
         if (is_negative)
         {
-            value *= -1;
+            value = apply_sign(value);
         }
     }
 
