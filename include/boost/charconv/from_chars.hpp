@@ -58,7 +58,7 @@ static constexpr std::array<unsigned char, 256> uchar_values =
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}};
 
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
-unsigned char digit_from_char(char val) noexcept
+inline unsigned char digit_from_char(char val) noexcept
 {
     return uchar_values[static_cast<std::size_t>(val)];
 }
