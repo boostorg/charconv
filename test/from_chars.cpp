@@ -7,6 +7,26 @@
 #include <boost/core/lightweight_test.hpp>
 #include <cstring>
 #include <cstdint>
+#include <cerrno>
+
+template <typename T>
+void invalid_argument_test()
+{
+    const char* buffer1 = "";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, EINVAL);
+
+    const char* buffer2 = "-";
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST_EQ(r2.ec, EINVAL);
+
+    const char* buffer3 = "+";
+    T v3 = 0;
+    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    BOOST_TEST_EQ(r3.ec, EINVAL);
+}
 
 // No overflows, negative numbers, locales, etc.
 template <typename T>
@@ -45,5 +65,8 @@ int main()
     simple_test<std::int32_t>();
     simple_test<std::uint64_t>();
     
+    invalid_argument_test<int>();
+    invalid_argument_test<unsigned>();
+
     return boost::report_errors();
 }

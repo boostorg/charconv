@@ -95,6 +95,18 @@ boost::charconv::from_chars_result from_chars_impl(const char* first, const char
     }
     else
     {
+        if (next != last)
+        {
+            if (*next == '-')
+            {
+                return {first, EINVAL};
+            }
+            else if (*next == '+')
+            {
+                ++next;
+            }
+        }
+        
         overflow_value = (std::numeric_limits<Unsigned_Integer>::max)();
         max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
     }
