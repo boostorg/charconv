@@ -10,6 +10,28 @@
 #include <cstring>
 #include <cstdint>
 #include <cerrno>
+#include <utility>
+
+#ifndef BOOST_NO_CXX14_CONSTEXPR
+template <typename T>
+constexpr std::pair<T, boost::charconv::from_chars_result> constexpr_test_helper()
+{
+    const char* buffer1 = "42";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + 2, v1);
+
+    return std::make_pair(v1, r1);
+}
+
+template <typename T>
+constexpr void constexpr_test()
+{
+    constexpr auto results = constexpr_test_helper<T>();
+    static_assert(results.second.ec == 0, "No error");
+    static_assert(results.first == 42, "Value is 42");
+}
+
+#endif
 
 template <typename T>
 void base2_test()
@@ -138,6 +160,10 @@ int main()
 
     base2_test<unsigned char>();
     base2_test<long>();
+
+    #ifndef BOOST_NO_CXX14_CONSTEXPR
+    constexpr_test<int>();
+    #endif
 
     return boost::report_errors();
 }
