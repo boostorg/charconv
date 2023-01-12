@@ -5,9 +5,34 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <type_traits>
+#include <limits>
 #include <cstring>
 #include <cstdint>
 #include <cerrno>
+
+template <typename T>
+void overflow_test()
+{
+    const char* buffer1 = "1234";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+
+    BOOST_IF_CONSTEXPR((std::numeric_limits<T>::max)() < 1234)
+    {
+        BOOST_TEST_EQ(r1.ec, ERANGE);
+    }
+    else
+    {
+        BOOST_TEST_EQ(r1.ec, 0) && BOOST_TEST_EQ(v1, 1234);
+    }
+
+    const char* buffer2 = "123456789123456789123456789";
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    // In the event of overflow v2 is to be returned unmodified
+    BOOST_TEST_EQ(r2.ec, ERANGE) && BOOST_TEST_EQ(v2, 0);
+}
 
 template <typename T>
 void invalid_argument_test()
@@ -75,6 +100,9 @@ int main()
     
     invalid_argument_test<int>();
     invalid_argument_test<unsigned>();
+
+    overflow_test<char>();
+    overflow_test<int>();
 
     return boost::report_errors();
 }
