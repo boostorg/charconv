@@ -26,6 +26,14 @@ void invalid_argument_test()
     T v3 = 0;
     auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
     BOOST_TEST_EQ(r3.ec, EINVAL);
+
+    BOOST_IF_CONSTEXPR(std::is_unsigned<T>::value)
+    {
+        const char* buffer4 = "-123";
+        T v4 = 0;
+        auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
+        BOOST_TEST_EQ(r4.ec, EINVAL);
+    }
 }
 
 // No overflows, negative numbers, locales, etc.
