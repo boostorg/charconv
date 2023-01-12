@@ -161,8 +161,14 @@ int main()
     base2_test<unsigned char>();
     base2_test<long>();
 
-    #ifndef BOOST_NO_CXX14_CONSTEXPR
-    constexpr_test<int>();
+    #ifndef __GNUC__
+    #   ifndef BOOST_NO_CXX14_CONSTEXPR
+            constexpr_test<int>();
+    #   endif
+    #else
+    #   if __GNUC__ > 5 && !defined(BOOST_NO_CXX14_CONSTEXPR)
+            constexpr_test<int>();
+    #   endif
     #endif
 
     return boost::report_errors();

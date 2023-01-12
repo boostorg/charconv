@@ -208,12 +208,21 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
 
 } // Namespace detail
 
+// GCC 5 does not support constexpr comparison of const char*
+#if defined(__GNUC__) && __GNUC__ <= 5
+template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
+inline from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
+{
+    return detail::from_chars_integer_impl(first, last, value, base);
+}
+#else
 // Only from_chars for integer types is constexpr (as of C++23)
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
 BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
 {
     return detail::from_chars_integer_impl(first, last, value, base);
 }
+#endif
 
 } // namespace charconv
 } // namespace boost
