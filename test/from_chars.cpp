@@ -114,6 +114,7 @@ void simple_test()
 int main()
 {
     simple_test<char>();
+    simple_test<signed char>();
     simple_test<unsigned char>();
     simple_test<short>();
     simple_test<unsigned short>();

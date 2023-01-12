@@ -38,6 +38,7 @@ struct from_chars_result
 };
 
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, char& value, int base = 10) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, signed char& value, int base = 10) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned char& value, int base = 10) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, short& value, int base = 10) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, unsigned short& value, int base = 10) noexcept;

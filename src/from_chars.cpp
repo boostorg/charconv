@@ -184,6 +184,11 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return boost::charconv::detail::from_chars_impl(first, last, value, base);
 }
 
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, signed char& value, int base) noexcept
+{
+    return boost::charconv::detail::from_chars_impl(first, last, value, base);
+}
+
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, unsigned char& value, int base) noexcept
 {
     return boost::charconv::detail::from_chars_impl(first, last, value, base);
