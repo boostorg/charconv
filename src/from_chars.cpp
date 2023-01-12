@@ -120,6 +120,23 @@ boost::charconv::from_chars_result from_chars_impl(const char* first, const char
         return {first, EINVAL};
     }
 
+    // In base16 we need to strip 0x and 0X prefixes
+    if (base == 16)
+    {
+        if (next != last && *next == '0')
+        {
+            ++next;
+        }
+        if (next != last && (*next == 'x' || *next == 'X'))
+        {
+            ++next;
+        }
+        else // move back in the event there is a leading 0 and not the appropriate prefix
+        {
+            --next;
+        }
+    }
+
     bool overflowed = false;
     while (next != last)
     {

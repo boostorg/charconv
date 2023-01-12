@@ -12,6 +12,23 @@
 #include <cerrno>
 
 template <typename T>
+void base16_test()
+{
+    // In base 16 0x and 0X prefixes are ignored
+    const char* buffer1 = "0x2a";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, 16);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_EQ(v1, 42);
+
+    const char* buffer2 = "0";
+    T v2 = 1;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2, 16);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_EQ(v2, 0);
+}
+
+template <typename T>
 void overflow_test()
 {
     const char* buffer1 = "1234";
@@ -103,6 +120,9 @@ int main()
 
     overflow_test<char>();
     overflow_test<int>();
+
+    base16_test<int>();
+    base16_test<unsigned>();
 
     return boost::report_errors();
 }
