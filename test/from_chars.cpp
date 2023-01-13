@@ -161,12 +161,8 @@ int main()
     base2_test<unsigned char>();
     base2_test<long>();
 
-    #ifndef __GNUC__
+    #if !(defined(__GNUC__) && __GNUC__ == 5)
     #   ifndef BOOST_NO_CXX14_CONSTEXPR
-            constexpr_test<int>();
-    #   endif
-    #else
-    #   if __GNUC__ > 5 && !defined(BOOST_NO_CXX14_CONSTEXPR)
             constexpr_test<int>();
     #   endif
     #endif
