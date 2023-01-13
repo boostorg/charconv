@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/config.hpp>
+
+#if !defined(BOOST_NO_CXX17_HDR_CHARCONV) && (!defined(__clang_major__) || (defined(__clang_major__) && __clang_major__ > 7))
+
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <charconv>
@@ -83,3 +87,12 @@ int main()
 
     return boost::report_errors();
 }
+
+#else
+
+int main()
+{ 
+    return 0;
+}
+
+#endif
