@@ -149,27 +149,10 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
         return {first, EINVAL};
     }
 
-    // In base16 we need to strip 0x and 0X prefixes
-    if (base == 16)
-    {
-        if (next != last && *next == '0')
-        {
-            ++next;
-        }
-        if (next != last && (*next == 'x' || *next == 'X'))
-        {
-            ++next;
-        }
-        else // move back in the event there is a leading 0 and not the appropriate prefix
-        {
-            --next;
-        }
-    }
-
     bool overflowed = false;
     while (next != last)
     {
-        auto current_digit = digit_from_char(*next++);
+        auto current_digit = digit_from_char(*next);
 
         if (current_digit >= base)
         {
@@ -185,6 +168,8 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
             // Required to keep updating the value of next, but the result is garbage
             overflowed = true;
         }
+
+        ++next;
     }
 
     // Return the parsed value, adding the sign back if applicable

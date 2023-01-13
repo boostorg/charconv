@@ -47,8 +47,8 @@ void base2_test()
 template <typename T>
 void base16_test()
 {
-    // In base 16 0x and 0X prefixes are ignored
-    const char* buffer1 = "0x2a";
+    // In base 16 0x and 0X prefixes are not allowed
+    const char* buffer1 = "2a";
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, 16);
     BOOST_TEST_EQ(r1.ec, 0);
