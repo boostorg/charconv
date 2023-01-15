@@ -12,6 +12,23 @@
 #include <cerrno>
 #include <utility>
 
+#ifdef __GLIBCXX_TYPE_INT_N_0
+// __int128 is incompatible with BOOST_TEST because there is not a defined overload
+// for operator<< for I/O
+template <typename T>
+void test_128bit_int()
+{
+    const char* buffer1 = "85070591730234615865843651857942052864"; // 2^126
+    T test_value = 1;
+    test_value = test_value << 126;
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_CHARCONV_ASSERT(r1.ec == 0);
+    BOOST_CHARCONV_ASSERT(v1 == test_value);
+    BOOST_CHARCONV_ASSERT(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+}
+#endif // 128-bit testing
+
 #ifndef BOOST_NO_CXX14_CONSTEXPR
 template <typename T>
 constexpr std::pair<T, boost::charconv::from_chars_result> constexpr_test_helper()
@@ -165,6 +182,12 @@ int main()
     #   ifndef BOOST_NO_CXX14_CONSTEXPR
             constexpr_test<int>();
     #   endif
+    #endif
+
+    // Only compiles using cxxstd-dialect=gnu or equivalent
+    #ifdef __GLIBCXX_TYPE_INT_N_0
+    test_128bit_int<__int128>();
+    test_128bit_int<unsigned __int128>();
     #endif
 
     return boost::report_errors();
