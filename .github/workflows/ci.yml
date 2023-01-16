@@ -19,11 +19,13 @@ jobs:
         include:
           - toolset: gcc-5
             cxxstd: "11,14,1z"
-            os: ubuntu-18.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: g++-5
           - toolset: gcc-6
             cxxstd: "11,14,1z"
-            os: ubuntu-18.04
+            os: ubuntu-latest
+            container: ubuntu:18.04
             install: g++-6
           - toolset: gcc-7
             cxxstd: "11,14,17"
@@ -110,6 +112,7 @@ jobs:
             os: macos-11
 
     runs-on: ${{matrix.os}}
+    container: ${{matrix.container}}
 
     steps:
       - uses: actions/checkout@v3
