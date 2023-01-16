@@ -13,8 +13,6 @@
 #include <utility>
 
 #ifdef __GLIBCXX_TYPE_INT_N_0
-// __int128 is incompatible with BOOST_TEST because there is not a defined overload
-// for operator<< for I/O
 template <typename T>
 void test_128bit_int()
 {
@@ -23,9 +21,9 @@ void test_128bit_int()
     test_value = test_value << 126;
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
-    BOOST_CHARCONV_ASSERT(r1.ec == 0);
-    BOOST_CHARCONV_ASSERT(v1 == test_value);
-    BOOST_CHARCONV_ASSERT(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+    BOOST_TEST(r1.ec == 0);
+    BOOST_TEST(v1 == test_value);
+    BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
 }
 #endif // 128-bit testing
 
