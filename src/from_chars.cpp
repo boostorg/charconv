@@ -4,10 +4,10 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/from_chars.hpp>
+#include <boost/charconv/config.hpp>
+#include <boost/config.hpp>
+#include <type_traits>
+#include <limits>
 #include <cstdlib>
-
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, int& value, int base)
-{
-    value = static_cast<int>(std::strtol(first, const_cast<char**>(&last), base));
-    return { last, 0 };
-}
+#include <cerrno>
+#include <cstddef>

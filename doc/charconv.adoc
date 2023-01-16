@@ -4,8 +4,8 @@ Distributed under the Boost Software License, Version 1.0.
 https://www.boost.org/LICENSE_1_0.txt
 ////
 
-# CharConv: An Implementation of <charconv> in {cpp}11
-Peter Dimov
+= CharConv: An Implementation of <charconv> in {cpp}11
+Peter Dimov and Matt Borland
 :toc: left
 :toclevels: 4
 :idprefix:
@@ -17,6 +17,7 @@ Peter Dimov
 :leveloffset: +1
 
 include::charconv/overview.adoc[]
+include::charconv/from_chars.adoc[]
 include::charconv/reference.adoc[]
 include::charconv/copyright.adoc[]
 
