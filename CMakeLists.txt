@@ -19,6 +19,7 @@ target_include_directories(boost_charconv PUBLIC include)
 target_link_libraries(boost_charconv
   PUBLIC
     Boost::config
+    Boost::assert
 )
 
 target_compile_features(boost_charconv PUBLIC cxx_std_11)
