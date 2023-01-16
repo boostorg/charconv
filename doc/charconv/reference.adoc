@@ -5,12 +5,12 @@ https://www.boost.org/LICENSE_1_0.txt
 ////
 
 [#reference]
-# Reference
+= Reference
 :idprefix: ref_
 
-## <boost/charconv/from_chars.hpp>
+== <boost/charconv/from_chars.hpp>
 
-### Synopsis
+=== Synopsis
 
 ```
 namespace boost {
@@ -18,8 +18,8 @@ namespace charconv {
 
 struct from_chars_result;
 
-template<class Integral>
-from_chars_result from_chars( const char* first, const char* last, Integral& value, int base = 10 );
+template <typename Integral>
+BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integral& value, int base = 10) noexcept;
 
 // ...
 
@@ -27,9 +27,9 @@ from_chars_result from_chars( const char* first, const char* last, Integral& val
 } // namespace boost
 ```
 
-## <boost/charconv/to_chars.hpp>
+== <boost/charconv/to_chars.hpp>
 
-### Synopsis
+=== Synopsis
 
 ```
 namespace boost {
@@ -46,7 +46,7 @@ to_chars_result to_chars( char* first, char* last, Integral value, int base = 10
 } // namespace boost
 ```
 
-## <boost/charconv.hpp>
+== <boost/charconv.hpp>
 
 This convenience header includes all headers previously
 mentioned.

@@ -1,0 +1,86 @@
+////
+Copyright 2023 Matt Borland
+Distributed under the Boost Software License, Version 1.0.
+https://www.boost.org/LICENSE_1_0.txt
+////
+
+= from_chars
+:idprefix: from_chars_
+
+== from_chars overview
+```
+struct from_chars_result
+{
+    const char* ptr;
+    int ec;
+
+    friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+    friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+}
+
+template <typename Integral>
+BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integral& value, int base = 10) noexcept;
+
+BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, const char* last, bool& value, int base) = delete;
+```
+
+== from_chars_result
+* ptr - points to the first character not matching the pattern, or has the value of last if all characters are successfully parsed.
+* ec - the error code. Valid values for <cerrno> are:
+** 0 - successful parsing
+** EINVAL - invalid argument (e.g. parsing a negative number into an unsigned type)
+** ERANGE - result out of range (e.g. overflow)
+* operator== - compares the values of ptr and ec for equality
+* operator!- - compares the value of ptr and ec for inequality
+
+== from_chars
+* first, last - valid range to parse
+* value - where the output is stored upon successful parsing
+* base - the integer base to use. Must be between 2 and 36 inclusive
+* from_chars for integral types is constexpr when compiled using `-std=c++14` or newer
+** One known exception is GCC 5 which does not support constexpr comparison of const char*.
+
+== from_chars for integral types
+* All built-in integral types are allowed except bool which is deleted
+* These function have been tested to support `__int128` and `unsigned __int128` when compiling with `-std=gnu++11` or newer
+
+== Examples
+
+=== Basic usage
+```
+const char* buffer = "42";
+int v = 0;
+from_chars_result r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
+assert(r.ec == 0);
+assert(v == 42);
+```
+
+=== Hexadecimal
+```
+const char* buffer = "2a";
+unsigned v = 0;
+auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, 16);
+assert(r.ec == 0);
+assert(v == 42);
+```
+
+=== EINVAL
+```
+const char* buffer = "-123";
+unsigned v = 0;
+auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
+assert(r.ec, EINVAL);
+assert(v == 0);
+```
+In the event of EINVAL v is not set by `from_chars`
+
+
+=== ERANGE
+```
+const char* buffer = "1234";
+unsigned char v = 0;
+auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
+assert(r.ec == ERANGE);
+assert(v == 0)
+```
+In the event of ERANGE v is not set by `from_chars`
