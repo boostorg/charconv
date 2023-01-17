@@ -11,6 +11,7 @@
 #include <array>
 #include <cstring>
 #include <cstdio>
+#include <cerrno>
 
 namespace boost { namespace charconv {
 
