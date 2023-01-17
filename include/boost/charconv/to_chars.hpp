@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cerrno>
+#include <cstdint>
 
 namespace boost { namespace charconv {
 
@@ -40,7 +41,7 @@ struct to_chars_result
 
 namespace detail {
 
-static constexpr std::array<char, 200> radix_table = {{
+    static constexpr char radix_table[] = {
     '0', '0', '0', '1', '0', '2', '0', '3', '0', '4',
     '0', '5', '0', '6', '0', '7', '0', '8', '0', '9',
     '1', '0', '1', '1', '1', '2', '1', '3', '1', '4',
@@ -61,22 +62,62 @@ static constexpr std::array<char, 200> radix_table = {{
     '8', '5', '8', '6', '8', '7', '8', '8', '8', '9',
     '9', '0', '9', '1', '9', '2', '9', '3', '9', '4',
     '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'
-}};
+};
 
 // TODO: Should we do a specialized base 10 algorithm, and then one for the rest? I think yes
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
+// https://arxiv.org/abs/2101.11408
+BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
+{
+    constexpr auto mask = (static_cast<std::uint64_t>(1) << 57) - 1; // D = 57 so 2^D - 1
+    constexpr auto magic_multiplier = static_cast<std::uint64_t>(1441151881); // floor(2*D / 10*k) where D is 57 and k is 8
+    auto y = value * magic_multiplier;
+
+    for (std::size_t i {}; i < 10; i += 2)
+    {
+        std::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2);
+        y &= mask;
+        y *= 100;
+    }
+
+    return buffer + 10;
+}
+
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value)
-{
-    std::snprintf( first, last - first - 1, "%d", value );
+{   
+    char buffer[10] {};
+    
+    if (!(first <= last))
+    {
+        return {last, EINVAL};
+    }
+    
+    // TODO: Only use this for strlen < 10
+    decompose32(value, buffer);
+
+    std::size_t i {};
+    while (buffer[i] == '0')
+    {
+        ++i;
+    }
+
+    for (; i < 10; ++i)
+    {
+        *first = buffer[i];
+        ++first;
+    }
+
+    return {first, 0};
+
+    //std::snprintf( first, last - first - 1, "%d", value );
     return { first + std::strlen( first ), 0 };
 }
 
 // All other bases
 template <typename Integer>
-BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base)
+BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
-    // Check pre-conditions
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
     if (!(first <= last))
     {
