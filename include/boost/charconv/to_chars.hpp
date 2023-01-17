@@ -75,7 +75,11 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
 
     for (std::size_t i {}; i < 10; i += 2)
     {
-        std::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2);
+        // Replaces std::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2)
+        // since it would not be constexpr
+        const char* temp = {radix_table + static_cast<std::size_t>(y >> 57) * 2};
+        buffer[i] = temp[0];
+        buffer[i+1] = temp[1];
         y &= mask;
         y *= 100;
     }
@@ -119,6 +123,7 @@ template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
+    (void)base;
     if (!(first <= last))
     {
         return {last, EINVAL};
