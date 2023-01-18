@@ -169,7 +169,7 @@ BOOST_CXX14_CONSTEXPR int num_digits(unsigned __int128 x) noexcept
 {
     // There is not literal for unsigned __int128 so we need to calculate them using the max value of the
     // std::uint64_t powers of 10
-    constexpr unsigned __int128 digits_39 = static_cast<unsigned __int128>(powers_of_10[19]) * static_cast<unsigned __int128>(powers_of_10[18]);
+    constexpr unsigned __int128 digits_39 = static_cast<unsigned __int128>(UINT64_C(10000000000000000000)) * static_cast<unsigned __int128>(UINT64_C(1000000000000000000));
     constexpr unsigned __int128 digits_38 = digits_39 / 10;
     constexpr unsigned __int128 digits_37 = digits_38 / 10;
     constexpr unsigned __int128 digits_36 = digits_37 / 10;
