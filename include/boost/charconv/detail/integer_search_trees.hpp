@@ -13,6 +13,8 @@
 #include <array>
 #include <cstdint>
 
+namespace boost { namespace charconv { namespace detail {
+
 // Generic solution
 template <typename T>
 BOOST_CXX14_CONSTEXPR int num_digits(T x) noexcept
@@ -169,7 +171,8 @@ BOOST_CXX14_CONSTEXPR int num_digits(unsigned __int128 x) noexcept
 {
     // There is not literal for unsigned __int128 so we need to calculate them using the max value of the
     // std::uint64_t powers of 10
-    constexpr unsigned __int128 digits_39 = static_cast<unsigned __int128>(UINT64_C(10000000000000000000)) * static_cast<unsigned __int128>(UINT64_C(1000000000000000000));
+    constexpr unsigned __int128 digits_39 = static_cast<unsigned __int128>(UINT64_C(10000000000000000000)) * 
+                                            static_cast<unsigned __int128>(UINT64_C(1000000000000000000));
     constexpr unsigned __int128 digits_38 = digits_39 / 10;
     constexpr unsigned __int128 digits_37 = digits_38 / 10;
     constexpr unsigned __int128 digits_36 = digits_37 / 10;
@@ -230,5 +233,7 @@ BOOST_CXX14_CONSTEXPR int num_digits(unsigned __int128 x) noexcept
            (x > powers_of_10[0])  ?  1 : 0;
 }
 #endif // 128-bit support
+
+}}} // Namespace boost::charconv::detail
 
 #endif // BOOST_CHARCONV_DETAIL_INTEGER_SEARCH_TREES_HPP

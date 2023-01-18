@@ -90,10 +90,7 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
 
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value)
-{   
-    // decompose32 will always return 10 digits (including leading 0s)
-    char buffer[10] {};
-    
+{       
     if (!(first <= last))
     {
         return {last, EINVAL};
@@ -103,16 +100,18 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     // If the type is greater than 32 bits we use a binary search tree to figure out how many digits
     // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
     // don't have the issue of removing leading zeros from the least significant digits
-    if (static_cast<std::uint32_t>(value) <= (std::numeric_limits<std::uint32_t>::max)())
+    
+    // TODO: fix this logic for types that could contain values greater than std::uint32_t but don't
+    // and types smaller than which would overflow on casting
+    if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
+        value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
     {
+        char buffer[10] {};
+        const auto num_sig_chars = num_digits(value);
+
         decompose32(value, buffer);
 
-        std::size_t i {};
-        while (buffer[i] == '0')
-        {
-            ++i;
-        }
-        std::memcpy(first, buffer + i, sizeof(buffer) - i);
+        std::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
     }
     else if (static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
     {
