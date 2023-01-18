@@ -9,6 +9,7 @@
 #include <boost/charconv/config.hpp>
 #include <type_traits>
 #include <array>
+#include <limits>
 #include <cstring>
 #include <cstdio>
 #include <cerrno>
@@ -64,7 +65,6 @@ namespace detail {
     '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'
 };
 
-// TODO: Should we do a specialized base 10 algorithm, and then one for the rest? I think yes
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
 BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
@@ -98,16 +98,36 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         return {last, EINVAL};
     }
     
-    // TODO: Only use this for strlen <= 10
-    decompose32(value, buffer);
-
-    std::size_t i {};
-    while (buffer[i] == '0')
+    // If the type is less than 32 bits we can use this without change
+    // If the type is greater than 32 bits we use a binary search tree to figure out how many digits
+    // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
+    // don't have the issue of removing leading zeros from the least significant digits
+    if (static_cast<std::uint32_t>(value) <= (std::numeric_limits<std::uint32_t>::max)())
     {
-        ++i;
-    }
-    std::memcpy(first, buffer + i, sizeof(buffer) - i);
+        decompose32(value, buffer);
 
+        std::size_t i {};
+        while (buffer[i] == '0')
+        {
+            ++i;
+        }
+        std::memcpy(first, buffer + i, sizeof(buffer) - i);
+    }
+    else if (static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
+    {
+
+    }
+    #if 0
+    // unsigned __128 requires 4 shifts
+    // Could just recursivly call the uint64_t twice and then compose 2x 64 bits
+    else if (static_cast<unsigned __int128>(value) <= (std::numeric_limits<unsigned __int128>::max)())
+    #endif
+    else 
+    {
+        BOOST_CHARCONV_ASSERT_MSG(sizeof(Integer) < 1, "Your type is unsupported. Use a built-in integral type");
+    }
+    
+    
     return {first + std::strlen(first), 0};
 }
 
