@@ -90,6 +90,7 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value)
 {   
+    // decompose32 will always return 10 digits (including leading 0s)
     char buffer[10] {};
     
     if (!(first <= last))
@@ -97,7 +98,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         return {last, EINVAL};
     }
     
-    // TODO: Only use this for strlen < 10
+    // TODO: Only use this for strlen <= 10
     decompose32(value, buffer);
 
     std::size_t i {};
@@ -105,17 +106,9 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     {
         ++i;
     }
+    std::memcpy(first, buffer + i, sizeof(buffer) - i);
 
-    for (; i < 10; ++i)
-    {
-        *first = buffer[i];
-        ++first;
-    }
-
-    return {first, 0};
-
-    //std::snprintf( first, last - first - 1, "%d", value );
-    return { first + std::strlen( first ), 0 };
+    return {first + std::strlen(first), 0};
 }
 
 // All other bases
@@ -136,7 +129,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 } // Namespace detail
 
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-BOOST_CXX14_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, BOOST_ATTRIBUTE_UNUSED int base = 10) noexcept
+BOOST_CXX14_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
 {
     if (base == 10)
     {
