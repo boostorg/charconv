@@ -88,6 +88,11 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
     return buffer + 10;
 }
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127)
+#endif
+
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value)
 {       
@@ -97,11 +102,14 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     }
     
     char buffer[10] {};
+
     // If the type is less than 32 bits we can use this without change
     // If the type is greater than 32 bits we use a binary search tree to figure out how many digits
     // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
     // don't have the issue of removing leading zeros from the least significant digits
     
+    // Yields: warning C4127: conditional expression is constant becuase first half the expression is constant
+    // but we need to short circuit to avoid UB on the second half
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
         value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
     {
@@ -109,7 +117,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 
         decompose32(value, buffer);
 
-        // If constant evaluated use unrolled loop
+        // TODO: If constant evaluated use unrolled loop
         // If not constant evaluated use memcpy
         std::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
     }
@@ -130,6 +138,10 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     
     return {first + std::strlen(first), 0};
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 // All other bases
 template <typename Integer>
