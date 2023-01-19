@@ -113,9 +113,10 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
         value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
     {
-        const auto num_sig_chars = num_digits(value);
+        const auto converted_value = static_cast<std::uint32_t>(value);
+        const auto num_sig_chars = num_digits(converted_value);
 
-        decompose32(value, buffer);
+        decompose32(converted_value, buffer);
 
         // TODO: If constant evaluated use unrolled loop
         // If not constant evaluated use memcpy
