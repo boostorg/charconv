@@ -96,21 +96,21 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         return {last, EINVAL};
     }
     
+    char buffer[10] {};
     // If the type is less than 32 bits we can use this without change
     // If the type is greater than 32 bits we use a binary search tree to figure out how many digits
     // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
     // don't have the issue of removing leading zeros from the least significant digits
     
-    // TODO: fix this logic for types that could contain values greater than std::uint32_t but don't
-    // and types smaller than which would overflow on casting
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
         value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
     {
-        char buffer[10] {};
         const auto num_sig_chars = num_digits(value);
 
         decompose32(value, buffer);
 
+        // If constant evaluated use unrolled loop
+        // If not constant evaluated use memcpy
         std::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
     }
     else if (static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
@@ -161,6 +161,9 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer 
 
 template <>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, bool value, int base) noexcept = delete;
+
+// TODO: Not correct, but need to make MSVC happy while working on integers
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value) noexcept;
 
 } // namespace charconv
 } // namespace boost

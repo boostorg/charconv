@@ -6,3 +6,10 @@
 #include <boost/charconv/to_chars.hpp>
 #include <cstdio>
 #include <cstring>
+
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value) noexcept
+{
+    std::snprintf(first, last - first - 1, "%f", value);
+    return {first + std::strlen(first), 0};
+}
