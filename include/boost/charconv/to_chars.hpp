@@ -96,12 +96,23 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexc
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
 {       
+    char buffer[10] {};
+    BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
+    
     if (!(first <= last))
     {
         return {last, EINVAL};
     }
-    
-    char buffer[10] {};
+
+    // Strip the sign from the value and apply at the end after parsing if the type is signed
+    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    {
+        if (value < 0)
+        {
+            value = -value;
+            is_negative = true;
+        }
+    }
 
     // If the type is less than 32 bits we can use this without change
     // If the type is greater than 32 bits we use a binary search tree to figure out how many digits
@@ -120,6 +131,11 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 
         // TODO: If constant evaluated use unrolled loop
         // If not constant evaluated use memcpy
+        if (is_negative)
+        {
+            *first++ = '-';
+        }
+            
         std::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
     }
     else if (static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
@@ -135,7 +151,6 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     {
         BOOST_CHARCONV_ASSERT_MSG(sizeof(Integer) < 1, "Your type is unsupported. Use a built-in integral type");
     }
-    
     
     return {first + std::strlen(first), 0};
 }
