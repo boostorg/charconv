@@ -68,7 +68,7 @@ namespace detail {
 
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
-BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
+BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
 {
     constexpr auto mask = (static_cast<std::uint64_t>(1) << 57) - 1; // D = 57 so 2^D - 1
     constexpr auto magic_multiplier = static_cast<std::uint64_t>(1441151881); // floor(2*D / 10*k) where D is 57 and k is 8
@@ -94,7 +94,7 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer)
 #endif
 
 template <typename Integer>
-BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value)
+BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
 {       
     if (!(first <= last))
     {
@@ -149,13 +149,13 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 {
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
     (void)base;
+    (void)value;
     if (!(first <= last))
     {
         return {last, EINVAL};
     }
 
-    std::snprintf( first, last - first - 1, "%d", value );
-    return { first + std::strlen( first ), 0 };
+    return {first + std::strlen(first), 0};
 }
 
 } // Namespace detail

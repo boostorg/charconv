@@ -5,25 +5,45 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <type_traits>
 #include <cstring>
+#include <cerrno>
+
+template <typename T>
+void simple_test()
+{
+    char buffer1[64] {};
+    T v = 34;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "34");
+
+    boost::charconv::to_chars_result r {r1.ptr, r1.ec};
+    BOOST_TEST(r1 == r);
+
+    char buffer2[64] {};
+    T v2 = 12;
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
+    BOOST_TEST(r1 != r2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer2, "12");
+}
 
 int main()
 {
-    char buffer[32] = {};
-
-    int v = 1048576;
-    auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ) - 1, v );
-
-    BOOST_TEST_EQ(r.ec, 0) && BOOST_TEST_CSTR_EQ(buffer, "1048576");
-    BOOST_TEST(r == r);
-
-    boost::charconv::to_chars_result r2 {r.ptr, 0};
-    BOOST_TEST(r == r2);
-
-    char buffer2[32] = {};
-
-    auto r3 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer) - 1, v);
-    BOOST_TEST(r != r3);
+    simple_test<char>();
+    simple_test<signed char>();
+    simple_test<unsigned char>();
+    simple_test<short>();
+    simple_test<unsigned short>();
+    simple_test<int>();
+    simple_test<unsigned>();
+    simple_test<long>();
+    simple_test<unsigned long>();
+    simple_test<long long>();
+    simple_test<unsigned long long>();
+    simple_test<std::int32_t>();
+    simple_test<std::uint64_t>();
 
     return boost::report_errors();
 }
