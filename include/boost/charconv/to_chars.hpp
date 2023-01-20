@@ -145,15 +145,10 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
              static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
     {
         const auto converted_value = static_cast<std::uint64_t>(value);
-        const auto num_sig_chars = num_digits(converted_value);
 
         const auto x = static_cast<std::uint32_t>(converted_value / UINT64_C(10000000000));
         const auto y = static_cast<std::uint32_t>(converted_value % UINT64_C(10000000000));
         const int first_value_chars = num_digits(x);
-        const int second_value_chars = num_digits(y);
-        
-        // TODO: Remove when done with debugging
-        assert(first_value_chars + second_value_chars <= num_sig_chars);
 
         decompose32(x, buffer);
         
