@@ -6,6 +6,7 @@
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <type_traits>
+#include <limits>
 #include <cstring>
 #include <cerrno>
 
@@ -13,16 +14,40 @@ template <typename T>
 void sixty_four_bit_tests()
 {
     char buffer1[64] {};
-    T v1 = -1234;
+    T v1 = T(-1234);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer1, "-1234");
 
     char buffer2[64] {};
-    T v2 = 1234123412341234;
+    T v2 = T(1234123412341234);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
     BOOST_TEST_EQ(r2.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer2, "1234123412341234");
+}
+
+template <>
+void sixty_four_bit_tests<std::uint64_t>()
+{
+    char buffer1[64] {};
+    std::uint64_t v1 = (std::numeric_limits<std::uint64_t>::max)();
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "18446744073709551615");
+
+    // Cutting this value in half would overflow a 32 bit unsigned for the back 10 digits
+    char buffer2[64] {};
+    std::uint64_t v2 = UINT64_C(9999999999999999999);
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer2, "9999999999999999999");
+
+    // Account for zeros in the back half of the split
+    char buffer3[64] {};
+    std::uint64_t v3 = UINT64_C(10000000000000000000);
+    auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3) - 1, v3);
+    BOOST_TEST_EQ(r3.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer3, "10000000000000000000");
 }
 
 template <typename T>
@@ -76,6 +101,7 @@ int main()
 
     sixty_four_bit_tests<long>();
     sixty_four_bit_tests<long long>();
+    sixty_four_bit_tests<std::uint64_t>();
 
     return boost::report_errors();
 }
