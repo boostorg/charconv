@@ -17,6 +17,12 @@ void sixty_four_bit_tests()
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer1, "-1234");
+
+    char buffer2[64] {};
+    T v2 = 1234123412341234;
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer2, "1234123412341234");
 }
 
 template <typename T>

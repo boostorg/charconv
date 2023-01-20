@@ -147,14 +147,15 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         const auto converted_value = static_cast<std::uint64_t>(value);
         const auto num_sig_chars = num_digits(converted_value);
 
-        const auto pair_32bit_values = unpack(converted_value);
-        const int first_value_chars = num_digits(converted_value);
-        const int second_value_chars = num_digits(converted_value);
+        const auto x = static_cast<std::uint32_t>(converted_value / UINT64_C(10000000000));
+        const auto y = static_cast<std::uint32_t>(converted_value % UINT64_C(10000000000));
+        const int first_value_chars = num_digits(x);
+        const int second_value_chars = num_digits(y);
         
         // TODO: Remove when done with debugging
         assert(first_value_chars + second_value_chars <= num_sig_chars);
 
-        decompose32(pair_32bit_values.first, buffer);
+        decompose32(x, buffer);
         
         if (is_negative)
         {
@@ -163,7 +164,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 
         std::memcpy(first, buffer + (sizeof(buffer) - first_value_chars), first_value_chars);
 
-        decompose32(pair_32bit_values.second, buffer);
+        decompose32(y, buffer);
         std::memcpy(first + first_value_chars, buffer, sizeof(buffer));
     }
     #if 0
