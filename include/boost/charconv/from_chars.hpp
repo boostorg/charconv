@@ -6,6 +6,7 @@
 #ifndef BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
 #define BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
 
+#include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <type_traits>
@@ -65,18 +66,6 @@ static constexpr std::array<unsigned char, 256> uchar_values =
 constexpr unsigned char digit_from_char(char val) noexcept
 {
     return uchar_values[static_cast<std::size_t>(val)];
-}
-
-template <typename Integer, typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
-constexpr Integer apply_sign(Integer val) noexcept
-{
-    return -val;
-}
-
-template <typename Integer, typename std::enable_if<std::is_unsigned<Integer>::value, bool>::type = true>
-constexpr Integer apply_sign(Integer val) noexcept
-{
-    return val;
 }
 
 template <typename Integer>

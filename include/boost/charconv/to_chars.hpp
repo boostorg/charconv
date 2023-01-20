@@ -6,6 +6,7 @@
 #ifndef BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 #define BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 
+#include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/config.hpp>
 #include <type_traits>
@@ -109,7 +110,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     {
         if (value < 0)
         {
-            value = -value;
+            value = apply_sign(value);
             is_negative = true;
         }
     }
@@ -119,7 +120,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
     // don't have the issue of removing leading zeros from the least significant digits
     
-    // Yields: warning C4127: conditional expression is constant becuase first half the expression is constant
+    // Yields: warning C4127: conditional expression is constant becuase first half of the expression is constant
     // but we need to short circuit to avoid UB on the second half
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
         value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
