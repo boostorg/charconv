@@ -8,10 +8,12 @@
 
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/detail/integer_conversion.hpp>
 #include <boost/charconv/config.hpp>
 #include <type_traits>
 #include <array>
 #include <limits>
+#include <utility>
 #include <cstring>
 #include <cstdio>
 #include <cerrno>
@@ -139,9 +141,30 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
             
         std::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
     }
-    else if (static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
+    else if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint64_t>::digits ||
+             static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
     {
+        const auto converted_value = static_cast<std::uint64_t>(value);
+        const auto num_sig_chars = num_digits(converted_value);
 
+        const auto pair_32bit_values = unpack(converted_value);
+        const int first_value_chars = num_digits(converted_value);
+        const int second_value_chars = num_digits(converted_value);
+        
+        // TODO: Remove when done with debugging
+        assert(first_value_chars + second_value_chars <= num_sig_chars);
+
+        decompose32(pair_32bit_values.first, buffer);
+        
+        if (is_negative)
+        {
+            *first++ = '-';
+        }
+
+        std::memcpy(first, buffer + (sizeof(buffer) - first_value_chars), first_value_chars);
+
+        decompose32(pair_32bit_values.second, buffer);
+        std::memcpy(first + first_value_chars, buffer, sizeof(buffer));
     }
     #if 0
     // unsigned __128 requires 4 shifts

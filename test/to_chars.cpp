@@ -10,6 +10,16 @@
 #include <cerrno>
 
 template <typename T>
+void sixty_four_bit_tests()
+{
+    char buffer1[64] {};
+    T v1 = -1234;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "-1234");
+}
+
+template <typename T>
 void negative_vals_test()
 {
     char buffer1[10] {};
@@ -57,6 +67,9 @@ int main()
 
     negative_vals_test<int>();
     negative_vals_test<long>();
+
+    sixty_four_bit_tests<long>();
+    sixty_four_bit_tests<long long>();
 
     return boost::report_errors();
 }

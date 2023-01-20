@@ -7,6 +7,7 @@
 
 #include <boost/charconv/config.hpp>
 #include <utility>
+#include <limits>
 #include <cstdint>
 
 namespace boost { namespace charconv { namespace detail {
@@ -18,8 +19,8 @@ constexpr std::uint64_t pack(std::uint32_t word1, std::uint32_t word2) noexcept
 
 BOOST_CXX14_CONSTEXPR std::pair<std::uint32_t, std::uint32_t> unpack(std::uint64_t value)
 {
-    auto x = static_cast<std::uint32_t>(value >> 32);
-    auto y = static_cast<std::uint32_t>(value);
+    auto x = static_cast<std::uint32_t>((value & UINT64_MAX) >> UINT64_C(32));
+    auto y = static_cast<std::uint32_t>(value & UINT32_MAX);
 
     return std::make_pair(x, y);
 }
