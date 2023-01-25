@@ -144,23 +144,57 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     else if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint64_t>::digits ||
              static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
     {
-        const auto converted_value = static_cast<std::uint64_t>(value);
+        auto converted_value = static_cast<std::uint64_t>(value);
+        const auto converted_value_digits = num_digits(converted_value);
 
-        const auto x = static_cast<std::uint32_t>(converted_value / UINT64_C(10000000000));
-        const auto y = static_cast<std::uint32_t>(converted_value % UINT64_C(10000000000));
-        const int first_value_chars = num_digits(x);
-
-        decompose32(x, buffer);
-        
         if (is_negative)
         {
             *first++ = '-';
         }
 
-        std::memcpy(first, buffer + (sizeof(buffer) - first_value_chars), first_value_chars);
+        // Only store 9 digits in each to avoid overflow
+        if (num_digits(converted_value) <= 18)
+        {
+            const auto x = static_cast<std::uint32_t>(converted_value / UINT64_C(1000000000));
+            const auto y = static_cast<std::uint32_t>(converted_value % UINT64_C(1000000000));
+            const int first_value_chars = num_digits(x);
 
-        decompose32(y, buffer);
-        std::memcpy(first + first_value_chars, buffer, sizeof(buffer));
+            decompose32(x, buffer);
+            std::memcpy(first, buffer + (sizeof(buffer) - first_value_chars), first_value_chars);
+
+            decompose32(y, buffer);
+            std::memcpy(first + first_value_chars, buffer + 1, sizeof(buffer) - 1);
+        }
+        else
+        {
+            const auto x = static_cast<std::uint32_t>(converted_value / UINT64_C(100000000000));
+            converted_value -= x * UINT64_C(100000000000);
+            const auto y = static_cast<std::uint32_t>(converted_value / UINT64_C(100));
+            const auto z = static_cast<std::uint32_t>(converted_value % UINT64_C(100));
+
+            if (converted_value_digits == 19)
+            {
+                decompose32(x, buffer);
+                std::memcpy(first, buffer + 2, sizeof(buffer) - 2);
+
+                decompose32(y, buffer);
+                std::memcpy(first + 8, buffer + 1, sizeof(buffer) - 1);
+            
+                decompose32(z, buffer);
+                std::memcpy(first + 17, buffer + 8, 2);
+            }
+            else // 20
+            {
+                decompose32(x, buffer);
+                std::memcpy(first, buffer + 1, sizeof(buffer) - 1);
+
+                decompose32(y, buffer);
+                std::memcpy(first + 9, buffer + 1, sizeof(buffer) - 1);
+            
+                decompose32(z, buffer);
+                std::memcpy(first + 18, buffer + 8, 2);
+            }
+        }
     }
     #if 0
     // unsigned __128 requires 4 shifts
