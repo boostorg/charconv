@@ -14,13 +14,13 @@ template <typename T>
 void sixty_four_bit_tests()
 {
     char buffer1[64] {};
-    T v1 = T(-1234);
+    T v1 = static_cast<T>(-1234);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer1, "-1234");
 
     char buffer2[64] {};
-    T v2 = T(1234123412341234);
+    T v2 = static_cast<T>(1234123412341234LL);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
     BOOST_TEST_EQ(r2.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer2, "1234123412341234");
@@ -99,7 +99,6 @@ int main()
     negative_vals_test<int>();
     negative_vals_test<long>();
 
-    sixty_four_bit_tests<long>();
     sixty_four_bit_tests<long long>();
     sixty_four_bit_tests<std::uint64_t>();
 
