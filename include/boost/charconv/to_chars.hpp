@@ -103,6 +103,8 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexc
 # pragma warning(disable: 4127)
 #endif
 
+// TODO: Use a temp buffer to hold everything and then write it all into the provided buffer at the end
+// If the temp buffer is larger than the provided buffer return EOVERFLOW
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
 {       
@@ -221,18 +223,105 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 #endif
 
 // All other bases
+// Use a simple lookup table to put together the Integer in character form
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
-    (void)base;
-    (void)value;
+
+    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
+
+    const auto output_length = last - first;
+
     if (!(first <= last))
     {
         return {last, EINVAL};
     }
 
-    return {first + std::strlen(first), 0};
+    if (value == 0)
+    {
+        *first++ = '0';
+        return {first, 0};
+    }
+
+    auto unsigned_value = static_cast<Unsigned_Integer>(value < 0 ? -value : value);
+    const auto unsigned_base = static_cast<Unsigned_Integer>(base);
+
+    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    {
+        if (value < 0)
+        {
+            *first++ = '-';
+        }
+    }
+
+    constexpr unsigned_value zero = 48U; // Char for '0'
+    std::array<char, sizeof(Unsigned_Integer) * CHAR_BIT> buffer = {};
+    auto end = buffer.end();
+    --end; // Need to point to the last actual element
+
+    // Work from LSB to MSB
+    switch (base)
+    {
+    case 2:
+        while (unsigned_value != 0)
+        {
+            *end-- = static_cast<char>(zero + (unsigned_value & 1U)); // 1<<1 - 1
+            value >>= 1U;
+        }
+        break;
+
+    case 4:
+        while (unsigned_value != 0)
+        {
+            *end-- = static_cast<char>(zero + (unsigned_value & 3U)); // 1<<2 - 1
+            value >>= 2U;
+        }
+        break;
+
+    case 8:
+        while (unsigned_value != 0)
+        {
+            *end-- = static_cast<char>(zero + (unsigned_value & 7U)); // 1<<3 - 1
+            value >>= 3U;
+        }
+        break;
+
+    case 16:
+        while (unsigned_value != 0)
+        {
+            *end-- = static_cast<char>(zero + (unsigned_value & 15U)); // 1<<4 - 1
+            value >>= 4U;
+        }
+        break;
+
+    case 32:
+        while (unsigned_value != 0)
+        {
+            *end-- = static_cast<char>(zero + (unsigned_value & 31U)); // 1<<5 - 1
+            value >>= 5U;
+        }
+        break;
+
+    default:
+        while (unsigned_value != 0)
+        {
+            *end-- = digit_table[unsigned_value % unsigned_base];
+            unsigned_value /= unsigned_base;
+        }
+        break;
+    }
+
+    const auto num_chars = end - buffer.end() + 1;
+
+    if (num_chars > output_length)
+    {
+        return {last, EOVERFLOW};
+    }
+
+    std::memcpy(first, buffer.data() + num_chars, num_chars);
+
+    return {first + num_chars, 0};
 }
 
 } // Namespace detail

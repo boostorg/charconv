@@ -11,6 +11,16 @@
 #include <cerrno>
 
 template <typename T>
+void base_two_tests()
+{
+    char buffer1[64] {};
+    T v1 = static_cast<T>(42);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 2);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "101010");
+}
+
+template <typename T>
 void sixty_four_bit_tests()
 {
     char buffer1[64] {};
@@ -101,6 +111,8 @@ int main()
 
     sixty_four_bit_tests<long long>();
     sixty_four_bit_tests<std::uint64_t>();
+
+    base_two_tests<int>();
 
     return boost::report_errors();
 }
