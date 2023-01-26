@@ -231,7 +231,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 
     using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
 
-    const auto output_length = last - first;
+    const std::ptrdiff_t output_length = last - first;
 
     if (!(first <= last))
     {
@@ -256,9 +256,10 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     }
 
     constexpr Unsigned_Integer zero = 48U; // Char for '0'
-    std::array<char, sizeof(Unsigned_Integer) * CHAR_BIT> buffer = {};
-    auto end = buffer.end();
-    --end; // Need to point to the last actual element
+    constexpr auto buffer_size = sizeof(Unsigned_Integer) * CHAR_BIT;
+    char buffer[buffer_size];
+    const char* buffer_end = buffer + buffer_size;
+    char* end = buffer + buffer_size;
 
     // Work from LSB to MSB
     switch (base)
@@ -312,14 +313,14 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         break;
     }
 
-    const auto num_chars = end - buffer.end() + 1;
+    const std::ptrdiff_t num_chars = buffer_end - end;
 
     if (num_chars > output_length)
     {
         return {last, EOVERFLOW};
     }
 
-    std::memcpy(first, buffer.data() + num_chars, num_chars);
+    std::memcpy(first, buffer + (buffer_size - num_chars), num_chars);
 
     return {first + num_chars, 0};
 }
