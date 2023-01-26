@@ -255,7 +255,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         }
     }
 
-    constexpr unsigned_value zero = 48U; // Char for '0'
+    constexpr Unsigned_Integer zero = 48U; // Char for '0'
     std::array<char, sizeof(Unsigned_Integer) * CHAR_BIT> buffer = {};
     auto end = buffer.end();
     --end; // Need to point to the last actual element
