@@ -21,7 +21,7 @@ constexpr void* memcpy(void* dest, const void* src, std::size_t count)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            *(dest + i) = *(src + i);
+            *((unsigned char*)dest + i) = *((unsigned char*)src + i);
         }
 
         return dest;
