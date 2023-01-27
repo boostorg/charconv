@@ -17,7 +17,7 @@ void base_two_tests()
     T v1 = static_cast<T>(42);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 2);
     BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer1, "101010");
+    BOOST_TEST(std::memcmp(buffer1, "101010", 6));
 }
 
 template <typename T>

@@ -268,7 +268,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     constexpr auto buffer_size = sizeof(Unsigned_Integer) * CHAR_BIT;
     char buffer[buffer_size];
     const char* buffer_end = buffer + buffer_size;
-    char* end = buffer + buffer_size;
+    char* end = buffer + buffer_size - 1;
 
     // Work from LSB to MSB
     switch (base)
@@ -277,7 +277,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         while (unsigned_value != 0)
         {
             *end-- = static_cast<char>(zero + (unsigned_value & 1U)); // 1<<1 - 1
-            value >>= 1U;
+            unsigned_value >>= 1U;
         }
         break;
 
@@ -285,7 +285,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         while (unsigned_value != 0)
         {
             *end-- = static_cast<char>(zero + (unsigned_value & 3U)); // 1<<2 - 1
-            value >>= 2U;
+            unsigned_value >>= 2U;
         }
         break;
 
@@ -293,7 +293,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         while (unsigned_value != 0)
         {
             *end-- = static_cast<char>(zero + (unsigned_value & 7U)); // 1<<3 - 1
-            value >>= 3U;
+            unsigned_value >>= 3U;
         }
         break;
 
@@ -301,7 +301,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         while (unsigned_value != 0)
         {
             *end-- = static_cast<char>(zero + (unsigned_value & 15U)); // 1<<4 - 1
-            value >>= 4U;
+            unsigned_value >>= 4U;
         }
         break;
 
@@ -309,7 +309,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         while (unsigned_value != 0)
         {
             *end-- = static_cast<char>(zero + (unsigned_value & 31U)); // 1<<5 - 1
-            value >>= 5U;
+            unsigned_value >>= 5U;
         }
         break;
 
