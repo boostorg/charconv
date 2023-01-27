@@ -11,6 +11,20 @@
 #include <cerrno>
 
 template <typename T>
+void overflow_tests()
+{
+    char buffer1[2] {};
+    T v1 = static_cast<T>(250);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
+    BOOST_TEST_EQ(r1.ec, EOVERFLOW);
+
+    char buffer2[3] {};
+    T v2 = static_cast<T>(12341234);
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
+    BOOST_TEST_EQ(r2.ec, EOVERFLOW);
+}
+
+template <typename T>
 void base_two_tests()
 {
     char buffer1[64] {};
@@ -114,6 +128,8 @@ int main()
 
     base_two_tests<int>();
     base_two_tests<unsigned>();
+
+    overflow_tests<int>();
 
     return boost::report_errors();
 }
