@@ -88,9 +88,10 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexc
     {
         // Replaces std::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2)
         // since it would not be constexpr
-        const char* temp = {radix_table + static_cast<std::size_t>(y >> 57) * 2};
-        buffer[i] = temp[0];
-        buffer[i+1] = temp[1];
+        //const char* temp = {radix_table + static_cast<std::size_t>(y >> 57) * 2};
+        //buffer[i] = temp[0];
+        //buffer[i+1] = temp[1];
+        std::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2);
         y &= mask;
         y *= 100;
     }
