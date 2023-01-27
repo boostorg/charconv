@@ -103,12 +103,11 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexc
 # pragma warning(disable: 4127)
 #endif
 
-// TODO: Use a temp buffer to hold everything and then write it all into the provided buffer at the end
-// If the temp buffer is larger than the provided buffer return EOVERFLOW
 template <typename Integer>
 BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
 {       
     char buffer[10] {};
+    const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
     if (!(first <= last))
@@ -139,6 +138,11 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         const auto converted_value = static_cast<std::uint32_t>(value);
         const auto num_sig_chars = num_digits(converted_value);
 
+        if (num_sig_chars > user_buffer_size)
+        {
+            return {last, EOVERFLOW};
+        }
+
         decompose32(converted_value, buffer);
 
         // TODO: If constant evaluated use unrolled loop
@@ -155,6 +159,11 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
     {
         auto converted_value = static_cast<std::uint64_t>(value);
         const auto converted_value_digits = num_digits(converted_value);
+
+        if (converted_value_digits > user_buffer_size)
+        {
+            return {last, EOVERFLOW};
+        }
 
         if (is_negative)
         {
