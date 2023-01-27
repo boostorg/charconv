@@ -9,6 +9,7 @@
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/integer_conversion.hpp>
+#include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/config.hpp>
 #include <type_traits>
 #include <array>
@@ -79,7 +80,7 @@ namespace detail {
 
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
-BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
+BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
 {
     constexpr auto mask = (static_cast<std::uint64_t>(1) << 57) - 1; // D = 57 so 2^D - 1
     constexpr auto magic_multiplier = static_cast<std::uint64_t>(1441151881); // floor(2*D / 10*k) where D is 57 and k is 8
@@ -87,12 +88,7 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexc
 
     for (std::size_t i {}; i < 10; i += 2)
     {
-        // Replaces std::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2)
-        // since it would not be constexpr
-        //const char* temp = {radix_table + static_cast<std::size_t>(y >> 57) * 2};
-        //buffer[i] = temp[0];
-        //buffer[i+1] = temp[1];
-        std::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2);
+        boost::charconv::detail::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2);
         y &= mask;
         y *= 100;
     }
@@ -106,7 +102,7 @@ BOOST_CXX14_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexc
 #endif
 
 template <typename Integer>
-BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
 {       
     char buffer[10] {};
     const std::ptrdiff_t user_buffer_size = last - first;
@@ -154,7 +150,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
             *first++ = '-';
         }
             
-        std::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
+        boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
     }
     else if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint64_t>::digits ||
              static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
@@ -180,10 +176,10 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
             const int first_value_chars = num_digits(x);
 
             decompose32(x, buffer);
-            std::memcpy(first, buffer + (sizeof(buffer) - first_value_chars), first_value_chars);
+            boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - first_value_chars), first_value_chars);
 
             decompose32(y, buffer);
-            std::memcpy(first + first_value_chars, buffer + 1, sizeof(buffer) - 1);
+            boost::charconv::detail::memcpy(first + first_value_chars, buffer + 1, sizeof(buffer) - 1);
         }
         else
         {
@@ -195,24 +191,24 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
             if (converted_value_digits == 19)
             {
                 decompose32(x, buffer);
-                std::memcpy(first, buffer + 2, sizeof(buffer) - 2);
+                boost::charconv::detail::memcpy(first, buffer + 2, sizeof(buffer) - 2);
 
                 decompose32(y, buffer);
-                std::memcpy(first + 8, buffer + 1, sizeof(buffer) - 1);
+                boost::charconv::detail::memcpy(first + 8, buffer + 1, sizeof(buffer) - 1);
             
                 decompose32(z, buffer);
-                std::memcpy(first + 17, buffer + 8, 2);
+                boost::charconv::detail::memcpy(first + 17, buffer + 8, 2);
             }
             else // 20
             {
                 decompose32(x, buffer);
-                std::memcpy(first, buffer + 1, sizeof(buffer) - 1);
+                boost::charconv::detail::memcpy(first, buffer + 1, sizeof(buffer) - 1);
 
                 decompose32(y, buffer);
-                std::memcpy(first + 9, buffer + 1, sizeof(buffer) - 1);
+                boost::charconv::detail::memcpy(first + 9, buffer + 1, sizeof(buffer) - 1);
             
                 decompose32(z, buffer);
-                std::memcpy(first + 18, buffer + 8, 2);
+                boost::charconv::detail::memcpy(first + 18, buffer + 8, 2);
             }
         }
     }
@@ -236,7 +232,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
 template <typename Integer>
-BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
 
@@ -340,7 +336,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         return {last, EOVERFLOW};
     }
 
-    std::memcpy(first, buffer + (buffer_size - num_chars), num_chars);
+    boost::charconv::detail::memcpy(first, buffer + (buffer_size - num_chars), num_chars);
 
     return {first + num_chars, 0};
 }
@@ -348,7 +344,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 } // Namespace detail
 
 template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-BOOST_CXX14_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
 {
     if (base == 10)
     {
@@ -359,7 +355,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer 
 }
 
 template <>
-BOOST_CXX14_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, bool value, int base) noexcept = delete;
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, bool value, int base) noexcept = delete;
 
 // TODO: Not correct, but need to make MSVC happy while working on integers
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value) noexcept;

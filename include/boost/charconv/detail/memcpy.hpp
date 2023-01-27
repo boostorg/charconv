@@ -23,10 +23,12 @@ constexpr void* memcpy(void* dest, const void* src, std::size_t count)
         {
             *(dest + i) = *(src + i);
         }
+
+        return dest;
     }
     else
     {
-        std::memcpy(dest, src, count);
+        return std::memcpy(dest, src, count);
     }
 }
 
@@ -36,7 +38,7 @@ constexpr void* memcpy(void* dest, const void* src, std::size_t count)
 
 inline void* memcpy(void* dest, const void* src, std::size_t count)
 {
-    std::memcpy(dest, src, count);
+    return std::memcpy(dest, src, count);
 }
 
 #endif
