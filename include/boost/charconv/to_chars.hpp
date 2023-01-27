@@ -255,7 +255,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         return {first, 0};
     }
 
-    auto unsigned_value = static_cast<Unsigned_Integer>(value < 0 ? -value : value);
+    Unsigned_Integer unsigned_value {};    
     const auto unsigned_base = static_cast<Unsigned_Integer>(base);
 
     BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
@@ -263,7 +263,16 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         if (value < 0)
         {
             *first++ = '-';
+            unsigned_value = apply_sign(value);
         }
+        else
+        {
+            unsigned_value = value;
+        }
+    }
+    else
+    {
+        unsigned_value = value;
     }
 
     constexpr Unsigned_Integer zero = 48U; // Char for '0'
