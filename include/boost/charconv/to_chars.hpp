@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cerrno>
 #include <cstdint>
+#include <climits>
 
 namespace boost { namespace charconv {
 
