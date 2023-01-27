@@ -268,7 +268,7 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
 
     constexpr Unsigned_Integer zero = 48U; // Char for '0'
     constexpr auto buffer_size = sizeof(Unsigned_Integer) * CHAR_BIT;
-    char buffer[buffer_size];
+    char buffer[buffer_size] {};
     const char* buffer_end = buffer + buffer_size;
     char* end = buffer + buffer_size - 1;
 
