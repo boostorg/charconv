@@ -323,8 +323,8 @@ BOOST_CXX14_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* l
         break;
     }
 
-    const std::ptrdiff_t num_chars = buffer_end - end;
-
+    const std::ptrdiff_t num_chars = buffer_end - end - 1;
+    
     if (num_chars > output_length)
     {
         return {last, EOVERFLOW};
