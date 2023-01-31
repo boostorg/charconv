@@ -15,20 +15,20 @@ namespace boost { namespace charconv { namespace detail {
 
 #define BOOST_CHARCONV_CONSTEXPR constexpr
 
-constexpr void* memcpy(void* dest, const void* src, std::size_t count)
+constexpr char* memcpy(char* dest, const char* src, std::size_t count)
 {
     if (BOOST_CHARCONV_IS_CONSTANT_EVALUATED(count))
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            *((unsigned char*)dest + i) = *((const unsigned char*)src + i);
+            *(dest + i) = *(src + i);
         }
 
         return dest;
     }
     else
     {
-        return std::memcpy(dest, src, count);
+        return static_cast<char*>(std::memcpy(dest, src, count));
     }
 }
 
