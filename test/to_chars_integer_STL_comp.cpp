@@ -31,6 +31,39 @@ void test()
     BOOST_TEST_CSTR_EQ(buffer1_stl, "0");
     BOOST_TEST_CSTR_EQ(buffer1_boost, "0");
 
+    // Binary
+    char buffer2_stl[64] {};
+    char buffer2_boost[64] {};
+    T v2 = static_cast<T>(42);
+    auto r2_stl = std::to_chars(buffer2_stl, buffer2_stl + sizeof(buffer2_stl) - 1, v2, 2);
+    auto r2_boost = boost::charconv::to_chars(buffer2_boost, buffer2_boost + sizeof(buffer2_boost) - 1, v2, 2);
+    BOOST_TEST_EQ(r2_stl.ptr, buffer2_stl + 6);
+    BOOST_TEST_EQ(r2_boost.ptr, buffer2_boost + 6);
+    BOOST_TEST_CSTR_EQ(buffer2_stl, "101010");
+    BOOST_TEST_CSTR_EQ(buffer2_boost, "101010");
+
+    // Base 10
+    char buffer3_stl[64] {};
+    char buffer3_boost[64] {};
+    T v3 = static_cast<T>(120);
+    auto r3_stl = std::to_chars(buffer3_stl, buffer3_stl + sizeof(buffer3_stl) - 1, v3);
+    auto r3_boost = boost::charconv::to_chars(buffer3_boost, buffer3_boost + sizeof(buffer3_boost) - 1, v3);
+    BOOST_TEST_EQ(r3_stl.ptr, buffer3_stl + 3);
+    BOOST_TEST_EQ(r3_boost.ptr, buffer3_boost + 3);
+    BOOST_TEST_CSTR_EQ(buffer3_stl, "120");
+    BOOST_TEST_CSTR_EQ(buffer3_boost, "120");
+
+    // Hexadecimal
+    char buffer4_stl[64] {};
+    char buffer4_boost[64] {};
+    T v4 = static_cast<T>(44);
+    auto r4_stl = std::to_chars(buffer4_stl, buffer4_stl + sizeof(buffer4_stl) - 1, v4, 16);
+    auto r4_boost = boost::charconv::to_chars(buffer4_boost, buffer4_boost + sizeof(buffer4_boost) - 1, v4, 16);
+    BOOST_TEST_EQ(r4_stl.ptr, buffer4_stl + 2);
+    BOOST_TEST_EQ(r4_boost.ptr, buffer4_boost + 2);
+    BOOST_TEST_CSTR_EQ(buffer4_stl, "2c");
+    BOOST_TEST_CSTR_EQ(buffer4_boost, "2c");
+
 }
 
 int main()
