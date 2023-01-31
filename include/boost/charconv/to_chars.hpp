@@ -105,6 +105,7 @@ template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
 {       
     char buffer[10] {};
+    int converted_value_digits {};
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
@@ -134,9 +135,9 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
     {
         const auto converted_value = static_cast<std::uint32_t>(value);
-        const auto num_sig_chars = num_digits(converted_value);
+        converted_value_digits = num_digits(converted_value);
 
-        if (num_sig_chars > user_buffer_size)
+        if (converted_value_digits > user_buffer_size)
         {
             return {last, EOVERFLOW};
         }
@@ -150,13 +151,13 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             *first++ = '-';
         }
             
-        boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - num_sig_chars), num_sig_chars);
+        boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - converted_value_digits), converted_value_digits);
     }
     else if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint64_t>::digits ||
              static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
     {
         auto converted_value = static_cast<std::uint64_t>(value);
-        const auto converted_value_digits = num_digits(converted_value);
+        converted_value_digits = num_digits(converted_value);
 
         if (converted_value_digits > user_buffer_size)
         {
@@ -222,7 +223,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         BOOST_CHARCONV_ASSERT_MSG(sizeof(Integer) < 1, "Your type is unsupported. Use a built-in integral type");
     }
     
-    return {--last, 0};
+    return {first + converted_value_digits + static_cast<int>(is_negative), 0};
 }
 
 #ifdef BOOST_MSVC
