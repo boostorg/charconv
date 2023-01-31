@@ -1,5 +1,6 @@
 // Copyright 2022 Peter Dimov
 // Copyright 2023 Matt Borland
+// Copyright 2023 Junekey Jeon
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -82,13 +83,12 @@ namespace detail {
 // https://arxiv.org/abs/2101.11408
 BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
 {
-    constexpr auto mask = (static_cast<std::uint64_t>(1) << 57) - 1; // D = 57 so 2^D - 1
-    constexpr auto magic_multiplier = static_cast<std::uint64_t>(1441151881); // floor(2*D / 10*k) where D is 57 and k is 8
-    auto y = value * magic_multiplier;
+    constexpr auto mask = (static_cast<std::uint64_t>(1) << 32) - 1;
+    auto y = ((value * UINT64_C(720575941)) >> 24) + 1;
 
     for (std::size_t i {}; i < 10; i += 2)
     {
-        boost::charconv::detail::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2);
+        boost::charconv::detail::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 32) * 2, 2);
         y &= mask;
         y *= 100;
     }
