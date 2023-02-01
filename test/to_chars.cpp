@@ -10,6 +10,46 @@
 #include <cstring>
 #include <cerrno>
 
+template <typename T>
+void base_thirtytwo_tests()
+{
+    char buffer1[64] {};
+    T v1 = static_cast<T>(42);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 32);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "1a");
+}
+
+template <typename T>
+void base_sixteen_tests()
+{
+    char buffer1[64] {};
+    T v1 = static_cast<T>(42);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 16);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "2a");
+}
+
+template <typename T>
+void base_eight_tests()
+{
+    char buffer1[64] {};
+    T v1 = static_cast<T>(42);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 8);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "52");
+}
+
+template <typename T>
+void base_four_tests()
+{
+    char buffer1[64] {};
+    T v1 = static_cast<T>(42);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 4);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "222");
+}
+
 // Tests the generic implementation
 template <typename T>
 void base_30_tests()
@@ -143,9 +183,23 @@ int main()
     sixty_four_bit_tests<long long>();
     sixty_four_bit_tests<std::uint64_t>();
 
+    // Tests for every specialized base
     base_two_tests<int>();
     base_two_tests<unsigned>();
 
+    base_four_tests<int>();
+    base_four_tests<unsigned>();
+
+    base_eight_tests<int>();
+    base_eight_tests<unsigned>();
+
+    base_sixteen_tests<int>();
+    base_sixteen_tests<unsigned>();
+
+    base_thirtytwo_tests<int>();
+    base_thirtytwo_tests<unsigned>();
+
+    // The generic impl
     base_30_tests<int>();
     base_30_tests<long>();
 
