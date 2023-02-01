@@ -64,6 +64,25 @@ void test()
     BOOST_TEST_CSTR_EQ(buffer4_stl, "2c");
     BOOST_TEST_CSTR_EQ(buffer4_boost, "2c");
 
+    // Base 28
+    char buffer5_stl[64] {};
+    char buffer5_boost[64] {};
+    T v5 = static_cast<T>(100);
+    auto r5_stl = std::to_chars(buffer5_stl, buffer5_stl + sizeof(buffer5_stl) - 1, v5, 28);
+    auto r5_boost = boost::charconv::to_chars(buffer5_boost, buffer5_boost + sizeof(buffer5_boost) - 1, v5, 28);
+    BOOST_TEST_EQ(r5_stl.ptr, buffer5_stl + 2);
+    BOOST_TEST_EQ(r5_boost.ptr, buffer5_boost + 2);
+    BOOST_TEST_CSTR_EQ(buffer5_stl, "3g");
+    BOOST_TEST_CSTR_EQ(buffer5_boost, "3g");
+
+    // Overflow
+    char buffer6_stl[1] {};
+    char buffer6_boost[1] {};
+    T v6 = static_cast<T>(100);
+    auto r6_stl = std::to_chars(buffer6_stl, buffer6_stl + sizeof(buffer6_stl) - 1, v6);
+    auto r6_boost = boost::charconv::to_chars(buffer6_boost, buffer6_boost + sizeof(buffer6_boost) - 1, v6);
+    BOOST_TEST_EQ(r6_stl.ptr, r6_stl.ptr);
+    BOOST_TEST_EQ(r6_boost.ptr, r6_boost.ptr);
 }
 
 int main()
