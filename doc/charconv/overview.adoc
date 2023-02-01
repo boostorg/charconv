@@ -13,15 +13,21 @@ https://www.boost.org/LICENSE_1_0.txt
 Charconv is a collection of parsing functions that are locale-independent, non-allocating, and non-throwing.
 
 == Usage Examples
-
-```
+[source, c++]
+----
 #include <boost/charconv.hpp>
 
 const char* buffer = "42";
 int v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r == 42);
-```
+
+char buffer[64];
+int v = 12345;
+auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
+assert(!strcmp(buffer, "123456")); // Strcmp returns 0 on match
+
+----
 
 == Supported Compilers
 

@@ -684,6 +684,21 @@ pre.rouge {
 </li>
 </ul>
 </li>
+<li><a href="#from_chars_to_chars">to_chars</a>
+<ul class="sectlevel2">
+<li><a href="#to_chars_to_chars_overview">to_chars overview</a></li>
+<li><a href="#to_chars_to_chars_result">to_chars_result</a></li>
+<li><a href="#to_chars_to_chars">to_chars</a></li>
+<li><a href="#to_chars_to_chars_for_integral_types">to_chars for integral types</a></li>
+<li><a href="#to_chars_examples">Examples</a>
+<ul class="sectlevel3">
+<li><a href="#to_chars_basic_usage">Basic Usage</a></li>
+<li><a href="#to_chars_hexadecimal">Hexadecimal</a></li>
+<li><a href="#to_chars_erange">ERANGE</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#reference">Reference</a>
 <ul class="sectlevel2">
 <li><a href="#ref_boostcharconvfrom_chars_hpp">&lt;boost/charconv/from_chars.hpp&gt;</a>
@@ -722,7 +737,12 @@ pre.rouge {
 <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">buffer</span> <span class="o">=</span> <span class="s">"42"</span><span class="p">;</span>
 <span class="kt">int</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="k">auto</span> <span class="n">r</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">charconv</span><span class="o">::</span><span class="n">from_chars</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">buffer</span> <span class="o">+</span> <span class="n">std</span><span class="o">::</span><span class="n">strlen</span><span class="p">(</span><span class="n">buffer</span><span class="p">),</span> <span class="n">v</span><span class="p">);</span>
-<span class="n">assert</span><span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="mi">42</span><span class="p">);</span></code></pre>
+<span class="n">assert</span><span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="mi">42</span><span class="p">);</span>
+
+<span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span>
+<span class="kt">int</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">12345</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">r</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">charconv</span><span class="o">::</span><span class="n">to_chars</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s">"123456"</span><span class="p">));</span> <span class="c1">// Strcmp returns 0 on match</span></code></pre>
 </div>
 </div>
 </div>
@@ -901,6 +921,134 @@ pre.rouge {
 </div>
 </div>
 <div class="sect1">
+<h2 id="from_chars_to_chars">to_chars</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="to_chars_to_chars_overview">to_chars overview</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="k">struct</span> <span class="nc">to_chars_result</span>
+<span class="p">{</span>
+    <span class="kt">char</span><span class="o">*</span> <span class="n">ptr</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">ec</span><span class="p">;</span>
+
+    <span class="k">friend</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="k">const</span> <span class="n">to_chars_result</span><span class="o">&amp;</span> <span class="n">lhs</span><span class="p">,</span> <span class="k">const</span> <span class="n">to_chars_result</span><span class="o">&amp;</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+    <span class="k">friend</span> <span class="k">constexpr</span> <span class="kt">bool</span> <span class="k">operator</span><span class="o">!=</span><span class="p">(</span><span class="k">const</span> <span class="n">to_chars_result</span><span class="o">&amp;</span> <span class="n">lhs</span><span class="p">,</span> <span class="k">const</span> <span class="n">to_chars_result</span><span class="o">&amp;</span> <span class="n">rhs</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Integral</span><span class="p">&gt;</span>
+<span class="n">BOOST_CHARCONV_CONSTEXPR</span> <span class="n">to_chars_result</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">first</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">last</span><span class="p">,</span> <span class="n">Integral</span> <span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">base</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Integral</span><span class="p">&gt;</span>
+<span class="n">BOOST_CHARCONV_CONSTEXPR</span> <span class="n">to_chars_result</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">first</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">last</span><span class="p">,</span> <span class="n">Integral</span> <span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">base</span><span class="p">)</span> <span class="k">noexcept</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="to_chars_to_chars_result">to_chars_result</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>ptr - points to the first character</p>
+</li>
+<li>
+<p>ec - the error code. Valid values from &lt;cerrno&gt; are:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>0 - successful parsing</p>
+</li>
+<li>
+<p>EINVAL - invalid argument</p>
+</li>
+<li>
+<p>ERANGE - result out of range (e.g. overflow)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>operator== - compares the value of ptr and ec for equality</p>
+</li>
+<li>
+<p>operator!= - compares the value of ptr and ec for inequality</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="to_chars_to_chars">to_chars</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>first, last - pointers to the character buffer</p>
+</li>
+<li>
+<p>value - the value to be paresed into the buffer</p>
+</li>
+<li>
+<p>base - the integer base to use. Must be between 2 and 36 inclusive</p>
+</li>
+<li>
+<p>from_chars for integral type is constexpr (BOOST_CHARCONV_CONSTEXPR is defined) when compiled using <code>-std=c++14</code> or newer and a compiler with <code><em>_builtin</em> is_constant_evaluated</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="to_chars_to_chars_for_integral_types">to_chars for integral types</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>All built-in integral types are allowed except bool which is deleted</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="to_chars_examples">Examples</h3>
+<div class="sect3">
+<h4 id="to_chars_basic_usage">Basic Usage</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">64</span><span class="p">]</span> <span class="p">{};</span>
+<span class="kt">int</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span>
+<span class="n">to_chars_result</span> <span class="n">r</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">charconv</span><span class="o">::</span><span class="n">to_chars</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">ec</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s">"42"</span><span class="p">));</span> <span class="c1">// strcmp returns 0 on match</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="to_chars_hexadecimal">Hexadecimal</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">64</span><span class="p">]</span> <span class="p">{};</span>
+<span class="kt">int</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span>
+<span class="n">to_chars_result</span> <span class="n">r</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">charconv</span><span class="o">::</span><span class="n">to_chars</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="mi">16</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">ec</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s">"2a"</span><span class="p">));</span> <span class="c1">// strcmp returns 0 on match</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="to_chars_erange">ERANGE</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">{};</span>
+<span class="kt">int</span> <span class="n">v</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1234</span><span class="p">;</span>
+<span class="n">to_chars_result</span> <span class="n">r</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">charconv</span><span class="o">::</span><span class="n">to_chars</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="mi">16</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">ec</span> <span class="o">==</span> <span class="n">ERANGE</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the event of ERANGE to_chars_result.ptr is first</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="reference">Reference</h2>
 <div class="sectionbody">
 <div class="sect2">
@@ -936,8 +1084,8 @@ pre.rouge {
 
 <span class="k">struct</span> <span class="nc">to_chars_result</span><span class="p">;</span>
 
-<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">Integral</span><span class="p">&gt;</span>
-<span class="n">to_chars_result</span> <span class="n">to_chars</span><span class="p">(</span> <span class="kt">char</span><span class="o">*</span> <span class="n">first</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">last</span><span class="p">,</span> <span class="n">Integral</span> <span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">base</span> <span class="o">=</span> <span class="mi">10</span> <span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Integral</span><span class="p">&gt;</span>
+<span class="n">BOOST_CHARCONV_CONSTEXPR</span> <span class="n">to_chars_result</span> <span class="n">to_chars</span><span class="p">(</span> <span class="kt">char</span><span class="o">*</span> <span class="n">first</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">last</span><span class="p">,</span> <span class="n">Integral</span> <span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">base</span> <span class="o">=</span> <span class="mi">10</span> <span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
 
 <span class="c1">// ...</span>
 
@@ -968,7 +1116,7 @@ the <a href="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Versi
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-01-16 08:01:11 -0800
+Last updated 2023-02-01 10:02:03 -0800
 </div>
 </div>
 <style>

@@ -18,6 +18,7 @@ Peter Dimov and Matt Borland
 
 include::charconv/overview.adoc[]
 include::charconv/from_chars.adoc[]
+include::charconv/to_chars.adoc[]
 include::charconv/reference.adoc[]
 include::charconv/copyright.adoc[]
 
