@@ -8,15 +8,10 @@
 #define BOOST_CHARCONV_TOOLS_IS_CONSTANT_EVALUATED_HPP
 
 #include <boost/charconv/config.hpp>
+#include <type_traits>
 
-#ifdef __has_include
-# if __has_include(<version>)
-#  include <version>
-#  ifdef __cpp_lib_is_constant_evaluated
-#   include <type_traits>
-#   define BOOST_CHARCONV_HAS_IS_CONSTANT_EVALUATED
-#  endif
-# endif
+#ifdef __cpp_lib_is_constant_evaluated
+#  define BOOST_CHARCONV_HAS_IS_CONSTANT_EVALUATED
 #endif
 
 #ifdef __has_builtin
