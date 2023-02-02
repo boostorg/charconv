@@ -17,12 +17,59 @@
 #include <utility>
 #include <system_error>
 #include <random>
+#include <thread>
+#include <vector>
+
+template <typename T>
+void stress_test_worker()
+{
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<T> dist((std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)());
+
+    std::mt19937_64 base_gen(rd());
+    std::uniform_int_distribution<int> base_dist(2, 36);
+
+    for (std::size_t i = 0; i < 100'000'000; ++i)
+    {
+        char buffer_stl[128] {};
+        char buffer_boost[128] {};
+
+        T v = dist(gen);
+        int base = base_dist(base_gen);
+
+        auto r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl) - 1, v, base);
+        auto r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost) - 1, v, base);
+
+        BOOST_TEST_EQ(static_cast<std::ptrdiff_t>(r_stl.ptr - buffer_stl), static_cast<std::ptrdiff_t>(r_boost.ptr - buffer_boost));
+        BOOST_TEST_CSTR_EQ(buffer_stl, buffer_boost);
+    }
+}
+
+template <typename T>
+void stress_test()
+{
+    auto num_threads = std::thread::hardware_concurrency();
+    std::vector<std::thread> thread_manager(num_threads);
+
+    for (std::size_t i = 0; i < num_threads; ++i)
+    {
+        thread_manager.emplace_back(std::thread(stress_test_worker<T>));
+    }
+
+    for (std::size_t i = 0; i < thread_manager.size(); ++i)
+    {
+        if (thread_manager[i].joinable())
+        {
+            thread_manager[i].join();
+        }
+    }
+}
 
 template <typename T, int base = 10>
 void random_tests()
 {
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
+    std::mt19937_64 gen(42);
     std::uniform_int_distribution<T> dist((std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)());
 
     for (std::size_t i = 0; i < 100'000; ++i)
@@ -133,6 +180,11 @@ int main()
 
     // Generic implementation
     random_tests<int, 23>();
+
+    // Stress tests are disabled for CI
+    #ifdef BOOST_CHARCONV_STRESS_TEST
+    stress_test<int>();
+    #endif
 
     return boost::report_errors();
 }
