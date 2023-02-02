@@ -11,6 +11,16 @@
 #include <cstring>
 #include <cerrno>
 
+template <typename T>
+void specific_value_tests(T value)
+{
+    char buffer[64] {};
+    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, value);
+    BOOST_TEST_EQ(r.ec, 0);
+    std::string value_string = std::to_string(value);
+    BOOST_TEST_CSTR_EQ(buffer, value_string.c_str());
+}
+
 void off_by_one_tests(int value)
 {
     char buffer[64] {};
@@ -173,6 +183,7 @@ void simple_test()
 
 int main()
 {
+    
     simple_test<char>();
     simple_test<signed char>();
     simple_test<unsigned char>();
@@ -225,6 +236,10 @@ int main()
     off_by_one_tests(1038882992);
     off_by_one_tests(-1065658613);
     off_by_one_tests(-1027205339);
+
+    // Fails in CI at the time - Likely overflow when converting to positive
+    specific_value_tests<short>(-32768);
+    specific_value_tests<long>(-7061872404794389355);
 
     return boost::report_errors();
 }

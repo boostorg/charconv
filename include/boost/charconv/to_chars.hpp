@@ -103,7 +103,10 @@ BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) no
 
 template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value) noexcept
-{       
+{
+    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
+    Unsigned_Integer unsigned_value {};
+
     char buffer[10] {};
     int converted_value_digits {};
     const std::ptrdiff_t user_buffer_size = last - first;
@@ -119,9 +122,17 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     {
         if (value < 0)
         {
-            value = apply_sign(value);
             is_negative = true;
+            unsigned_value = apply_sign(value);
         }
+        else
+        {
+            unsigned_value = value;
+        }
+    }
+    else
+    {
+        unsigned_value = value;
     }
 
     // If the type is less than 32 bits we can use this without change
@@ -132,9 +143,9 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     // Yields: warning C4127: conditional expression is constant becuase first half of the expression is constant
     // but we need to short circuit to avoid UB on the second half
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
-        value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
+        unsigned_value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
     {
-        const auto converted_value = static_cast<std::uint32_t>(value);
+        const auto converted_value = static_cast<std::uint32_t>(unsigned_value);
         converted_value_digits = num_digits(converted_value);
 
         if (converted_value_digits > user_buffer_size)
@@ -152,9 +163,9 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - converted_value_digits), converted_value_digits);
     }
     else if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint64_t>::digits ||
-             static_cast<std::uint64_t>(value) <= (std::numeric_limits<std::uint64_t>::max)())
+             static_cast<std::uint64_t>(unsigned_value) <= (std::numeric_limits<std::uint64_t>::max)())
     {
-        auto converted_value = static_cast<std::uint64_t>(value);
+        auto converted_value = static_cast<std::uint64_t>(unsigned_value);
         converted_value_digits = num_digits(converted_value);
 
         if (converted_value_digits > user_buffer_size)

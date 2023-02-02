@@ -176,6 +176,8 @@ int main()
     random_tests<int, 16>();
     random_tests<int, 32>();
 
+    random_tests<std::int8_t, 10>();
+    random_tests<std::uint8_t, 10>();
     random_tests<std::int16_t, 10>();
     random_tests<std::uint16_t, 10>();
     random_tests<std::int32_t, 10>();
