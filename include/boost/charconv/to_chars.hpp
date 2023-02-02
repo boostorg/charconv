@@ -143,7 +143,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     // Yields: warning C4127: conditional expression is constant becuase first half of the expression is constant
     // but we need to short circuit to avoid UB on the second half
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
-        unsigned_value <= static_cast<Integer>((std::numeric_limits<std::uint32_t>::max)()))
+        unsigned_value <= static_cast<Unsigned_Integer>((std::numeric_limits<std::uint32_t>::max)()))
     {
         const auto converted_value = static_cast<std::uint32_t>(unsigned_value);
         converted_value_digits = num_digits(converted_value);
