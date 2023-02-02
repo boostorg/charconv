@@ -223,7 +223,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         BOOST_CHARCONV_ASSERT_MSG(sizeof(Integer) < 1, "Your type is unsupported. Use a built-in integral type");
     }
     
-    return {first + converted_value_digits + static_cast<int>(is_negative), 0};
+    return {first + converted_value_digits, 0};
 }
 
 #ifdef BOOST_MSVC
