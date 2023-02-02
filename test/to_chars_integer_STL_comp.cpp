@@ -27,8 +27,8 @@ void random_tests()
 
     for (std::size_t i = 0; i < 100'000; ++i)
     {
-        char buffer_stl[64] {};
-        char buffer_boost[64] {};
+        char buffer_stl[128] {};
+        char buffer_boost[128] {};
 
         T v = dist(gen);
 
@@ -128,6 +128,8 @@ int main()
     random_tests<int, 8>();
     random_tests<int, 16>();
     random_tests<int, 32>();
+
+    random_tests<int, 10>();
 
     // Generic implementation
     random_tests<int, 23>();

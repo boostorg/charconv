@@ -7,8 +7,18 @@
 #include <boost/core/lightweight_test.hpp>
 #include <type_traits>
 #include <limits>
+#include <string>
 #include <cstring>
 #include <cerrno>
+
+void off_by_one_tests(int value)
+{
+    char buffer[64] {};
+    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, value);
+    BOOST_TEST_EQ(r.ec, 0);
+    std::string value_string = std::to_string(value);
+    BOOST_TEST_CSTR_EQ(buffer, value_string.c_str());
+}
 
 template <typename T>
 void base_thirtytwo_tests()
@@ -204,6 +214,17 @@ int main()
     base_30_tests<long>();
 
     overflow_tests<int>();
+
+    // Resulted in off by one errors from random number generation
+    // Consistently one larger with 10 digit numbers
+    off_by_one_tests(1159137169);
+    off_by_one_tests(-1321793318);
+    off_by_one_tests(2140634902);
+    
+    // If we compensate by one these fail
+    off_by_one_tests(1038882992);
+    off_by_one_tests(-1065658613);
+    off_by_one_tests(-1027205339);
 
     return boost::report_errors();
 }

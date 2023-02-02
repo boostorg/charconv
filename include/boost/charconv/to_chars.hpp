@@ -83,12 +83,12 @@ namespace detail {
 // https://arxiv.org/abs/2101.11408
 BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
 {
-    constexpr auto mask = (static_cast<std::uint64_t>(1) << 32) - 1;
-    auto y = ((value * UINT64_C(720575941)) >> 24) + 1;
+    constexpr auto mask = (std::uint64_t(1) << 57) - 1;
+    auto y = value * std::uint64_t(1441151881);
 
     for (std::size_t i {}; i < 10; i += 2)
     {
-        boost::charconv::detail::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 32) * 2, 2);
+        boost::charconv::detail::memcpy(buffer + i, radix_table + static_cast<std::size_t>(y >> 57) * 2, 2);
         y &= mask;
         y *= 100;
     }
@@ -144,8 +144,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
         decompose32(converted_value, buffer);
 
-        // TODO: If constant evaluated use unrolled loop
-        // If not constant evaluated use memcpy
         if (is_negative)
         {
             *first++ = '-';
