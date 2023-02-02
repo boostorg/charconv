@@ -176,7 +176,12 @@ int main()
     random_tests<int, 16>();
     random_tests<int, 32>();
 
-    random_tests<int, 10>();
+    random_tests<std::int16_t, 10>();
+    random_tests<std::uint16_t, 10>();
+    random_tests<std::int32_t, 10>();
+    random_tests<std::uint32_t, 10>();
+    random_tests<std::int64_t, 10>();
+    random_tests<std::uint64_t, 10>();
 
     // Generic implementation
     random_tests<int, 23>();
