@@ -16,6 +16,29 @@
 #include <cerrno>
 #include <utility>
 #include <system_error>
+#include <random>
+
+template <typename T, int base = 10>
+void random_tests()
+{
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<T> dist((std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)());
+
+    for (std::size_t i = 0; i < 100'000; ++i)
+    {
+        char buffer_stl[64] {};
+        char buffer_boost[64] {};
+
+        T v = dist(gen);
+
+        auto r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl) - 1, v, base);
+        auto r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost) - 1, v, base);
+
+        BOOST_TEST_EQ(static_cast<std::ptrdiff_t>(r_stl.ptr - buffer_stl), static_cast<std::ptrdiff_t>(r_boost.ptr - buffer_boost));
+        BOOST_TEST_CSTR_EQ(buffer_stl, buffer_boost);
+    }
+}
 
 template <typename T>
 void test()
@@ -98,6 +121,16 @@ int main()
     test<unsigned long>();
     test<long long>();
     test<unsigned long long>();
+
+    // Specialized bases
+    random_tests<int, 2>();
+    random_tests<int, 4>();
+    random_tests<int, 8>();
+    random_tests<int, 16>();
+    random_tests<int, 32>();
+
+    // Generic implementation
+    random_tests<int, 23>();
 
     return boost::report_errors();
 }
