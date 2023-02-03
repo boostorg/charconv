@@ -239,7 +239,7 @@ int main()
 
     // Fails in CI at the time - Likely overflow when converting to positive
     specific_value_tests<short>(-32768);
-    specific_value_tests<long>(-7061872404794389355);
+    specific_value_tests(-7061872404794389355L);
 
     return boost::report_errors();
 }
