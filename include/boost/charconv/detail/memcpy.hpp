@@ -9,6 +9,7 @@
 #include <cstring>
 #include <cstdint>
 
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89689
 // GCC 10 added checks for length of memcpy which yields the following warning (converted to error with -Werror)
 // /usr/include/x86_64-linux-gnu/bits/string_fortified.h:34:33: error: 
 // ‘void* __builtin___memcpy_chk(void*, const void*, long unsigned int, long unsigned int)’ specified size between 
@@ -41,7 +42,19 @@ constexpr char* memcpy(char* dest, const char* src, std::size_t count)
     }
     else
     {
-        return static_cast<char*>(std::memcpy(dest, src, count));
+        // Workaround for GCC-11 because it does not honor GCC diagnostic ignored
+        // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
+        // Hopefully the optimizer turns this into memcpy
+        #if __GNUC__ == 11
+            for (std::size_t i = 0; i < count; ++i)
+            {
+                *(dest + i) = *(src + i);
+            }
+
+            return dest;
+        #else
+            return static_cast<char*>(std::memcpy(dest, src, count));
+        #endif
     }
 }
 
