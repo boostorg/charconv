@@ -1,4 +1,5 @@
 # Copyright 2022 Peter Dimov
+# Copyright 2023 Matt Borland
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
@@ -20,4 +21,5 @@ run quick.cpp ;
 run from_chars.cpp ;
 run to_chars.cpp ;
 run roundtrip.cpp ;
-run from_chars_STL_comp.cpp : : : [ requires cxx17_std_apply ] ;
+run from_chars_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
+run to_chars_integer_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
