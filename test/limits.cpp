@@ -11,8 +11,8 @@
 template <typename T>
 void test()
 {
-    BOOST_TEST_GE(boost::charconv::limits<T>::max_chars10, boost::charconv::detail::num_digits((std::numeric_limits<T>::max)()));
-    BOOST_TEST_GE(sizeof(T) * CHAR_BIT, boost::charconv::limits<T>::max_chars);
+    BOOST_TEST_GE(boost::charconv::limits<T>::max_chars10(), boost::charconv::detail::num_digits((std::numeric_limits<T>::max)()));
+    BOOST_TEST_GE(sizeof(T) * CHAR_BIT, boost::charconv::limits<T>::max_chars());
 }
 
 int main(void)
