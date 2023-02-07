@@ -11,6 +11,41 @@
 #include <cstring>
 #include <cerrno>
 
+#ifdef __GLIBCXX_TYPE_INT_N_0
+template <typename T>
+void test_128bit_int()
+{
+    // Use 32-bit path
+    char buffer1[64] {};
+    T v1 = static_cast<T>(1234);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "1234");
+
+    // Use 64-bit path
+    char buffer2[64] {};
+    T v2 = static_cast<T>(1234123412341234LL);
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer2, "1234123412341234");
+
+    // Use 128-bit path
+    const char* buffer3 = "85070591730234615865843651857942052864"; // 2^126
+    T test_value = 1;
+    test_value = test_value << 126;
+    T v3 = 0;
+    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    BOOST_TEST(r3.ec == 0);
+    BOOST_TEST(v3 == test_value);
+    BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+
+    char buffer4[64] {};
+    auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v3);
+    BOOST_TEST_EQ(r4.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer3, buffer4);
+}
+#endif
+
 template <typename T>
 void specific_value_tests(T value)
 {
@@ -240,6 +275,10 @@ int main()
     // Fails in CI at the time - Likely overflow when converting to positive
     specific_value_tests<short>(-32768);
     specific_value_tests(-7061872404794389355L);
+
+    #ifdef __GLIBCXX_TYPE_INT_N_0
+    test_128bit_int<__int128>();
+    #endif
 
     return boost::report_errors();
 }
