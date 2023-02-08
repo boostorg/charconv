@@ -81,7 +81,7 @@ namespace detail {
 
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
-BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
+BOOST_CHARCONV_CONSTEXPR inline char* decompose32(std::uint32_t value, char* buffer) noexcept
 {
     constexpr auto mask = (std::uint64_t(1) << 57) - 1;
     auto y = value * std::uint64_t(1441151881);
