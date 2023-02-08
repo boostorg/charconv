@@ -61,6 +61,11 @@ template<typename T> void test_floating_point( T value )
         char buffer[ boost::charconv::limits<T>::max_chars10 ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
         BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
     }
 
     // no base, max_chars
@@ -68,6 +73,11 @@ template<typename T> void test_floating_point( T value )
         char buffer[ boost::charconv::limits<T>::max_chars ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
         BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
     }
 }
 

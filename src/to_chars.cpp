@@ -11,7 +11,7 @@
 
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, float value ) noexcept
 {
-    std::snprintf( first, last - first, "%.17g", value );
+    std::snprintf( first, last - first, "%.9g", value );
     return { first + std::strlen(first), 0 };
 }
 
