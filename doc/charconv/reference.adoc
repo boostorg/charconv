@@ -115,6 +115,46 @@ Effects:;; The value of value is converted to a string of digits in the given
   (inclusive) are represented as lowercase characters `a`..`z`. If value is less
   than zero, the representation starts with a minus sign.
 
+== <boost/charconv/limits.hpp>
+
+=== Synopsis
+[source, c++]
+----
+namespace boost {
+namespace charconv {
+
+template<typename T> struct limits
+{
+    static constexpr int max_chars10 = /*see below*/;
+    static constexpr int max_chars = /*see below*/;
+};
+
+} // namespace charconv
+} // namespace boost
+----
+
+=== limits
+
+[source, c++]
+----
+template<typename T>
+constexpr int limits<T>::max_chars10;
+----
+
+`max_chars10` is the minimum size of the buffer that needs to be
+passed to `to_chars` to guarantee successful conversion for all values of
+type `T`, when either no base is passed, or base 10 is passed.
+
+[source, c++]
+----
+template<typename T>
+constexpr int limits<T>::max_chars;
+----
+
+`max_chars` is the minimum size of the buffer that needs to be
+passed to `to_chars` to guarantee successful conversion for all values of
+type `T`, for any base.
+
 == <boost/charconv.hpp>
 
 This convenience header includes all headers previously
