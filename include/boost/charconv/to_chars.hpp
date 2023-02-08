@@ -243,7 +243,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     using Unsigned_Integer = uint128_t;
     Unsigned_Integer unsigned_value {};
 
-    int converted_value_digits {};
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
@@ -278,7 +277,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         return to_chars_integer_impl(first, last, value);
     }
 
-    converted_value_digits = num_digits(converted_value);
+    const int converted_value_digits = num_digits(converted_value);
 
     if (converted_value_digits > user_buffer_size)
     {
@@ -291,18 +290,28 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     }
 
     constexpr std::uint64_t ten_19 = UINT64_C(10000000000000000000);
-    std::string str;
-
+    char buffer[3][20] {};
+    int num_chars[3] {};
+    int i = 0;
     while (converted_value != 0)
     {
         auto digits = static_cast<std::uint64_t>(converted_value % ten_19);
-        auto digits_string = std::to_string(digits);
-        auto zeros = (digits != converted_value) ? std::string(19 - digits_string.length(), '0') : "";
-        str = zeros + digits_string + str;
+        auto current_num_chars = num_digits(digits);
+        to_chars_integer_impl(buffer[i], buffer[i] + 20, digits);
+
         converted_value = (converted_value - digits) / ten_19;
+        num_chars[i] = current_num_chars;
+        ++i;
     }
 
-    boost::charconv::detail::memcpy(first, str.c_str(), str.length());
+    --i; // Increments at the end of the loop
+    std::size_t offset = 0;
+    while (i >= 0)
+    {
+        boost::charconv::detail::memcpy(first + offset, buffer[i], num_chars[i]);
+        offset += num_chars[i];
+        --i;
+    }
 
     return {first + converted_value_digits, 0};
 }
