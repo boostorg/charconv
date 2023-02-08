@@ -11,7 +11,7 @@
 #include <cstring>
 #include <cerrno>
 
-#ifdef __GLIBCXX_TYPE_INT_N_0
+#if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
 template <typename T>
 void test_128bit_int()
 {
@@ -276,8 +276,9 @@ int main()
     specific_value_tests<short>(-32768);
     specific_value_tests(-7061872404794389355L);
 
-    #ifdef __GLIBCXX_TYPE_INT_N_0
+    #if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
     test_128bit_int<__int128>();
+    test_128bit_int<unsigned __int128>();
     #endif
 
     return boost::report_errors();
