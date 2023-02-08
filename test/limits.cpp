@@ -50,6 +50,9 @@ template<typename T> void test_integral( T value )
 
 template<typename T> void test_integral()
 {
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars10, std::numeric_limits<T>::digits10 );
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars, std::numeric_limits<T>::digits );
+
     test_integral( std::numeric_limits<T>::min() );
     test_integral( std::numeric_limits<T>::max() );
 }
@@ -83,6 +86,9 @@ template<typename T> void test_floating_point( T value )
 
 template<typename T> void test_floating_point()
 {
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars10, std::numeric_limits<T>::max_digits10 );
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars, std::numeric_limits<T>::max_digits10 );
+
     test_floating_point( std::numeric_limits<T>::min() );
     test_floating_point( -std::numeric_limits<T>::min() );
     test_floating_point( std::numeric_limits<T>::max() );
