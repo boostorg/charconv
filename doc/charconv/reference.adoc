@@ -28,6 +28,40 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char
 } // namespace boost
 ----
 
+=== from_chars_result
+
+[source, c++]
+----
+struct from_chars_result
+{
+    char const* ptr;
+    int ec;
+};
+----
+
+`from_chars_result` is the return type of the `from_chars` family of
+overloaded functions.
+
+The `ec` member is zero when the conversion was successful, `EINVAL`
+when no prefix of the passed characters form a valid value, or `ERANGE`
+when the characters form a value that would be out of range for the type.
+
+The `ptr` member points to the first character not part of the matched
+value, or to `last` if all characters matched.
+
+=== from_chars
+
+[source, c++]
+----
+template <typename Integral>
+BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integral& value, int base = 10) noexcept;
+----
+
+Requires:;; `base` is between 2 and 36 (inclusive).
+Effects:;; Attempts to interpret the characters in `[first, last)` as a numeric value in base `base`,
+  consisting of an optional minus sign (only if the type is signed), and a sequence of digits. For
+  bases above 10, the digit characters are `Aa` to `Zz`, as appropriate for `base`.
+
 == <boost/charconv/to_chars.hpp>
 
 === Synopsis
@@ -46,6 +80,40 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars( char* first, char* last, Inte
 } // namespace charconv
 } // namespace boost
 ----
+
+=== to_chars_result
+
+[source, c++]
+----
+struct to_chars_result
+{
+    char const* ptr;
+    int ec;
+};
+----
+
+`to_chars_result` is the return type of the `to_chars` family of
+overloaded functions.
+
+The `ec` member is zero when the conversion was successful, or `EOVERFLOW`
+when the value cannot fit into the provided buffer.
+
+The `ptr` member points to the first character after the characters written,
+or `last` when `ec` is `EOVERFLOW`.
+
+=== to_chars
+
+[source, c++]
+----
+template <typename Integral>
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars( char* first, char* last, Integral value, int base = 10 ) noexcept;
+----
+
+Requires:;; `base` is between 2 and 36 (inclusive).
+Effects:;; The value of value is converted to a string of digits in the given
+  base (with no redundant leading zeroes). Digits in the range 10..35
+  (inclusive) are represented as lowercase characters `a`..`z`. If value is less
+  than zero, the representation starts with a minus sign.
 
 == <boost/charconv.hpp>
 
