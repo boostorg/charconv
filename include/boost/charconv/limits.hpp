@@ -29,6 +29,9 @@ template<typename T> struct limits
         std::numeric_limits<T>::max_digits10 + 3 + 6; // as above
 };
 
+template<typename T> constexpr int limits<T>::max_chars10;
+template<typename T> constexpr int limits<T>::max_chars;
+
 }} // Namespaces
 
 #endif // BOOST_CHARCONV_LIMITS_HPP
