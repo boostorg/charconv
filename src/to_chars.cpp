@@ -7,9 +7,16 @@
 #include <cstdio>
 #include <cstring>
 
+// stub implementations; to be replaced with real ones
 
-boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value) noexcept
+boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, float value ) noexcept
 {
-    std::snprintf(first, last - first - 1, "%f", value);
-    return {first + std::strlen(first), 0};
+    std::snprintf( first, last - first, "%.17g", value );
+    return { first + std::strlen(first), 0 };
+}
+
+boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, double value ) noexcept
+{
+    std::snprintf( first, last - first, "%.17g", value );
+    return { first + std::strlen(first), 0 };
 }

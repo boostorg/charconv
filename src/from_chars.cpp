@@ -4,10 +4,39 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/from_chars.hpp>
-#include <boost/charconv/config.hpp>
-#include <boost/config.hpp>
-#include <type_traits>
-#include <limits>
-#include <cstdlib>
+#include <cstdio>
+#include <string>
+#include <stdexcept>
 #include <cerrno>
-#include <cstddef>
+
+// stub implementations; to be replaced with real ones
+
+boost::charconv::from_chars_result boost::charconv::from_chars( char const* first, char const* last, float& value ) noexcept
+{
+    from_chars_result r = {};
+
+    std::string tmp( first, last ); // zero termination
+    char* ptr = 0;
+
+    value = std::strtof( tmp.c_str(), &ptr );
+
+    r.ptr = ptr;
+    r.ec = errno;
+
+    return r;
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars( char const* first, char const* last, double& value ) noexcept
+{
+    from_chars_result r = {};
+
+    std::string tmp( first, last ); // zero termination
+    char* ptr = 0;
+
+    value = std::strtod( tmp.c_str(), &ptr );
+
+    r.ptr = ptr;
+    r.ec = errno;
+
+    return r;
+}

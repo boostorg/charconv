@@ -112,7 +112,6 @@ template<class T> void test_roundtrip_uint64( int base )
 
 // floating point types
 
-/*
 template<class T> void test_roundtrip( T value )
 {
     char buffer[ 256 ] = {};
@@ -126,7 +125,6 @@ template<class T> void test_roundtrip( T value )
 
     BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
 }
-*/
 
 //
 
@@ -149,7 +147,6 @@ int main()
         test_roundtrip_uint64<std::uint64_t>( base );
     }
 
-/*
     // float
 
     double const q = std::pow( 1.0, -64 );
@@ -183,7 +180,6 @@ int main()
             test_roundtrip( w3 );
         }
     }
-*/
 
     return boost::report_errors();
 }

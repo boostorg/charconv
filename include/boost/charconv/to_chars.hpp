@@ -369,6 +369,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last,
 
 // TODO: Not correct, but need to make MSVC happy while working on integers
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value) noexcept;
 
 } // namespace charconv
 } // namespace boost
