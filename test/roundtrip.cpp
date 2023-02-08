@@ -7,6 +7,7 @@
 #include <boost/core/detail/splitmix64.hpp>
 #include <cstdint>
 #include <cfloat>
+#include <cmath>
 
 int const N = 1024;
 
