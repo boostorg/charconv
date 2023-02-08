@@ -29,5 +29,10 @@ int main(void)
     test<long long>();
     test<unsigned long long>();
 
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    test<boost::charconv::int128_t>();
+    test<boost::charconv::uint128_t>();
+    #endif
+
     return boost::report_errors();
 }

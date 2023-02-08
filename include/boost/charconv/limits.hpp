@@ -113,6 +113,29 @@ struct limits<long double>
     static constexpr int max_to_chars()   noexcept { return std::numeric_limits<long double>::digits10; }
 };
 
+#ifdef BOOST_CHARCONV_HAS_INT128
+
+// Prior to GCC 10.3 std::numeric_limits was not specialized for __int128
+// We manually specify the numbers to maximize support
+//
+// See: https://quuxplusone.github.io/blog/2019/02/28/is-int128-integral/
+
+template <>
+struct limits<int128_t>
+{
+    static constexpr int max_chars10() noexcept { return 40; } // 39 digits (2^127 - 1) + 1 for sign
+    static constexpr int max_chars()   noexcept { return sizeof(int128_t) * CHAR_BIT; } 
+};
+
+template <>
+struct limits<uint128_t>
+{
+    static constexpr int max_chars10() noexcept { return 39; } // 39 digits (2^128)
+    static constexpr int max_chars()   noexcept { return sizeof(uint128_t) * CHAR_BIT; }
+};
+
+#endif // BOOST_CHARCONV_HAS_INT128
+
 }} // Namespaces
 
 #endif // BOOST_CHARCONV_LIMITS_HPP
