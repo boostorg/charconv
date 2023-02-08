@@ -5,6 +5,7 @@
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <iostream>
 #include <cstdint>
 #include <cfloat>
 #include <cmath>
@@ -124,7 +125,13 @@ template<class T> void test_roundtrip( T value )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    if( BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value ) )
+    {
+    }
+    else
+    {
+        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+    }
 }
 
 //
