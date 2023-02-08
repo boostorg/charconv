@@ -11,7 +11,7 @@
 #include <cstring>
 #include <cerrno>
 
-#if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
+#ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>
 void test_128bit_int()
 {
@@ -276,9 +276,9 @@ int main()
     specific_value_tests<short>(-32768);
     specific_value_tests(-7061872404794389355L);
 
-    #if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
-    test_128bit_int<__int128>();
-    test_128bit_int<unsigned __int128>();
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    test_128bit_int<boost::charconv::int128_t>();
+    test_128bit_int<boost::charconv::uint128_t>();
     #endif
 
     return boost::report_errors();

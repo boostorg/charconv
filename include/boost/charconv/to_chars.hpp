@@ -231,7 +231,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     return {first + converted_value_digits, 0};
 }
 
-#if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
+#ifdef BOOST_CHARCONV_HAS_INT128
 // Prior to GCC 10.3 std::numeric_limits was not specialized for __int128 which breaks the above control flow
 // Here we find if the 128-bit type will fit into a 64-bit type and use the above, or we use string manipulation
 // to extract the digits
@@ -240,7 +240,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, char* last, Integer value) noexcept
 {
-    using Unsigned_Integer = unsigned __int128;
+    using Unsigned_Integer = uint128_t;
     Unsigned_Integer unsigned_value {};
 
     int converted_value_digits {};
@@ -270,7 +270,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         unsigned_value = value;
     }
 
-    auto converted_value = static_cast<unsigned __int128>(unsigned_value);
+    auto converted_value = static_cast<uint128_t>(unsigned_value);
 
     // If the value fits into 64 bits use the other method of processing
     if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
@@ -431,8 +431,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integ
 {
     if (base == 10)
     {
-        #if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
-        BOOST_IF_CONSTEXPR(std::is_same<Integer, __int128>::value || std::is_same<Integer, unsigned __int128>::value)
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        BOOST_IF_CONSTEXPR(std::is_same<Integer, int128_t>::value || std::is_same<Integer, uint128_t>::value)
         {
             return detail::to_chars_128integer_impl(first, last, value);
         }
