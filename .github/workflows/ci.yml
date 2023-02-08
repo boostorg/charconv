@@ -222,6 +222,9 @@ jobs:
           - toolset: clang
             cxxstd: "03,11,14,17,2a"
             os: macos-11
+          - toolset: clang
+            cxxstd: "03,11,14,17,2a"
+            os: macos-12
 
     timeout-minutes: 60
     runs-on: ${{matrix.os}}
@@ -485,6 +488,7 @@ jobs:
           - os: ubuntu-20.04
           - os: ubuntu-22.04
           - os: macos-11
+          - os: macos-12
 
     runs-on: ${{matrix.os}}
 
@@ -532,6 +536,7 @@ jobs:
           - os: ubuntu-20.04
           - os: ubuntu-22.04
           - os: macos-11
+          - os: macos-12
 
     runs-on: ${{matrix.os}}
 
@@ -589,6 +594,7 @@ jobs:
           - os: ubuntu-20.04
           - os: ubuntu-22.04
           - os: macos-11
+          - os: macos-12
 
     runs-on: ${{matrix.os}}
 
