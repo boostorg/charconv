@@ -58,9 +58,17 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char
 ----
 
 Requires:;; `base` is between 2 and 36 (inclusive).
+
 Effects:;; Attempts to interpret the characters in `[first, last)` as a numeric value in base `base`,
   consisting of an optional minus sign (only if the type is signed), and a sequence of digits. For
   bases above 10, the digit characters are `Aa` to `Zz`, as appropriate for `base`.
+
+Returns:;; The `ec` member of the return value is `0` on success, `EINVAL` if
+  `[first, last)` can't be intepreted as an integer of base `base`, and `ERANGE`
+  if `[first, last)` when interpreted as an integer of base `base` can't be represented
+  as a value of type `Integral`. The `ptr` member of the return value points to the first
+  character in `[first, last)` that is not part of the matched value, or is `last` when
+  all characters matched.
 
 == <boost/charconv/to_chars.hpp>
 
@@ -110,10 +118,16 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars( char* first, char* last, Inte
 ----
 
 Requires:;; `base` is between 2 and 36 (inclusive).
-Effects:;; The value of value is converted to a string of digits in the given
-  base (with no redundant leading zeroes). Digits in the range 10..35
-  (inclusive) are represented as lowercase characters `a`..`z`. If value is less
-  than zero, the representation starts with a minus sign.
+
+Effects:;; The value of `value` is converted to a string of digits in the given
+  base (with no redundant leading zeroes), which is stored in `[first, last)`.
+  Digits in the range 10..35 (inclusive) are represented as lowercase characters
+  `a`..`z`. If value is less than zero, the representation starts with a minus sign.
+
+Returns:;; The `ec` member of the return value is `0` on success, and `EOVERFLOW` if
+  `[first, last)` does not contain enough space to hold the string representation of
+  `value`. The `ptr` member of the return value points to the character in `[first, last]`
+  that is one past the storted characters, or is `last` when `ec` is `EOVERFLOW`.
 
 == <boost/charconv/limits.hpp>
 
