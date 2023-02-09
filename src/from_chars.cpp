@@ -40,3 +40,18 @@ boost::charconv::from_chars_result boost::charconv::from_chars( char const* firs
 
     return r;
 }
+
+boost::charconv::from_chars_result boost::charconv::from_chars( char const* first, char const* last, long double& value ) noexcept
+{
+    from_chars_result r = {};
+
+    std::string tmp( first, last ); // zero termination
+    char* ptr = 0;
+
+    value = std::strtold( tmp.c_str(), &ptr );
+
+    r.ptr = ptr;
+    r.ec = errno;
+
+    return r;
+}

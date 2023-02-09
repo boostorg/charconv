@@ -207,8 +207,11 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, cons
 
 #endif // GCC5 workarounds
 
+// floating point overloads
+
 BOOST_CHARCONV_DECL from_chars_result from_chars( char const* first, char const* last, float& value ) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars( char const* first, char const* last, double& value ) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars( char const* first, char const* last, long double& value ) noexcept;
 
 } // namespace charconv
 } // namespace boost

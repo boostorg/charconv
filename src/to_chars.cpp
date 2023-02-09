@@ -20,3 +20,9 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
     std::snprintf( first, last - first, "%.17g", value );
     return { first + std::strlen(first), 0 };
 }
+
+boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value ) noexcept
+{
+    std::snprintf( first, last - first, "%.21Lg", value );
+    return { first + std::strlen(first), 0 };
+}

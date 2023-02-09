@@ -367,9 +367,11 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integ
 template <>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, bool value, int base) noexcept = delete;
 
-// TODO: Not correct, but need to make MSVC happy while working on integers
-BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value) noexcept;
-BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value) noexcept;
+// floating point overloads
+
+BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, float value ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, double value ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, long double value ) noexcept;
 
 } // namespace charconv
 } // namespace boost
