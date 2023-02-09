@@ -42,7 +42,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, cons
 
 == from_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
-* These function have been tested to support `__int128` and `unsigned __int128` when compiling with `-std=gnu++11` or newer
+* These functions have been tested to support `__int128` and `unsigned __int128` when compiling with `-std=gnu++11` or newer
 
 == Examples
 
