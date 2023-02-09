@@ -119,6 +119,7 @@ int main()
 
     test_floating_point<float>();
     test_floating_point<double>();
+    test_floating_point<long double>();
 
     return boost::report_errors();
 }
