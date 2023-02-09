@@ -113,6 +113,51 @@ template<class T> void test_roundtrip_uint64( int base )
     }
 }
 
+#ifdef BOOST_CHARCONV_HAS_INT128
+inline boost::charconv::uint128_t concatenate(std::uint64_t word1, std::uint64_t word2)
+{
+    return static_cast<boost::charconv::uint128_t>(word1) << 64 | word2;
+}
+
+template<class T> void test_roundtrip128( T value, int base )
+{
+    char buffer[ 256 ] = {};
+
+    auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ) - 1, value, base );
+
+    BOOST_TEST_EQ( r.ec, 0 );
+
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
+
+    BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST( v2 == value );
+}
+
+template<class T> void test_roundtrip_int128( int base )
+{
+    for( int i = 0; i < N; ++i )
+    {
+        boost::charconv::int128_t w = static_cast<boost::charconv::uint128_t>( concatenate(rng(), rng()) );
+        test_roundtrip128( static_cast<T>( w ), base );
+    }
+}
+
+template<class T> void test_roundtrip_uint128( int base )
+{
+    for( int i = 0; i < N; ++i )
+    {
+        boost::charconv::uint128_t w = static_cast<boost::charconv::uint128_t>( concatenate(rng(), rng()) );
+        test_roundtrip128( static_cast<T>( w ), base );
+    }
+}
+
+template<class T> void test_roundtrip_bv128( int base )
+{
+    test_roundtrip128( std::numeric_limits<T>::min(), base );
+    test_roundtrip128( std::numeric_limits<T>::max(), base );
+}
+#endif
+
 // integral types, boundary values
 
 template<class T> void test_roundtrip_bv( int base )
@@ -172,6 +217,14 @@ int main()
 
         test_roundtrip_int64<std::int64_t>( base );
         test_roundtrip_uint64<std::uint64_t>( base );
+
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        if (base != 10)
+        {
+            test_roundtrip_int128<boost::charconv::int128_t>( base );
+            test_roundtrip_uint128<boost::charconv::uint128_t>( base );
+        }
+        #endif
     }
 
     // integral types, boundary values
@@ -193,6 +246,11 @@ int main()
 
         test_roundtrip_bv<long long>( base );
         test_roundtrip_bv<unsigned long long>( base );
+
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        test_roundtrip_bv128<boost::charconv::int128_t>( base );
+        test_roundtrip_bv128<boost::charconv::uint128_t>( base );
+        #endif
     }
 
     // float
