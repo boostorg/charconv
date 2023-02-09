@@ -10,6 +10,61 @@
 
 void test_odr_use( int const* );
 
+#ifdef BOOST_CHARCONV_HAS_INT128
+// __int128 is not streamable so change how do comparisons
+template<typename T> void test_integral128( T value )
+{
+    // no base
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars10 ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST( v2 == value );
+    }
+
+    // base 10
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars10 ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, 10 );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, 10 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST( v2 == value );
+    }
+
+    // any base
+    for( int base = 2; base <= 36; ++base )
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, base );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST( v2 == value );
+    }
+}
+
+template<typename T> void test_integral128()
+{
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars10, std::numeric_limits<T>::digits10 );
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars, std::numeric_limits<T>::digits );
+
+    test_odr_use( &boost::charconv::limits<T>::max_chars10 );
+    test_odr_use( &boost::charconv::limits<T>::max_chars );
+
+    test_integral128( std::numeric_limits<T>::min() );
+    test_integral128( std::numeric_limits<T>::max() );
+}
+#endif
+
 template<typename T> void test_integral( T value )
 {
     // no base
@@ -122,8 +177,8 @@ int main()
     test_floating_point<long double>();
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    test<boost::charconv::int128_t>();
-    test<boost::charconv::uint128_t>();
+    test_integral128<boost::charconv::int128_t>();
+    test_integral128<boost::charconv::uint128_t>();
     #endif
 
     return boost::report_errors();
