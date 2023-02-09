@@ -12,14 +12,15 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-template <typename Integer, typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
-constexpr Integer apply_sign(Integer val) noexcept
+template <typename Integer, typename Unsigned_Integer = typename std::make_unsigned<Integer>::type, 
+          typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
+constexpr Unsigned_Integer apply_sign(Integer val) noexcept
 {
-    return -val;
+    return -(static_cast<Unsigned_Integer>(val));
 }
 
-template <typename Integer, typename std::enable_if<std::is_unsigned<Integer>::value, bool>::type = true>
-constexpr Integer apply_sign(Integer val) noexcept
+template <typename Unsigned_Integer, typename std::enable_if<std::is_unsigned<Unsigned_Integer>::value, bool>::type = true>
+constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 {
     return val;
 }
