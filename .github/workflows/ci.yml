@@ -76,6 +76,11 @@ jobs:
             os: ubuntu-22.04
             install:
               - g++-12
+          - toolset: gcc-12
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
+            os: ubuntu-22.04
+            install:
+              - g++-12
           - name: UBSAN
             toolset: gcc-12
             cxxstd: "03,11,14,17,20,23"
@@ -177,6 +182,12 @@ jobs:
           - toolset: clang
             compiler: clang++-14
             cxxstd: "03,11,14,17,20,2b"
+            os: ubuntu-22.04
+            install:
+              - clang-14
+          - toolset: clang
+            compiler: clang++-14
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
             os: ubuntu-22.04
             install:
               - clang-14
