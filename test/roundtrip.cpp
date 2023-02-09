@@ -6,6 +6,7 @@
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <iostream>
+#include <limits>
 #include <cstdint>
 #include <cfloat>
 #include <cmath>
@@ -14,7 +15,7 @@ int const N = 1024;
 
 static boost::detail::splitmix64 rng;
 
-// integral types
+// integral types, random values
 
 template<class T> void test_roundtrip( T value, int base )
 {
@@ -112,7 +113,15 @@ template<class T> void test_roundtrip_uint64( int base )
     }
 }
 
-// floating point types
+// integral types, boundary values
+
+template<class T> void test_roundtrip_bv( int base )
+{
+    test_roundtrip( std::numeric_limits<T>::min(), base );
+    test_roundtrip( std::numeric_limits<T>::max(), base );
+}
+
+// floating point types, random values
 
 template<class T> void test_roundtrip( T value )
 {
@@ -134,11 +143,21 @@ template<class T> void test_roundtrip( T value )
     }
 }
 
+// floating point types, boundary values
+
+template<class T> void test_roundtrip_bv()
+{
+    test_roundtrip( std::numeric_limits<T>::min() );
+    test_roundtrip( -std::numeric_limits<T>::min() );
+    test_roundtrip( std::numeric_limits<T>::max() );
+    test_roundtrip( +std::numeric_limits<T>::max() );
+}
+
 //
 
 int main()
 {
-    // integral types
+    // integral types, random values
 
     for( int base = 2; base <= 36; ++base )
     {
@@ -153,6 +172,27 @@ int main()
 
         test_roundtrip_int64<std::int64_t>( base );
         test_roundtrip_uint64<std::uint64_t>( base );
+    }
+
+    // integral types, boundary values
+
+    for( int base = 2; base <= 36; ++base )
+    {
+        test_roundtrip_bv<char>( base );
+        test_roundtrip_bv<signed char>( base );
+        test_roundtrip_bv<unsigned char>( base );
+
+        test_roundtrip_bv<short>( base );
+        test_roundtrip_bv<unsigned short>( base );
+
+        test_roundtrip_bv<int>( base );
+        test_roundtrip_bv<unsigned int>( base );
+
+        test_roundtrip_bv<long>( base );
+        test_roundtrip_bv<unsigned long>( base );
+
+        test_roundtrip_bv<long long>( base );
+        test_roundtrip_bv<unsigned long long>( base );
     }
 
     // float
@@ -171,6 +211,8 @@ int main()
             float w3 = FLT_MIN * static_cast<float>( rng() );
             test_roundtrip( w3 );
         }
+
+        test_roundtrip_bv<float>();
     }
 
     // double
@@ -187,6 +229,8 @@ int main()
             double w3 = DBL_MIN * rng();
             test_roundtrip( w3 );
         }
+
+        test_roundtrip_bv<double>();
     }
 
     return boost::report_errors();
