@@ -43,6 +43,27 @@ void test_128bit_int()
     auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v3);
     BOOST_TEST_EQ(r4.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer3, buffer4);
+
+    // Failing from roundtrip test
+    // Replicate to ensure that it is correct and not random failure
+    BOOST_IF_CONSTEXPR (std::is_same<T, boost::charconv::int128_t>::value)
+    {
+        const char* buffer5 = "-103527168272318384816037687533325012784";
+        T v5 = 0;
+        auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
+        BOOST_TEST(r5.ec == 0);
+
+        char buffer6[64] {};
+        auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v5);
+        BOOST_TEST_EQ(r6.ec, 0);
+        BOOST_TEST_CSTR_EQ(buffer5, buffer6);
+
+        // And back again
+        T v7 = 0;
+        auto r7 = boost::charconv::from_chars(buffer6, buffer6 + std::strlen(buffer6), v7);
+        BOOST_TEST(r7.ec == 0);
+        BOOST_TEST(v5 == v7);;
+    }
 }
 #endif
 
