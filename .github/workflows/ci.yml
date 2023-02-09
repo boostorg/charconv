@@ -67,20 +67,19 @@ jobs:
             install:
               - g++-10
           - toolset: gcc-11
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
+            cxxstd: "03,11,14,17,20,23"
             os: ubuntu-22.04
             install:
               - g++-11
           - toolset: gcc-12
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
+            cxxstd: "03,11,14,17,20,23"
             os: ubuntu-22.04
             install:
               - g++-12
           - name: UBSAN
-            toolset: gcc-11
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
+            toolset: gcc-12
+            cxxstd: "03,11,14,17,20,23"
             ubsan: 1
-            build_variant: debug
             os: ubuntu-22.04
             install:
               - g++-11
@@ -165,25 +164,25 @@ jobs:
               - clang-11
           - toolset: clang
             compiler: clang++-12
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "03,11,14,17,20,2b"
             os: ubuntu-22.04
             install:
               - clang-12
           - toolset: clang
             compiler: clang++-13
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "03,11,14,17,20,2b"
             os: ubuntu-22.04
             install:
               - clang-13
           - toolset: clang
             compiler: clang++-14
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "03,11,14,17,20,2b"
             os: ubuntu-22.04
             install:
               - clang-14
           - toolset: clang
             compiler: clang++-15
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "03,11,14,17,20,2b"
             os: ubuntu-22.04
             install:
               - clang-15
@@ -193,7 +192,7 @@ jobs:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
           - toolset: clang
             compiler: clang++-15
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "03,11,14,17,20,2b"
             os: ubuntu-22.04
             install:
               - clang-15
@@ -208,11 +207,10 @@ jobs:
           - name: UBSAN
             toolset: clang
             compiler: clang++-14
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "03,11,14,17,20,2b"
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
             ubsan: 1
-            build_variant: debug
             os: ubuntu-22.04
             install:
               - clang-14
@@ -427,7 +425,7 @@ jobs:
       matrix:
         include:
           - toolset: msvc-14.0
-            cxxstd: "14"
+            cxxstd: "14,latest"
             addrmd: 32,64
             os: windows-2019
           - toolset: msvc-14.2
@@ -443,7 +441,7 @@ jobs:
             addrmd: 32,64
             os: windows-2022
           - toolset: gcc
-            cxxstd: "11,14,17,2a"
+            cxxstd: "03,11,14,17,2a"
             addrmd: 64
             os: windows-2019
 
