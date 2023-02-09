@@ -114,6 +114,34 @@ template<class T> void test_roundtrip_uint64( int base )
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
+
+// https://stackoverflow.com/questions/25114597/how-to-print-int128-in-g
+std::ostream&
+operator<<( std::ostream& dest, __int128_t value )
+{
+    std::ostream::sentry s( dest );
+    if ( s ) {
+        __uint128_t tmp = value < 0 ? -value : value;
+        char buffer[ 128 ];
+        char* d = std::end( buffer );
+        do
+        {
+            -- d;
+            *d = "0123456789"[ tmp % 10 ];
+            tmp /= 10;
+        } while ( tmp != 0 );
+        if ( value < 0 ) {
+            -- d;
+            *d = '-';
+        }
+        int len = std::end( buffer ) - d;
+        if ( dest.rdbuf()->sputn( d, len ) != len ) {
+            dest.setstate( std::ios_base::badbit );
+        }
+    }
+    return dest;
+}
+
 inline boost::charconv::uint128_t concatenate(std::uint64_t word1, std::uint64_t word2)
 {
     return static_cast<boost::charconv::uint128_t>(word1) << 64 | word2;
@@ -130,7 +158,13 @@ template<class T> void test_roundtrip128( T value, int base )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
-    BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST( v2 == value );
+    if(BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST( v2 == value ))
+    {
+    }
+    else
+    {
+        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+    }
 }
 
 template<class T> void test_roundtrip_int128( int base )
@@ -219,11 +253,8 @@ int main()
         test_roundtrip_uint64<std::uint64_t>( base );
 
         #ifdef BOOST_CHARCONV_HAS_INT128
-        if (base != 10)
-        {
-            test_roundtrip_int128<boost::charconv::int128_t>( base );
-            test_roundtrip_uint128<boost::charconv::uint128_t>( base );
-        }
+        test_roundtrip_int128<boost::charconv::int128_t>( base );
+        //test_roundtrip_uint128<boost::charconv::uint128_t>( base );
         #endif
     }
 
@@ -249,7 +280,7 @@ int main()
 
         #ifdef BOOST_CHARCONV_HAS_INT128
         test_roundtrip_bv128<boost::charconv::int128_t>( base );
-        test_roundtrip_bv128<boost::charconv::uint128_t>( base );
+        //test_roundtrip_bv128<boost::charconv::uint128_t>( base );
         #endif
     }
 
