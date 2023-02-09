@@ -239,5 +239,28 @@ int main()
         test_roundtrip_bv<double>();
     }
 
+    // long double
+
+    {
+        long double const ql = std::pow( 1.0L, -64 );
+
+        for( int i = 0; i < N; ++i )
+        {
+            long double w0 = rng() * 1.0L; // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            long double w1 = rng() * ql; // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            long double w2 = LDBL_MAX / rng(); // large values
+            test_roundtrip( w2 );
+
+            long double w3 = LDBL_MIN * rng(); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<long double>();
+    }
+
     return boost::report_errors();
 }
