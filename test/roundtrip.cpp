@@ -202,13 +202,16 @@ int main()
     {
         for( int i = 0; i < N; ++i )
         {
-            float w1 = static_cast<float>( rng() / q );
+            float w0 = static_cast<float>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            float w1 = static_cast<float>( rng() * q ); // 0.0 .. 1.0
             test_roundtrip( w1 );
 
-            float w2 = FLT_MAX / static_cast<float>( rng() );
+            float w2 = FLT_MAX / static_cast<float>( rng() ); // large values
             test_roundtrip( w2 );
 
-            float w3 = FLT_MIN * static_cast<float>( rng() );
+            float w3 = FLT_MIN * static_cast<float>( rng() ); // small values
             test_roundtrip( w3 );
         }
 
@@ -220,13 +223,16 @@ int main()
     {
         for( int i = 0; i < N; ++i )
         {
-            double w1 = rng() / q;
+            double w0 = rng() * 1.0; // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            double w1 = rng() * q; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
-            double w2 = DBL_MAX / rng();
+            double w2 = DBL_MAX / rng(); // large values
             test_roundtrip( w2 );
 
-            double w3 = DBL_MIN * rng();
+            double w3 = DBL_MIN * rng(); // small values
             test_roundtrip( w3 );
         }
 
