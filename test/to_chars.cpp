@@ -275,6 +275,9 @@ int main()
     // Fails in CI at the time - Likely overflow when converting to positive
     specific_value_tests<short>(-32768);
     specific_value_tests(-7061872404794389355L);
+    specific_value_tests<int>(INT_MIN);
+    specific_value_tests<long>(LONG_MIN);
+    specific_value_tests<long long>(LLONG_MIN);
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     test_128bit_int<boost::charconv::int128_t>();

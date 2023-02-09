@@ -3,31 +3,123 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/limits.hpp>
-#include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/to_chars.hpp>
+#include <boost/charconv/from_chars.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <limits>
-#include <type_traits>
 
-template <typename T>
-void test()
+void test_odr_use( int const* );
+
+template<typename T> void test_integral( T value )
 {
-    BOOST_TEST_GE(boost::charconv::limits<T>::max_chars10(), boost::charconv::detail::num_digits((std::numeric_limits<T>::max)()));
-    BOOST_TEST_GE(static_cast<int>(sizeof(T) * CHAR_BIT), boost::charconv::limits<T>::max_chars());
+    // no base
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars10 ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    }
+
+    // base 10
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars10 ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, 10 );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, 10 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    }
+
+    // any base
+    for( int base = 2; base <= 36; ++base )
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, base );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    }
 }
 
-int main(void)
+template<typename T> void test_integral()
 {
-    test<char>();
-    test<signed char>();
-    test<unsigned char>();
-    test<short>();
-    test<unsigned short>();
-    test<int>();
-    test<unsigned>();
-    test<long>();
-    test<unsigned long>();
-    test<long long>();
-    test<unsigned long long>();
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars10, std::numeric_limits<T>::digits10 );
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars, std::numeric_limits<T>::digits );
+
+    test_odr_use( &boost::charconv::limits<T>::max_chars10 );
+    test_odr_use( &boost::charconv::limits<T>::max_chars );
+
+    test_integral( std::numeric_limits<T>::min() );
+    test_integral( std::numeric_limits<T>::max() );
+}
+
+template<typename T> void test_floating_point( T value )
+{
+    // no base, max_chars10
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars10 ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    }
+
+    // no base, max_chars
+    {
+        char buffer[ boost::charconv::limits<T>::max_chars ];
+        auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
+        BOOST_TEST_EQ( r.ec, 0 );
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    }
+}
+
+template<typename T> void test_floating_point()
+{
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars10, std::numeric_limits<T>::max_digits10 );
+    BOOST_TEST_GE( boost::charconv::limits<T>::max_chars, std::numeric_limits<T>::max_digits10 );
+
+    test_odr_use( &boost::charconv::limits<T>::max_chars10 );
+    test_odr_use( &boost::charconv::limits<T>::max_chars );
+
+    test_floating_point( std::numeric_limits<T>::min() );
+    test_floating_point( -std::numeric_limits<T>::min() );
+    test_floating_point( std::numeric_limits<T>::max() );
+    test_floating_point( -std::numeric_limits<T>::max() );
+}
+
+int main()
+{
+    test_integral<char>();
+    test_integral<signed char>();
+    test_integral<unsigned char>();
+    test_integral<short>();
+    test_integral<unsigned short>();
+    test_integral<int>();
+    test_integral<unsigned>();
+    test_integral<long>();
+    test_integral<unsigned long>();
+    test_integral<long long>();
+    test_integral<unsigned long long>();
+
+    test_floating_point<float>();
+    test_floating_point<double>();
+    test_floating_point<long double>();
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     test<boost::charconv::int128_t>();
@@ -35,4 +127,8 @@ int main(void)
     #endif
 
     return boost::report_errors();
+}
+
+void test_odr_use( int const* )
+{
 }

@@ -82,7 +82,7 @@ namespace detail {
 
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
-BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
+BOOST_CHARCONV_CONSTEXPR inline char* decompose32(std::uint32_t value, char* buffer) noexcept
 {
     constexpr auto mask = (std::uint64_t(1) << 57) - 1;
     auto y = value * std::uint64_t(1441151881);
@@ -458,8 +458,11 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integ
 template <>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, bool value, int base) noexcept = delete;
 
-// TODO: Not correct, but need to make MSVC happy while working on integers
-BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value) noexcept;
+// floating point overloads
+
+BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, float value ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, double value ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, long double value ) noexcept;
 
 } // namespace charconv
 } // namespace boost

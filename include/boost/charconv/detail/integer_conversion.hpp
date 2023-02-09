@@ -17,7 +17,7 @@ constexpr std::uint64_t pack(std::uint32_t word1, std::uint32_t word2) noexcept
     return static_cast<std::uint64_t>(word1) << 32 | word2;
 }
 
-BOOST_CXX14_CONSTEXPR std::pair<std::uint32_t, std::uint32_t> unpack(std::uint64_t value)
+BOOST_CXX14_CONSTEXPR inline std::pair<std::uint32_t, std::uint32_t> unpack(std::uint64_t value)
 {
     auto x = static_cast<std::uint32_t>(value >> UINT64_C(32));
     auto y = static_cast<std::uint32_t>(value & UINT32_MAX);
@@ -31,7 +31,7 @@ constexpr unsigned __int128 pack(std::uint64_t word1, std::uint64_t word2) noexc
     return static_cast<unsigned __int128>(word1) << 64 | word2;
 }
 
-BOOST_CXX14_CONSTEXPR std::pair<std::uint64_t, std::uint64_t> unpack(unsigned __int128 value)
+BOOST_CXX14_CONSTEXPR inline std::pair<std::uint64_t, std::uint64_t> unpack(unsigned __int128 value)
 {
     auto x = static_cast<std::uint64_t>(value >> 64);
     auto y = static_cast<std::uint64_t>(value);

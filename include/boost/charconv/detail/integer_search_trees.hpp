@@ -17,7 +17,7 @@ namespace boost { namespace charconv { namespace detail {
 
 // Generic solution
 template <typename T>
-BOOST_CXX14_CONSTEXPR int num_digits(T x) noexcept
+BOOST_CXX14_CONSTEXPR inline int num_digits(T x) noexcept
 {
     int digits = 0;
 
@@ -31,7 +31,7 @@ BOOST_CXX14_CONSTEXPR int num_digits(T x) noexcept
 }
 
 template <>
-BOOST_CXX14_CONSTEXPR int num_digits(std::uint32_t x) noexcept
+BOOST_CXX14_CONSTEXPR inline int num_digits(std::uint32_t x) noexcept
 {
     if (x >= UINT32_C(10000))
     {
@@ -75,7 +75,7 @@ BOOST_CXX14_CONSTEXPR int num_digits(std::uint32_t x) noexcept
 }
 
 template <>
-BOOST_CXX14_CONSTEXPR int num_digits(std::uint64_t x) noexcept
+BOOST_CXX14_CONSTEXPR inline int num_digits(std::uint64_t x) noexcept
 {
     if (x >= UINT64_C(10000000000))
     {
@@ -167,7 +167,7 @@ static constexpr std::array<std::uint64_t, 20> powers_of_10 =
 
 // Assume that if someone is using 128 bit ints they are favoring the top end of the range
 // Max value is 340,282,366,920,938,463,463,374,607,431,768,211,455 (39 digits)
-BOOST_CXX14_CONSTEXPR int num_digits(unsigned __int128 x) noexcept
+BOOST_CXX14_CONSTEXPR inline int num_digits(unsigned __int128 x) noexcept
 {
     // There is not literal for unsigned __int128 so we need to calculate them using the max value of the
     // std::uint64_t powers of 10
