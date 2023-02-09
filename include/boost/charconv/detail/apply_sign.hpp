@@ -5,25 +5,33 @@
 #ifndef BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 #define BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 
-// Workaround for warning C4146: unary minus operator applied to unsigned type, result still unsigned
-// Occurs using MSVC with pre-C++17 language standards
-
+#include <boost/config.hpp>
 #include <type_traits>
+
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4146)
+#endif
 
 namespace boost { namespace charconv { namespace detail {
 
-template <typename Integer, typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
-constexpr Integer apply_sign(Integer val) noexcept
+template <typename Integer, typename Unsigned_Integer = typename std::make_unsigned<Integer>::type, 
+          typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
+constexpr Unsigned_Integer apply_sign(Integer val) noexcept
 {
-    return -val;
+    return -(static_cast<Unsigned_Integer>(val));
 }
 
-template <typename Integer, typename std::enable_if<std::is_unsigned<Integer>::value, bool>::type = true>
-constexpr Integer apply_sign(Integer val) noexcept
+template <typename Unsigned_Integer, typename std::enable_if<std::is_unsigned<Unsigned_Integer>::value, bool>::type = true>
+constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 {
     return val;
 }
 
 }}} // Namespaces
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
