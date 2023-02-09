@@ -5,10 +5,12 @@
 #ifndef BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 #define BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 
-// Workaround for warning C4146: unary minus operator applied to unsigned type, result still unsigned
-// Occurs using MSVC with pre-C++17 language standards
-
 #include <type_traits>
+
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4146)
+#endif
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -26,5 +28,9 @@ constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 }
 
 }}} // Namespaces
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
