@@ -5,6 +5,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 #define BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 
+#include <boost/config.hpp>
 #include <type_traits>
 
 #ifdef BOOST_MSVC
