@@ -5,7 +5,7 @@
 #ifndef BOOST_CHARCONV_LIMITS_HPP
 #define BOOST_CHARCONV_LIMITS_HPP
 
-#include <boost/charconv/config.hpp>
+#include <boost/config.hpp>
 #include <limits>
 
 namespace boost { namespace charconv { 
@@ -29,8 +29,14 @@ template<typename T> struct limits
         std::numeric_limits<T>::max_digits10 + 3 + 6; // as above
 };
 
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
+
+// Definitions of in-class constexpr members are allowed but deprecated in C++17
+
 template<typename T> constexpr int limits<T>::max_chars10;
 template<typename T> constexpr int limits<T>::max_chars;
+
+#endif
 
 }} // Namespaces
 
