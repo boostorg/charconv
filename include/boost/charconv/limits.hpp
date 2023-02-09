@@ -18,15 +18,25 @@ namespace boost { namespace charconv {
 //   passed to to_chars to guarantee successful conversion for all values of
 //   type T, for any value of base
 
+namespace detail
+{
+
+constexpr int exp_digits( int exp )
+{
+    return exp < 100? 2: exp < 1000? 3: exp < 10000? 4: 5;
+}
+
+} // namespace detail
+
 template<typename T> struct limits
 {
     static constexpr int max_chars10 = std::numeric_limits<T>::is_integer?
         std::numeric_limits<T>::digits10 + 1 + std::numeric_limits<T>::is_signed:
-        std::numeric_limits<T>::max_digits10 + 3 + 6; // -1.(max_digits10)e+4932
+        std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // -1.(max_digits10)e+(max_exp)
 
     static constexpr int max_chars = std::numeric_limits<T>::is_integer?
         std::numeric_limits<T>::digits + 1 + std::numeric_limits<T>::is_signed:
-        std::numeric_limits<T>::max_digits10 + 3 + 6; // as above
+        std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // as above
 };
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
@@ -38,6 +48,6 @@ template<typename T> constexpr int limits<T>::max_chars;
 
 #endif
 
-}} // Namespaces
+}} // namespace boost::charconv
 
 #endif // BOOST_CHARCONV_LIMITS_HPP
