@@ -117,11 +117,11 @@ template<class T> void test_roundtrip_uint64( int base )
 
 // https://stackoverflow.com/questions/25114597/how-to-print-int128-in-g
 std::ostream&
-operator<<( std::ostream& dest, __int128_t value )
+operator<<( std::ostream& dest, boost::charconv::int128_t value )
 {
     std::ostream::sentry s( dest );
     if ( s ) {
-        __uint128_t tmp = value < 0 ? -value : value;
+        boost::charconv::uint128_t tmp = value < 0 ? -value : value;
         char buffer[ 128 ];
         char* d = std::end( buffer );
         do
@@ -134,6 +134,28 @@ operator<<( std::ostream& dest, __int128_t value )
             -- d;
             *d = '-';
         }
+        int len = std::end( buffer ) - d;
+        if ( dest.rdbuf()->sputn( d, len ) != len ) {
+            dest.setstate( std::ios_base::badbit );
+        }
+    }
+    return dest;
+}
+
+std::ostream&
+operator<<( std::ostream& dest, boost::charconv::uint128_t value )
+{
+    std::ostream::sentry s( dest );
+    if ( s ) {
+        boost::charconv::uint128_t tmp = value;
+        char buffer[ 128 ];
+        char* d = std::end( buffer );
+        do
+        {
+            -- d;
+            *d = "0123456789"[ tmp % 10 ];
+            tmp /= 10;
+        } while ( tmp != 0 );
         int len = std::end( buffer ) - d;
         if ( dest.rdbuf()->sputn( d, len ) != len ) {
             dest.setstate( std::ios_base::badbit );
