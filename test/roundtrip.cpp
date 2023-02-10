@@ -276,7 +276,7 @@ int main()
 
         #ifdef BOOST_CHARCONV_HAS_INT128
         test_roundtrip_int128<boost::charconv::int128_t>( base );
-        //test_roundtrip_uint128<boost::charconv::uint128_t>( base );
+        test_roundtrip_uint128<boost::charconv::uint128_t>( base );
         #endif
     }
 
@@ -302,7 +302,7 @@ int main()
 
         #ifdef BOOST_CHARCONV_HAS_INT128
         test_roundtrip_bv128<boost::charconv::int128_t>( base );
-        //test_roundtrip_bv128<boost::charconv::uint128_t>( base );
+        test_roundtrip_bv128<boost::charconv::uint128_t>( base );
         #endif
     }
 
