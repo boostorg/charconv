@@ -43,6 +43,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result<bool>(char* first, char* last, Integral
 
 == to_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
+* These functions have been tested to support `__int128` and `unsigned __int128` when compiling with `-std=gnu++11` or newer
 
 == Examples
 

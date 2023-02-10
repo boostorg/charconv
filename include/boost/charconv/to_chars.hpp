@@ -222,11 +222,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             }
         }
     }
-    #if 0
-    // unsigned __128 requires 4 shifts
-    // Could just recursivly call the uint64_t twice and then compose 2x 64 bits
-    else if (static_cast<unsigned __int128>(value) <= (std::numeric_limits<unsigned __int128>::max)())
-    #endif
     else 
     {
         BOOST_CHARCONV_ASSERT_MSG(sizeof(Integer) < 1, "Your type is unsupported. Use a built-in integral type");
@@ -234,6 +229,93 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     
     return {first + converted_value_digits, 0};
 }
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+// Prior to GCC 10.3 std::numeric_limits was not specialized for __int128 which breaks the above control flow
+// Here we find if the 128-bit type will fit into a 64-bit type and use the above, or we use string manipulation
+// to extract the digits
+//
+// See: https://quuxplusone.github.io/blog/2019/02/28/is-int128-integral/
+template <typename Integer>
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, char* last, Integer value) noexcept
+{
+    using Unsigned_Integer = boost::uint128_type;
+    Unsigned_Integer unsigned_value {};
+
+    const std::ptrdiff_t user_buffer_size = last - first;
+    BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
+    
+    if (!(first <= last))
+    {
+        return {last, EINVAL};
+    }
+
+    // Strip the sign from the value and apply at the end after parsing if the type is signed
+    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    {
+        if (value < 0)
+        {
+            is_negative = true;
+            unsigned_value = apply_sign(value);
+        }
+        else
+        {
+            unsigned_value = value;
+        }
+    }
+    else
+    {
+        unsigned_value = value;
+    }
+
+    auto converted_value = static_cast<boost::uint128_type>(unsigned_value);
+
+    // If the value fits into 64 bits use the other method of processing
+    if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
+    {
+        return to_chars_integer_impl(first, last, value);
+    }
+
+    const int converted_value_digits = num_digits(converted_value);
+
+    if (converted_value_digits > user_buffer_size)
+    {
+        return {last, EOVERFLOW};
+    }
+
+    if (is_negative)
+    {
+        *first++ = '-';
+    }
+
+    constexpr std::uint32_t ten_9 = UINT32_C(1000000000);
+    char buffer[5][10] {};
+    int num_chars[5] {};
+    int i = 0;
+
+    while (converted_value != 0)
+    {
+        auto digits = static_cast<std::uint32_t>(converted_value % ten_9);
+        num_chars[i] = num_digits(digits);
+        decompose32(digits, buffer[i]); // Always returns 10 digits (to include leading 0s) which we want
+        converted_value = (converted_value - digits) / ten_9;
+        ++i;
+    }
+
+    --i;
+    boost::charconv::detail::memcpy(first, buffer[i] + 10 - num_chars[i], num_chars[i]);
+    std::size_t offset = num_chars[i];
+
+    while (i > 0)
+    {
+        --i;
+        boost::charconv::detail::memcpy(first + offset, buffer[i] + 1, 9);
+        offset += 9;
+    }
+
+    return {first + converted_value_digits, 0};
+}
+#endif
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
@@ -358,7 +440,16 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integ
 {
     if (base == 10)
     {
-        return detail::to_chars_integer_impl(first, last, value);
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        BOOST_IF_CONSTEXPR(std::is_same<Integer, boost::int128_type>::value || std::is_same<Integer, boost::uint128_type>::value)
+        {
+            return detail::to_chars_128integer_impl(first, last, value);
+        }
+        else
+        #endif
+        {
+            return detail::to_chars_integer_impl(first, last, value);
+        }
     }
 
     return detail::to_chars_integer_impl(first, last, value, base);

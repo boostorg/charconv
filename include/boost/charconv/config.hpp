@@ -2,6 +2,7 @@
 #define BOOST_CHARCONV_CONFIG_HPP_INCLUDED
 
 // Copyright 2022 Peter Dimov
+// Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -42,6 +43,11 @@
 #  include <cassert>
 #  define BOOST_CHARCONV_ASSERT(expr) assert(expr)
 #  define BOOST_CHARCONV_ASSERT_MSG(expr, msg) assert((expr)&&(msg))
+#endif
+
+// Use 128 bit integers and supress warnings for using extensions
+#if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
+#  define BOOST_CHARCONV_HAS_INT128
 #endif
 
 #endif // BOOST_CHARCONV_CONFIG_HPP_INCLUDED

@@ -11,6 +11,62 @@
 #include <cstring>
 #include <cerrno>
 
+#ifdef BOOST_CHARCONV_HAS_INT128
+template <typename T>
+void test_128bit_int()
+{
+    // Use 32-bit path
+    char buffer1[64] {};
+    T v1 = static_cast<T>(1234);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "1234");
+
+    // Use 64-bit path
+    char buffer2[64] {};
+    T v2 = static_cast<T>(1234123412341234LL);
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer2, "1234123412341234");
+
+    // Use 128-bit path
+    const char* buffer3 = "85070591730234615865843651857942052864"; // 2^126
+    T test_value = 1;
+    test_value = test_value << 126;
+    T v3 = 0;
+    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    BOOST_TEST(r3.ec == 0);
+    BOOST_TEST(v3 == test_value);
+    BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+
+    char buffer4[64] {};
+    auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v3);
+    BOOST_TEST_EQ(r4.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer3, buffer4);
+
+    // Failing from roundtrip test
+    // Replicate to ensure that it is correct and not random failure
+    BOOST_IF_CONSTEXPR (std::is_same<T, boost::int128_type>::value)
+    {
+        const char* buffer5 = "-103527168272318384816037687533325012784";
+        T v5 = 0;
+        auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
+        BOOST_TEST(r5.ec == 0);
+
+        char buffer6[64] {};
+        auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v5);
+        BOOST_TEST_EQ(r6.ec, 0);
+        BOOST_TEST_CSTR_EQ(buffer5, buffer6);
+
+        // And back again
+        T v7 = 0;
+        auto r7 = boost::charconv::from_chars(buffer6, buffer6 + std::strlen(buffer6), v7);
+        BOOST_TEST(r7.ec == 0);
+        BOOST_TEST(v5 == v7);;
+    }
+}
+#endif
+
 template <typename T>
 void specific_value_tests(T value)
 {
@@ -243,6 +299,11 @@ int main()
     specific_value_tests<int>(INT_MIN);
     specific_value_tests<long>(LONG_MIN);
     specific_value_tests<long long>(LLONG_MIN);
+
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    test_128bit_int<boost::int128_type>();
+    test_128bit_int<boost::uint128_type>();
+    #endif
 
     return boost::report_errors();
 }
