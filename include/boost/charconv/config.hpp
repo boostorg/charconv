@@ -46,7 +46,7 @@
 #endif
 
 // Use 128 bit integers and supress warnings for using extensions
-#if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
+#if defined(BOOST_HAS_INT128)
 #  define BOOST_CHARCONV_HAS_INT128
 #endif
 
