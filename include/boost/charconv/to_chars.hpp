@@ -251,12 +251,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     }
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
-    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    BOOST_IF_CONSTEXPR (std::is_same<boost::int128_type, Integer>::value)
     {
         if (value < 0)
         {
             is_negative = true;
-            unsigned_value = apply_sign(value);
+            unsigned_value = -(static_cast<Unsigned_Integer>(value));
         }
         else
         {
@@ -270,12 +270,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     auto converted_value = static_cast<boost::uint128_type>(unsigned_value);
 
-    // If the value fits into 64 bits use the other method of processing
-    if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
-    {
-        return to_chars_integer_impl(first, last, value);
-    }
-
     const int converted_value_digits = num_digits(converted_value);
 
     if (converted_value_digits > user_buffer_size)
@@ -286,6 +280,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     if (is_negative)
     {
         *first++ = '-';
+    }
+
+    // If the value fits into 64 bits use the other method of processing
+    if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
+    {
+        return to_chars_integer_impl(first, last, static_cast<std::uint64_t>(value));
     }
 
     constexpr std::uint32_t ten_9 = UINT32_C(1000000000);
@@ -323,12 +323,10 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
-template <typename Integer>
+template <typename Integer, typename Unsigned_Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
-
-    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
 
     const std::ptrdiff_t output_length = last - first;
 
@@ -351,7 +349,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         if (value < 0)
         {
             *first++ = '-';
-            unsigned_value = apply_sign(value);
+            unsigned_value = -(static_cast<Unsigned_Integer>(value));
         }
         else
         {
@@ -436,12 +434,13 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
 {
+    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
     if (base == 10)
     {
         return detail::to_chars_integer_impl(first, last, value);
     }
 
-    return detail::to_chars_integer_impl(first, last, value, base);
+    return detail::to_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
@@ -453,7 +452,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
         return to_chars_128integer_impl(first, last, value);
     }
 
-    return to_chars_integer_impl(first, last, value, base);
+    return to_chars_integer_impl<Integer, boost::uint128_type>(first, last, value, base);
 }
 #endif
 
