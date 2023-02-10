@@ -239,7 +239,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, char* last, Integer value) noexcept
 {
-    using Unsigned_Integer = uint128_t;
+    using Unsigned_Integer = boost::uint128_type;
     Unsigned_Integer unsigned_value {};
 
     const std::ptrdiff_t user_buffer_size = last - first;
@@ -268,7 +268,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         unsigned_value = value;
     }
 
-    auto converted_value = static_cast<uint128_t>(unsigned_value);
+    auto converted_value = static_cast<boost::uint128_type>(unsigned_value);
 
     // If the value fits into 64 bits use the other method of processing
     if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
@@ -441,7 +441,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integ
     if (base == 10)
     {
         #ifdef BOOST_CHARCONV_HAS_INT128
-        BOOST_IF_CONSTEXPR(std::is_same<Integer, int128_t>::value || std::is_same<Integer, uint128_t>::value)
+        BOOST_IF_CONSTEXPR(std::is_same<Integer, boost::int128_type>::value || std::is_same<Integer, boost::uint128_type>::value)
         {
             return detail::to_chars_128integer_impl(first, last, value);
         }

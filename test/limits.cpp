@@ -177,8 +177,8 @@ int main()
     test_floating_point<long double>();
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    test_integral128<boost::charconv::int128_t>();
-    test_integral128<boost::charconv::uint128_t>();
+    test_integral128<boost::int128_type>();
+    test_integral128<boost::uint128_type>();
     #endif
 
     return boost::report_errors();

@@ -117,11 +117,11 @@ template<class T> void test_roundtrip_uint64( int base )
 
 // https://stackoverflow.com/questions/25114597/how-to-print-int128-in-g
 std::ostream&
-operator<<( std::ostream& dest, boost::charconv::int128_t value )
+operator<<( std::ostream& dest, boost::int128_type value )
 {
     std::ostream::sentry s( dest );
     if ( s ) {
-        boost::charconv::uint128_t tmp = value < 0 ? -value : value;
+        boost::uint128_type tmp = value < 0 ? -value : value;
         char buffer[ 128 ];
         char* d = std::end( buffer );
         do
@@ -143,11 +143,11 @@ operator<<( std::ostream& dest, boost::charconv::int128_t value )
 }
 
 std::ostream&
-operator<<( std::ostream& dest, boost::charconv::uint128_t value )
+operator<<( std::ostream& dest, boost::uint128_type value )
 {
     std::ostream::sentry s( dest );
     if ( s ) {
-        boost::charconv::uint128_t tmp = value;
+        boost::uint128_type tmp = value;
         char buffer[ 128 ];
         char* d = std::end( buffer );
         do
@@ -164,9 +164,9 @@ operator<<( std::ostream& dest, boost::charconv::uint128_t value )
     return dest;
 }
 
-inline boost::charconv::uint128_t concatenate(std::uint64_t word1, std::uint64_t word2)
+inline boost::uint128_type concatenate(std::uint64_t word1, std::uint64_t word2)
 {
-    return static_cast<boost::charconv::uint128_t>(word1) << 64 | word2;
+    return static_cast<boost::uint128_type>(word1) << 64 | word2;
 }
 
 template<class T> void test_roundtrip128( T value, int base )
@@ -193,7 +193,7 @@ template<class T> void test_roundtrip_int128( int base )
 {
     for( int i = 0; i < N; ++i )
     {
-        boost::charconv::int128_t w = static_cast<boost::charconv::uint128_t>( concatenate(rng(), rng()) );
+        boost::int128_type w = static_cast<boost::uint128_type>( concatenate(rng(), rng()) );
         test_roundtrip128( static_cast<T>( w ), base );
     }
 }
@@ -202,7 +202,7 @@ template<class T> void test_roundtrip_uint128( int base )
 {
     for( int i = 0; i < N; ++i )
     {
-        boost::charconv::uint128_t w = static_cast<boost::charconv::uint128_t>( concatenate(rng(), rng()) );
+        boost::uint128_type w = static_cast<boost::uint128_type>( concatenate(rng(), rng()) );
         test_roundtrip128( static_cast<T>( w ), base );
     }
 }
@@ -275,8 +275,8 @@ int main()
         test_roundtrip_uint64<std::uint64_t>( base );
 
         #ifdef BOOST_CHARCONV_HAS_INT128
-        test_roundtrip_int128<boost::charconv::int128_t>( base );
-        test_roundtrip_uint128<boost::charconv::uint128_t>( base );
+        test_roundtrip_int128<boost::int128_type>( base );
+        test_roundtrip_uint128<boost::uint128_type>( base );
         #endif
     }
 
@@ -301,8 +301,8 @@ int main()
         test_roundtrip_bv<unsigned long long>( base );
 
         #ifdef BOOST_CHARCONV_HAS_INT128
-        test_roundtrip_bv128<boost::charconv::int128_t>( base );
-        test_roundtrip_bv128<boost::charconv::uint128_t>( base );
+        test_roundtrip_bv128<boost::int128_type>( base );
+        test_roundtrip_bv128<boost::uint128_type>( base );
         #endif
     }
 

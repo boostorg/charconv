@@ -46,7 +46,7 @@ void test_128bit_int()
 
     // Failing from roundtrip test
     // Replicate to ensure that it is correct and not random failure
-    BOOST_IF_CONSTEXPR (std::is_same<T, boost::charconv::int128_t>::value)
+    BOOST_IF_CONSTEXPR (std::is_same<T, boost::int128_type>::value)
     {
         const char* buffer5 = "-103527168272318384816037687533325012784";
         T v5 = 0;
@@ -301,8 +301,8 @@ int main()
     specific_value_tests<long long>(LLONG_MIN);
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    test_128bit_int<boost::charconv::int128_t>();
-    test_128bit_int<boost::charconv::uint128_t>();
+    test_128bit_int<boost::int128_type>();
+    test_128bit_int<boost::uint128_type>();
     #endif
 
     return boost::report_errors();

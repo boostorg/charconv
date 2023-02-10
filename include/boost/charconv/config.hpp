@@ -48,17 +48,6 @@
 // Use 128 bit integers and supress warnings for using extensions
 #if defined(BOOST_HAS_INT128) && !defined(__STRICT_ANSI__)
 #  define BOOST_CHARCONV_HAS_INT128
-
-namespace boost { namespace charconv {
-#    ifdef __GNUC__
-       __extension__ using int128_t = __int128;
-       __extension__ using uint128_t = unsigned __int128;
-#    else
-       using int128_t = __int128;
-       using uint128_t = unsigned __int128;
-#    endif
-}} // Namespaces
-
 #endif
 
 #endif // BOOST_CHARCONV_CONFIG_HPP_INCLUDED
