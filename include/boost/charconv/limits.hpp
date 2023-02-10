@@ -64,7 +64,17 @@ template<> struct limits<boost::uint128_type>
 template<typename T> constexpr int limits<T>::max_chars10;
 template<typename T> constexpr int limits<T>::max_chars;
 
-#endif
+#if defined(BOOST_HAS_INT128)
+
+constexpr int limits<boost::int128_type>::max_chars10;
+constexpr int limits<boost::int128_type>::max_chars;
+
+constexpr int limits<boost::uint128_type>::max_chars10;
+constexpr int limits<boost::uint128_type>::max_chars;
+
+#endif // defined(BOOST_HAS_INT128)
+
+#endif // defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 }} // namespace boost::charconv
 
