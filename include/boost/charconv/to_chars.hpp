@@ -16,7 +16,6 @@
 #include <array>
 #include <limits>
 #include <utility>
-#include <string>
 #include <cstring>
 #include <cstdio>
 #include <cerrno>
@@ -289,28 +288,29 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         *first++ = '-';
     }
 
-    constexpr std::uint64_t ten_19 = UINT64_C(10000000000000000000);
-    char buffer[3][20] {};
-    int num_chars[3] {};
+    constexpr std::uint32_t ten_9 = UINT32_C(1000000000);
+    char buffer[5][10] {};
+    int num_chars[5] {};
     int i = 0;
+
     while (converted_value != 0)
     {
-        auto digits = static_cast<std::uint64_t>(converted_value % ten_19);
-        auto current_num_chars = num_digits(digits);
-        to_chars_integer_impl(buffer[i], buffer[i] + 20, digits);
-
-        converted_value = (converted_value - digits) / ten_19;
-        num_chars[i] = current_num_chars;
+        auto digits = static_cast<std::uint32_t>(converted_value % ten_9);
+        num_chars[i] = num_digits(digits);
+        decompose32(digits, buffer[i]); // Always returns 10 digits (to include leading 0s) which we want
+        converted_value = (converted_value - digits) / ten_9;
         ++i;
     }
 
-    --i; // Increments at the end of the loop
-    std::size_t offset = 0;
-    while (i >= 0)
+    --i;
+    boost::charconv::detail::memcpy(first, buffer[i] + 10 - num_chars[i], num_chars[i]);
+    std::size_t offset = num_chars[i];
+
+    while (i > 0)
     {
-        boost::charconv::detail::memcpy(first + offset, buffer[i], num_chars[i]);
-        offset += num_chars[i];
         --i;
+        boost::charconv::detail::memcpy(first + offset, buffer[i] + 1, 9);
+        offset += 9;
     }
 
     return {first + converted_value_digits, 0};
