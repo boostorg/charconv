@@ -82,7 +82,8 @@ template<class T> void test_roundtrip( T value, int base )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
-    BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    BOOST_TEST_EQ( r2.ec, 0 );
+    BOOST_TEST_EQ( v2, value );
 }
 
 template<class T> void test_roundtrip_int8( int base )
