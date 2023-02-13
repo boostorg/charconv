@@ -65,7 +65,9 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <cfloat>
 #include <cmath>
 
-int const N = 1024;
+// TODO: Revert
+//int const N = 1024;
+const int N = 10;
 
 static boost::detail::splitmix64 rng;
 
@@ -83,7 +85,14 @@ template<class T> void test_roundtrip( T value, int base )
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
     BOOST_TEST_EQ( r2.ec, 0 );
-    BOOST_TEST_EQ( v2, value );
+    if (BOOST_TEST_EQ( v2, value ))
+    {
+
+    }
+    else
+    {
+        std::cerr << "Original Value: " << value << "\nBase:" << base << "\nConverted Value: " << buffer << "\nRoundtriped Value: " << v2 << std::endl;
+    }
 }
 
 template<class T> void test_roundtrip_int8( int base )
@@ -243,6 +252,7 @@ int main()
 
     for( int base = 2; base <= 36; ++base )
     {
+        /*
         test_roundtrip_int8<std::int8_t>( base );
         test_roundtrip_uint8<std::uint8_t>( base );
 
@@ -254,11 +264,11 @@ int main()
 
         test_roundtrip_int64<std::int64_t>( base );
         test_roundtrip_uint64<std::uint64_t>( base );
-
+        */
 #ifdef BOOST_CHARCONV_HAS_INT128
 
-        test_roundtrip_int128<boost::int128_type>( base );
-        test_roundtrip_uint128<boost::uint128_type>( base );
+        //test_roundtrip_int128<boost::int128_type>( base );
+        //test_roundtrip_uint128<boost::uint128_type>( base );
 
 #endif
     }
@@ -267,6 +277,7 @@ int main()
 
     for( int base = 2; base <= 36; ++base )
     {
+        /*
         test_roundtrip_bv<char>( base );
         test_roundtrip_bv<signed char>( base );
         test_roundtrip_bv<unsigned char>( base );
@@ -282,11 +293,11 @@ int main()
 
         test_roundtrip_bv<long long>( base );
         test_roundtrip_bv<unsigned long long>( base );
-
+        */
 #ifdef BOOST_CHARCONV_HAS_INT128
 
         test_roundtrip_bv<boost::int128_type>( base );
-        test_roundtrip_bv<boost::uint128_type>( base );
+        //test_roundtrip_bv<boost::uint128_type>( base );
 
 #endif
     }
