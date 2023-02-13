@@ -160,8 +160,13 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         }
     }
 
-    overflow_value /= unsigned_base;
-    max_digit %= unsigned_base;
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    BOOST_IF_CONSTEXPR (!std::is_same<Integer, boost::int128_type>::value)
+    #endif
+    {
+        overflow_value /= base;
+        max_digit %= base;
+    }
 
     // If the only character was a sign abort now
     if (next == last)
