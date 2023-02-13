@@ -472,6 +472,14 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsig
 {
     return detail::to_chars(first, last, value, base);
 }
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, short value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned short value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, int value, int base = 10) noexcept
 {
     return detail::to_chars(first, last, value, base);
