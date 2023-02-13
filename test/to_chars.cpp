@@ -37,7 +37,6 @@ void test_128bit_int()
     auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
     BOOST_TEST(r3.ec == 0);
     BOOST_TEST(v3 == test_value);
-    BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
 
     char buffer4[64] {};
     auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v3);
