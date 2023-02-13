@@ -68,8 +68,13 @@ constexpr unsigned char digit_from_char(char val) noexcept
     return uchar_values[static_cast<std::size_t>(val)];
 }
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4146)
+#endif
+
 template <typename Integer, typename Unsigned_Integer>
-BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl(const char* first, const char* last, Integer& value, int base) noexcept
+BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* first, const char* last, Integer& value, int base) noexcept
 {
     Unsigned_Integer result = 0;
     Unsigned_Integer overflow_value = 0;
@@ -178,6 +183,10 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
 
     return {next, 0};
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 // Only from_chars for integer types is constexpr (as of C++23)
 template <typename Integer>
