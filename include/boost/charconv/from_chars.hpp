@@ -68,10 +68,9 @@ constexpr unsigned char digit_from_char(char val) noexcept
     return uchar_values[static_cast<std::size_t>(val)];
 }
 
-template <typename Integer>
+template <typename Integer, typename Unsigned_Integer>
 BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl(const char* first, const char* last, Integer& value, int base) noexcept
 {
-    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
     Unsigned_Integer result = 0;
     Unsigned_Integer overflow_value = 0;
     Unsigned_Integer max_digit = 0;
@@ -173,39 +172,90 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
     {
         if (is_negative)
         {
-            value = apply_sign(value);
+            value = -(static_cast<Unsigned_Integer>(value));
         }
     }
 
     return {next, 0};
 }
 
+// Only from_chars for integer types is constexpr (as of C++23)
+template <typename Integer>
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
+{
+    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
+    return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
+}
+
+#ifdef BOOST_HAS_INT128
+template <typename Integer>
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, Integer& value, int base = 10) noexcept
+{
+    using Unsigned_Integer = boost::uint128_type;
+    return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
+}
+#endif
+
 } // Namespace detail
 
-// GCC 5 does not support constexpr comparison of const char*
-#if defined(__GNUC__) && __GNUC__ == 5
-template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-inline from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
+// integer overloads
+
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, bool& value, int base = 10) noexcept = delete;
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, char& value, int base = 10) noexcept
 {
-    return detail::from_chars_integer_impl(first, last, value, base);
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, signed char& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned char& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, short& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned short& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, int& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned int& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, long long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned long long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
 }
 
-template<>
-inline from_chars_result from_chars<bool>(const char* first, const char* last, bool& value, int base) noexcept = delete;
-
-#else
-
-// Only from_chars for integer types is constexpr (as of C++23)
-template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
+#ifdef BOOST_CHARCONV_HAS_INT128
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, boost::int128_type& value, int base = 10) noexcept
 {
-    return detail::from_chars_integer_impl(first, last, value, base);
+    return detail::from_chars128(first, last, value, base);
 }
-
-template <>
-BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, const char* last, bool& value, int base) noexcept = delete;
-
-#endif // GCC5 workarounds
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, boost::uint128_type& value, int base = 10) noexcept
+{
+    return detail::from_chars128(first, last, value, base);
+}
+#endif
 
 // floating point overloads
 
