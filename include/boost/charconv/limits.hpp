@@ -39,6 +39,24 @@ template<typename T> struct limits
         std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // as above
 };
 
+#if defined(BOOST_HAS_INT128)
+
+// std::numeric_limits is not always specialized for __int128_t
+
+template<> struct limits<boost::int128_type>
+{
+    static constexpr int max_chars10 = 38 + 2; // digits10 + 1 + sign
+    static constexpr int max_chars = 127 + 2; // digits + 1 + sign
+};
+
+template<> struct limits<boost::uint128_type>
+{
+    static constexpr int max_chars10 = 38 + 1; // digits10 + 1
+    static constexpr int max_chars = 128 + 1; // digits + 1
+};
+
+#endif // #if defined(BOOST_HAS_INT128)
+
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 // Definitions of in-class constexpr members are allowed but deprecated in C++17
@@ -46,7 +64,17 @@ template<typename T> struct limits
 template<typename T> constexpr int limits<T>::max_chars10;
 template<typename T> constexpr int limits<T>::max_chars;
 
-#endif
+#if defined(BOOST_HAS_INT128)
+
+constexpr int limits<boost::int128_type>::max_chars10;
+constexpr int limits<boost::int128_type>::max_chars;
+
+constexpr int limits<boost::uint128_type>::max_chars10;
+constexpr int limits<boost::uint128_type>::max_chars;
+
+#endif // defined(BOOST_HAS_INT128)
+
+#endif // defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 }} // namespace boost::charconv
 
