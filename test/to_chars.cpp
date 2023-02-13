@@ -52,6 +52,7 @@ void test_128bit_int()
         T v5 = 0;
         auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
         BOOST_TEST(r5.ec == 0);
+        BOOST_TEST(v5 < 0);
 
         char buffer6[64] {};
         auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v5);
