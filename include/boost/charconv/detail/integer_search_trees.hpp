@@ -167,30 +167,30 @@ static constexpr std::array<std::uint64_t, 20> powers_of_10 =
 
 // Assume that if someone is using 128 bit ints they are favoring the top end of the range
 // Max value is 340,282,366,920,938,463,463,374,607,431,768,211,455 (39 digits)
-BOOST_CXX14_CONSTEXPR inline int num_digits(unsigned __int128 x) noexcept
+BOOST_CXX14_CONSTEXPR inline int num_digits(boost::uint128_type x) noexcept
 {
-    // There is not literal for unsigned __int128 so we need to calculate them using the max value of the
+    // There is not literal for boost::uint128_type so we need to calculate them using the max value of the
     // std::uint64_t powers of 10
-    constexpr unsigned __int128 digits_39 = static_cast<unsigned __int128>(UINT64_C(10000000000000000000)) * 
-                                            static_cast<unsigned __int128>(UINT64_C(1000000000000000000));
-    constexpr unsigned __int128 digits_38 = digits_39 / 10;
-    constexpr unsigned __int128 digits_37 = digits_38 / 10;
-    constexpr unsigned __int128 digits_36 = digits_37 / 10;
-    constexpr unsigned __int128 digits_35 = digits_36 / 10;
-    constexpr unsigned __int128 digits_34 = digits_35 / 10;
-    constexpr unsigned __int128 digits_33 = digits_34 / 10;
-    constexpr unsigned __int128 digits_32 = digits_33 / 10;
-    constexpr unsigned __int128 digits_31 = digits_32 / 10;
-    constexpr unsigned __int128 digits_30 = digits_31 / 10;
-    constexpr unsigned __int128 digits_29 = digits_30 / 10;
-    constexpr unsigned __int128 digits_28 = digits_29 / 10;
-    constexpr unsigned __int128 digits_27 = digits_28 / 10;
-    constexpr unsigned __int128 digits_26 = digits_27 / 10;
-    constexpr unsigned __int128 digits_25 = digits_26 / 10;
-    constexpr unsigned __int128 digits_24 = digits_25 / 10;
-    constexpr unsigned __int128 digits_23 = digits_24 / 10;
-    constexpr unsigned __int128 digits_22 = digits_23 / 10;
-    constexpr unsigned __int128 digits_21 = digits_22 / 10;
+    constexpr boost::uint128_type digits_39 = static_cast<boost::uint128_type>(UINT64_C(10000000000000000000)) * 
+                                              static_cast<boost::uint128_type>(UINT64_C(1000000000000000000));
+    constexpr boost::uint128_type digits_38 = digits_39 / 10;
+    constexpr boost::uint128_type digits_37 = digits_38 / 10;
+    constexpr boost::uint128_type digits_36 = digits_37 / 10;
+    constexpr boost::uint128_type digits_35 = digits_36 / 10;
+    constexpr boost::uint128_type digits_34 = digits_35 / 10;
+    constexpr boost::uint128_type digits_33 = digits_34 / 10;
+    constexpr boost::uint128_type digits_32 = digits_33 / 10;
+    constexpr boost::uint128_type digits_31 = digits_32 / 10;
+    constexpr boost::uint128_type digits_30 = digits_31 / 10;
+    constexpr boost::uint128_type digits_29 = digits_30 / 10;
+    constexpr boost::uint128_type digits_28 = digits_29 / 10;
+    constexpr boost::uint128_type digits_27 = digits_28 / 10;
+    constexpr boost::uint128_type digits_26 = digits_27 / 10;
+    constexpr boost::uint128_type digits_25 = digits_26 / 10;
+    constexpr boost::uint128_type digits_24 = digits_25 / 10;
+    constexpr boost::uint128_type digits_23 = digits_24 / 10;
+    constexpr boost::uint128_type digits_22 = digits_23 / 10;
+    constexpr boost::uint128_type digits_21 = digits_22 / 10;
 
     return (x > digits_39) ? 39 :
            (x > digits_38) ? 38 :
