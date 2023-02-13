@@ -98,7 +98,7 @@ BOOST_CHARCONV_CONSTEXPR inline char* decompose32(std::uint32_t value, char* buf
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
-# pragma warning(disable: 4127)
+# pragma warning(disable: 4127 4146)
 #endif
 
 template <typename Integer>
@@ -317,10 +317,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 }
 #endif
 
-#ifdef BOOST_MSVC
-# pragma warning(pop)
-#endif
-
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
 template <typename Integer, typename Unsigned_Integer>
@@ -430,6 +426,10 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
     return {first + num_chars, 0};
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
