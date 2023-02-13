@@ -161,7 +161,13 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     }
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_IF_CONSTEXPR (!std::is_same<Integer, boost::int128_type>::value)
+    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value)
+    {
+        overflow_value /= unsigned_base;
+        max_digit %= unsigned_base;
+        overflow_value *= 2; // Overflow value would cause INT128_MIN in non-base10 to fail
+    }
+    else
     #endif
     {
         overflow_value /= unsigned_base;
