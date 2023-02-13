@@ -91,7 +91,11 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     // Negative sign will be appended at the end of parsing
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     auto next = first;
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value || std::is_signed<Integer>::value)
+    #else
     BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    #endif
     {
         if (next != last)
         {
@@ -106,8 +110,18 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
             }
         }
 
-        overflow_value = (std::numeric_limits<Integer>::max)();
-        max_digit = (std::numeric_limits<Integer>::max)();
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value)
+        {
+            overflow_value = BOOST_CHARCONV_INT128_MAX;
+            max_digit = BOOST_CHARCONV_INT128_MAX;
+        }
+        else
+        #endif
+        {
+            overflow_value = (std::numeric_limits<Integer>::max)();
+            max_digit = (std::numeric_limits<Integer>::max)();
+        }
 
         if (is_negative)
         {
@@ -129,8 +143,18 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
             }
         }
         
-        overflow_value = (std::numeric_limits<Unsigned_Integer>::max)();
-        max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::uint128_type>::value)
+        {
+            overflow_value = BOOST_CHARCONV_UINT128_MAX;
+            max_digit = BOOST_CHARCONV_UINT128_MAX;
+        }
+        else
+        #endif
+        {
+            overflow_value = (std::numeric_limits<Unsigned_Integer>::max)();
+            max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
+        }
     }
 
     overflow_value /= static_cast<Unsigned_Integer>(base);
