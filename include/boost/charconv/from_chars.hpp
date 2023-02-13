@@ -87,10 +87,13 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         return {first, EINVAL};
     }
 
+    Unsigned_Integer unsigned_base = static_cast<Unsigned_Integer>(base);
+
     // Strip sign if the type is signed
     // Negative sign will be appended at the end of parsing
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     auto next = first;
+
     #ifdef BOOST_CHARCONV_HAS_INT128
     BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value || std::is_signed<Integer>::value)
     #else
@@ -157,8 +160,8 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         }
     }
 
-    overflow_value /= static_cast<Unsigned_Integer>(base);
-    max_digit %= base;
+    overflow_value /= unsigned_base;
+    max_digit %= unsigned_base;
 
     // If the only character was a sign abort now
     if (next == last)
@@ -169,16 +172,16 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     bool overflowed = false;
     while (next != last)
     {
-        auto current_digit = digit_from_char(*next);
+        const unsigned char current_digit = digit_from_char(*next);
 
-        if (current_digit >= base)
+        if (current_digit >= unsigned_base)
         {
             break;
         }
 
         if (result < overflow_value || (result == overflow_value && current_digit <= max_digit))
         {
-            result = static_cast<Unsigned_Integer>(result * base + current_digit);
+            result = static_cast<Unsigned_Integer>(result * unsigned_base + current_digit);
         }
         else
         {
