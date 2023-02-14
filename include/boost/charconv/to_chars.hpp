@@ -81,7 +81,7 @@ namespace detail {
 
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
-BOOST_CHARCONV_CONSTEXPR inline char* decompose32(std::uint32_t value, char* buffer) noexcept
+BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
 {
     constexpr auto mask = (std::uint64_t(1) << 57) - 1;
     auto y = value * std::uint64_t(1441151881);
@@ -98,7 +98,7 @@ BOOST_CHARCONV_CONSTEXPR inline char* decompose32(std::uint32_t value, char* buf
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
-# pragma warning(disable: 4127)
+# pragma warning(disable: 4127 4146)
 #endif
 
 template <typename Integer>
@@ -251,12 +251,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     }
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
-    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    BOOST_IF_CONSTEXPR (std::is_same<boost::int128_type, Integer>::value)
     {
         if (value < 0)
         {
             is_negative = true;
-            unsigned_value = apply_sign(value);
+            unsigned_value = -(static_cast<Unsigned_Integer>(value));
         }
         else
         {
@@ -270,12 +270,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     auto converted_value = static_cast<boost::uint128_type>(unsigned_value);
 
-    // If the value fits into 64 bits use the other method of processing
-    if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
-    {
-        return to_chars_integer_impl(first, last, value);
-    }
-
     const int converted_value_digits = num_digits(converted_value);
 
     if (converted_value_digits > user_buffer_size)
@@ -286,6 +280,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     if (is_negative)
     {
         *first++ = '-';
+    }
+
+    // If the value fits into 64 bits use the other method of processing
+    if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
+    {
+        return to_chars_integer_impl(first, last, static_cast<std::uint64_t>(value));
     }
 
     constexpr std::uint32_t ten_9 = UINT32_C(1000000000);
@@ -317,18 +317,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 }
 #endif
 
-#ifdef BOOST_MSVC
-# pragma warning(pop)
-#endif
-
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
-template <typename Integer>
+template <typename Integer, typename Unsigned_Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
     BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
-
-    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
 
     const std::ptrdiff_t output_length = last - first;
 
@@ -351,7 +345,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         if (value < 0)
         {
             *first++ = '-';
-            unsigned_value = apply_sign(value);
+            unsigned_value = -(static_cast<Unsigned_Integer>(value));
         }
         else
         {
@@ -433,31 +427,94 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     return {first + num_chars, 0};
 }
 
-} // Namespace detail
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
-template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
+template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
+{
+    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
+    if (base == 10)
+    {
+        return detail::to_chars_integer_impl(first, last, value);
+    }
+
+    return detail::to_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
+}
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+template <typename Integer>
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, Integer value, int base = 10) noexcept
 {
     if (base == 10)
     {
-        #ifdef BOOST_CHARCONV_HAS_INT128
-        BOOST_IF_CONSTEXPR(std::is_same<Integer, boost::int128_type>::value || std::is_same<Integer, boost::uint128_type>::value)
-        {
-            return detail::to_chars_128integer_impl(first, last, value);
-        }
-        else
-        #endif
-        {
-            return detail::to_chars_integer_impl(first, last, value);
-        }
+        return to_chars_128integer_impl(first, last, value);
     }
 
-    return detail::to_chars_integer_impl(first, last, value, base);
+    return to_chars_integer_impl<Integer, boost::uint128_type>(first, last, value, base);
+}
+#endif
+
+} // Namespace detail
+
+// integer overloads
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, bool value, int base) noexcept = delete;
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, char value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, signed char value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned char value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, short value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned short value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, int value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned int value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, long value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned long value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, long long value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned long long value, int base = 10) noexcept
+{
+    return detail::to_chars(first, last, value, base);
 }
 
-template <>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, bool value, int base) noexcept = delete;
-
+#ifdef BOOST_CHARCONV_HAS_INT128
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost::int128_type value, int base = 10) noexcept
+{
+    return detail::to_chars128(first, last, value, base);
+}
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost::uint128_type value, int base = 10) noexcept
+{
+    return detail::to_chars128(first, last, value, base);
+}
+#endif
 // floating point overloads
 
 BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, float value ) noexcept;

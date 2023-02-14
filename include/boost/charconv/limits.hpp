@@ -57,7 +57,7 @@ template<> struct limits<boost::uint128_type>
 
 #endif // #if defined(BOOST_HAS_INT128)
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) || (defined(__clang__) && __clang_major__ <= 5)
 
 // Definitions of in-class constexpr members are allowed but deprecated in C++17
 

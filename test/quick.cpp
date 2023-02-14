@@ -6,7 +6,7 @@
 
 int main()
 {
-    char buffer[ 32 ];
+    char buffer[ 32 ] {};
     auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), 1048576 );
 
     int v = 0;

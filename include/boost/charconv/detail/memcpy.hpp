@@ -60,7 +60,7 @@ constexpr char* memcpy(char* dest, const char* src, std::size_t count)
 
 #else // Either not C++14 or no way of telling if we are in a constexpr context
 
-#define BOOST_CHARCONV_CONSTEXPR
+#define BOOST_CHARCONV_CONSTEXPR inline
 
 inline void* memcpy(void* dest, const void* src, std::size_t count)
 {

@@ -37,7 +37,6 @@ void test_128bit_int()
     auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
     BOOST_TEST(r3.ec == 0);
     BOOST_TEST(v3 == test_value);
-    BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
 
     char buffer4[64] {};
     auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v3);
@@ -52,6 +51,7 @@ void test_128bit_int()
         T v5 = 0;
         auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
         BOOST_TEST(r5.ec == 0);
+        BOOST_TEST(v5 < 0);
 
         char buffer6[64] {};
         auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v5);
@@ -63,6 +63,23 @@ void test_128bit_int()
         auto r7 = boost::charconv::from_chars(buffer6, buffer6 + std::strlen(buffer6), v7);
         BOOST_TEST(r7.ec == 0);
         BOOST_TEST(v5 == v7);;
+
+        // Second failing test
+        const char* buffer10 = "-170141183460469231731687303715884105728";
+        T v10 = 0;
+        auto r10 = boost::charconv::from_chars(buffer10, buffer10 + std::strlen(buffer10), v10);
+        BOOST_TEST(r10.ec == 0);
+        BOOST_TEST(v10 < 0);
+
+        char buffer11[64] {};
+        auto r11 = boost::charconv::to_chars(buffer11, buffer11 + sizeof(buffer11), v10);
+        BOOST_TEST_EQ(r11.ec, 0);
+        BOOST_TEST_CSTR_EQ(buffer10, buffer11);
+
+        T v11 = 0;
+        auto r12 = boost::charconv::from_chars(buffer11, buffer11 + std::strlen(buffer11), v11);
+        BOOST_TEST(r12.ec == 0);
+        BOOST_TEST(v10 == v11);
     }
 }
 #endif

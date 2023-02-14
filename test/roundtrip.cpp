@@ -82,7 +82,15 @@ template<class T> void test_roundtrip( T value, int base )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
-    BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+    BOOST_TEST_EQ( r2.ec, 0 );
+    if (BOOST_TEST_EQ( v2, value ))
+    {
+
+    }
+    else
+    {
+        std::cerr << "Original Value: " << value << "\nBase:" << base << "\nConverted Value: " << buffer << "\nRoundtriped Value: " << v2 << std::endl;
+    }
 }
 
 template<class T> void test_roundtrip_int8( int base )
@@ -253,7 +261,6 @@ int main()
 
         test_roundtrip_int64<std::int64_t>( base );
         test_roundtrip_uint64<std::uint64_t>( base );
-
 #ifdef BOOST_CHARCONV_HAS_INT128
 
         test_roundtrip_int128<boost::int128_type>( base );
@@ -281,7 +288,6 @@ int main()
 
         test_roundtrip_bv<long long>( base );
         test_roundtrip_bv<unsigned long long>( base );
-
 #ifdef BOOST_CHARCONV_HAS_INT128
 
         test_roundtrip_bv<boost::int128_type>( base );

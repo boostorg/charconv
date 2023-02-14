@@ -68,10 +68,17 @@ constexpr unsigned char digit_from_char(char val) noexcept
     return uchar_values[static_cast<std::size_t>(val)];
 }
 
-template <typename Integer>
-BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl(const char* first, const char* last, Integer& value, int base) noexcept
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4146)
+#elif defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Woverflow"
+#endif
+
+template <typename Integer, typename Unsigned_Integer>
+BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* first, const char* last, Integer& value, int base) noexcept
 {
-    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
     Unsigned_Integer result = 0;
     Unsigned_Integer overflow_value = 0;
     Unsigned_Integer max_digit = 0;
@@ -83,11 +90,18 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
         return {first, EINVAL};
     }
 
+    Unsigned_Integer unsigned_base = static_cast<Unsigned_Integer>(base);
+
     // Strip sign if the type is signed
     // Negative sign will be appended at the end of parsing
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     auto next = first;
+
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value || std::is_signed<Integer>::value)
+    #else
     BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    #endif
     {
         if (next != last)
         {
@@ -102,8 +116,18 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
             }
         }
 
-        overflow_value = (std::numeric_limits<Integer>::max)();
-        max_digit = (std::numeric_limits<Integer>::max)();
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value)
+        {
+            overflow_value = BOOST_CHARCONV_INT128_MAX;
+            max_digit = BOOST_CHARCONV_INT128_MAX;
+        }
+        else
+        #endif
+        {
+            overflow_value = (std::numeric_limits<Integer>::max)();
+            max_digit = (std::numeric_limits<Integer>::max)();
+        }
 
         if (is_negative)
         {
@@ -125,12 +149,33 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
             }
         }
         
-        overflow_value = (std::numeric_limits<Unsigned_Integer>::max)();
-        max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
+        #ifdef BOOST_CHARCONV_HAS_INT128
+        BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::uint128_type>::value)
+        {
+            overflow_value = BOOST_CHARCONV_UINT128_MAX;
+            max_digit = BOOST_CHARCONV_UINT128_MAX;
+        }
+        else
+        #endif
+        {
+            overflow_value = (std::numeric_limits<Unsigned_Integer>::max)();
+            max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
+        }
     }
 
-    overflow_value /= static_cast<Unsigned_Integer>(base);
-    max_digit %= base;
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value)
+    {
+        overflow_value /= unsigned_base;
+        max_digit %= unsigned_base;
+        overflow_value *= 2; // Overflow value would cause INT128_MIN in non-base10 to fail
+    }
+    else
+    #endif
+    {
+        overflow_value /= unsigned_base;
+        max_digit %= unsigned_base;
+    }
 
     // If the only character was a sign abort now
     if (next == last)
@@ -141,16 +186,16 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
     bool overflowed = false;
     while (next != last)
     {
-        auto current_digit = digit_from_char(*next);
+        const unsigned char current_digit = digit_from_char(*next);
 
-        if (current_digit >= base)
+        if (current_digit >= unsigned_base)
         {
             break;
         }
 
         if (result < overflow_value || (result == overflow_value && current_digit <= max_digit))
         {
-            result = static_cast<Unsigned_Integer>(result * base + current_digit);
+            result = static_cast<Unsigned_Integer>(result * unsigned_base + current_digit);
         }
         else
         {
@@ -169,43 +214,104 @@ BOOST_CXX14_CONSTEXPR boost::charconv::from_chars_result from_chars_integer_impl
     }
 
     value = static_cast<Integer>(result);
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value || std::is_signed<Integer>::value)
+    #else
     BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    #endif
     {
         if (is_negative)
         {
-            value = apply_sign(value);
+            value = -(static_cast<Unsigned_Integer>(value));
         }
     }
 
     return {next, 0};
 }
 
-} // Namespace detail
-
-// GCC 5 does not support constexpr comparison of const char*
-#if defined(__GNUC__) && __GNUC__ == 5
-template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-inline from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
-{
-    return detail::from_chars_integer_impl(first, last, value, base);
-}
-
-template<>
-inline from_chars_result from_chars<bool>(const char* first, const char* last, bool& value, int base) noexcept = delete;
-
-#else
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#elif defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+# pragma GCC diagnostic pop
+#endif
 
 // Only from_chars for integer types is constexpr (as of C++23)
-template <typename Integer, typename std::enable_if<std::is_integral<Integer>::value, bool>::type = true>
-BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
+template <typename Integer>
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integer& value, int base = 10) noexcept
 {
-    return detail::from_chars_integer_impl(first, last, value, base);
+    using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
+    return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 
-template <>
-BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, const char* last, bool& value, int base) noexcept = delete;
+#ifdef BOOST_HAS_INT128
+template <typename Integer>
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, Integer& value, int base = 10) noexcept
+{
+    using Unsigned_Integer = boost::uint128_type;
+    return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
+}
+#endif
 
-#endif // GCC5 workarounds
+} // Namespace detail
+
+// integer overloads
+
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, bool& value, int base = 10) noexcept = delete;
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, char& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, signed char& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned char& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, short& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned short& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, int& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned int& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, long long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, unsigned long long& value, int base = 10) noexcept
+{
+    return detail::from_chars(first, last, value, base);
+}
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, boost::int128_type& value, int base = 10) noexcept
+{
+    return detail::from_chars_integer_impl<boost::int128_type, boost::uint128_type>(first, last, value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, boost::uint128_type& value, int base = 10) noexcept
+{
+    return detail::from_chars_integer_impl<boost::uint128_type, boost::uint128_type>(first, last, value, base);
+}
+#endif
 
 // floating point overloads
 
