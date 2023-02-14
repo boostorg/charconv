@@ -71,6 +71,9 @@ constexpr unsigned char digit_from_char(char val) noexcept
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4146)
+#elif defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Woverflow"
 #endif
 
 template <typename Integer, typename Unsigned_Integer>
@@ -228,6 +231,8 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
+#elif defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+# pragma GCC diagnostic pop
 #endif
 
 // Only from_chars for integer types is constexpr (as of C++23)
