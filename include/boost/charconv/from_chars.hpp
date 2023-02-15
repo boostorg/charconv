@@ -70,10 +70,13 @@ constexpr unsigned char digit_from_char(char val) noexcept
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
-# pragma warning(disable: 4146)
+# pragma warning(disable: 4146) // unary minus operator applied to unsigned type, result still unsigned
+# pragma warning(disable: 4189) // 'is_negative': local variable is initialized but not referenced
+
 #elif defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
+
 #endif
 
 template <typename Integer, typename Unsigned_Integer>
