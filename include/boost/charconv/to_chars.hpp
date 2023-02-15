@@ -12,6 +12,7 @@
 #include <boost/charconv/detail/integer_conversion.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/config.hpp>
+#include <boost/charconv/limits.hpp>
 #include <type_traits>
 #include <array>
 #include <limits>
@@ -237,18 +238,21 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 //
 // See: https://quuxplusone.github.io/blog/2019/02/28/is-int128-integral/
 template <typename Integer>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, char* last, Integer value) noexcept
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* user_first, char* user_last, Integer value) noexcept
 {
     using Unsigned_Integer = boost::uint128_type;
     Unsigned_Integer unsigned_value {};
 
-    const std::ptrdiff_t user_buffer_size = last - first;
+    const std::ptrdiff_t user_buffer_size = user_last - user_first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
-    if (!(first <= last))
+    if (!(user_first <= user_last))
     {
-        return {last, EINVAL};
+        return {user_last, EINVAL};
     }
+
+    char new_buffer[limits<Integer>::max_chars10] {};
+    char* first = new_buffer;
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
     BOOST_IF_CONSTEXPR (std::is_same<boost::int128_type, Integer>::value)
@@ -274,18 +278,19 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     if (converted_value_digits > user_buffer_size)
     {
-        return {last, EOVERFLOW};
+        return {user_last, EOVERFLOW};
     }
 
     if (is_negative)
     {
         *first++ = '-';
+        *user_first++ = '-';
     }
 
     // If the value fits into 64 bits use the other method of processing
     if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
     {
-        return to_chars_integer_impl(first, last, static_cast<std::uint64_t>(value));
+        return to_chars_integer_impl(user_first, user_last, static_cast<std::uint64_t>(unsigned_value));
     }
 
     constexpr std::uint32_t ten_9 = UINT32_C(1000000000);
@@ -313,7 +318,10 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         offset += 9;
     }
 
-    return {first + converted_value_digits, 0};
+    // Copy over everything to the users buffer
+    boost::charconv::detail::memcpy(user_first, first, converted_value_digits);
+
+    return {user_first + converted_value_digits, 0};
 }
 #endif
 
