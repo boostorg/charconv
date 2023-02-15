@@ -24,3 +24,4 @@ run roundtrip.cpp ;
 run from_chars_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
 run to_chars_integer_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
 run limits.cpp ;
+run to_chars_sprintf.cpp ;
