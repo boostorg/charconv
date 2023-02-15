@@ -251,8 +251,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* user_fir
         return {user_last, EINVAL};
     }
 
+    #ifndef __STRICT_ANSI__
     char new_buffer[limits<Integer>::max_chars10] {};
     char* first = new_buffer;
+    #else
+    char* first = user_first;
+    #endif
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
     BOOST_IF_CONSTEXPR (std::is_same<boost::int128_type, Integer>::value)
@@ -317,9 +321,11 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* user_fir
         boost::charconv::detail::memcpy(first + offset, buffer[i] + 1, 9);
         offset += 9;
     }
-
+    
+    #ifndef __STRICT_ANSI__
     // Copy over everything to the users buffer
     boost::charconv::detail::memcpy(user_first, first, converted_value_digits);
+    #endif
 
     return {user_first + converted_value_digits, 0};
 }
