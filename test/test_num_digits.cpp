@@ -13,6 +13,7 @@
 # pragma GCC diagnostic ignored "-Woverflow"
 #endif
 
+#ifdef BOOST_CHARCONV_HAS_INT128
 // Test the u128 impl
 template <typename T>
 void test128()
@@ -32,6 +33,7 @@ void test128()
 
     BOOST_TEST_EQ(boost::charconv::detail::num_digits(max * 10), 39);
 }
+#endif
 
 #if defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
 # pragma GCC diagnostic pop
