@@ -156,7 +156,6 @@ BOOST_CXX14_CONSTEXPR inline int num_digits(std::uint64_t x) noexcept
     return 1;
 }
 
-#ifdef __GLIBCXX_TYPE_INT_N_0
 static constexpr std::array<std::uint64_t, 20> powers_of_10 =
 {{
     UINT64_C(1), UINT64_C(10), UINT64_C(100), UINT64_C(1000), UINT64_C(10000), UINT64_C(100000), UINT64_C(1000000), 
@@ -172,7 +171,8 @@ BOOST_CXX14_CONSTEXPR inline int num_digits(boost::uint128_type x) noexcept
     // There is not literal for boost::uint128_type so we need to calculate them using the max value of the
     // std::uint64_t powers of 10
     constexpr boost::uint128_type digits_39 = static_cast<boost::uint128_type>(UINT64_C(10000000000000000000)) * 
-                                              static_cast<boost::uint128_type>(UINT64_C(1000000000000000000));
+                                              static_cast<boost::uint128_type>(UINT64_C(10000000000000000000));
+
     constexpr boost::uint128_type digits_38 = digits_39 / 10;
     constexpr boost::uint128_type digits_37 = digits_38 / 10;
     constexpr boost::uint128_type digits_36 = digits_37 / 10;
@@ -192,47 +192,46 @@ BOOST_CXX14_CONSTEXPR inline int num_digits(boost::uint128_type x) noexcept
     constexpr boost::uint128_type digits_22 = digits_23 / 10;
     constexpr boost::uint128_type digits_21 = digits_22 / 10;
 
-    return (x > digits_39) ? 39 :
-           (x > digits_38) ? 38 :
-           (x > digits_37) ? 37 :
-           (x > digits_36) ? 36 :
-           (x > digits_35) ? 35 :
-           (x > digits_34) ? 34 :
-           (x > digits_33) ? 33 :
-           (x > digits_32) ? 32 :
-           (x > digits_31) ? 31 :
-           (x > digits_30) ? 30 :
-           (x > digits_29) ? 29 :
-           (x > digits_28) ? 28 :
-           (x > digits_27) ? 27 :
-           (x > digits_26) ? 26 :
-           (x > digits_25) ? 25 :
-           (x > digits_24) ? 24 :
-           (x > digits_23) ? 23 :
-           (x > digits_22) ? 22 :
-           (x > digits_21) ? 21 :
-           (x > powers_of_10[19]) ? 20 :
-           (x > powers_of_10[18]) ? 19 :
-           (x > powers_of_10[17]) ? 18 :
-           (x > powers_of_10[16]) ? 17 :
-           (x > powers_of_10[15]) ? 16 :
-           (x > powers_of_10[14]) ? 15 :
-           (x > powers_of_10[13]) ? 14 :
-           (x > powers_of_10[12]) ? 13 :
-           (x > powers_of_10[11]) ? 12 :
-           (x > powers_of_10[10]) ? 11 :
-           (x > powers_of_10[9])  ? 10 :
-           (x > powers_of_10[8])  ?  9 :
-           (x > powers_of_10[7])  ?  8 :
-           (x > powers_of_10[6])  ?  7 :
-           (x > powers_of_10[5])  ?  6 :
-           (x > powers_of_10[4])  ?  5 :
-           (x > powers_of_10[3])  ?  4 :
-           (x > powers_of_10[2])  ?  3 :
-           (x > powers_of_10[1])  ?  2 :
-           (x > powers_of_10[0])  ?  1 : 0;
+    return (x >= digits_39) ? 39 :
+           (x >= digits_38) ? 38 :
+           (x >= digits_37) ? 37 :
+           (x >= digits_36) ? 36 :
+           (x >= digits_35) ? 35 :
+           (x >= digits_34) ? 34 :
+           (x >= digits_33) ? 33 :
+           (x >= digits_32) ? 32 :
+           (x >= digits_31) ? 31 :
+           (x >= digits_30) ? 30 :
+           (x >= digits_29) ? 29 :
+           (x >= digits_28) ? 28 :
+           (x >= digits_27) ? 27 :
+           (x >= digits_26) ? 26 :
+           (x >= digits_25) ? 25 :
+           (x >= digits_24) ? 24 :
+           (x >= digits_23) ? 23 :
+           (x >= digits_22) ? 22 :
+           (x >= digits_21) ? 21 :
+           (x >= powers_of_10[19]) ? 20 :
+           (x >= powers_of_10[18]) ? 19 :
+           (x >= powers_of_10[17]) ? 18 :
+           (x >= powers_of_10[16]) ? 17 :
+           (x >= powers_of_10[15]) ? 16 :
+           (x >= powers_of_10[14]) ? 15 :
+           (x >= powers_of_10[13]) ? 14 :
+           (x >= powers_of_10[12]) ? 13 :
+           (x >= powers_of_10[11]) ? 12 :
+           (x >= powers_of_10[10]) ? 11 :
+           (x >= powers_of_10[9])  ? 10 :
+           (x >= powers_of_10[8])  ?  9 :
+           (x >= powers_of_10[7])  ?  8 :
+           (x >= powers_of_10[6])  ?  7 :
+           (x >= powers_of_10[5])  ?  6 :
+           (x >= powers_of_10[4])  ?  5 :
+           (x >= powers_of_10[3])  ?  4 :
+           (x >= powers_of_10[2])  ?  3 :
+           (x >= powers_of_10[1])  ?  2 :
+           (x >= powers_of_10[0])  ?  1 : 0;
 }
-#endif // 128-bit support
 
 }}} // Namespace boost::charconv::detail
 
