@@ -207,11 +207,6 @@ int main()
     test_sprintf_bv<long long>();
     test_sprintf_bv<unsigned long long>();
 
-#if !defined(__CYGWIN__)
-
-    // the stub implementations fail under Cygwin;
-    // re-enable these when we have real ones
-
     // float
 
     double const q = std::pow( 1.0, -64 );
@@ -255,8 +250,6 @@ int main()
 
         test_sprintf_bv_fp<double>();
     }
-
-#endif // !defined(__CYGWIN__)
 
     return boost::report_errors();
 }
