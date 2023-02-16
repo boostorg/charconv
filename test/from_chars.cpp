@@ -124,6 +124,14 @@ void invalid_argument_test()
         auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
         BOOST_TEST_EQ(r4.ec, EINVAL);
     }
+
+    // Bases outside 2-36 inclusive return EINVAL
+    const char* buffer5 = "23";
+    T v5 = 0;
+    auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5, 1);
+    BOOST_TEST_EQ(r5.ec, EINVAL);
+    auto r6 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5, 50);
+    BOOST_TEST_EQ(r6.ec, EINVAL);
 }
 
 // No overflows, negative numbers, locales, etc.
