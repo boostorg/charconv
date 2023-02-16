@@ -7,6 +7,7 @@
 
 #include <boost/config.hpp>
 #include <limits>
+#include <type_traits>
 
 namespace boost { namespace charconv { 
 
@@ -26,16 +27,48 @@ constexpr int exp_digits( int exp )
     return exp < 100? 2: exp < 1000? 3: exp < 10000? 4: 5;
 }
 
+#if defined(BOOST_HAS_INT128)
+
+template<class T> struct is_int128: std::is_same<T, boost::int128_type> {};
+template<class T> struct is_uint128: std::is_same<T, boost::int128_type> {};
+
+#else
+
+template<class T> struct is_int128: std::false_type {};
+template<class T> struct is_uint128: std::false_type {};
+
+#endif
+
 } // namespace detail
 
 template<typename T> struct limits
 {
-    static constexpr int max_chars10 = std::numeric_limits<T>::is_integer?
-        std::numeric_limits<T>::digits10 + 1 + std::numeric_limits<T>::is_signed:
+    static constexpr int max_chars10 =
+
+        // int128_t
+        detail::is_int128<T>::value? 38+2: // digits10 + 1 + sign
+
+        // uint128_t
+        detail::is_uint128<T>::value? 38+1: // digits10 + 1
+
+        // integral
+        std::numeric_limits<T>::is_integer? std::numeric_limits<T>::digits10 + 1 + std::numeric_limits<T>::is_signed:
+
+        // floating point
         std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // -1.(max_digits10)e+(max_exp)
 
-    static constexpr int max_chars = std::numeric_limits<T>::is_integer?
-        std::numeric_limits<T>::digits + 1 + std::numeric_limits<T>::is_signed:
+    static constexpr int max_chars =
+
+        // int128_t
+        detail::is_int128<T>::value? 127+2: // digits + 1 + sign
+
+        // uint128_t
+        detail::is_uint128<T>::value? 128+1: // digits + 1
+
+        // integral
+        std::numeric_limits<T>::is_integer? std::numeric_limits<T>::digits + 1 + std::numeric_limits<T>::is_signed:
+
+        // floating point
         std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // as above
 };
 
@@ -47,32 +80,6 @@ template<typename T> constexpr int limits<T>::max_chars10;
 template<typename T> constexpr int limits<T>::max_chars;
 
 #endif // defined(BOOST_NO_CXX17_INLINE_VARIABLES)
-
-#if defined(BOOST_HAS_INT128)
-
-// std::numeric_limits is not always specialized for __int128_t
-
-template<> struct limits<boost::int128_type>
-{
-    // const instead of constexpr because of Clang 5
-
-    static const int max_chars10 = 38 + 2; // digits10 + 1 + sign
-    static const int max_chars = 127 + 2; // digits + 1 + sign
-};
-
-template<> struct limits<boost::uint128_type>
-{
-    static const int max_chars10 = 38 + 1; // digits10 + 1
-    static const int max_chars = 128 + 1; // digits + 1
-};
-
-const int limits<boost::int128_type>::max_chars10;
-const int limits<boost::int128_type>::max_chars;
-
-const int limits<boost::uint128_type>::max_chars10;
-const int limits<boost::uint128_type>::max_chars;
-
-#endif // defined(BOOST_HAS_INT128)
 
 }} // namespace boost::charconv
 
