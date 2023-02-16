@@ -7,7 +7,7 @@
 #ifndef BOOST_CHARCONV_TOOLS_IS_CONSTANT_EVALUATED_HPP
 #define BOOST_CHARCONV_TOOLS_IS_CONSTANT_EVALUATED_HPP
 
-#include <boost/charconv/config.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <type_traits>
 
 #ifdef __cpp_lib_is_constant_evaluated

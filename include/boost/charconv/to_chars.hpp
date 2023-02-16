@@ -11,6 +11,7 @@
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/integer_conversion.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <type_traits>
 #include <array>

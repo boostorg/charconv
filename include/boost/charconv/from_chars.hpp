@@ -7,6 +7,7 @@
 #define BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
 
 #include <boost/charconv/detail/apply_sign.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <type_traits>
