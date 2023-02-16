@@ -25,4 +25,5 @@ run from_chars_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
 run to_chars_integer_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
 run limits.cpp ;
 run to_chars_sprintf.cpp ;
+run test_num_digits.cpp ;
 run limits_link_1.cpp limits_link_2.cpp limits_link_3.cpp ;
