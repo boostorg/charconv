@@ -7,8 +7,8 @@ void f2();
 
 int main()
 {
-	f1();
-	f2();
+    f1();
+    f2();
 }
 
 void test_odr_use( int const* )
