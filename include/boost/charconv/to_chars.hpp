@@ -222,10 +222,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             }
         }
     }
-    else 
-    {
-        BOOST_CHARCONV_ASSERT_MSG(sizeof(Integer) < 1, "Your type is unsupported. Use a built-in integral type");
-    }
     
     return {first + converted_value_digits, 0};
 }
@@ -322,11 +318,9 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 template <typename Integer, typename Unsigned_Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
-    BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
-
     const std::ptrdiff_t output_length = last - first;
 
-    if (!(first <= last))
+    if (!((first <= last) && (base >= 2 && base <= 36)))
     {
         return {last, EINVAL};
     }
