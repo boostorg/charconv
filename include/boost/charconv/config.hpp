@@ -36,6 +36,8 @@
 
 #endif
 
+// TODO: BOOST_ASSERT is currently unused. 
+// Once library is complete remove this block, and Boost.Assert from the CML if still unused.
 #ifndef BOOST_CHARCONV_STANDALONE
 #  include <boost/assert.hpp>
 #  define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
