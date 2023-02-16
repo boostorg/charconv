@@ -252,6 +252,14 @@ void simple_test()
     BOOST_TEST(r1 != r2);
     BOOST_TEST_EQ(r2.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer2, "12");
+
+    // If the base is not 2-36 inclusive return invalid value
+    char buffer3[64] {};
+    T v3 = 12;
+    auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3) - 1, v3, -2);
+    BOOST_TEST_EQ(r3.ec, EINVAL);
+    auto r4 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3) - 1, v3, 90);
+    BOOST_TEST_EQ(r4.ec, EINVAL);
 }
 
 int main()

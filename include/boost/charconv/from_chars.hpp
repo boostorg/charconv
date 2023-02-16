@@ -7,6 +7,7 @@
 #define BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
 
 #include <boost/charconv/detail/apply_sign.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <type_traits>
@@ -87,8 +88,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     Unsigned_Integer max_digit = 0;
     
     // Check pre-conditions
-    BOOST_CHARCONV_ASSERT_MSG(base >= 2 && base <= 36, "Base must be between 2 and 36 (inclusive)");
-    if (!(first <= last))
+    if (!((first <= last) && (base >= 2 && base <= 36)))
     {
         return {first, EINVAL};
     }

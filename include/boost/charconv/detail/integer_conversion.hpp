@@ -5,7 +5,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_CONCATENATE_HPP
 #define BOOST_CHARCONV_DETAIL_CONCATENATE_HPP
 
-#include <boost/charconv/config.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <utility>
 #include <limits>
 #include <cstdint>
