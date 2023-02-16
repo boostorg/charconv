@@ -27,4 +27,5 @@ run limits.cpp ;
 run to_chars_sprintf.cpp ;
 run test_num_digits.cpp ;
 run limits_link_1.cpp limits_link_2.cpp limits_link_3.cpp ;
+run test_128bit_native.cpp ;
 run test_128bit_emulation.cpp ;
