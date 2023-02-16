@@ -6,7 +6,7 @@ import ../../config/checks/config : requires ;
 
 project boost/charconv ;
 
-local SOURCES = from_chars.cpp to_chars.cpp emulated128.cpp ;
+local SOURCES = from_chars.cpp to_chars.cpp ;
 
 lib boost_charconv
 
