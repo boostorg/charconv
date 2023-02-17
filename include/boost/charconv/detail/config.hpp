@@ -47,4 +47,25 @@
 #  define BOOST_CHARCONV_HARDWARE_DESTRUCTIVE_INTERFACE_SIZE 64
 #endif
 
+// Determine endianness
+#if defined(_WIN32)
+
+#define BOOST_CHARCONV_ENDIAN_BIG_BYTE 0
+#define BOOST_CHARCONV_ENDIAN_LITTLE_BYTE 1
+
+#elif defined(__BYTE_ORDER__)
+
+#define BOOST_CHARCONV_ENDIAN_BIG_BYTE (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define BOOST_CHARCONV_ENDIAN_LITTLE_BYTE (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+
+#else
+
+#error Could not determine endian type. Please file an issue at https://github.com/cppalliance/charconv with your architecture
+
+#endif // Determine endianness
+
+static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BYTE) &&
+             !(BOOST_CHARCONV_ENDIAN_BIG_BYTE && BOOST_CHARCONV_ENDIAN_LITTLE_BYTE),
+"Inconsistent endianness detected. Please file an issue at https://github.com/cppalliance/charconv with your architecture");
+
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
