@@ -74,7 +74,7 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma warning(disable: 4146) // unary minus operator applied to unsigned type, result still unsigned
 # pragma warning(disable: 4189) // 'is_negative': local variable is initialized but not referenced
 
-#elif defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+#elif defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
 
@@ -234,7 +234,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
-#elif defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+#elif defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic pop
 #endif
 

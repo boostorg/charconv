@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <limits>
 
-#if defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+#if defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
 #endif
@@ -35,7 +35,7 @@ void test128()
 }
 #endif
 
-#if defined(__GNUC__) && (__GNUC__ == 5 || __GNUC__ == 6)
+#if defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic pop
 #endif
 

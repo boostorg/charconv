@@ -9,6 +9,10 @@
 #include <stdexcept>
 #include <cerrno>
 
+#if defined(__GNUC__) && __GNUC__ < 5
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 // stub implementations; to be replaced with real ones
 
 boost::charconv::from_chars_result boost::charconv::from_chars( char const* first, char const* last, float& value ) noexcept
