@@ -6,7 +6,6 @@
 #define BOOST_CHARCONV_DETAIL_CONFIG_HPP
 
 #include <boost/config.hpp>
-#include <new>
 
 // TODO: BOOST_ASSERT is currently unused. 
 // Once library is complete remove this block, and Boost.Assert from the CML if still unused.
@@ -38,13 +37,6 @@
 #  define BOOST_CHARCONV_GCC5_CONSTEXPR inline
 #else
 #  define BOOST_CHARCONV_GCC5_CONSTEXPR BOOST_CHARCONV_CXX14_CONSTEXPR
-#endif
-
-// 64 bytes on x86-64 and ARM │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned │ ...
-#if defined(__cpp_lib_hardware_interference_size) && __cpp_lib_hardware_interference_size >= 201703L
-#  define BOOST_CHARCONV_HARDWARE_DESTRUCTIVE_INTERFACE_SIZE std::hardware_destructive_interference_size
-#else
-#  define BOOST_CHARCONV_HARDWARE_DESTRUCTIVE_INTERFACE_SIZE 64
 #endif
 
 // Determine endianness
