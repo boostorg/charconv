@@ -7,6 +7,7 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <cstdint>
 #include <limits>
 
@@ -35,6 +36,19 @@ inline int bitscan_reverse(std::uint64_t bb) noexcept
    bb |= bb >> 32;
 
    return index64[(bb * debruijn64) >> 58];
+}
+
+// Use with big-endian architectures
+inline int bitscan_forward(std::uint64_t bb) noexcept
+{
+    union
+    {
+        double d;
+        IEEEd2bits bit_layout;
+    } ud;
+
+    ud.d = static_cast<double>(bb & -bb);
+    return ud.bit_layout.exponent - 1023;
 }
 
 // Search the mask data from most significant bit (MSB) to least significant bit (LSB) for a set bit (1).
@@ -67,7 +81,11 @@ inline int leading_zeros(std::uint64_t val) noexcept
     // CLZ Xd, Xm
     return __builtin_clzll(val);
 #elif defined(BOOST_CHARCONV_HAS_NO_INTRINSICS)
+#  if BOOST_CHARCONV_ENDIAN_BIG_BYTE
+    return static_cast<int>(63 - bitscan_forward(val));
+#  else
     return static_cast<int>(63 - bitscan_reverse(val));
+#  endif
 #endif
 }
 
