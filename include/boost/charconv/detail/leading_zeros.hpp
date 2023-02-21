@@ -76,7 +76,7 @@ inline int leading_zeros(std::uint64_t val) noexcept
         return static_cast<int>(63 - leading_zero);
     }
 #elif defined(BOOST_CHARCONV_HAS_X86_INTRINSICS)
-    return static_cast<int>(_lzcnt_u64(val);)
+    return static_cast<int>(__builtin_clzll(val));
 #elif defined(BOOST_CHARCONV_HAS_ARM_INTRINSICS)
     // CLZ Xd, Xm
     return __builtin_clzll(val);
