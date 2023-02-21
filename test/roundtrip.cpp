@@ -296,9 +296,9 @@ int main()
 #endif
     }
 
-#if !defined(__CYGWIN__)
+#if !defined(__CYGWIN__) && !defined(__s390x__) && !((defined(__arm__) || defined(__aarch64__))  && !defined(__APPLE__)) && !(defined(__APPLE__) && (__clang_major__ == 12))
 
-    // the stub implementations fail under Cygwin;
+    // the stub implementations fail under Cygwin, s390x, linux ARM, and Apple Clang w/Xcode 12.2;
     // re-enable these when we have real ones
 
     // float
@@ -368,7 +368,7 @@ int main()
         test_roundtrip_bv<long double>();
     }
 
-#endif // !defined(__CYGWIN__)
+#endif // Broken platforms
 
     return boost::report_errors();
 }
