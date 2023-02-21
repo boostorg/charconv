@@ -12,7 +12,6 @@
 #include <boost/config.hpp>
 #include <type_traits>
 #include <limits>
-#include <array>
 #include <cstdlib>
 #include <cerrno>
 #include <cstddef>
@@ -45,8 +44,8 @@ struct from_chars_result
 
 namespace detail {
 
-static constexpr std::array<unsigned char, 256> uchar_values =
-    {{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+static constexpr unsigned char uchar_values[] =
+     {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
         0,   1,   2,   3,   4,   5,   6,   7,   8,   9, 255, 255, 255, 255, 255, 255,
@@ -61,7 +60,9 @@ static constexpr std::array<unsigned char, 256> uchar_values =
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}};
+      255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+
+static_assert(sizeof(uchar_values) == 256, "uchar_values should represent all 256 values of unsigned char");
 
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
 constexpr unsigned char digit_from_char(char val) noexcept
@@ -73,6 +74,10 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma warning(push)
 # pragma warning(disable: 4146) // unary minus operator applied to unsigned type, result still unsigned
 # pragma warning(disable: 4189) // 'is_negative': local variable is initialized but not referenced
+
+#elif defined(__clang__) && defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconstant-conversion"
 
 #elif defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic push
@@ -234,6 +239,8 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
+#elif defined(__clang__) && defined(__APPLE__)
+# pragma clang diagnostic pop
 #elif defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic pop
 #endif
