@@ -12,7 +12,6 @@
 #include <boost/config.hpp>
 #include <type_traits>
 #include <limits>
-#include <array>
 #include <cstdlib>
 #include <cerrno>
 #include <cstddef>
@@ -62,6 +61,8 @@ static constexpr unsigned char uchar_values[] =
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+
+static_assert(sizeof(uchar_values) == 256, "uchar_values should represent all 256 values of unsigned char");
 
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
 constexpr unsigned char digit_from_char(char val) noexcept
