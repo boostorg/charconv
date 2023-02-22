@@ -29,6 +29,7 @@ static constexpr double powers_of_ten[] = {
 inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative, bool& success) noexcept
 {
     static constexpr auto smallest_power = -325;
+    static constexpr auto largest_power = 308;
 
     // We start with a fast path
     // It was described in Clinger WD. 
@@ -87,7 +88,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     // http://www.exploringbinary.com/fast-path-decimal-to-floating-point-conversion/
     // also used in RapidJSON: https://rapidjson.org/strtod_8h_source.html
 
-    if (i == 0)
+    if (i == 0 || (power < smallest_power || power > largest_power))
     {
         return negative ? -0.0 : 0.0;
     }
