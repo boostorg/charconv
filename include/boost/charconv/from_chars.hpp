@@ -8,6 +8,7 @@
 
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <type_traits>
@@ -17,32 +18,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace boost { namespace charconv {
-
-// 22.13.3, Primitive numerical input conversion
-
-struct from_chars_result
-{
-    const char* ptr;
-
-    // Values:
-    // 0 = no error
-    // EINVAL = invalid_argument
-    // ERANGE = result_out_of_range
-    int ec;
-
-    friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
-    {
-        return lhs.ptr == rhs.ptr && lhs.ec == rhs.ec;
-    }
-
-    friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-};
-
-namespace detail {
+namespace boost { namespace charconv { namespace detail {
 
 static constexpr unsigned char uchar_values[] =
      {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
