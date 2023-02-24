@@ -91,6 +91,14 @@ void test_scientifc()
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(exponent, 10);
     BOOST_TEST_EQ(significand, 987654321);
+
+    const char* val7 = "1.23456789E+10";
+    auto r7 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val7, val7 + std::strlen(val7), sign, significand, exponent);
+    BOOST_TEST_EQ(r7.ec, 0);
+    BOOST_TEST_EQ(sign, false);
+    BOOST_TEST_EQ(exponent, 10);
+    BOOST_TEST_EQ(significand, 123456789);
+
 }
 
 template <typename T>
@@ -181,6 +189,13 @@ void test_hex_scientific()
 
     auto r3 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);
     BOOST_TEST_EQ(r3.ec, EINVAL);
+
+    const char* val4 = "-1.3A2BP-10";
+    auto r4 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val4, val4 + std::strlen(val4), sign, significand, exponent, boost::charconv::chars_format::hex);
+    BOOST_TEST_EQ(r4.ec, 0);
+    BOOST_TEST_EQ(sign, true);
+    BOOST_TEST_EQ(exponent, -10);
+    BOOST_TEST_EQ(significand, 80427);
 }
 
 int main(void)

@@ -48,16 +48,19 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
     char significand_buffer[52] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
     std::size_t i = 0;
     char exp_char;
-    if (fmt == chars_format::hex)
+    char capital_exp_char;
+    if (fmt != chars_format::hex)
     {
-        exp_char = 'p';
+        exp_char = 'e';
+        capital_exp_char = 'E';
     }
     else
     {
-        exp_char = 'e';
+        exp_char = 'p';
+        capital_exp_char = 'P';
     }
 
-    while (*next != '.' && *next != exp_char && next != last)
+    while (*next != '.' && *next != exp_char && *next != capital_exp_char && next != last)
     {
         significand_buffer[i] = *next;
         ++next;
@@ -102,7 +105,7 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
     // if fmt is chars_format::scientific the e is required
     // if fmt is chars_format::fixed and not scientific the e is disallowed
     // if fmt is chars_format::general (which is scientific and fixed) the e is optional
-    while (*next != exp_char && next != last)
+    while (*next != exp_char && *next != capital_exp_char && next != last)
     {
         significand_buffer[i] = *next;
         ++next;
@@ -138,7 +141,7 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
                 return {next, 0};
         }
     }
-    else if (*next == exp_char)
+    else if (*next == exp_char || *next == capital_exp_char)
     {
         ++next;
         if (fmt == chars_format::fixed)
