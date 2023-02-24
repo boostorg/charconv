@@ -149,7 +149,15 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
         exponent = i - 1;
         std::size_t offset = i;
 
-        auto r = from_chars(significand_buffer, significand_buffer + offset, significand);
+        from_chars_result r;
+        if (fmt == chars_format::hex)
+        {
+            r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
+        }
+        else
+        {
+            r = from_chars(significand_buffer, significand_buffer + offset, significand);
+        }
         switch (r.ec)
         {
             case EINVAL:

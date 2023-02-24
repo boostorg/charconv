@@ -154,6 +154,35 @@ void test_erange()
     }
 }
 
+template <typename T>
+void test_hex_scientific()
+{
+    std::uint64_t significand {};
+    std::int64_t  exponent {};
+    bool sign {};
+
+    const char* val1 = "2ap+5";
+    auto r1 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val1, val1 + std::strlen(val1), sign, significand, exponent, boost::charconv::chars_format::hex);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_EQ(sign, false);
+    BOOST_TEST_EQ(significand, 42);
+    BOOST_TEST_EQ(exponent, 5);
+
+    significand = 0;
+    exponent = 0;
+    sign = false;
+
+    const char* val2 = "-1.3a2bp-10";
+    auto r2 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::hex);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_EQ(sign, true);
+    BOOST_TEST_EQ(exponent, -10);
+    BOOST_TEST_EQ(significand, 80427);
+
+    auto r3 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);
+    BOOST_TEST_EQ(r3.ec, EINVAL);
+}
+
 int main(void)
 {
     test_integer<float>();
@@ -171,6 +200,10 @@ int main(void)
     test_erange<float>();
     test_erange<double>();
     test_erange<long double>();
+
+    test_hex_scientific<float>();
+    test_hex_scientific<double>();
+    test_hex_scientific<long double>();
 
     return boost::report_errors();
 }
