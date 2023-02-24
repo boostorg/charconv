@@ -7,24 +7,26 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
-#include <boost/charconv/from_chars.hpp>
+#include <boost/charconv/from_chars.hpp> // TODO: This will introduce a dependency cycle
 #include <boost/charconv/chars_format.hpp>
+#include <limits>
 #include <cerrno>
 #include <cstdint>
+#include <cstring>
 
 namespace boost { namespace charconv { namespace detail {
 
-template <typename Unsigned_Integer, typename Integer>
-inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt) noexcept
+template <typename Unsigned_Integer, typename Integer, typename Float_type>
+inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
-    if (first <= last)
+    if (!(first <= last))
     {
         return {first, EINVAL};
     }
 
     auto next = first;
 
-    //
+    // First extract the sign
     if (*next == '-')
     {
         sign = true;
@@ -41,7 +43,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     // Next we get the significand
-    char significand_buffer[52]; // Binary64 maximum from IEEE 754-2019 section 3.6
+    char significand_buffer[52] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
     std::size_t i = 0;
     while (*next != '.' && next != last)
     {
@@ -49,14 +51,33 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         ++next;
         ++i;
     }
-    
+
     if (next == last)
     {
-        exponent = -i;
-        auto r = from_chars(significand_buffer, significand_buffer + sizeof(significand_buffer), significand);
-        if (r.ec != 0)
+        // if fmt is chars_format::scientific the e is required
+        if (fmt == chars_format::scientific)
         {
             return {first, EINVAL};
+        }
+        
+        exponent = i - 1;
+        std::size_t offset = i;
+
+        if (offset > std::numeric_limits<Float_type>::digits10)
+        {
+            offset = std::numeric_limits<Float_type>::digits10;
+        }
+
+        auto r = from_chars(significand_buffer, significand_buffer + offset, significand);
+
+        switch (r.ec)
+        {
+            case EINVAL:
+                return {first, EINVAL};
+            case ERANGE:
+                return {next, ERANGE};
+            default:
+                return {next, 0};
         }
     }
     else if (*next == '.')
@@ -64,6 +85,9 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         ++next;
     }
 
+    // if fmt is chars_format::scientific the e is required
+    // if fmt is chars_format::fixed and not scientific the e is disallowed
+    // if fmt is chars_format::general (which is scientific and fixed) the e is optional
     while (*next != 'e' && next != last)
     {
         significand_buffer[i] = *next;
@@ -73,16 +97,35 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
     if (next == last)
     {
-        exponent = -i;
-        auto r = from_chars(significand_buffer, significand_buffer + sizeof(significand_buffer), significand);
+        if (fmt == chars_format::scientific)
+        {
+            return {first, EINVAL};
+        }
+        
+        exponent = i - 1;
+        auto r = from_chars(significand_buffer, significand_buffer + std::strlen(significand_buffer), significand);
+        switch (r.ec)
+        {
+            case EINVAL:
+                return {first, EINVAL};
+            case ERANGE:
+                return {next, ERANGE};
+            default:
+                return {next, 0};
+        }
+
     }
     else if (*next == 'e')
     {
         ++next;
+        if (fmt == chars_format::fixed)
+        {
+            return {first, EINVAL};
+        }
     }
 
     // Finally we get the exponent
-    char exponent_buffer[11]; // Binary64 maximum from IEEE 754-2019 section 3.6
+    char exponent_buffer[11] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
     i = 0;
     while (next != last)
     {
@@ -91,10 +134,15 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         ++i;
     }
 
-    auto r = from_chars(exponent_buffer, exponent_buffer + sizeof(exponent_buffer), exponent);
-    if (r.ec != 0)
+    auto r = from_chars(exponent_buffer, exponent_buffer + std::strlen(exponent_buffer), exponent);
+    switch (r.ec)
     {
-        return {first, EINVAL};
+        case EINVAL:
+            return {first, EINVAL};
+        case ERANGE:
+            return {next, ERANGE};
+        default:
+            return {next, 0};
     }
 
     return {next, 0};

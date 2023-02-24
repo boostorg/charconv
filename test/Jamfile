@@ -31,3 +31,4 @@ run test_128bit_native.cpp ;
 run test_128bit_emulation.cpp ;
 run test_compute_float64.cpp ; 
 run test_compute_float32.cpp ;
+run test_parser.cpp ;
