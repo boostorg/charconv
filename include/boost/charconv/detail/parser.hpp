@@ -144,8 +144,6 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         default:
             return {next, 0};
     }
-
-    return {next, 0};
 }
 
 }}} // Namespaces
