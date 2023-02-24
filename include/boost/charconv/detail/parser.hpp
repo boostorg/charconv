@@ -45,7 +45,17 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     // Next we get the significand
     char significand_buffer[52] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
     std::size_t i = 0;
-    while (*next != '.' && *next != 'e' && next != last)
+    char exp_char;
+    if (fmt == chars_format::hex)
+    {
+        exp_char = 'p';
+    }
+    else
+    {
+        exp_char = 'e';
+    }
+
+    while (*next != '.' && *next != exp_char && next != last)
     {
         significand_buffer[i] = *next;
         ++next;
@@ -63,12 +73,15 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         exponent = i - 1;
         std::size_t offset = i;
 
-        if (offset > std::numeric_limits<Float_type>::digits10)
+        from_chars_result r;
+        if (fmt == chars_format::hex)
         {
-            offset = std::numeric_limits<Float_type>::digits10;
+            r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
         }
-
-        auto r = from_chars(significand_buffer, significand_buffer + offset, significand);
+        else
+        {
+            r = from_chars(significand_buffer, significand_buffer + offset, significand);
+        }
         switch (r.ec)
         {
             case EINVAL:
@@ -87,7 +100,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     // if fmt is chars_format::scientific the e is required
     // if fmt is chars_format::fixed and not scientific the e is disallowed
     // if fmt is chars_format::general (which is scientific and fixed) the e is optional
-    while (*next != 'e' && next != last)
+    while (*next != exp_char && next != last)
     {
         significand_buffer[i] = *next;
         ++next;
@@ -103,12 +116,16 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         
         exponent = i - 1;
         std::size_t offset = i;
-
-        if (offset > std::numeric_limits<Float_type>::digits10)
+        
+        from_chars_result r;
+        if (fmt == chars_format::hex)
         {
-            offset = std::numeric_limits<Float_type>::digits10;
+            r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
         }
-        auto r = from_chars(significand_buffer, significand_buffer + offset, significand);
+        else
+        {
+            r = from_chars(significand_buffer, significand_buffer + offset, significand);
+        }
         switch (r.ec)
         {
             case EINVAL:
@@ -119,7 +136,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                 return {next, 0};
         }
     }
-    else if (*next == 'e')
+    else if (*next == exp_char)
     {
         ++next;
         if (fmt == chars_format::fixed)
@@ -129,11 +146,6 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
         exponent = i - 1;
         std::size_t offset = i;
-
-        if (offset > std::numeric_limits<Float_type>::digits10)
-        {
-            offset = std::numeric_limits<Float_type>::digits10;
-        }
 
         auto r = from_chars(significand_buffer, significand_buffer + offset, significand);
         switch (r.ec)
