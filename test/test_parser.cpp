@@ -13,9 +13,9 @@
 template <typename T>
 void test_integer()
 {
-    std::uint64_t significand;
-    std::int64_t  exponent;
-    bool sign;
+    std::uint64_t significand {};
+    std::int64_t  exponent {};
+    bool sign {};
 
     const char* val1 = "12";
     auto r1 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val1, val1 + std::strlen(val1), sign, significand, exponent);
