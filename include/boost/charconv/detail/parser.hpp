@@ -16,8 +16,10 @@
 
 namespace boost { namespace charconv { namespace detail {
 
+namespace {
+
 template <typename Unsigned_Integer, typename Integer, typename Float_type>
-inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
+inline from_chars_result parser_impl(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt) noexcept
 {
     if (!(first <= last))
     {
@@ -177,6 +179,22 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         default:
             return {next, 0};
     }
+}
+
+} // Anonymous namespace
+
+template <typename Unsigned_Integer, typename Integer, typename Float_type>
+inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
+{
+    auto r = parser_impl<Unsigned_Integer, Integer, Float_type>(first, last, sign, significand, exponent, fmt);
+    
+    // Check for over/underflow as computeXX assumes the exponent is in range
+    if (exponent > std::numeric_limits<Float_type>::max_exponent10 || exponent < std::numeric_limits<Float_type>::min_exponent10)
+    {
+        return {r.ptr, ERANGE};
+    }
+
+    return r;
 }
 
 }}} // Namespaces

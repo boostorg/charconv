@@ -122,6 +122,38 @@ void test_hex_integer()
     BOOST_TEST_EQ(r3.ec, EINVAL);
 }
 
+template <typename T>
+void test_erange()
+{
+    std::uint64_t significand {};
+    std::int64_t  exponent {};
+    bool sign {};
+
+    // Obvious out of bounds
+    const char* val1 = "12e10000";
+    auto r1 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val1, val1 + std::strlen(val1), sign, significand, exponent);
+    BOOST_TEST_EQ(r1.ec, ERANGE);
+
+    const char* val2 = "12e-10000";
+    auto r2 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent);
+    BOOST_TEST_EQ(r2.ec, ERANGE);
+
+    // Exceed range of float
+    const char* val3 = "12e40";
+    auto r3 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val3, val3 + std::strlen(val3), sign, significand, exponent);
+    BOOST_IF_CONSTEXPR(std::is_same<T, float>::value)
+    {
+        BOOST_TEST_EQ(r3.ec, ERANGE);
+    }
+    else
+    {
+        BOOST_TEST_EQ(r3.ec, 0);
+        BOOST_TEST_EQ(sign, false);
+        BOOST_TEST_EQ(exponent, 40);
+        BOOST_TEST_EQ(significand, 12);       
+    }
+}
+
 int main(void)
 {
     test_integer<float>();
@@ -135,6 +167,10 @@ int main(void)
     test_hex_integer<float>();
     test_hex_integer<double>();
     test_hex_integer<long double>();
+
+    test_erange<float>();
+    test_erange<double>();
+    test_erange<long double>();
 
     return boost::report_errors();
 }
