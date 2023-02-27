@@ -22,7 +22,7 @@ void test_integer()
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(significand, 12);
-    BOOST_TEST_EQ(exponent, 1);
+    BOOST_TEST_EQ(exponent, 0);
 
     significand = 0;
     exponent = 0;
@@ -32,7 +32,7 @@ void test_integer()
     auto r2 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent);
     BOOST_TEST_EQ(r2.ec, 0);
     BOOST_TEST_EQ(sign, false);
-    BOOST_TEST_EQ(exponent, 8);
+    BOOST_TEST_EQ(exponent, 0);
     BOOST_TEST_EQ(significand, 123456789);
 
     auto r3 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);
@@ -113,7 +113,7 @@ void test_hex_integer()
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(significand, 42);
-    BOOST_TEST_EQ(exponent, 1);
+    BOOST_TEST_EQ(exponent, 0);
 
     significand = 0;
     exponent = 0;
@@ -123,7 +123,7 @@ void test_hex_integer()
     auto r2 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::hex);
     BOOST_TEST_EQ(r2.ec, 0);
     BOOST_TEST_EQ(sign, true);
-    BOOST_TEST_EQ(exponent, 8);
+    BOOST_TEST_EQ(exponent, 0);
     BOOST_TEST_EQ(significand, 7041566681);
 
     auto r3 = boost::charconv::detail::parser<std::uint64_t, std::int64_t, T>(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);

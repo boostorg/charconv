@@ -75,7 +75,7 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
             return {first, EINVAL};
         }
         
-        exponent = i - 1;
+        exponent = 0;
         std::size_t offset = i;
 
         from_chars_result r;
