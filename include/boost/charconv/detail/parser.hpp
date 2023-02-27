@@ -7,7 +7,7 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
-#include <boost/charconv/from_chars.hpp> // TODO: This will introduce a dependency cycle
+#include <boost/charconv/detail/from_chars_integer_impl.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <limits>
 #include <cerrno>
