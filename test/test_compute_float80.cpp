@@ -3,11 +3,16 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/detail/compute_float80.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <random>
 #include <limits>
 #include <cstdint>
 #include <cmath>
+
+// MSVC uses long double = double
+// Darwin sometimes uses double double instead of long double
+#if BOOST_CHARCONV_LDBL_BITS == 80 && !defined(__APPLE__) && !defined(_WIN32) && !defined(_WIN64)
 
 using boost::charconv::detail::compute_float80;
 
@@ -36,3 +41,10 @@ int main(void)
 
     return boost::report_errors();
 }
+
+#else
+int main(void)
+{
+    return 0;
+}
+#endif
