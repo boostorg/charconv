@@ -10,6 +10,7 @@
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
 #include <boost/charconv/config.hpp>
+#include <boost/charconv/chars_format.hpp>
 
 namespace boost { namespace charconv {
 
@@ -74,9 +75,9 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 
 // floating point overloads
 
-BOOST_CHARCONV_DECL from_chars_result from_chars( char const* first, char const* last, float& value ) noexcept;
-BOOST_CHARCONV_DECL from_chars_result from_chars( char const* first, char const* last, double& value ) noexcept;
-BOOST_CHARCONV_DECL from_chars_result from_chars( char const* first, char const* last, long double& value ) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(char const* first, char const* last, float& value, chars_format fmt = chars_format::general) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(char const* first, char const* last, double& value, chars_format fmt = chars_format::general ) noexcept;
+BOOST_CHARCONV_DECL from_chars_result from_chars(char const* first, char const* last, long double& value, chars_format fmt = chars_format::general ) noexcept;
 
 } // namespace charconv
 } // namespace boost
