@@ -17,10 +17,8 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-namespace {
-
 template <typename Unsigned_Integer, typename Integer>
-inline from_chars_result parser_impl(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt) noexcept
+inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
     if (!(first <= last))
     {
@@ -208,15 +206,6 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
             }
             return {next, 0};
     }
-}
-
-} // Anonymous namespace
-
-template <typename Unsigned_Integer, typename Integer>
-inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
-{
-    auto r = parser_impl(first, last, sign, significand, exponent, fmt);
-    return r;
 }
 
 }}} // Namespaces
