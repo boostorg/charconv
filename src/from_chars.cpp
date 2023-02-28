@@ -25,7 +25,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(char const* first
     std::uint64_t significand {};
     std::int64_t  exponent {};
 
-    auto r = boost::charconv::detail::parser<std::uint64_t, std::int64_t, double>(first, last, sign, significand, exponent, fmt);
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != 0)
     {
         value = 0.0;
@@ -53,7 +53,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(char const* first
     std::uint64_t significand {};
     std::int64_t  exponent {};
 
-    auto r = boost::charconv::detail::parser<std::uint64_t, std::int64_t, double>(first, last, sign, significand, exponent, fmt);
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != 0)
     {
         value = 0.0;
