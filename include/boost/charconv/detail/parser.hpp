@@ -10,6 +10,7 @@
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <type_traits>
 #include <limits>
 #include <cerrno>
 #include <cstdint>
@@ -152,6 +153,23 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
         exponent = i - 1;
         std::size_t offset = i;
+
+        // If more digits are present than representable in the significand of the target type
+        // we set the maximum
+        BOOST_IF_CONSTEXPR(std::is_same<Unsigned_Integer, std::uint64_t>::value)
+        {
+            if (offset > 19)
+            {
+                offset = 19;
+            }
+        }
+        else
+        {
+            if (offset > 39)
+            {
+                offset = 39;
+            }
+        }
 
         from_chars_result r;
         if (fmt == chars_format::hex)

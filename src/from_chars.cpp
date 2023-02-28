@@ -8,6 +8,7 @@
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/charconv/detail/compute_float80.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 // TODO: compute_float128.hpp
 #include <boost/charconv/from_chars.hpp>
 #include <string>
@@ -19,7 +20,7 @@
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
-boost::charconv::from_chars_result boost::charconv::from_chars(char const* first, char const* last, float& value, boost::charconv::chars_format fmt) noexcept
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
 {
     bool sign {};
     std::uint64_t significand {};
@@ -47,7 +48,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(char const* first
     return r;
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(char const* first, char const* last, double& value, boost::charconv::chars_format fmt) noexcept
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, double& value, boost::charconv::chars_format fmt) noexcept
 {
     bool sign {};
     std::uint64_t significand {};
@@ -75,7 +76,49 @@ boost::charconv::from_chars_result boost::charconv::from_chars(char const* first
     return r;
 }
 
-boost::charconv::from_chars_result boost::charconv::from_chars(char const* first, char const* last, long double& value, boost::charconv::chars_format fmt) noexcept
+#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(_WIN64) || defined(_WIN32)
+// Since long double is just a double we use the double implementation and cast into value
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+{
+    double d;
+    auto r = boost::charconv::from_chars(first, last, d, fmt);
+    value = static_cast<long double>(d);
+    return r;
+}
+
+#elif BOOST_CHARCONV_LDBL_BITS == 80
+// https://en.wikipedia.org/wiki/Extended_precision#x86_extended_precision_format
+// 63 bit significand so we are still safe to use uint64_t to represent
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+{
+    bool sign {};
+    std::uint64_t significand {};
+    std::int64_t  exponent {};
+
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
+    if (r.ec != 0)
+    {
+        value = 0.0L;
+        return r;
+    }
+
+    bool success {};
+    auto return_val = boost::charconv::detail::compute_float80(exponent, significand, sign, success);
+    if (!success)
+    {
+        value = 0.0L;
+        r.ec = ERANGE;
+    }
+    else
+    {
+        value = return_val;
+    }
+
+    return r;
+}
+#else
+
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     (void)fmt;
     from_chars_result r = {};
@@ -90,3 +133,5 @@ boost::charconv::from_chars_result boost::charconv::from_chars(char const* first
 
     return r;
 }
+
+#endif // long double implementations
