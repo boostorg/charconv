@@ -37,7 +37,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(char const* first
     if (!success)
     {
         value = 0.0F;
-        r.ec = EINVAL;
+        r.ec = ERANGE;
     }
     else
     {
@@ -65,7 +65,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(char const* first
     if (!success)
     {
         value = 0.0;
-        r.ec = EINVAL;
+        r.ec = ERANGE;
     }
     else
     {
