@@ -37,6 +37,28 @@ void simple_hex_integer_test()
     BOOST_TEST_EQ(v1, static_cast<T>(-42));
 }
 
+template <typename T>
+void simple_scientific_test()
+{
+    const char* buffer1 = "1e1";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_EQ(v1, static_cast<T>(1e1L));
+
+    const char* buffer2 = "123456789e10";
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_EQ(v2, static_cast<T>(123456789e10L));
+
+    const char* buffer3 = "1.23456789e+10";
+    T v3 = 0;
+    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    BOOST_TEST_EQ(r3.ec, 0);
+    BOOST_TEST_EQ(v3, static_cast<T>(1.23456789e+10L));
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -44,6 +66,9 @@ int main()
     
     simple_hex_integer_test<float>();
     simple_hex_integer_test<double>();
+
+    simple_scientific_test<float>();
+    simple_scientific_test<double>();
 
     return boost::report_errors();
 }

@@ -67,6 +67,7 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
         ++i;
     }
 
+    bool fractional = false;
     if (next == last)
     {
         // if fmt is chars_format::scientific the e is required
@@ -100,6 +101,7 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
     else if (*next == '.')
     {
         ++next;
+        fractional = true;
     }
 
     // if fmt is chars_format::scientific the e is required
@@ -172,6 +174,7 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
 
     // Finally we get the exponent
     char exponent_buffer[11] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
+    Integer significand_digits = i - 1;
     i = 0;
     while (next != last)
     {
@@ -188,6 +191,10 @@ inline from_chars_result parser_impl(const char* first, const char* last, bool& 
         case ERANGE:
             return {next, ERANGE};
         default:
+            if (fractional)
+            {
+                exponent -= significand_digits;
+            }
             return {next, 0};
     }
 }
