@@ -76,6 +76,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 
+/*
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(_WIN64) || defined(_WIN32)
 // Since long double is just a double we use the double implementation and cast into value
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
@@ -133,5 +134,22 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 
     return r;
 }
+*/
 
-#endif // long double implementations
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+{
+    (void)fmt;
+    from_chars_result r = {};
+
+    std::string tmp( first, last ); // zero termination
+    char* ptr = 0;
+
+    value = std::strtold( tmp.c_str(), &ptr );
+
+    r.ptr = ptr;
+    r.ec = errno;
+
+    return r;
+}
+
+//#endif // long double implementations
