@@ -76,8 +76,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 
-/*
-#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(_WIN64) || defined(_WIN32)
+#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
 // Since long double is just a double we use the double implementation and cast into value
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -89,7 +88,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 
 #elif BOOST_CHARCONV_LDBL_BITS == 80
 // https://en.wikipedia.org/wiki/Extended_precision#x86_extended_precision_format
-// 63 bit significand so we are still safe to use uint64_t to represent
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     bool sign {};
@@ -115,35 +113,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
         value = return_val;
     }
 
-    return r;
-}
-#else
-
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
-{
-    (void)fmt;
-    from_chars_result r = {};
-
-    std::string tmp( first, last ); // zero termination
-    char* ptr = 0;
-
-    value = std::strtold( tmp.c_str(), &ptr );
-
-    r.ptr = ptr;
-    r.ec = errno;
-
-    return r;
-}
-*/
-
-#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
-
-// Since long double is just a double we use the double implementation and cast into value
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
-{
-    double d;
-    auto r = boost::charconv::from_chars(first, last, d, fmt);
-    value = static_cast<long double>(d);
     return r;
 }
 

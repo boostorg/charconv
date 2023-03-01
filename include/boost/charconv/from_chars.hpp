@@ -75,11 +75,6 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 
 // floating point overloads
 
-// Only 64 bit long double overloads are fully implemented
-#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
-#define BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
-#endif
-
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, float& value, chars_format fmt = chars_format::general) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
