@@ -153,7 +153,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
         exponent = i - 1;
         std::size_t offset = i;
-
+        bool round = false;
         // If more digits are present than representable in the significand of the target type
         // we set the maximum
         BOOST_IF_CONSTEXPR(std::is_same<Unsigned_Integer, std::uint64_t>::value)
@@ -162,6 +162,14 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             {
                 offset = 19;
                 i = 19;
+                if (significand_buffer[offset] == '5' ||
+                    significand_buffer[offset] == '6' ||
+                    significand_buffer[offset] == '7' ||
+                    significand_buffer[offset] == '8' ||
+                    significand_buffer[offset] == '9')
+                {
+                    round = true;
+                }
             }
         }
         else
@@ -170,6 +178,14 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             {
                 offset = 39;
                 i = 39;
+                if (significand_buffer[offset] == '5' ||
+                    significand_buffer[offset] == '6' ||
+                    significand_buffer[offset] == '7' ||
+                    significand_buffer[offset] == '8' ||
+                    significand_buffer[offset] == '9')
+                {
+                    round = true;
+                }
             }
         }
 
@@ -188,6 +204,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                 return {first, EINVAL};
             case ERANGE:
                 return {next, ERANGE};
+        }
+
+        if (round)
+        {
+            significand += 1;
         }
     }
 
