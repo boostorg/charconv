@@ -6,6 +6,7 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 
 #include <boost/charconv/detail/config.hpp>
+#include <limits>
 #include <cstdint>
 #include <cmath>
 
@@ -14,11 +15,13 @@ namespace boost { namespace charconv { namespace detail {
 inline long double compute_float80(std::int64_t power, std::uint64_t i, bool negative, bool& success) noexcept
 {
     long double return_val;
-    if (power == 4932 && i == UINT64_C(1189731495357231765))
+
+    // At the absolute minimum and maximum rounding errors of 1 ULP can cause overflow
+    if (power == 4912 && i == UINT64_C(1189731495357231765))
     {
         return_val = std::numeric_limits<long double>::max();
     }
-    else if (power == -4931 && i == UINT64_C(3362103143112093506))
+    else if (power == -4952 && i == UINT64_C(3362103143112093506))
     {
         return_val = std::numeric_limits<long double>::min();
     }
