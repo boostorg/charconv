@@ -79,19 +79,22 @@ int main()
 {
     simple_integer_test<float>();
     simple_integer_test<double>();
-    // simple_integer_test<long double>();
     
     simple_hex_integer_test<float>();
     simple_hex_integer_test<double>();
-    // simple_hex_integer_test<long double>();
 
     simple_scientific_test<float>();
     simple_scientific_test<double>();
-    // simple_scientific_test<long double>();
 
     simple_hex_scientifc_test<float>();
     simple_hex_scientifc_test<double>();
-    // simple_hex_scientifc_test<long double>();
+
+    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
+    simple_integer_test<long double>();
+    simple_hex_integer_test<long double>();
+    simple_scientific_test<long double>();
+    simple_hex_scientifc_test<long double>();
+    #endif
 
     return boost::report_errors();
 }
