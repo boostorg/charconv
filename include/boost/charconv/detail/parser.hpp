@@ -161,6 +161,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             if (offset > 19)
             {
                 offset = 19;
+                i = 19;
             }
         }
         else
@@ -168,6 +169,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             if (offset > 39)
             {
                 offset = 39;
+                i = 39;
             }
         }
 

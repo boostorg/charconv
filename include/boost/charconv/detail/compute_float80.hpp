@@ -17,11 +17,11 @@ inline long double compute_float80(std::int64_t power, std::uint64_t i, bool neg
     long double return_val;
 
     // At the absolute minimum and maximum rounding errors of 1 ULP can cause overflow
-    if (power == 4912 && i == UINT64_C(1189731495357231765))
+    if (power == 4914 && i == UINT64_C(1189731495357231765))
     {
         return_val = std::numeric_limits<long double>::max();
     }
-    else if (power == -4952 && i == UINT64_C(3362103143112093506))
+    else if (power == -4950 && i == UINT64_C(3362103143112093506))
     {
         return_val = std::numeric_limits<long double>::min();
     }
