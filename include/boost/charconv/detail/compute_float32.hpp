@@ -6,6 +6,7 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 
 #include <boost/charconv/detail/compute_float64.hpp>
+#include <limits>
 #include <cstdint>
 #include <cmath>
 
@@ -25,7 +26,7 @@ inline float compute_float32(std::int64_t power, std::uint64_t i, bool negative,
         // From Intel(R) oneAPI DPC++/C++ Compiler 2023.0.0 (2023.0.0.20221201)
         // warning: comparison with infinity always evaluates to false in fast floating point modes [-Wtautological-constant-compare]
         // if (std::isinf(return_val))
-        if (std::abs(return_val) == HUGE_VALF)
+        if (std::abs(return_val) > (std::numeric_limits<float>::max)())
         {
             return_val = negative ? -0.0F : 0.0F;
             success = false;
