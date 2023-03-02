@@ -66,7 +66,7 @@ void simple_scientific_test()
 }
 
 template <typename T>
-void simple_hex_scientifc_test()
+void simple_hex_scientific_test()
 {
     const char* buffer1 = "1.3a2bp-10";
     T v1 = 0;
@@ -136,8 +136,8 @@ int main()
     simple_scientific_test<float>();
     simple_scientific_test<double>();
 
-    simple_hex_scientifc_test<float>();
-    simple_hex_scientifc_test<double>();
+    simple_hex_scientific_test<float>();
+    simple_hex_scientific_test<double>();
 
     dot_position_test<float>();
     dot_position_test<double>();
@@ -149,7 +149,7 @@ int main()
     simple_integer_test<long double>();
     simple_hex_integer_test<long double>();
     simple_scientific_test<long double>();
-    simple_hex_scientifc_test<long double>();
+    simple_hex_scientific_test<long double>();
     #endif
 
     return boost::report_errors();
