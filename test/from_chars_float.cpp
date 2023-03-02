@@ -57,6 +57,12 @@ void simple_scientific_test()
     auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
     BOOST_TEST_EQ(r3.ec, 0);
     BOOST_TEST_EQ(v3, static_cast<T>(1.23456789e+10L));
+
+    const char* buffer4 = "1234.56789e+10";
+    T v4 = 0;
+    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
+    BOOST_TEST_EQ(r4.ec, 0);
+    BOOST_TEST_EQ(v4, static_cast<T>(1234.56789e+10L));
 }
 
 template <typename T>

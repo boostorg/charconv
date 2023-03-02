@@ -248,11 +248,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                 if (fmt == chars_format::hex)
                 {
                     // In hex the number of digits parsed is possibly less than the number of digits in base10
-                    exponent -= num_digits(significand) - 1;
+                    exponent -= num_digits(significand) - dot_position;
                 }
                 else
                 {
-                    exponent -= significand_digits - 1;
+                    exponent -= significand_digits - dot_position;
                 }
             }
             return {next, 0};
