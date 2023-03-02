@@ -9,6 +9,7 @@
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/limits.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <type_traits>
 #include <limits>
@@ -45,7 +46,8 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     // Next we get the significand
-    char significand_buffer[52] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
+    constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10; // Base 10 or 16
+    char significand_buffer[significand_buffer_size] {};
     std::size_t i = 0;
     char exp_char;
     char capital_exp_char;
@@ -60,7 +62,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         capital_exp_char = 'P';
     }
 
-    while (*next != '.' && *next != exp_char && *next != capital_exp_char && next != last)
+    while (*next != '.' && *next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
     {
         significand_buffer[i] = *next;
         ++next;
@@ -213,14 +215,20 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     // Finally we get the exponent
-    char exponent_buffer[11] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
+    constexpr std::size_t exponent_buffer_size = 6; // Float128 min exp is −16382
+    char exponent_buffer[exponent_buffer_size] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
     Integer significand_digits = i;
     i = 0;
-    while (next != last)
+    while (next != last && i < exponent_buffer_size)
     {
         exponent_buffer[i] = *next;
         ++next;
         ++i;
+    }
+
+    if (next != last && i == exponent_buffer_size)
+    {
+        return {next, ERANGE};
     }
 
     auto r = from_chars(exponent_buffer, exponent_buffer + std::strlen(exponent_buffer), exponent);
