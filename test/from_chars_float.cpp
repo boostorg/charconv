@@ -75,6 +75,50 @@ void simple_hex_scientifc_test()
     BOOST_TEST_EQ(v2, static_cast<T>(4660e-13L));
 }
 
+template <typename T>
+void dot_position_test()
+{
+    const char* buffer1 = "11.11111111";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_EQ(v1, static_cast<T>(11.11111111L));
+
+    const char* buffer2 = "1111.111111";
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_EQ(v2, static_cast<T>(1111.111111L));
+
+    const char* buffer3 = "111111.1111";
+    T v3 = 0;
+    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    BOOST_TEST_EQ(r3.ec, 0);
+    BOOST_TEST_EQ(v3, static_cast<T>(111111.1111L));
+
+    const char* buffer4 = "1111111111.";
+    T v4 = 0;
+    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
+    BOOST_TEST_EQ(r4.ec, 0);
+    BOOST_TEST_EQ(v4, static_cast<T>(1111111111.L));
+}
+
+template <typename T>
+void odd_strings_test()
+{
+    const char* buffer1 = "00000000000000000000000000000000000000000005";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_EQ(v1, static_cast<T>(5));
+
+    const char* buffer2 = "10000000000000000000000000000000";
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_EQ(v2, static_cast<T>(1e31L));
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -88,6 +132,12 @@ int main()
 
     simple_hex_scientifc_test<float>();
     simple_hex_scientifc_test<double>();
+
+    dot_position_test<float>();
+    dot_position_test<double>();
+
+    odd_strings_test<float>();
+    odd_strings_test<double>();
 
     #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     simple_integer_test<long double>();
