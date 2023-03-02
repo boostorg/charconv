@@ -49,6 +49,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10; // Base 10 or 16
     char significand_buffer[significand_buffer_size] {};
     std::size_t i = 0;
+    std::size_t dot_position = 0;
     char exp_char;
     char capital_exp_char;
     if (fmt != chars_format::hex)
@@ -104,6 +105,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     {
         ++next;
         fractional = true;
+        dot_position = i;
     }
 
     // if fmt is chars_format::scientific the e is required
@@ -122,8 +124,8 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         {
             return {first, EINVAL};
         }
-        
-        exponent = i - 1;
+
+        exponent = static_cast<Integer>(dot_position) - i;
         std::size_t offset = i;
         
         from_chars_result r;
