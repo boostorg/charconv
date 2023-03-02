@@ -19,9 +19,16 @@ inline float compute_float32(std::int64_t power, std::uint64_t i, bool negative,
     if (success)
     {
         return_val = static_cast<float>(d);
-        if (std::isinf(return_val))
+
+        // Some compilers (e.g. Intel) will optimize std::isinf to always false depending on compiler flags
+        //
+        // From Intel(R) oneAPI DPC++/C++ Compiler 2023.0.0 (2023.0.0.20221201)
+        // warning: comparison with infinity always evaluates to false in fast floating point modes [-Wtautological-constant-compare]
+        // if (std::isinf(return_val))
+        if (std::abs(return_val) == HUGE_VALF)
         {
             return_val = negative ? -0.0F : 0.0F;
+            success = false;
         }
     }
     else
