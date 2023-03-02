@@ -5,13 +5,13 @@
 
 // If the architecture (e.g. ARM) does not have __int128 we need to emulate it
 
+#ifndef BOOST_CHARCONV_DETAIL_EMULATED128_HPP
+#define BOOST_CHARCONV_DETAIL_EMULATED128_HPP
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <cstdint>
 #include <cassert>
-
-#ifndef BOOST_CHARCONV_DETAIL_EMULATED128_HPP
-#define BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 
 namespace boost { namespace charconv { namespace detail {
 
