@@ -179,36 +179,17 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         bool round = false;
         // If more digits are present than representable in the significand of the target type
         // we set the maximum
-        BOOST_IF_CONSTEXPR(std::is_same<Unsigned_Integer, std::uint64_t>::value)
+        if (offset > significand_buffer_size)
         {
-            if (offset > 19)
+            offset = significand_buffer_size;
+            i = significand_buffer_size;
+            if (significand_buffer[offset] == '5' ||
+                significand_buffer[offset] == '6' ||
+                significand_buffer[offset] == '7' ||
+                significand_buffer[offset] == '8' ||
+                significand_buffer[offset] == '9')
             {
-                offset = 19;
-                i = 19;
-                if (significand_buffer[offset] == '5' ||
-                    significand_buffer[offset] == '6' ||
-                    significand_buffer[offset] == '7' ||
-                    significand_buffer[offset] == '8' ||
-                    significand_buffer[offset] == '9')
-                {
-                    round = true;
-                }
-            }
-        }
-        else
-        {
-            if (offset > 39)
-            {
-                offset = 39;
-                i = 39;
-                if (significand_buffer[offset] == '5' ||
-                    significand_buffer[offset] == '6' ||
-                    significand_buffer[offset] == '7' ||
-                    significand_buffer[offset] == '8' ||
-                    significand_buffer[offset] == '9')
-                {
-                    round = true;
-                }
+                round = true;
             }
         }
 
