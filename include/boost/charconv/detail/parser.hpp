@@ -274,6 +274,10 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                     exponent -= significand_digits - dot_position;
                 }
             }
+            else
+            {
+                exponent += extra_zeros;
+            }
             return {next, 0};
     }
 }
