@@ -45,6 +45,12 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         sign = false;
     }
 
+    // Ignore leading zeros (e.g. 00005 or -002.3e+5)
+    while (*next == '0' && next != last)
+    {
+        ++next;
+    }
+
     // Next we get the significand
     constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10; // Base 10 or 16
     char significand_buffer[significand_buffer_size] {};
