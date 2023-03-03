@@ -119,14 +119,15 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // if fmt is chars_format::scientific the e is required
         // if fmt is chars_format::fixed and not scientific the e is disallowed
         // if fmt is chars_format::general (which is scientific and fixed) the e is optional
-        while (*next != exp_char && *next != capital_exp_char && next != last)
+        while (*next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
         {
             significand_buffer[i] = *next;
             ++next;
             ++i;        
         }
     }
-    else if (i == significand_buffer_size)
+    
+    if (i == significand_buffer_size)
     {
         // We can not process any more significant figures into the significand so skip to the end
         // or the exponent part and capture the additional orders of magnitude for the exponent
@@ -134,6 +135,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         {
             ++next;
             ++extra_zeros;
+        }
+
+        if (fractional)
+        {
+            extra_zeros = 0;
         }
     }
 
