@@ -52,10 +52,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     // Next we get the significand
-    constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10; // Base 10 or 16
+    constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10 - 1; // Base 10 or 16
     char significand_buffer[significand_buffer_size] {};
     std::size_t i = 0;
     std::size_t dot_position = 0;
+    std::size_t extra_zeros = 0;
     char exp_char;
     char capital_exp_char;
     if (fmt != chars_format::hex)
@@ -112,16 +113,28 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         ++next;
         fractional = true;
         dot_position = i;
-    }
 
-    // if fmt is chars_format::scientific the e is required
-    // if fmt is chars_format::fixed and not scientific the e is disallowed
-    // if fmt is chars_format::general (which is scientific and fixed) the e is optional
-    while (*next != exp_char && *next != capital_exp_char && next != last)
+        // Process the fractional part if we have it
+        //
+        // if fmt is chars_format::scientific the e is required
+        // if fmt is chars_format::fixed and not scientific the e is disallowed
+        // if fmt is chars_format::general (which is scientific and fixed) the e is optional
+        while (*next != exp_char && *next != capital_exp_char && next != last)
+        {
+            significand_buffer[i] = *next;
+            ++next;
+            ++i;        
+        }
+    }
+    else if (i == significand_buffer_size)
     {
-        significand_buffer[i] = *next;
-        ++next;
-        ++i;        
+        // We can not process any more significant figures into the significand so skip to the end
+        // or the exponent part and capture the additional orders of magnitude for the exponent
+        while (*next != exp_char && *next != capital_exp_char && next != last)
+        {
+            ++next;
+            ++extra_zeros;
+        }
     }
 
     if (next == last)
@@ -131,7 +144,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             return {first, EINVAL};
         }
 
-        exponent = static_cast<Integer>(dot_position) - i;
+        exponent = static_cast<Integer>(dot_position) - i + extra_zeros;
         std::size_t offset = i;
         
         from_chars_result r;
@@ -223,7 +236,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     // Finally we get the exponent
-    constexpr std::size_t exponent_buffer_size = 6; // Float128 min exp is −16382
+    constexpr std::size_t exponent_buffer_size = 7; // Float128 min exp is −16382
     char exponent_buffer[exponent_buffer_size] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
     Integer significand_digits = i;
     i = 0;
