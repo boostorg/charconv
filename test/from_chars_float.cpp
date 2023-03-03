@@ -134,7 +134,14 @@ void odd_strings_test()
     T v4 = 0;
     auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
     BOOST_TEST_EQ(r4.ec, 0);
-    BOOST_TEST_EQ(v4, static_cast<T>(1.23456789123456789123456789123456789123456789e-5L));    
+    BOOST_TEST_EQ(v4, static_cast<T>(1.23456789123456789123456789123456789123456789e-5L));
+
+    const char* buffer5 = "1.23456789123456789123456789123456789123456789e-00000000000000000005";
+    T v5 = 0;
+    auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
+    BOOST_TEST_EQ(r5.ec, 0);
+    BOOST_TEST_EQ(v5, static_cast<T>(1.23456789123456789123456789123456789123456789e-5L));
+
 }
 
 int main()

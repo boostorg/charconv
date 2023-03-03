@@ -193,7 +193,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // we set the maximum
         if (offset > significand_buffer_size)
         {
-            offset = significand_buffer_size;
+            offset = significand_buffer_size - 1;
             i = significand_buffer_size;
             if (significand_buffer[offset] == '5' ||
                 significand_buffer[offset] == '6' ||
@@ -229,10 +229,30 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     // Finally we get the exponent
-    constexpr std::size_t exponent_buffer_size = 7; // Float128 min exp is −16382
-    char exponent_buffer[exponent_buffer_size] {}; // Binary64 maximum from IEEE 754-2019 section 3.6
+    constexpr std::size_t exponent_buffer_size = 6; // Float128 min exp is −16382
+    char exponent_buffer[exponent_buffer_size] {};
     Integer significand_digits = i;
     i = 0;
+
+    // Get the sign first
+    if (*next == '-')
+    {
+        exponent_buffer[i] = *next;
+        ++next;
+        ++i;
+    }
+    else if (*next == '+')
+    {
+        ++next;
+    }
+
+    // Next strip any leading zeros
+    while (*next == '0')
+    {
+        ++next;
+    }
+
+    // Process the significant values
     while (next != last && i < exponent_buffer_size)
     {
         exponent_buffer[i] = *next;
@@ -240,6 +260,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         ++i;
     }
 
+    // If the exponent can't fit in the buffer the number is not representable
     if (next != last && i == exponent_buffer_size)
     {
         return {next, ERANGE};
