@@ -143,8 +143,14 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         {
             return {first, EINVAL};
         }
-
-        exponent = static_cast<Integer>(dot_position) - i + extra_zeros;
+        if (dot_position != 0)
+        {
+            exponent = static_cast<Integer>(dot_position) - i + extra_zeros;
+        }
+        else
+        {
+            exponent = extra_zeros;
+        }
         std::size_t offset = i;
         
         from_chars_result r;

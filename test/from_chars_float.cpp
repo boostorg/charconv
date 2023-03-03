@@ -118,11 +118,11 @@ void odd_strings_test()
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_EQ(v1, static_cast<T>(5));
 
-    const char* buffer2 = "10000000000000000000000000000000";
+    const char* buffer2 = "123456789123456789123456789";
     T v2 = 0;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
     BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_EQ(v2, static_cast<T>(1e31L));
+    BOOST_TEST_EQ(v2, static_cast<T>(1.23456789123456789123456789e26L));
 
     const char* buffer3 = "100000000000000000000000e5";
     T v3 = 0;
@@ -154,8 +154,8 @@ int main()
     dot_position_test<float>();
     dot_position_test<double>();
 
-    // odd_strings_test<float>();
-    // odd_strings_test<double>();
+    odd_strings_test<float>();
+    odd_strings_test<double>();
 
     #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     simple_integer_test<long double>();
