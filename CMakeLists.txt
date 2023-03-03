@@ -20,6 +20,7 @@ target_link_libraries(boost_charconv
   PUBLIC
     Boost::config
     Boost::assert
+    Boost::core
 )
 
 target_compile_features(boost_charconv PUBLIC cxx_std_11)
