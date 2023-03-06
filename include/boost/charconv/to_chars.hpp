@@ -7,7 +7,6 @@
 #ifndef BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 #define BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 
-#include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/integer_conversion.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
@@ -124,7 +123,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         if (value < 0)
         {
             is_negative = true;
-            unsigned_value = apply_sign(value);
+            unsigned_value = -(static_cast<Unsigned_Integer>(value));
         }
         else
         {
