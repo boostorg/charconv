@@ -60,6 +60,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <iostream>
+#include <iomanip>
 #include <limits>
 #include <cstdint>
 #include <cfloat>
@@ -226,7 +227,14 @@ template<class T> void test_roundtrip( T value )
     }
     else
     {
+        #ifdef BOOST_CHARCONV_DEBUG
+        std::cerr << std::setprecision(20)
+                  << "Initial Value:    " << value
+                  << "\nto_chars Value:   " << std::string( buffer, r.ptr )
+                  << "\nfrom_chars Value: " << v2 << std::endl;
+        #else
         std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        #endif
     }
 }
 
