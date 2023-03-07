@@ -27,6 +27,26 @@
 #  define BOOST_CHARCONV_UINT128_MAX ((2 * (boost::uint128_type) BOOST_CHARCONV_INT128_MAX) + 1)
 #endif
 
+// 128 bit floats
+#if defined(BOOST_HAS_FLOAT128)
+#  define BOOST_CHARCONV_LIBQUADMATH_FLOAT128
+#  include <quadmath.h>
+namespace boost { namespace charconv {
+    using float128_t = __float128;
+}}
+#elif defined(BOOST_INTEL)
+#  define BOOST_CHARCONV_INTEL_FLOAT128
+namespace boost { namespace charconv {
+    using float128_t = _Quad;
+}}
+#else
+#  define BOOST_CHARCONV_NO_FLOAT128
+#endif
+
+#if defined(BOOST_CHARCONV_LIBQUADMATH_FLOAT128) && defined(BOOST_CHARCONV_INTEL_FLOAT128)
+#  error "Inconsistent float128 implementations detected"
+#endif
+
 #ifndef BOOST_NO_CXX14_CONSTEXPR
 #  define BOOST_CHARCONV_CXX14_CONSTEXPR BOOST_CXX14_CONSTEXPR
 #else
