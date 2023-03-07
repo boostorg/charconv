@@ -12,23 +12,23 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-inline long double compute_float80(std::int64_t power, std::uint64_t i, bool negative, bool& success) noexcept
+inline long double compute_float80(std::int64_t power, boost::uint128_type i, bool negative, bool& success) noexcept
 {
     long double return_val;
 
     // At the absolute minimum and maximum rounding errors of 1 ULP can cause overflow
-    if (power == 4914 && i == UINT64_C(1189731495357231765))
+    if (power == 4912 && static_cast<std::uint64_t>(i) == UINT64_C(8292685093465866806))
     {
         return_val = std::numeric_limits<long double>::max();
     }
-    else if (power == -4950 && i == UINT64_C(3362103143112093506))
+    else if (power == -4952 && static_cast<std::uint64_t>(i) == UINT64_C(4168920984437421538))
     {
         return_val = std::numeric_limits<long double>::min();
     }
     else
     {
-        return_val = i * std::pow(10.0L, static_cast<long double>(power));
-        if (std::isinf(return_val))
+        return_val = static_cast<long double>(i * std::pow(10.0L, static_cast<long double>(power)));
+        if (std::abs(return_val) > HUGE_VALL)
         {
             success = false;
             return negative ? -0.0L : 0.0L;

@@ -92,11 +92,33 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         from_chars_result r;
         if (fmt == chars_format::hex)
         {
+            #ifdef BOOST_CHARCONV_HAS_INT128
+            BOOST_IF_CONSTEXPR (std::is_same<boost::uint128_type, Unsigned_Integer>::value)
+            {
+                r = from_chars128(significand_buffer, significand_buffer + offset, significand, 16);
+            }
+            else
+            {
+                r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
+            }
+            #else
             r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
+            #endif
         }
         else
         {
+            #ifdef BOOST_CHARCONV_HAS_INT128
+            BOOST_IF_CONSTEXPR (std::is_same<boost::uint128_type, Unsigned_Integer>::value)
+            {
+                r = from_chars128(significand_buffer, significand_buffer + offset, significand);
+            }
+            else
+            {
+                r = from_chars(significand_buffer, significand_buffer + offset, significand);
+            }
+            #else
             r = from_chars(significand_buffer, significand_buffer + offset, significand);
+            #endif
         }
         switch (r.ec)
         {
@@ -241,7 +263,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             }
             #else
             r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
-            #endif;
+            #endif
         }
         else
         {

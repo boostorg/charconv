@@ -91,8 +91,8 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     bool sign {};
-    std::uint64_t significand {};
-    std::int64_t  exponent {};
+    boost::uint128_type significand {};
+    std::int64_t exponent {};
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != 0)
