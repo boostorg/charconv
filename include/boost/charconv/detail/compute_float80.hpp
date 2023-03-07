@@ -12,6 +12,14 @@
 
 namespace boost { namespace charconv { namespace detail {
 
+static constexpr long double big_powers[] = {
+    1e4892L, 1e4893L, 1e4894L, 1e4895L, 1e4896L, 1e4897L, 1e4898L,
+    1e4899L, 1e4900L, 1e4901L, 1e4902L, 1e4903L, 1e4904L, 1e4905L,
+    1e4906L, 1e4907L, 1e4908L, 1e4909L, 1e4910L, 1e4911L, 1e4912L
+};
+
+static_assert(sizeof(big_powers) == 21*sizeof(long double));
+
 inline long double compute_float80(std::int64_t power, boost::uint128_type i, bool negative, bool& success) noexcept
 {
     long double return_val;
@@ -24,6 +32,10 @@ inline long double compute_float80(std::int64_t power, boost::uint128_type i, bo
     else if (power == -4952 && static_cast<std::uint64_t>(i) == UINT64_C(4168920984437421538))
     {
         return_val = std::numeric_limits<long double>::min();
+    }
+    else if (power >= 4892)
+    {
+        return_val = i * big_powers[power - 4892];
     }
     else
     {
