@@ -28,20 +28,66 @@
 #endif
 
 // 128 bit floats
-#if defined(BOOST_HAS_FLOAT128)
-#  define BOOST_CHARCONV_LIBQUADMATH_FLOAT128
+#if defined(BOOST_HAS_FLOAT128) 
+#  define BOOST_CHARCONV_HAS_FLOAT128
 #  include <quadmath.h>
 namespace boost { namespace charconv {
-    using float128_t = __float128;
+    using float128_type = __float128;
 }}
 #elif defined(BOOST_INTEL)
-#  define BOOST_CHARCONV_INTEL_FLOAT128
+#  define BOOST_CHARCONV_HAS_FLOAT128
 namespace boost { namespace charconv {
-    using float128_t = _Quad;
+    using float128_type = _Quad;
+    extern "C"
+    {
+        _Quad __powq(_Quad, _Quad);
+        #define powq __powq
+    }
 }}
 #else
 #  define BOOST_CHARCONV_NO_FLOAT128
 #endif
+
+// If we have either type of float128_t we can define the numerical limits
+#ifndef BOOST_CHARCONV_NO_FLOAT128
+#include <cfloat>
+namespace boost { namespace charconv { namespace quad_constants {
+static constexpr float128_type quad_min = static_cast<float128_type>(1) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                          static_cast<float128_type>(DBL_MIN) / 1073741824;
+
+static constexpr float128_type quad_denorm_min = static_cast<float128_type>(1) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
+                                                 static_cast<float128_type>(DBL_MIN) / 5.5751862996326557854e+42L;
+
+static constexpr double dbl_mult = 8.9884656743115795386e+307; // This has one bit set only.
+static constexpr float128_type quad_max = (static_cast<float128_type>(1) - 9.62964972193617926527988971292463659e-35) // This now has all bits sets to 1
+                                          * static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 
+                                          static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 
+                                          static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 
+                                          static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 
+                                          static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 
+                                          static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 
+                                          static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 
+                                          static_cast<float128_type>(dbl_mult) * static_cast<float128_type>(dbl_mult) * 65536;
+}}} // namespace quad_constants
+
+#  define BOOST_CHARCONV_QUAD_MIN boost::charconv::quad_constants::quad_min
+#  define BOOST_CHARCONV_QUAD_DENORM_MIN boost::charconv::quad_constants::quad_denorm_min
+#  define BOOST_CHARCONV_QUAD_MAX boost::charconv::quad_constants::quad_max
+#endif // Quad constants
 
 #if defined(BOOST_CHARCONV_LIBQUADMATH_FLOAT128) && defined(BOOST_CHARCONV_INTEL_FLOAT128)
 #  error "Inconsistent float128 implementations detected"
