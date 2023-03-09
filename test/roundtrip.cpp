@@ -66,7 +66,8 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <cfloat>
 #include <cmath>
 
-int const N = 1024;
+int const N = 10;
+#define BOOST_CHARCONV_DEBUG
 
 static boost::detail::splitmix64 rng;
 
