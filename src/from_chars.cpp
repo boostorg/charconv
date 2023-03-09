@@ -9,7 +9,7 @@
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/charconv/detail/compute_float64.hpp>
 
-#if !((BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)) && defined(BOOST_CHARCONV_HAS_INT128))
+#if !((BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC))) && defined(BOOST_CHARCONV_HAS_INT128)
 #include <boost/charconv/detail/compute_float80.hpp>
 #endif
 

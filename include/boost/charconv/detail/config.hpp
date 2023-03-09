@@ -20,7 +20,9 @@
 #endif
 
 // Use 128 bit integers and supress warnings for using extensions
-#if defined(BOOST_HAS_INT128)
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60846
+// A 32 bit target on a 64 bit system will have int128 defined but unusable
+#if defined(BOOST_HAS_INT128) && !defined(__i386__)
 #  define BOOST_CHARCONV_HAS_INT128
 #  define BOOST_CHARCONV_INT128_MAX  (boost::int128_type)(((boost::uint128_type) 1 << 127) - 1)
 #  define BOOST_CHARCONV_INT128_MIN  (-BOOST_CHARCONV_INT128_MAX - 1)
