@@ -18,7 +18,7 @@ static constexpr long double big_powers[] = {
     1e4906L, 1e4907L, 1e4908L, 1e4909L, 1e4910L, 1e4911L, 1e4912L
 };
 
-static_assert(sizeof(big_powers) == 21*sizeof(long double));
+static_assert(sizeof(big_powers) == 21*sizeof(long double), "Big powers table must have 21 elements");
 
 inline long double compute_float80(std::int64_t power, boost::uint128_type i, bool negative, bool& success) noexcept
 {
@@ -40,7 +40,7 @@ inline long double compute_float80(std::int64_t power, boost::uint128_type i, bo
     else
     {
         return_val = static_cast<long double>(i * std::pow(10.0L, static_cast<long double>(power)));
-        if (std::abs(return_val) > HUGE_VALL)
+        if (std::abs(return_val) > (std::numeric_limits<long double>::max)())
         {
             success = false;
             return negative ? -0.0L : 0.0L;
