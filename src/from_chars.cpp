@@ -5,11 +5,14 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/parser.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/charconv/detail/compute_float64.hpp>
+
+#if !(BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC))
 #include <boost/charconv/detail/compute_float80.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-// TODO: compute_float128.hpp
+#endif
+
 #include <boost/charconv/from_chars.hpp>
 #include <string>
 #include <cstdlib>
