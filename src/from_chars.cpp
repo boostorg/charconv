@@ -86,7 +86,8 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 
-#elif BOOST_CHARCONV_LDBL_BITS == 80
+#elif BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128
+// Works for both 80 and 128 bit long doubles becuase they both allow for normal standard library functions
 // https://en.wikipedia.org/wiki/Extended_precision#x86_extended_precision_format
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -102,7 +103,29 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     }
 
     bool success {};
-    auto return_val = boost::charconv::detail::compute_float80(exponent, significand, sign, success);
+    long double return_val;
+    if (exponent >= 4892 || exponent <= -4932)
+    {
+        std::string tmp(first, last);
+        if (fmt == boost::charconv::chars_format::hex)
+        {
+            tmp.insert(0, "0x");
+        }
+
+        char* ptr = 0;
+        return_val = std::strtold(tmp.c_str(), &ptr);
+        r.ec = errno;
+        r.ptr = ptr;
+        if (r.ec == 0)
+        {
+            success = true;
+        }
+    }
+    else
+    {
+        return_val = boost::charconv::detail::compute_float80(exponent, significand, sign, success);
+    }
+
     if (!success)
     {
         value = 0.0L;
@@ -118,6 +141,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 
 #else
 
+// __float128 will need to use functions out of libquadmath
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     (void)fmt;
