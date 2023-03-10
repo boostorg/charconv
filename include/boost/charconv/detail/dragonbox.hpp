@@ -7,6 +7,7 @@
 #define BOOST_CHARCONV_DETAIL_DRAGONBOX
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/core/bit.hpp>
 #include <type_traits>
 #include <limits>
 #include <cstdint>
@@ -34,7 +35,7 @@ namespace boost { namespace charconv {
         template <typename T>
         constexpr std::size_t physical_bits = sizeof(T) * std::numeric_limits<unsigned char>::digits;
 
-        template <class T>
+        template <typename T>
         constexpr std::size_t value_bits = std::numeric_limits<typename std::enable_if<std::is_unsigned<T>::value, T>::type>::digits;
     }
 
@@ -50,6 +51,17 @@ namespace boost { namespace charconv {
         static constexpr int exponent_bias = -127;
         static constexpr int decimal_digits = 9;
     };
+
+    #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+    // Definitions of in-class constexpr members are allowed but deprecated in C++17
+    constexpr int ieee754_binary32::significand_bits;
+    constexpr int ieee754_binary32::exponent_bits;
+    constexpr int ieee754_binary32::min_exponent;
+    constexpr int ieee754_binary32::max_exponent;
+    constexpr int ieee754_binary32::exponent_bias;
+    constexpr int ieee754_binary32::decimal_digits;
+    #endif
+
     struct ieee754_binary64 
     {
         static constexpr int significand_bits = 52;
@@ -59,6 +71,16 @@ namespace boost { namespace charconv {
         static constexpr int exponent_bias = -1023;
         static constexpr int decimal_digits = 17;
     };
+
+    #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+    // Definitions of in-class constexpr members are allowed but deprecated in C++17
+    constexpr int ieee754_binary64::significand_bits;
+    constexpr int ieee754_binary64::exponent_bits;
+    constexpr int ieee754_binary64::min_exponent;
+    constexpr int ieee754_binary64::max_exponent;
+    constexpr int ieee754_binary64::exponent_bias;
+    constexpr int ieee754_binary64::decimal_digits;
+    #endif
 
     // A floating-point traits class defines ways to interpret a bit pattern of given size as an
     // encoding of floating-point number. This is a default implementation of such a traits class,
@@ -87,7 +109,7 @@ namespace boost { namespace charconv {
         static_assert(sizeof(carrier_uint) == sizeof(T));
 
         // Number of bits in the above unsigned integer type.
-        constexpr int carrier_bits = static_cast<int>(detail::physical_bits<carrier_uint>);
+        static constexpr int carrier_bits = static_cast<int>(detail::physical_bits<carrier_uint>);
 
         // Convert from carrier_uint into the original type.
         // Depending on the floating-point encoding format, this operation might not be possible for
@@ -111,7 +133,7 @@ namespace boost { namespace charconv {
         // Extract exponent bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. This function does not do bias adjustment.
-        constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept 
+        BOOST_CHARCONV_CXX14_CONSTEXPR unsigned extract_exponent_bits(carrier_uint u) const noexcept 
         {
             constexpr int significand_bits = format::significand_bits;
             constexpr int exponent_bits = format::exponent_bits;
@@ -125,7 +147,7 @@ namespace boost { namespace charconv {
         // Extract significand bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. The result does not contain the implicit bit.
-        constexpr carrier_uint extract_significand_bits(carrier_uint u) noexcept 
+        BOOST_CHARCONV_CXX14_CONSTEXPR carrier_uint extract_significand_bits(carrier_uint u) noexcept 
         {
             constexpr auto mask = carrier_uint((carrier_uint(1) << format::significand_bits) - 1);
             return carrier_uint(u & mask);
@@ -145,10 +167,10 @@ namespace boost { namespace charconv {
 
         // The actual value of exponent is obtained by adding this value to the extracted exponent
         // bits.
-        constexpr int exponent_bias = 1 - (1 << (carrier_bits - format::significand_bits - 2));
+        static constexpr int exponent_bias = 1 - (1 << (carrier_bits - format::significand_bits - 2));
 
         // Obtain the actual value of the binary exponent from the extracted exponent bits.
-        static constexpr int binary_exponent(unsigned int exponent_bits) noexcept 
+        BOOST_CHARCONV_CXX14_CONSTEXPR int binary_exponent(unsigned int exponent_bits) const noexcept 
         {
             if (exponent_bits == 0) 
             {
@@ -162,7 +184,7 @@ namespace boost { namespace charconv {
 
         // Obtain the actual value of the binary exponent from the extracted significand bits and
         // exponent bits.
-        constexpr carrier_uint binary_significand(carrier_uint significand_bits, unsigned int exponent_bits) noexcept 
+        BOOST_CHARCONV_CXX14_CONSTEXPR carrier_uint binary_significand(carrier_uint significand_bits, unsigned int exponent_bits) noexcept 
         {
             if (exponent_bits == 0) 
             {
@@ -182,33 +204,37 @@ namespace boost { namespace charconv {
             return (u << 1) != 0; 
         }
 
-        constexpr bool is_positive(carrier_uint u) noexcept 
+        BOOST_CHARCONV_CXX14_CONSTEXPR bool is_positive(carrier_uint u) noexcept 
         {
             constexpr auto sign_bit = carrier_uint(1) << (format::significand_bits + format::exponent_bits);
             return u < sign_bit;
         }
 
-        static constexpr bool is_negative(carrier_uint u) noexcept 
+        BOOST_CHARCONV_CXX14_CONSTEXPR bool is_negative(carrier_uint u) noexcept 
         { 
             return !is_positive(u);
         }
 
-        static constexpr bool is_finite(unsigned int exponent_bits) noexcept
+        BOOST_CHARCONV_CXX14_CONSTEXPR bool is_finite(unsigned int exponent_bits) noexcept
         {
             constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
             return exponent_bits != exponent_bits_all_set;
         }
 
-        static constexpr bool has_all_zero_significand_bits(carrier_uint u) noexcept
+        constexpr bool has_all_zero_significand_bits(carrier_uint u) noexcept
         {
             return (u << 1) == 0;
         }
 
-        static constexpr bool has_even_significand_bits(carrier_uint u) noexcept
+        constexpr bool has_even_significand_bits(carrier_uint u) noexcept
         {
             return u % 2 == 0;
         }
     };
+
+    #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+    constexpr int default_float_traits<T>::exponent_bias;
+    #endif
 
     // Convenient wrappers for floating-point traits classes.
     // In order to reduce the argument passing overhead, these classes should be as simple as
@@ -328,24 +354,6 @@ namespace boost { namespace charconv {
             return traits_type::has_even_significand_bits(u);
         }
     };
-
-    namespace detail {
-        ////////////////////////////////////////////////////////////////////////////////////////
-        // Bit operation intrinsics.
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        namespace bits {
-            // Most compilers should be able to optimize this into the ROR instruction.
-            inline std::uint32_t rotr(std::uint32_t n, std::uint32_t r) noexcept {
-                r &= 31;
-                return (n >> r) | (n << (32 - r));
-            }
-            inline std::uint64_t rotr(std::uint64_t n, std::uint32_t r) noexcept {
-                r &= 63;
-                return (n >> r) | (n << (64 - r));
-            }
-        }
-
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for wide unsigned integer arithmetic.
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -355,17 +363,6 @@ namespace boost { namespace charconv {
             // emulating them with a pair of 64-bit integers actually produces a better code,
             // so we avoid using those built-ins. That said, they are still useful for
             // implementing 64-bit x 64-bit -> 128-bit multiplication.
-
-            // clang-format off
-#if defined(__SIZEOF_INT128__)
-		// To silence "error: ISO C++ does not support '__int128' for 'type name'
-		// [-Wpedantic]"
-#if defined(__GNUC__)
-			__extension__
-#endif
-				using builtin_uint128_t = unsigned __int128;
-#endif
-            // clang-format on
 
             struct uint128 {
                 uint128() = default;
@@ -379,25 +376,34 @@ namespace boost { namespace charconv {
                 constexpr std::uint64_t high() const noexcept { return high_; }
                 constexpr std::uint64_t low() const noexcept { return low_; }
 
-                uint128& operator+=(std::uint64_t n) & noexcept {
-#if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
+                uint128& operator+=(std::uint64_t n) & noexcept
+                {
+                    #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
+
                     unsigned long long carry;
                     low_ = __builtin_addcll(low_, n, 0, &carry);
                     high_ = __builtin_addcll(high_, 0, carry, &carry);
-#elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
+
+                    #elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
+
                     unsigned long long result;
                     auto carry = __builtin_ia32_addcarryx_u64(0, low_, n, &result);
                     low_ = result;
                     __builtin_ia32_addcarryx_u64(carry, high_, 0, &result);
                     high_ = result;
-#elif defined(_MSC_VER) && defined(_M_X64)
+
+                    #elif defined(_MSC_VER) && defined(_M_X64)
+
                     auto carry = _addcarry_u64(0, low_, n, &low_);
                     _addcarry_u64(carry, high_, 0, &high_);
-#else
+
+                    #else
+
                     auto sum = low_ + n;
                     high_ += (sum < low_ ? 1 : 0);
                     low_ = sum;
-#endif
+                    
+                    #endif
                     return *this;
                 }
             };
@@ -413,7 +419,7 @@ namespace boost { namespace charconv {
             // Get 128-bit result of multiplication of two 64-bit unsigned integers.
             BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
 #if defined(__SIZEOF_INT128__)
-                auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
+                auto result = boost::uint128_type(x) * boost::uint128_type(y);
                 return {std::uint64_t(result >> 64), std::uint64_t(result)};
 #elif defined(_MSC_VER) && defined(_M_X64)
                 uint128 result;
@@ -440,7 +446,7 @@ namespace boost { namespace charconv {
             BOOST_CHARCONV_SAFEBUFFERS inline std::uint64_t umul128_upper64(std::uint64_t x,
                                                                  std::uint64_t y) noexcept {
 #if defined(__SIZEOF_INT128__)
-                auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
+                auto result = boost::uint128_type(x) * boost::uint128_type(y);
                 return std::uint64_t(result >> 64);
 #elif defined(_MSC_VER) && defined(_M_X64)
                 return __umulh(x, y);
