@@ -298,8 +298,9 @@ namespace boost { namespace charconv {
         }
     };
 
-    template <class T, class Traits>
-    struct signed_significand_bits {
+    template <typename T, typename Traits>
+    struct signed_significand_bits 
+    {
         using type = T;
         using traits_type = Traits;
         using carrier_uint = typename traits_type::carrier_uint;
@@ -311,16 +312,19 @@ namespace boost { namespace charconv {
             : u{bit_pattern} {}
 
         // Shift the obtained signed significand bits to the left by 1 to remove the sign bit.
-        constexpr carrier_uint remove_sign_bit_and_shift() const noexcept {
+        constexpr carrier_uint remove_sign_bit_and_shift() const noexcept 
+        {
             return traits_type::remove_sign_bit_and_shift(u);
         }
 
         constexpr bool is_positive() const noexcept { return traits_type::is_positive(u); }
         constexpr bool is_negative() const noexcept { return traits_type::is_negative(u); }
-        constexpr bool has_all_zero_significand_bits() const noexcept {
+        constexpr bool has_all_zero_significand_bits() const noexcept 
+        {
             return traits_type::has_all_zero_significand_bits(u);
         }
-        constexpr bool has_even_significand_bits() const noexcept {
+        constexpr bool has_even_significand_bits() const noexcept
+        {
             return traits_type::has_even_significand_bits(u);
         }
     };
