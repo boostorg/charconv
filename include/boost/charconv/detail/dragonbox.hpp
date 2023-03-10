@@ -282,8 +282,7 @@ namespace boost { namespace charconv {
         // Remove the exponent bits and extract significand bits together with the sign bit.
         constexpr auto remove_exponent_bits(unsigned exponent_bits) const noexcept
         {
-            return signed_significand_bits<type, traits_type>(
-                traits_type::remove_exponent_bits(u, exponent_bits));
+            return signed_significand_bits<type, traits_type>(traits_type::remove_exponent_bits(u, exponent_bits));
         }
 
         // Obtain the actual value of the binary exponent from the extracted exponent bits.
@@ -357,7 +356,7 @@ namespace boost { namespace charconv {
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for wide unsigned integer arithmetic.
         ////////////////////////////////////////////////////////////////////////////////////////
-
+    namespace detail {
         namespace wuint {
             // Compilers might support built-in 128-bit integer types. However, it seems that
             // emulating them with a pair of 64-bit integers actually produces a better code,
