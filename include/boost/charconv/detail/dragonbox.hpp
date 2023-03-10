@@ -110,79 +110,101 @@ namespace boost { namespace charconv {
         // Extract exponent bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. This function does not do bias adjustment.
-        static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
+        constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept 
+        {
             constexpr int significand_bits = format::significand_bits;
             constexpr int exponent_bits = format::exponent_bits;
+
             static_assert(detail::value_bits<unsigned int> > exponent_bits);
-            constexpr auto exponent_bits_mask =
-                (static_cast<unsigned int>(1) << exponent_bits) - 1;
+            constexpr auto exponent_bits_mask = (static_cast<unsigned int>(1) << exponent_bits) - 1;
+
             return static_cast<unsigned int>(u >> significand_bits) & exponent_bits_mask;
         }
 
         // Extract significand bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. The result does not contain the implicit bit.
-        static constexpr carrier_uint extract_significand_bits(carrier_uint u) noexcept {
+        constexpr carrier_uint extract_significand_bits(carrier_uint u) noexcept 
+        {
             constexpr auto mask = carrier_uint((carrier_uint(1) << format::significand_bits) - 1);
             return carrier_uint(u & mask);
         }
 
         // Remove the exponent bits and extract significand bits together with the sign bit.
-        static constexpr carrier_uint remove_exponent_bits(carrier_uint u,
-                                                           unsigned int exponent_bits) noexcept {
+        constexpr carrier_uint remove_exponent_bits(carrier_uint u, unsigned int exponent_bits) noexcept 
+        {
             return u ^ (carrier_uint(exponent_bits) << format::significand_bits);
         }
 
         // Shift the obtained signed significand bits to the left by 1 to remove the sign bit.
-        static constexpr carrier_uint remove_sign_bit_and_shift(carrier_uint u) noexcept {
-            return carrier_uint(carrier_uint(u) << 1);
+        constexpr carrier_uint remove_sign_bit_and_shift(carrier_uint u) noexcept 
+        {
+            return carrier_uint(u << 1);
         }
 
         // The actual value of exponent is obtained by adding this value to the extracted exponent
         // bits.
-        static constexpr int exponent_bias =
-            1 - (1 << (carrier_bits - format::significand_bits - 2));
+        constexpr int exponent_bias = 1 - (1 << (carrier_bits - format::significand_bits - 2));
 
         // Obtain the actual value of the binary exponent from the extracted exponent bits.
-        static constexpr int binary_exponent(unsigned int exponent_bits) noexcept {
-            if (exponent_bits == 0) {
+        static constexpr int binary_exponent(unsigned int exponent_bits) noexcept 
+        {
+            if (exponent_bits == 0) 
+            {
                 return format::min_exponent;
             }
-            else {
-                return int(exponent_bits) + format::exponent_bias;
+            else 
+            {
+                return static_cast<int>(exponent_bits) + format::exponent_bias;
             }
         }
 
         // Obtain the actual value of the binary exponent from the extracted significand bits and
         // exponent bits.
-        static constexpr carrier_uint binary_significand(carrier_uint significand_bits,
-                                                         unsigned int exponent_bits) noexcept {
-            if (exponent_bits == 0) {
+        constexpr carrier_uint binary_significand(carrier_uint significand_bits, unsigned int exponent_bits) noexcept 
+        {
+            if (exponent_bits == 0) 
+            {
                 return significand_bits;
             }
-            else {
-                return significand_bits | (carrier_uint(1) << format::significand_bits);
+            else 
+            {
+                return significand_bits | (static_cast<carrier_uint>(1) << format::significand_bits);
             }
         }
 
 
         /* Various boolean observer functions */
 
-        static constexpr bool is_nonzero(carrier_uint u) noexcept { return (u << 1) != 0; }
-        static constexpr bool is_positive(carrier_uint u) noexcept {
-            constexpr auto sign_bit = carrier_uint(1)
-                                      << (format::significand_bits + format::exponent_bits);
+        constexpr bool is_nonzero(carrier_uint u) noexcept 
+        { 
+            return (u << 1) != 0; 
+        }
+
+        constexpr bool is_positive(carrier_uint u) noexcept 
+        {
+            constexpr auto sign_bit = carrier_uint(1) << (format::significand_bits + format::exponent_bits);
             return u < sign_bit;
         }
-        static constexpr bool is_negative(carrier_uint u) noexcept { return !is_positive(u); }
-        static constexpr bool is_finite(unsigned int exponent_bits) noexcept {
+
+        static constexpr bool is_negative(carrier_uint u) noexcept 
+        { 
+            return !is_positive(u);
+        }
+
+        static constexpr bool is_finite(unsigned int exponent_bits) noexcept
+        {
             constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
             return exponent_bits != exponent_bits_all_set;
         }
-        static constexpr bool has_all_zero_significand_bits(carrier_uint u) noexcept {
+
+        static constexpr bool has_all_zero_significand_bits(carrier_uint u) noexcept
+        {
             return (u << 1) == 0;
         }
-        static constexpr bool has_even_significand_bits(carrier_uint u) noexcept {
+        
+        static constexpr bool has_even_significand_bits(carrier_uint u) noexcept
+        {
             return u % 2 == 0;
         }
     };
