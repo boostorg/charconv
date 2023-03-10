@@ -66,7 +66,8 @@ namespace boost { namespace charconv {
     // interpret 64-bits into a binary64-encoded floating-point number. Users might specialize this
     // class to change the default behavior for certain types.
     template <typename T>
-    struct default_float_traits {
+    struct default_float_traits 
+    {
         // I don't know if there is a truly reliable way of detecting
         // IEEE-754 binary32/binary64 formats; I just did my best here.
         static_assert(std::numeric_limits<T>::is_iec559 && std::numeric_limits<T>::radix == 2 &&
@@ -202,7 +203,7 @@ namespace boost { namespace charconv {
         {
             return (u << 1) == 0;
         }
-        
+
         static constexpr bool has_even_significand_bits(carrier_uint u) noexcept
         {
             return u % 2 == 0;
@@ -214,14 +215,15 @@ namespace boost { namespace charconv {
     // possible (e.g., no inheritance, no private non-static data member, etc.; this is an
     // unfortunate fact about common ABI convention).
 
-    template <class T, class Traits = default_float_traits<T>>
+    template <typename T, typename Traits = default_float_traits<T>>
     struct float_bits;
 
-    template <class T, class Traits = default_float_traits<T>>
+    template <typename T, typename Traits = default_float_traits<T>>
     struct signed_significand_bits;
 
-    template <class T, class Traits>
-    struct float_bits {
+    template <typename T, typename Traits>
+    struct float_bits
+    {
         using type = T;
         using traits_type = Traits;
         using carrier_uint = typename traits_type::carrier_uint;
@@ -238,51 +240,60 @@ namespace boost { namespace charconv {
         // Extract exponent bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. This function does not do bias adjustment.
-        constexpr unsigned int extract_exponent_bits() const noexcept {
+        constexpr unsigned int extract_exponent_bits() const noexcept
+        {
             return traits_type::extract_exponent_bits(u);
         }
 
         // Extract significand bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. The result does not contain the implicit bit.
-        constexpr carrier_uint extract_significand_bits() const noexcept {
+        constexpr carrier_uint extract_significand_bits() const noexcept
+        {
             return traits_type::extract_significand_bits(u);
         }
 
         // Remove the exponent bits and extract significand bits together with the sign bit.
-        constexpr auto remove_exponent_bits(unsigned int exponent_bits) const noexcept {
+        constexpr auto remove_exponent_bits(unsigned exponent_bits) const noexcept
+        {
             return signed_significand_bits<type, traits_type>(
                 traits_type::remove_exponent_bits(u, exponent_bits));
         }
 
         // Obtain the actual value of the binary exponent from the extracted exponent bits.
-        static constexpr int binary_exponent(unsigned int exponent_bits) noexcept {
+        constexpr int binary_exponent(unsigned exponent_bits) noexcept
+        {
             return traits_type::binary_exponent(exponent_bits);
         }
-        constexpr int binary_exponent() const noexcept {
+        constexpr int binary_exponent() const noexcept
+        {
             return binary_exponent(extract_exponent_bits());
         }
 
         // Obtain the actual value of the binary exponent from the extracted significand bits and
         // exponent bits.
-        static constexpr carrier_uint binary_significand(carrier_uint significand_bits,
-                                                         unsigned int exponent_bits) noexcept {
+        constexpr carrier_uint binary_significand(carrier_uint significand_bits, unsigned exponent_bits) noexcept 
+        {
             return traits_type::binary_significand(significand_bits, exponent_bits);
         }
-        constexpr carrier_uint binary_significand() const noexcept {
+        constexpr carrier_uint binary_significand() const noexcept 
+        {
             return binary_significand(extract_significand_bits(), extract_exponent_bits());
         }
 
         constexpr bool is_nonzero() const noexcept { return traits_type::is_nonzero(u); }
         constexpr bool is_positive() const noexcept { return traits_type::is_positive(u); }
         constexpr bool is_negative() const noexcept { return traits_type::is_negative(u); }
-        constexpr bool is_finite(unsigned int exponent_bits) const noexcept {
+        constexpr bool is_finite(unsigned exponent_bits) const noexcept 
+        {
             return traits_type::is_finite(exponent_bits);
         }
-        constexpr bool is_finite() const noexcept {
+        constexpr bool is_finite() const noexcept
+        {
             return traits_type::is_finite(extract_exponent_bits());
         }
-        constexpr bool has_even_significand_bits() const noexcept {
+        constexpr bool has_even_significand_bits() const noexcept
+        {
             return traits_type::has_even_significand_bits(u);
         }
     };
