@@ -20,6 +20,38 @@ struct value128
 {
     std::uint64_t low;
     std::uint64_t high;
+
+    value128& operator+=(std::uint64_t n) noexcept
+    {
+        #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
+
+        unsigned long long carry {};
+        low = __builtin_addcll(low, n, 0, &carry);
+        high = __builtin_addcll(high, 0, carry, &carry);
+
+        #elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
+
+        unsigned long long result;
+        auto carry = __builtin_ia32_addcarryx_u64(0, low, n, &result);
+        low = result;
+        __builtin_ia32_addcarryx_u64(carry, high, 0, &result);
+        high = result;
+        
+        #elif defined(BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS)
+
+        auto carry = _addcarry_u64(0, low, n, &low);
+        _addcarry_u64(carry, high, 0, &high);
+
+        #else
+
+        auto sum = low + n;
+        high += (sum < low ? 1 : 0);
+        low = sum;
+
+        #endif
+
+        return *this;
+    }
 };
 
 #ifndef BOOST_CHARCONV_HAS_INT128
@@ -69,6 +101,58 @@ inline value128 full_multiplication(std::uint64_t v1, std::uint64_t v2) noexcept
     return result;
 }
 #endif
+
+constexpr std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
+{
+    return x * static_cast<std::uint64_t>(y);
+}
+
+inline std::uint64_t umul128_upper64(std::uint64_t x, std::uint64_t y) noexcept
+{
+    return full_multiplication(x, y).high;
+}
+
+// Upper 128-bits of multiplication of 64-bit and 128-bit unsinged ints
+inline value128 umul192_upper128(std::uint64_t x, value128 y) noexcept
+{
+    auto r = full_multiplication(x, y.high);
+    r += umul128_upper64(x, y.low);
+
+    return r;
+}
+
+inline value128 umul192_lower128(std::uint64_t x, value128 y) noexcept
+{
+    auto high = x * y.high;
+    auto high_low = full_multiplication(x, y.low);
+
+    return {high + high_low.high, high_low.low};
+}
+
+// Upper 64-bits of a 32-bit and a 64-bit unsigned ints
+inline std::uint64_t umul96_upper64(std::uint32_t x, std::uint64_t y) noexcept
+{
+    #if defined(BOOST_CHARCONV_HAS_INT128) || defined(__arm__)
+    
+    return umul128_upper64(static_cast<std::uint64_t>(x) << 32, y);
+    
+    #else
+
+    auto y_high = static_cast<std::uint32_t>(y >> 32);
+    auto y_low  = static_cast<std::uint32_t>(y);
+
+    auto xy_high = umul64(x, y_high);
+    auto xy_low  = umul64(x, y_low);
+
+    return xy_high + (xy_low >> 32);
+
+    #endif
+}
+
+constexpr std::uint64_t umul96_lower64(std::uint32_t x, std::uint64_t y) noexcept
+{
+    return x * y;
+}
 
 }}} // Namespaces
 

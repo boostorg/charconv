@@ -78,4 +78,21 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
              !(BOOST_CHARCONV_ENDIAN_BIG_BYTE && BOOST_CHARCONV_ENDIAN_LITTLE_BYTE),
 "Inconsistent endianness detected. Please file an issue at https://github.com/cppalliance/charconv with your architecture");
 
+// Suppress additional buffer overrun check.
+// I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
+// attacks. No, they aren't.
+#if defined(__GNUC__) || defined(__clang__)
+    #define BOOST_CHARCONV_SAFEBUFFERS
+#elif defined(_MSC_VER)
+    #define BOOST_CHARCONV_SAFEBUFFERS __declspec(safebuffers)
+#else
+    #define BOOST_CHARCONV_SAFEBUFFERS
+#endif
+
+#if defined(__has_builtin)
+    #define BOOST_CHARCONV_HAS_BUILTIN(x) __has_builtin(x)
+#else
+    #define BOOST_CHARCONV_HAS_BUILTIN(x) false
+#endif
+
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
