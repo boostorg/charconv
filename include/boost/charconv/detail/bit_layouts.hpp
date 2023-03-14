@@ -26,6 +26,26 @@ struct IEEEf2bits
 #endif 
 };
 
+struct ieee754_binary32 
+{
+    static constexpr int significand_bits = 23;
+    static constexpr int exponent_bits = 8;
+    static constexpr int min_exponent = -126;
+    static constexpr int max_exponent = 127;
+    static constexpr int exponent_bias = -127;
+    static constexpr int decimal_digits = 9;
+};
+
+#ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+// Definitions of in-class constexpr members are allowed but deprecated in C++17
+constexpr int ieee754_binary32::significand_bits;
+constexpr int ieee754_binary32::exponent_bits;
+constexpr int ieee754_binary32::min_exponent;
+constexpr int ieee754_binary32::max_exponent;
+constexpr int ieee754_binary32::exponent_bias;
+constexpr int ieee754_binary32::decimal_digits;
+#endif
+
 struct IEEEd2bits
 {
 #if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
@@ -40,6 +60,26 @@ struct IEEEd2bits
     std::uint32_t mantissa_l : 32;
 #endif
 };
+
+struct ieee754_binary64 
+{
+    static constexpr int significand_bits = 52;
+    static constexpr int exponent_bits = 11;
+    static constexpr int min_exponent = -1022;
+    static constexpr int max_exponent = 1023;
+    static constexpr int exponent_bias = -1023;
+    static constexpr int decimal_digits = 17;
+};
+
+#ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+// Definitions of in-class constexpr members are allowed but deprecated in C++17
+constexpr int ieee754_binary64::significand_bits;
+constexpr int ieee754_binary64::exponent_bits;
+constexpr int ieee754_binary64::min_exponent;
+constexpr int ieee754_binary64::max_exponent;
+constexpr int ieee754_binary64::exponent_bias;
+constexpr int ieee754_binary64::decimal_digits;
+#endif
 
 // 80 bit long double (e.g. x86-64)
 #if LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
