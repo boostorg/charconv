@@ -733,6 +733,176 @@ namespace cache {
 
 } // Namespace policy
 
+////////////////////////////////////////////////////////////////////////////////////////
+// Policy holder.
+////////////////////////////////////////////////////////////////////////////////////////
+
+namespace detail { namespace policy_impl {
+    // The library will specify a list of accepted kinds of policies and their defaults, and
+    // the user will pass a list of policies. The aim of helper classes/functions here is to
+    // do the following:
+    //   1. Check if the policy parameters given by the user are all valid; that means,
+    //      each of them should be of the kinds specified by the library.
+    //      If that's not the case, then the compilation fails.
+    //   2. Check if multiple policy parameters for the same kind is specified by the user.
+    //      If that's the case, then the compilation fails.
+    //   3. Build a class deriving from all policies the user have given, and also from
+    //      the default policies if the user did not specify one for some kinds.
+    // A policy belongs to a certain kind if it is deriving from a base class.
+
+    // For a given kind, find a policy belonging to that kind.
+    // Check if there are more than one such policies.
+    enum class policy_found_info 
+    { 
+        not_found, 
+        unique, 
+        repeated 
+    };
+
+    template <typename Policy, policy_found_info info>
+    struct found_policy_pair 
+    {
+        using policy = Policy;
+        static constexpr auto found_info = info;
+    };
+
+    template <typename Base, typename DefaultPolicy>
+    struct base_default_pair 
+    {
+        using base = Base;
+
+        template <typename FoundPolicyInfo>
+        static constexpr FoundPolicyInfo get_policy_impl(FoundPolicyInfo)
+        {
+            return {};
+        }
+
+        template <typename FoundPolicyInfo, typename FirstPolicy, typename... RemainingPolicies>
+        BOOST_CXX14_CONSTEXPR auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) 
+        {
+            BOOST_IF_CONSTEXPR (std::is_base_of<Base, FirstPolicy>::value) 
+            {
+                BOOST_IF_CONSTEXPR (FoundPolicyInfo::found_info == policy_found_info::not_found) 
+                {
+                    return get_policy_impl(
+                        found_policy_pair<FirstPolicy, policy_found_info::unique>{},
+                        remainings...);
+                }
+                else 
+                {
+                    return get_policy_impl(
+                        found_policy_pair<FirstPolicy, policy_found_info::repeated>{},
+                        remainings...);
+                }
+            }
+            else 
+            {
+                return get_policy_impl(FoundPolicyInfo{}, remainings...);
+            }
+        }
+
+        template <typename... Policies>
+        BOOST_CXX14_CONSTEXPR auto get_policy(Policies... policies)
+        {
+            return get_policy_impl(
+                found_policy_pair<DefaultPolicy, policy_found_info::not_found>{},
+                policies...);
+        }
+    };
+
+    template <typename... BaseDefaultPairs>
+    struct base_default_pair_list {};
+
+    // Check if a given policy belongs to one of the kinds specified by the library.
+    template <typename Policy>
+    constexpr bool check_policy_validity(Policy, base_default_pair_list<>) 
+    {
+        return false;
+    }
+
+    template <typename Policy, typename FirstBaseDefaultPair, typename... RemainingBaseDefaultPairs>
+    BOOST_CXX14_CONSTEXPR bool check_policy_validity(Policy, base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>) 
+    {
+        return std::is_base_of<typename FirstBaseDefaultPair::base, Policy>::value ||
+                check_policy_validity(Policy{}, base_default_pair_list<RemainingBaseDefaultPairs...>{});
+    }
+
+    template <class BaseDefaultPairList>
+    constexpr bool check_policy_list_validity(BaseDefaultPairList) 
+    {
+        return true;
+    }
+
+    template <class BaseDefaultPairList, class FirstPolicy, class... RemainingPolicies>
+    BOOST_CXX14_CONSTEXPR bool check_policy_list_validity(BaseDefaultPairList, FirstPolicy, RemainingPolicies... remaining_policies) 
+    {
+        return check_policy_validity(FirstPolicy{}, BaseDefaultPairList{}) &&
+               check_policy_list_validity(BaseDefaultPairList{}, remaining_policies...);
+    }
+
+    // Build policy_holder.
+    template <bool repeated_, typename... FoundPolicyPairs>
+    struct found_policy_pair_list 
+    {
+        static constexpr bool repeated = repeated_;
+    };
+
+    template <typename... Policies>
+    struct policy_holder : Policies... {};
+
+    template <bool repeated, typename... FoundPolicyPairs, typename... Policies>
+    BOOST_CXX14_CONSTEXPR auto make_policy_holder_impl(base_default_pair_list<>,
+                                           found_policy_pair_list<repeated, FoundPolicyPairs...>,
+                                           Policies...) 
+    {
+        return found_policy_pair_list<repeated, FoundPolicyPairs...>{};
+    }
+
+    template <typename FirstBaseDefaultPair, typename... RemainingBaseDefaultPairs, bool repeated,
+              typename... FoundPolicyPairs, typename... Policies>
+    BOOST_CXX14_CONSTEXPR auto make_policy_holder_impl(
+        base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>,
+        found_policy_pair_list<repeated, FoundPolicyPairs...>, Policies... policies) 
+    {
+        using new_found_policy_pair = decltype(FirstBaseDefaultPair::get_policy(policies...));
+
+        return make_policy_holder_impl(
+            base_default_pair_list<RemainingBaseDefaultPairs...>{},
+            found_policy_pair_list < repeated ||
+                new_found_policy_pair::found_info == policy_found_info::repeated,
+            new_found_policy_pair, FoundPolicyPairs... > {}, policies...);
+    }
+
+    template <bool repeated, typename... RawPolicies>
+    BOOST_CXX14_CONSTEXPR auto convert_to_policy_holder(found_policy_pair_list<repeated>, RawPolicies...) 
+    {
+        return policy_holder<RawPolicies...>{};
+    }
+
+    template <bool repeated, typename FirstFoundPolicyPair, typename... RemainingFoundPolicyPairs,
+              typename... RawPolicies>
+    BOOST_CXX14_CONSTEXPR auto convert_to_policy_holder(found_policy_pair_list<repeated, FirstFoundPolicyPair,
+                                                        RemainingFoundPolicyPairs...>, RawPolicies... policies) 
+    {
+        return convert_to_policy_holder(found_policy_pair_list<repeated, RemainingFoundPolicyPairs...>{},
+                                        typename FirstFoundPolicyPair::policy{}, policies...);
+    }
+
+    template <typename BaseDefaultPairList, typename... Policies>
+    constexpr auto make_policy_holder(BaseDefaultPairList, Policies... policies) 
+    {
+        BOOST_CHARCONV_ASSERT_MSG(check_policy_list_validity(BaseDefaultPairList{}, Policies{}...), 
+                                  "An invalid policy is specified");
+
+        using policy_pair_list = decltype(make_policy_holder_impl(
+            BaseDefaultPairList{}, found_policy_pair_list<false>{}, policies...));
+
+        BOOST_CHARCONV_ASSERT_MSG(!policy_pair_list::repeated, "Each policy should be specified at most once");
+
+        return convert_to_policy_holder(policy_pair_list{});
+    }
+}} // Namespace detail::policy_impl
+
 }} // Namespace boost::charconv
 
 #endif // BOOST_CHARCONV_DETAIL_POLICIES_HPP
