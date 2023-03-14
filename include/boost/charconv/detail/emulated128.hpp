@@ -21,6 +21,9 @@ struct value128
     std::uint64_t low;
     std::uint64_t high;
 
+    value128() = default;
+    value128(std::uint64_t low_in, std::uint64_t high_in) : low {low_in}, high {high_in} {}
+
     value128& operator+=(std::uint64_t n) noexcept
     {
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
