@@ -11,6 +11,7 @@
 #include <boost/charconv/detail/dragonbox_cache.hpp>
 #include <boost/charconv/detail/log.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <utility>
 #include <cstdint>
 #include <cstddef>
 
@@ -57,10 +58,10 @@ namespace policy_impl {
             static constexpr bool report_trailing_zeros = false;
 
             template <typename Impl, typename ReturnType>
-            static constexpr void on_trailing_zeros(ReturnType&) noexcept {}
+            static BOOST_CHARCONV_CXX14_CONSTEXPR void on_trailing_zeros(ReturnType&) noexcept {}
 
             template <typename Impl, typename ReturnType>
-            static constexpr void no_trailing_zeros(ReturnType&) noexcept {}
+            static BOOST_CHARCONV_CXX14_CONSTEXPR void no_trailing_zeros(ReturnType&) noexcept {}
         };
 
         struct remove : base 
@@ -75,7 +76,7 @@ namespace policy_impl {
             }
 
             template <typename Impl, typename ReturnType>
-            static constexpr void no_trailing_zeros(ReturnType&) noexcept {}
+            static BOOST_CHARCONV_CXX14_CONSTEXPR void no_trailing_zeros(ReturnType&) noexcept {}
         };
 
         struct report : base 
@@ -84,13 +85,13 @@ namespace policy_impl {
             static constexpr bool report_trailing_zeros = true;
 
             template <typename Impl, typename ReturnType>
-            static constexpr void on_trailing_zeros(ReturnType& r) noexcept
+            static BOOST_CHARCONV_CXX14_CONSTEXPR void on_trailing_zeros(ReturnType& r) noexcept
             {
                 r.may_have_trailing_zeros = true;
             }
 
             template <typename Impl, typename ReturnType>
-            static constexpr void no_trailing_zeros(ReturnType& r) noexcept
+            static BOOST_CHARCONV_CXX14_CONSTEXPR void no_trailing_zeros(ReturnType& r) noexcept
             {
                 r.may_have_trailing_zeros = false;
             }
@@ -162,20 +163,21 @@ namespace policy_impl {
             using shorter_interval_type = interval_type::closed;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(nearest_to_even{});
             }
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE BOOST_CXX14_CONSTEXPR auto invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept 
+            BOOST_FORCEINLINE BOOST_CXX14_CONSTEXPR auto 
+            invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(s.has_even_significand_bits());
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE static constexpr auto
-            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f();
             }
@@ -189,21 +191,22 @@ namespace policy_impl {
             using shorter_interval_type = interval_type::open;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(nearest_to_odd{});
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE BOOST_CXX14_CONSTEXPR auto
-            invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
+            invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(!s.has_even_significand_bits());
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE static constexpr auto
-            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f();
             }
@@ -217,21 +220,22 @@ namespace policy_impl {
             using shorter_interval_type = interval_type::asymmetric_boundary;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
              {
                 return f(nearest_toward_plus_infinity{});
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE BOOST_CXX14_CONSTEXPR auto
-            invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
+            invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(!s.is_negative());
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE BOOST_CXX14_CONSTEXPR auto
-            invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept
+            invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(!s.is_negative());
             }
@@ -245,21 +249,22 @@ namespace policy_impl {
             using shorter_interval_type = interval_type::asymmetric_boundary;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(nearest_toward_minus_infinity{});
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE BOOST_CXX14_CONSTEXPR auto
-            invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept
+            invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(s.is_negative());
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE BOOST_CXX14_CONSTEXPR auto
-            invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept
+            invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(s.is_negative());
             }
@@ -273,21 +278,22 @@ namespace policy_impl {
             using shorter_interval_type = interval_type::right_closed_left_open;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>()) 
             {
                 return f(nearest_toward_zero{});
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE static constexpr auto
-            invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+            invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f();
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE static constexpr auto
-            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f();
             }
@@ -301,21 +307,22 @@ namespace policy_impl {
             using shorter_interval_type = interval_type::left_closed_right_open;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(nearest_away_from_zero{});
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE static constexpr auto
-            invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+            invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f();
             }
 
             template <typename SignedSignificandBits, typename Func>
             BOOST_FORCEINLINE static constexpr auto
-            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+            invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f();
             }
@@ -330,13 +337,13 @@ namespace policy_impl {
 
                 template <typename SignedSignificandBits, typename Func>
                 BOOST_FORCEINLINE static constexpr auto
-                invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+                invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
                 {
                     return f();
                 }
                 template <typename SignedSignificandBits, typename Func>
                 BOOST_FORCEINLINE static constexpr auto
-                invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+                invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
                 {
                     return f();
                 }
@@ -348,13 +355,13 @@ namespace policy_impl {
 
                 template <typename SignedSignificandBits, typename Func>
                 BOOST_FORCEINLINE static constexpr auto
-                invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept
+                invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
                 {
                     return f();
                 }
                 template <typename SignedSignificandBits, typename Func>
                 BOOST_FORCEINLINE static constexpr auto
-                invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept
+                invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
                 {
                     return f();
                 }
@@ -366,8 +373,8 @@ namespace policy_impl {
             using decimal_to_binary_rounding_policy = nearest_to_even_static_boundary;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
-                                                    Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 if (s.has_even_significand_bits())
                 {
@@ -385,7 +392,8 @@ namespace policy_impl {
             using decimal_to_binary_rounding_policy = nearest_to_odd_static_boundary;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 if (s.has_even_significand_bits()) 
                 {
@@ -404,7 +412,8 @@ namespace policy_impl {
                 nearest_toward_plus_infinity_static_boundary;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 if (s.is_negative()) 
                 {
@@ -422,7 +431,8 @@ namespace policy_impl {
             using decimal_to_binary_rounding_policy = nearest_toward_minus_infinity_static_boundary;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>()) 
             {
                 if (s.is_negative()) 
                 {
@@ -451,7 +461,8 @@ namespace policy_impl {
             using decimal_to_binary_rounding_policy = toward_plus_infinity;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>()) 
             {
                 if (s.is_negative()) 
                 {
@@ -469,7 +480,8 @@ namespace policy_impl {
             using decimal_to_binary_rounding_policy = toward_minus_infinity;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits s, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 if (s.is_negative())
                 {
@@ -487,7 +499,8 @@ namespace policy_impl {
             using decimal_to_binary_rounding_policy = toward_zero;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(detail::left_closed_directed{});
             }
@@ -498,7 +511,8 @@ namespace policy_impl {
             using decimal_to_binary_rounding_policy = away_from_zero;
 
             template <typename SignedSignificandBits, typename Func>
-            BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept 
+            BOOST_FORCEINLINE static auto 
+            delegate(SignedSignificandBits, Func&& f) noexcept -> decltype(std::declval<Func>())
             {
                 return f(detail::right_closed_directed{});
             }
@@ -585,8 +599,7 @@ namespace policy_impl {
             using cache_policy = full;
 
             template <typename FloatFormat>
-            static constexpr typename cache_holder<FloatFormat>::cache_entry_type
-            get_cache(int k) noexcept 
+            BOOST_CXX14_CONSTEXPR typename cache_holder<FloatFormat>::cache_entry_type get_cache(int k) noexcept 
             {
                 BOOST_CHARCONV_ASSERT(k >= cache_holder<FloatFormat>::min_k &&
                         k <= cache_holder<FloatFormat>::max_k);
@@ -601,8 +614,7 @@ namespace policy_impl {
             using cache_policy = compact;
 
             template <typename FloatFormat>
-            BOOST_CXX14_CONSTEXPR typename cache_holder<FloatFormat>::cache_entry_type
-            get_cache(int k) noexcept 
+            BOOST_CXX14_CONSTEXPR typename cache_holder<FloatFormat>::cache_entry_type get_cache(int k) noexcept 
             {
                 BOOST_CHARCONV_ASSERT(k >= cache_holder<FloatFormat>::min_k &&
                         k <= cache_holder<FloatFormat>::max_k);
@@ -620,7 +632,7 @@ namespace policy_impl {
                     const auto offset = k - kb;
 
                     // Get the base cache.
-                    const auto base_cache = compressed_cache_detail::cache.table[cache_index];
+                    const value128 base_cache = compressed_cache_detail::cache.table[cache_index];
 
                     if (offset == 0) 
                     {
@@ -629,27 +641,26 @@ namespace policy_impl {
                     else 
                     {
                         // Compute the required amount of bit-shift.
-                        const auto alpha = log::floor_log2_pow10(kb + offset) -
-                                            log::floor_log2_pow10(kb) - offset;
+                        const auto alpha = floor_log2_pow10(kb + offset) - floor_log2_pow10(kb) - offset;
                         BOOST_CHARCONV_ASSERT(alpha > 0 && alpha < 64);
 
                         // Try to recover the real cache.
                         const auto pow5 = compressed_cache_detail::pow5.table[offset];
-                        auto recovered_cache = full_multiplication(base_cache.high(), pow5);
-                        const auto middle_low = full_multiplication(base_cache.low(), pow5);
+                        auto recovered_cache = full_multiplication(base_cache.high, pow5);
+                        const auto middle_low = full_multiplication(base_cache.low, pow5);
 
-                        recovered_cache += middle_low.high();
+                        recovered_cache += middle_low.high;
 
-                        const auto high_to_middle = recovered_cache.high() << (64 - alpha);
-                        const auto middle_to_low = recovered_cache.low() << (64 - alpha);
+                        const auto high_to_middle = recovered_cache.high << (64 - alpha);
+                        const auto middle_to_low = recovered_cache.low << (64 - alpha);
 
-                        recovered_cache = uint128 {
-                            (recovered_cache.low() >> alpha) | high_to_middle,
-                            ((middle_low.low() >> alpha) | middle_to_low)};
+                        recovered_cache = value128 {
+                            (recovered_cache.low >> alpha) | high_to_middle,
+                            ((middle_low.low >> alpha) | middle_to_low)};
 
-                        BOOST_CHARCONV_ASSERT(recovered_cache.low() + 1 != 0);
+                        BOOST_CHARCONV_ASSERT(recovered_cache.low + 1 != 0);
 
-                        recovered_cache = {recovered_cache.high(), recovered_cache.low() + 1};
+                        recovered_cache = {recovered_cache.high, recovered_cache.low + 1};
 
                         return recovered_cache;
                     }

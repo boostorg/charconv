@@ -18,14 +18,21 @@ namespace boost { namespace charconv { namespace detail {
 template <typename T>
 struct physical_bits
 {
-    constexpr std::size_t value = sizeof(T) * CHAR_BIT;
+    static constexpr std::size_t value = sizeof(T) * CHAR_BIT;
 };
 
 template <typename T>
 struct value_bits
 {
-    constexpr std::size_t value_bits = std::numeric_limits<typename std::enable_if<std::is_unsigned<T>::value, T>::type>::digits;
+    static constexpr std::size_t value = std::numeric_limits<typename std::enable_if<std::is_unsigned<T>::value, T>::type>::digits;
 };
+
+#ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+
+template <typename T> constexpr std::size_t physical_bits<T>::value;
+template <typename T> constexpr std::size_t value_bits<T>::value;
+
+#endif
 
 // A floating-point traits class defines ways to interpret a bit pattern of given size as an
 // encoding of floating-point number. This is a default implementation of such a traits class,
@@ -46,15 +53,15 @@ struct default_float_traits
     using type = T;
 
     // Refers to the format specification class.
-    using format = typename std::conditional<detail::physical_bits<T>::value == 32, ieee754_binary32, ieee754_binary64>::type;
+    using format = typename std::conditional<physical_bits<T>::value == 32, ieee754_binary32, ieee754_binary64>::type;
 
     // Defines an unsigned integer type that is large enough to carry a variable of type T.
     // Most of the operations will be done on this integer type.
-    using carrier_uint = typename std::conditional<detail::physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>::type;
-    static_assert(sizeof(carrier_uint) == sizeof(T));
+    using carrier_uint = typename std::conditional<physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>::type;
+    static_assert(sizeof(carrier_uint) == sizeof(T), "Sizeof carrier_unit must be equal to T");
 
     // Number of bits in the above unsigned integer type.
-    static constexpr int carrier_bits = static_cast<int>(detail::physical_bits<carrier_uint>);
+    static constexpr int carrier_bits = static_cast<int>(physical_bits<carrier_uint>::value);
 
     // Convert from carrier_uint into the original type.
     // Depending on the floating-point encoding format, this operation might not be possible for
@@ -83,7 +90,7 @@ struct default_float_traits
         constexpr int significand_bits = format::significand_bits;
         constexpr int exponent_bits = format::exponent_bits;
 
-        static_assert(detail::value_bits<unsigned int> > exponent_bits);
+        static_assert(value_bits<unsigned int>::value > exponent_bits, "Value must have more bits than the exponent");
         constexpr auto exponent_bits_mask = (static_cast<unsigned int>(1) << exponent_bits) - 1;
 
         return static_cast<unsigned int>(u >> significand_bits) & exponent_bits_mask;
@@ -99,13 +106,13 @@ struct default_float_traits
     }
 
     // Remove the exponent bits and extract significand bits together with the sign bit.
-    constexpr carrier_uint remove_exponent_bits(carrier_uint u, unsigned int exponent_bits) noexcept 
+    constexpr carrier_uint remove_exponent_bits(carrier_uint u, unsigned int exponent_bits) const noexcept 
     {
         return u ^ (carrier_uint(exponent_bits) << format::significand_bits);
     }
 
     // Shift the obtained signed significand bits to the left by 1 to remove the sign bit.
-    constexpr carrier_uint remove_sign_bit_and_shift(carrier_uint u) noexcept 
+    constexpr carrier_uint remove_sign_bit_and_shift(carrier_uint u) const noexcept 
     {
         return carrier_uint(u << 1);
     }
@@ -144,7 +151,7 @@ struct default_float_traits
 
     /* Various boolean observer functions */
 
-    constexpr bool is_nonzero(carrier_uint u) noexcept 
+    constexpr bool is_nonzero(carrier_uint u) const noexcept 
     { 
         return (u << 1) != 0; 
     }
@@ -166,19 +173,19 @@ struct default_float_traits
         return exponent_bits != exponent_bits_all_set;
     }
 
-    constexpr bool has_all_zero_significand_bits(carrier_uint u) noexcept
+    constexpr bool has_all_zero_significand_bits(carrier_uint u) const noexcept
     {
         return (u << 1) == 0;
     }
 
-    constexpr bool has_even_significand_bits(carrier_uint u) noexcept
+    constexpr bool has_even_significand_bits(carrier_uint u) const noexcept
     {
         return u % 2 == 0;
     }
 };
 
 #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
-constexpr int default_float_traits<T>::exponent_bias;
+template <typename T> constexpr int default_float_traits<T>::exponent_bias;
 #endif
 
 // Convenient wrappers for floating-point traits classes.
@@ -231,7 +238,7 @@ struct float_bits
     }
 
     // Obtain the actual value of the binary exponent from the extracted exponent bits.
-    constexpr int binary_exponent(unsigned exponent_bits) noexcept
+    constexpr int binary_exponent(unsigned exponent_bits) const noexcept
     {
         return traits_type::binary_exponent(exponent_bits);
     }
@@ -242,7 +249,7 @@ struct float_bits
 
     // Obtain the actual value of the binary exponent from the extracted significand bits and
     // exponent bits.
-    constexpr carrier_uint binary_significand(carrier_uint significand_bits, unsigned exponent_bits) noexcept 
+    constexpr carrier_uint binary_significand(carrier_uint significand_bits, unsigned exponent_bits) const noexcept 
     {
         return traits_type::binary_significand(significand_bits, exponent_bits);
     }

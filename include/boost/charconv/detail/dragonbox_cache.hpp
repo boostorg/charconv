@@ -369,15 +369,15 @@ struct cache_holder<ieee754_binary64>
 
 #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
 
-template <> constexpr int cache_holder<ieee754_binary32>::cache_bits;
-template <> constexpr int cache_holder<ieee754_binary32>::min_k;
-template <> constexpr int cache_holder<ieee754_binary32>::max_k;
-template <> constexpr cache_holder<ieee754_binary32>::cache_entry_type cache_holder<ieee754_binary32>::cache[];
+constexpr int cache_holder<ieee754_binary32>::cache_bits;
+constexpr int cache_holder<ieee754_binary32>::min_k;
+constexpr int cache_holder<ieee754_binary32>::max_k;
+constexpr cache_holder<ieee754_binary32>::cache_entry_type cache_holder<ieee754_binary32>::cache[];
 
-template <> constexpr int cache_holder<ieee754_binary64>::cache_bits;
-template <> constexpr int cache_holder<ieee754_binary64>::min_k;
-template <> constexpr int cache_holder<ieee754_binary64>::max_k;
-template <> constexpr cache_holder<ieee754_binary64>::cache_entry_type cache_holder<ieee754_binary64>::cache[];
+constexpr int cache_holder<ieee754_binary64>::cache_bits;
+constexpr int cache_holder<ieee754_binary64>::min_k;
+constexpr int cache_holder<ieee754_binary64>::max_k;
+constexpr cache_holder<ieee754_binary64>::cache_entry_type cache_holder<ieee754_binary64>::cache[];
 
 #endif
 
@@ -394,34 +394,30 @@ struct compressed_cache_detail
         value128 table[compressed_table_size];
     };
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR cache_holder_t cache()
-    {
-        cache_holder_t res {};
+    static BOOST_CHARCONV_CXX14_CONSTEXPR const cache_holder_t cache = [] {
+        cache_holder_t res{};
         for (std::size_t i = 0; i < compressed_table_size; ++i) 
         {
             res.table[i] = cache_holder<ieee754_binary64>::cache[i * compression_ratio];
         }
-
         return res;
-    };
+    }();
 
     struct pow5_holder_t 
     {
         std::uint64_t table[compression_ratio];
     };
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR pow5_holder_t pow5()
-    {
-        pow5_holder_t res {};
+    static BOOST_CHARCONV_CXX14_CONSTEXPR const pow5_holder_t pow5 = [] {
+        pow5_holder_t res{};
         std::uint64_t p = 1;
-        for (std::size_t i = 0; i < compression_ratio; ++i)
+        for (std::size_t i = 0; i < compression_ratio; ++i) 
         {
             res.table[i] = p;
             p *= 5;
         }
-
         return res;
-    };
+    }();
 };
 
 #ifdef BOOST_NO_CXX17_INLINE_VARIABLES

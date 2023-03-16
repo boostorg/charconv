@@ -481,7 +481,7 @@ char* to_chars_n_impl(float_bits<Float, FloatTraits> br, char* buffer) noexcept
                 typename PolicyHolder::binary_to_decimal_rounding_policy{},
                 typename PolicyHolder::cache_policy{});
             
-            return to_chars_detail::to_chars<Float, FloatTraits>(result.significand, result.exponent, buffer);
+            return to_chars<Float, FloatTraits>(result.significand, result.exponent, buffer);
         }
         else 
         {
@@ -520,7 +520,7 @@ char* to_chars_n(Float x, char* buffer, Policies... policies) noexcept
                                base_default_pair<binary_to_decimal_rounding::base, binary_to_decimal_rounding::to_even>,
                                base_default_pair<cache::base, cache::full>>{}, policies...));
 
-    return to_chars_detail::to_chars_n_impl<policy_holder>(float_bits<Float, FloatTraits>(x), buffer);
+    return to_chars_n_impl<policy_holder>(float_bits<Float, FloatTraits>(x), buffer);
 }
 
 // Null-terminate and bypass the return value of fp_to_chars_n

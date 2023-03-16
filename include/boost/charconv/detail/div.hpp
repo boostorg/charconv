@@ -9,6 +9,7 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/log.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/power_factor.hpp>
 #include <type_traits>
 #include <cstdint>
 
@@ -37,15 +38,18 @@ struct divide_by_pow10_info<2>
 
 #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
 
-template <int N> constexpr std::uint32_t divide_by_pow10_info<N>::magic_number;
-template <int N> constexpr int divide_by_pow10_info<N>::shift_amount;
+constexpr std::uint32_t divide_by_pow10_info<1>::magic_number;
+constexpr int divide_by_pow10_info<1>::shift_amount;
+
+constexpr std::uint32_t divide_by_pow10_info<2>::magic_number;
+constexpr int divide_by_pow10_info<2>::shift_amount;
 
 #endif
 
 template <int N>
 BOOST_CHARCONV_CXX14_CONSTEXPR bool check_divisibility_and_divide_by_pow10(std::uint32_t& n) noexcept
 {
-    BOOST_CHARCONV_ASSERT(N + 1 <= log::floor_log10_pow2(31));
+    BOOST_CHARCONV_ASSERT(N + 1 <= floor_log10_pow2(31));
     BOOST_CHARCONV_ASSERT(n <= compute_power<N + 1>(UINT32_C(10)));
 
     using info = divide_by_pow10_info<N>;
@@ -65,7 +69,7 @@ template <int N>
 BOOST_CHARCONV_CXX14_CONSTEXPR std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept 
 {
     // Make sure the computation for max_n does not overflow.
-    BOOST_CHARCONV_ASSERT(N + 1 <= log::floor_log10_pow2(31));
+    BOOST_CHARCONV_ASSERT(N + 1 <= floor_log10_pow2(31));
     BOOST_CHARCONV_ASSERT(n <= compute_power<N + 1>(std::uint32_t(10)));
 
     return (n * divide_by_pow10_info<N>::magic_number) >> divide_by_pow10_info<N>::shift_amount;
@@ -76,7 +80,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR std::uint32_t small_division_by_pow10(std::uint32
 template <int N, typename Unsigned_Integer, Unsigned_Integer n_max>
 BOOST_CHARCONV_CXX14_CONSTEXPR Unsigned_Integer divide_by_pow10(Unsigned_Integer n) noexcept 
 {
-    static_assert(N >= 0);
+    static_assert(N >= 0, "N must be greater than or equal to 0");
 
     // Specialize for 32-bit division by 100.
     // Compiler is supposed to generate the identical code for just writing

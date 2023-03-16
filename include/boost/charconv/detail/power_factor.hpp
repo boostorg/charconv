@@ -26,7 +26,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR Integer compute_power(Integer a) noexcept
 template <unsigned a, typename Unsigned_Integer>
 BOOST_CHARCONV_CXX14_CONSTEXPR int count_factors(Unsigned_Integer n) noexcept 
 {
-    static_assert(a > 1);
+    static_assert(a > 1, "a must be greater than 1");
     
     int c = 0;
     while (n % a == 0)

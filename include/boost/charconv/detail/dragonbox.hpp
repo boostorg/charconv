@@ -39,44 +39,41 @@ struct impl : private FloatTraits, private FloatTraits::format
     using format::decimal_digits;
 
     static constexpr int kappa = std::is_same<format, ieee754_binary32>::value ? 1 : 2;
-    static_assert(kappa >= 1);
-    BOOST_CHARCONV_ASSERT(carrier_bits >= significand_bits + 2 + log::floor_log2_pow10(kappa + 1));
+    static_assert(kappa >= 1, "Kappa must be greater than or equal to 1");
 
-    BOOST_CXX14_CONSTEXPR int min_k = [] {
-        BOOST_CXX14_CONSTEXPR auto a = -log::floor_log10_pow2_minus_log10_4_over_3(
+    static BOOST_CXX14_CONSTEXPR const int min_k = [] {
+        BOOST_CXX14_CONSTEXPR auto a = -floor_log10_pow2_minus_log10_4_over_3(
             static_cast<int>(max_exponent - significand_bits));
         BOOST_CXX14_CONSTEXPR auto b =
-            -log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
+            -floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
         return a < b ? a : b;
     }();
-    BOOST_CHARCONV_ASSERT(min_k >= cache_holder<format>::min_k);
 
-    BOOST_CXX14_CONSTEXPR int max_k = [] {
+    static BOOST_CXX14_CONSTEXPR const int max_k = [] {
         // We do invoke shorter_interval_case for exponent == min_exponent case,
         // so we should not add 1 here.
-        BOOST_CXX14_CONSTEXPR auto a = -log::floor_log10_pow2_minus_log10_4_over_3(
+        BOOST_CXX14_CONSTEXPR auto a = -floor_log10_pow2_minus_log10_4_over_3(
             static_cast<int>(min_exponent - significand_bits /*+ 1*/));
         BOOST_CXX14_CONSTEXPR auto b =
-            -log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
+            -floor_log10_pow2(static_cast<int>(min_exponent - significand_bits)) + kappa;
         return a > b ? a : b;
     }();
-    BOOST_CHARCONV_ASSERT(max_k <= cache_holder<format>::max_k);
 
     using cache_entry_type = typename cache_holder<format>::cache_entry_type;
     static constexpr auto cache_bits = cache_holder<format>::cache_bits;
 
     static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
     static BOOST_CXX14_CONSTEXPR int case_shorter_interval_left_endpoint_upper_threshold =
-        2 + log::floor_log2(compute_power<count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1>(10) / 3);
+        2 + floor_log2(compute_power<count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1>(10) / 3);
 
     static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
     static BOOST_CXX14_CONSTEXPR int case_shorter_interval_right_endpoint_upper_threshold =
-        2 + log::floor_log2(compute_power<count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1>(10) / 3);
+        2 + floor_log2(compute_power<count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1>(10) / 3);
 
     static constexpr int shorter_interval_tie_lower_threshold =
-        -log::floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
+        -floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
     static constexpr int shorter_interval_tie_upper_threshold =
-        -log::floor_log5_pow2(significand_bits + 2) - 2 - significand_bits;
+        -floor_log5_pow2(significand_bits + 2) - 2 - significand_bits;
 
     struct compute_mul_result 
     {
@@ -94,7 +91,7 @@ struct impl : private FloatTraits, private FloatTraits::format
 
     template <typename ReturnType, typename IntervalType, typename TrailingZeroPolicy,
               typename BinaryToDecimalRoundingPolicy, typename CachePolicy, typename... AdditionalArgs>
-    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_nearest_normal(carrier_uconst int two_fc, const int exponent,
+    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_nearest_normal(carrier_uint two_fc, const int exponent,
                                                                         AdditionalArgs... additional_args) noexcept 
     {
         //////////////////////////////////////////////////////////////////////
@@ -105,9 +102,9 @@ struct impl : private FloatTraits, private FloatTraits::format
         IntervalType interval_type{additional_args...};
 
         // Compute k and beta.
-        const int minus_k = log::floor_log10_pow2(exponent) - kappa;
+        const int minus_k = floor_log10_pow2(exponent) - kappa;
         const auto cache = CachePolicy::template get_cache<format>(-minus_k);
-        const int beta = exponent + log::floor_log2_pow10(-minus_k);
+        const int beta = exponent + floor_log2_pow10(-minus_k);
 
         // Compute zi and deltai.
         // 10^kappa <= deltai < 10^(kappa + 1)
@@ -136,7 +133,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Using an upper bound on zi, we might be able to optimize the division
         // better than the compiler; we are computing zi / big_divisor here.
         ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint,
+            divide_by_pow10<kappa + 1, carrier_uint,
                                     (carrier_uint(1) << (significand_bits + 1)) * big_divisor -
                                         1>(zi);
         auto r = static_cast<std::uint32_t>(zi - big_divisor * ret_value.significand);
@@ -206,7 +203,7 @@ struct impl : private FloatTraits, private FloatTraits::format
             if (!interval_type.include_right_endpoint()) 
             {
                 // Is r divisible by 10^kappa?
-                if (is_z_integer && div::check_divisibility_and_divide_by_pow10<kappa>(r)) 
+                if (is_z_integer && check_divisibility_and_divide_by_pow10<kappa>(r)) 
                 {
                     // This should be in the interval.
                     ret_value.significand += r - 1;
@@ -218,7 +215,7 @@ struct impl : private FloatTraits, private FloatTraits::format
             }
             else 
             {
-                ret_value.significand += div::small_division_by_pow10<kappa>(r);
+                ret_value.significand += small_division_by_pow10<kappa>(r);
             }
         }
         else 
@@ -227,7 +224,7 @@ struct impl : private FloatTraits, private FloatTraits::format
             const bool approx_y_parity = ((dist ^ (small_divisor / 2)) & 1) != 0;
 
             // Is dist divisible by 10^kappa?
-            const bool divisible_by_small_divisor = div::check_divisibility_and_divide_by_pow10<kappa>(dist);
+            const bool divisible_by_small_divisor = check_divisibility_and_divide_by_pow10<kappa>(dist);
 
             // Add dist / 10^kappa to the significand.
             ret_value.significand += dist;
@@ -272,8 +269,8 @@ struct impl : private FloatTraits, private FloatTraits::format
         IntervalType interval_type{additional_args...};
 
         // Compute k and beta.
-        const int minus_k = log::floor_log10_pow2_minus_log10_4_over_3(exponent);
-        const int beta = exponent + log::floor_log2_pow10(-minus_k);
+        const int minus_k = floor_log10_pow2_minus_log10_4_over_3(exponent);
+        const int beta = exponent + floor_log2_pow10(-minus_k);
 
         // Compute xi and zi.
         const auto cache = CachePolicy::template get_cache<format>(-minus_k);
@@ -326,7 +323,7 @@ struct impl : private FloatTraits, private FloatTraits::format
     }
 
     template <typename ReturnType, typename TrailingZeroPolicy, typename CachePolicy>
-    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_left_closed_directed(carrier_uconst int two_fc, int exponent) noexcept 
+    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_left_closed_directed(carrier_uint two_fc, int exponent) noexcept 
     {
         //////////////////////////////////////////////////////////////////////
         // Step 1: Schubfach multiplier calculation
@@ -335,9 +332,9 @@ struct impl : private FloatTraits, private FloatTraits::format
         ReturnType ret_value;
 
         // Compute k and beta.
-        const int minus_k = log::floor_log10_pow2(exponent) - kappa;
+        const int minus_k = floor_log10_pow2(exponent) - kappa;
         const auto cache = CachePolicy::template get_cache<format>(-minus_k);
-        const int beta = exponent + log::floor_log2_pow10(-minus_k);
+        const int beta = exponent + floor_log2_pow10(-minus_k);
 
         // Compute xi and deltai.
         // 10^kappa <= deltai < 10^(kappa + 1)
@@ -372,7 +369,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Using an upper bound on xi, we might be able to optimize the division
         // better than the compiler; we are computing xi / big_divisor here.
         ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(xi);
+            divide_by_pow10<kappa + 1, carrier_uint, (static_cast<carrier_uint>(1) << (significand_bits + 1)) * big_divisor - 1>(xi);
 
         auto r = static_cast<std::uint32_t>(xi - big_divisor * ret_value.significand);
 
@@ -417,14 +414,14 @@ struct impl : private FloatTraits, private FloatTraits::format
 
     small_divisor_case_label:
         ret_value.significand *= 10;
-        ret_value.significand -= div::small_division_by_pow10<kappa>(r);
+        ret_value.significand -= small_division_by_pow10<kappa>(r);
         ret_value.exponent = minus_k + kappa;
         TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
         return ret_value;
     }
 
     template <typename ReturnType, typename TrailingZeroPolicy, typename CachePolicy>
-    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_right_closed_directed(carrier_uconst int two_fc, const int exponent,
+    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_right_closed_directed(carrier_uint two_fc, const int exponent,
                                                                                bool shorter_interval) noexcept 
     {
         //////////////////////////////////////////////////////////////////////
@@ -434,14 +431,14 @@ struct impl : private FloatTraits, private FloatTraits::format
         ReturnType ret_value;
 
         // Compute k and beta.
-        const int minus_k = log::floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
+        const int minus_k = floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
         const auto cache = CachePolicy::template get_cache<format>(-minus_k);
-        const int beta = exponent + log::floor_log2_pow10(-minus_k);
+        const int beta = exponent + floor_log2_pow10(-minus_k);
 
         // Compute zi and deltai.
         // 10^kappa <= deltai < 10^(kappa + 1)
         const auto deltai = shorter_interval ? compute_delta(cache, beta - 1) : compute_delta(cache, beta);
-        carrier_uconst int zi = compute_mul(two_fc << beta, cache).result;
+        carrier_uint zi = compute_mul(two_fc << beta, cache).result;
 
 
         //////////////////////////////////////////////////////////////////////
@@ -453,7 +450,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Using an upper bound on zi, we might be able to optimize the division better than
         // the compiler; we are computing zi / big_divisor here.
         ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
+            divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
         const auto r = static_cast<std::uint32_t>(zi - big_divisor * ret_value.significand);
 
         if (r > deltai) 
@@ -481,7 +478,7 @@ struct impl : private FloatTraits, private FloatTraits::format
 
     small_divisor_case_label:
         ret_value.significand *= 10;
-        ret_value.significand += div::small_division_by_pow10<kappa>(r);
+        ret_value.significand += small_division_by_pow10<kappa>(r);
         ret_value.exponent = minus_k + kappa;
         TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
         return ret_value;
@@ -606,7 +603,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         else 
         {
             static_assert(std::is_same<format, ieee754_binary64>::value);
-            auto r = wuint::umul192_upper128(u, cache);
+            auto r = umul192_upper128(u, cache);
             return {r.high, r.low == 0};
         }
     }
@@ -635,7 +632,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same_v<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value);
             auto r = umul192_lower128(two_f, cache);
             return {((r.high >> (64 - beta)) & 1) != 0, ((r.high << beta) | (r.low >> (64 - beta))) == 0};
         }
