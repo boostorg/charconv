@@ -63,11 +63,11 @@ struct impl : private FloatTraits, private FloatTraits::format
     static constexpr auto cache_bits = cache_holder<format>::cache_bits;
 
     static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
-    static BOOST_CXX14_CONSTEXPR int case_shorter_interval_left_endpoint_upper_threshold =
+    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_left_endpoint_upper_threshold =
         2 + floor_log2(compute_power<count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1>(10) / 3);
 
     static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
-    static BOOST_CXX14_CONSTEXPR int case_shorter_interval_right_endpoint_upper_threshold =
+    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_right_endpoint_upper_threshold =
         2 + floor_log2(compute_power<count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1>(10) / 3);
 
     static constexpr int shorter_interval_tie_lower_threshold =
