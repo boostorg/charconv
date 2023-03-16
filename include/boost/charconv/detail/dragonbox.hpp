@@ -339,7 +339,9 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Compute xi and deltai.
         // 10^kappa <= deltai < 10^(kappa + 1)
         const auto deltai = compute_delta(cache, beta);
-        auto [xi, is_x_integer] = compute_mul(two_fc << beta, cache);
+        const auto x_result = compute_mul(two_fc << beta, cache);
+        auto xi = x_result.result;
+        auto is_x_integer = x_result.is_integer;
 
         // Deal with the unique exceptional cases
         // 29711844 * 2^-82
@@ -489,7 +491,7 @@ struct impl : private FloatTraits, private FloatTraits::format
     {
         BOOST_CHARCONV_ASSERT(n != 0);
 
-        BOOST_IF_CONSTEXPR (std::is_same_v<format, ieee754_binary32>) 
+        BOOST_IF_CONSTEXPR (std::is_same<format, ieee754_binary32>::value) 
         {
             constexpr auto mod_inv_5 = UINT32_C(0xcccccccd);
             constexpr auto mod_inv_25 = mod_inv_5 * mod_inv_5;
@@ -519,7 +521,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Type must be binary64");
 
             // Divide by 10^8 and reduce to 32-bits if divisible.
             // Since ret_value.significand <= (2^53 * 1000 - 1) / 1000 < 10^16,
@@ -602,7 +604,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Type must be binary64");
             auto r = umul192_upper128(u, cache);
             return {r.high, r.low == 0};
         }
@@ -616,7 +618,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Type must be binary64");
             return static_cast<std::uint32_t>(cache.high >> (carrier_bits - 1 - beta));
         }
     }
@@ -632,7 +634,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Type must be binary64");
             auto r = umul192_lower128(two_f, cache);
             return {((r.high >> (64 - beta)) & 1) != 0, ((r.high << beta) | (r.low >> (64 - beta))) == 0};
         }
@@ -647,7 +649,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Type must be binary64");
             return (cache.high - (cache.high >> (significand_bits + 2))) >> (carrier_bits - significand_bits - 1 - beta);
         }
     }
@@ -661,7 +663,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Type must be binary64");
             return (cache.high + (cache.high >> (significand_bits + 1))) >> (carrier_bits - significand_bits - 1 - beta);
         }
     }
@@ -674,7 +676,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value);
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Type must be binary64");
             return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
         }
     }
@@ -757,7 +759,7 @@ BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(signed_significand_
                     // 10^-308. This is indeed of the shortest length, and it is the unique one
                     // closest to the true value among valid representations of the same length.
                     static_assert(std::is_same<format, ieee754_binary32>::value ||
-                                  std::is_same<format, ieee754_binary64>::value);
+                                  std::is_same<format, ieee754_binary64>::value, "Type must be either binary 32 or 64");
 
                     if (two_fc == 0) 
                     {
@@ -816,7 +818,7 @@ BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(signed_significand_
             }
             else 
             {
-                static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed);
+                static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed, "Tag must be right_closed_direction");
 
                 bool shorter_interval {};
 

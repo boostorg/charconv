@@ -632,7 +632,7 @@ namespace policy_impl {
                     const auto offset = k - kb;
 
                     // Get the base cache.
-                    const value128 base_cache = compressed_cache_detail::cache.table[cache_index];
+                    const value128 base_cache = compressed_cache_detail::cache_holder_t::table[cache_index];
 
                     if (offset == 0) 
                     {
@@ -645,7 +645,7 @@ namespace policy_impl {
                         BOOST_CHARCONV_ASSERT(alpha > 0 && alpha < 64);
 
                         // Try to recover the real cache.
-                        const auto pow5 = compressed_cache_detail::pow5.table[offset];
+                        const auto pow5 = compressed_cache_detail::pow5_holder_t::table[offset];
                         auto recovered_cache = full_multiplication(base_cache.high, pow5);
                         const auto middle_low = full_multiplication(base_cache.low, pow5);
 

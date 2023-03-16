@@ -389,6 +389,7 @@ struct compressed_cache_detail
         (cache_holder<ieee754_binary64>::max_k - cache_holder<ieee754_binary64>::min_k +
             compression_ratio) / compression_ratio;
 
+/*
     struct cache_holder_t 
     {
         value128 table[compressed_table_size];
@@ -418,6 +419,17 @@ struct compressed_cache_detail
         }
         return res;
     }();
+*/
+    // TODO: Pre-calculate the tables from above to use with C++14 and below
+    struct cache_holder_t 
+    {
+        static value128 table[compressed_table_size];
+    };
+
+    struct pow5_holder_t 
+    {
+        static std::uint64_t table[compression_ratio];
+    };
 };
 
 #ifdef BOOST_NO_CXX17_INLINE_VARIABLES

@@ -39,6 +39,13 @@
 #  define BOOST_CHARCONV_GCC5_CONSTEXPR BOOST_CHARCONV_CXX14_CONSTEXPR
 #endif
 
+// C++17 allowed for constexpr lambdas
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 201603L
+#  define BOOST_CHARCONV_CXX17_CONSTEXPR constexpr
+#else
+#  define BOOST_CHARCONV_CXX17_CONSTEXPR inline
+#endif
+
 // Determine endianness
 #if defined(_WIN32)
 
