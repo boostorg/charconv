@@ -2083,10 +2083,13 @@ namespace jkj { namespace floff {
             int const beta = e + log::floor_log2_pow10(k);
 
             // Integer check is okay for binary64.
-            auto [first_segment, has_more_segments] = [&] {
+            //auto [first_segment, has_more_segments] 
+              compute_mul_result segments = [&] {
                 auto const r = wuint::umul192_upper128(significand << beta, main_cache);
                 return compute_mul_result{r.high(), r.low() != 0};
             }();
+            auto first_segment = segments.result;
+            auto has_more_segments = segments.is_integer;
 
             // The first segment can be up to 19 digits. It is in fact always of either 18 or 19
             // digits except when the input is a subnormal number. For subnormal numbers, the
