@@ -18,8 +18,8 @@
 // Some parts are copied from Dragonbox project.
 
 
-#ifndef JKJ_HEADER_FLOFF
-#define JKJ_HEADER_FLOFF
+#ifndef BOOST_CHARCONV_DETAIL_FLOFF
+#define BOOST_CHARCONV_DETAIL_FLOFF
 
 #include <cassert>
 #include <cstdint>
@@ -61,7 +61,7 @@
     #include <intrin.h>
 #endif
 
-namespace jkj::floff {
+namespace jkj { namespace floff {
     namespace detail {
         template <class T>
         constexpr std::size_t physical_bits =
@@ -4398,11 +4398,11 @@ case n:                                                                         
 
         goto print_exponent_and_return;
     }
-}
+}} // Namespace jkj::floff
 
 #undef JKJ_UNRECHABLE
 #undef JKJ_FORCEINLINE
 #undef JKJ_SAFEBUFFERS
 #undef JKJ_HAS_BUILTIN
 
-#endif
+#endif // BOOST_CHARCONV_DETAIL_FLOFF
