@@ -12,8 +12,9 @@
 #include <boost/charconv/detail/integer_conversion.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/dragonbox.hpp>
+#include <boost/charconv/detail/floff.hpp>
 #include <boost/charconv/config.hpp>
+#include <boost/charconv/chars_format.hpp>
 #include <type_traits>
 #include <array>
 #include <limits>
@@ -455,7 +456,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 // ---------------------------------------------------------------------------------------------------------------------
 // Floating Point Detail
 // ---------------------------------------------------------------------------------------------------------------------
-
+/*
 template <typename Float, typename FloatTraits>
 extern char* to_chars(typename FloatTraits::carrier_uint significand, int exponent, char* buffer) noexcept;
 
@@ -463,7 +464,7 @@ extern char* to_chars(typename FloatTraits::carrier_uint significand, int expone
 template <typename PolicyHolder, typename Float, typename FloatTraits>
 char* to_chars_n_impl(float_bits<Float, FloatTraits> br, char* buffer) noexcept 
 {
-    const auto exponent_bits = br.extract_exponent_bits();
+    const static auto exponent_bits = br.extract_exponent_bits();
     const auto s = br.remove_exponent_bits(exponent_bits);
 
     if (br.is_finite(exponent_bits)) 
@@ -537,7 +538,7 @@ void print_1_digit(std::uint32_t n, char* buffer) noexcept;
 void print_2_digits(std::uint32_t n, char* buffer) noexcept;
 
 void print_9_digits(std::uint32_t s32, int& exponent, char* buffer) noexcept;
-
+*/
 } // Namespace detail
 
 // integer overloads
@@ -599,9 +600,10 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost
 #endif
 // floating point overloads
 
-BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, float value ) noexcept;
-BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, double value ) noexcept;
-BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, long double value ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value, 
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value ) noexcept;
 
 } // namespace charconv
 } // namespace boost
