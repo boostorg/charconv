@@ -1147,61 +1147,99 @@ namespace jkj { namespace floff {
             std::uint64_t value;
         };
 
-        template <class HasFurtherDigits, class... Args>
+        template <class HasFurtherDigits, class... Args,
+                  typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
         JKJ_FORCEINLINE bool check_rounding_condition_inside_subsegment(
             std::uint32_t current_digits, std::uint32_t fractional_part,
             int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
-            Args... args) noexcept {
+            Args... args) noexcept 
+        {
             if (fractional_part >=
                 additional_static_data_holder::fractional_part_rounding_thresholds32
                     [remaining_digits_in_the_current_subsegment - 1]) {
                 return true;
             }
 
-            BOOST_IF_CONSTEXPR (std::is_same<decltype(has_further_digits), bool>::value) {
-                return ((fractional_part >> 31) & ((current_digits & 1) | has_further_digits)) != 0;
-            }
-            else {
-                return fractional_part >= 0x8000'0000 &&
-                       ((current_digits & 1) != 0 || has_further_digits(args...));
-            }
+            return ((fractional_part >> 31) & ((current_digits & 1) | has_further_digits)) != 0;
         }
 
-        template <class HasFurtherDigits, class... Args>
+        template <class HasFurtherDigits, class... Args,
+                  typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
+        JKJ_FORCEINLINE bool check_rounding_condition_inside_subsegment(
+            std::uint32_t current_digits, std::uint32_t fractional_part,
+            int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
+            Args... args) noexcept 
+        {
+            if (fractional_part >=
+                additional_static_data_holder::fractional_part_rounding_thresholds32
+                    [remaining_digits_in_the_current_subsegment - 1]) 
+            {
+                return true;
+            }
+            
+            return fractional_part >= 0x8000'0000 && ((current_digits & 1) != 0 || has_further_digits(args...));
+        }
+
+        template <class HasFurtherDigits, class... Args,
+                  typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
         JKJ_FORCEINLINE bool
         check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                HasFurtherDigits has_further_digits,
-                                               Args... args) noexcept {
-            if (!next_bit) {
+                                               Args... args) noexcept 
+        {
+            if (!next_bit) 
+            {
                 return false;
             }
 
-            BOOST_IF_CONSTEXPR (std::is_same<decltype(has_further_digits), bool>::value) {
-                return ((current_digits & 1) | has_further_digits) != 0;
-            }
-            else {
-                return (current_digits & 1) != 0 || has_further_digits(args...);
-            }
+            return ((current_digits & 1) | has_further_digits) != 0;
         }
 
-        template <class UintWithKnownDigits, class HasFurtherDigits, class... Args>
+        template <class HasFurtherDigits, class... Args,
+                  typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
+        JKJ_FORCEINLINE bool
+        check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
+                                               HasFurtherDigits has_further_digits,
+                                               Args... args) noexcept 
+        {
+            if (!next_bit) 
+            {
+                return false;
+            }
+
+            return (current_digits & 1) != 0 || has_further_digits(args...);
+        }
+
+        template <class UintWithKnownDigits, class HasFurtherDigits, class... Args, 
+                  typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
         JKJ_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
-            HasFurtherDigits has_further_digits, Args... args) noexcept {
-            if (next_subsegment.value > power_of_10<decltype(next_subsegment)::digits> / 2) {
+            HasFurtherDigits has_further_digits, Args... args) noexcept 
+        {
+            if (next_subsegment.value > power_of_10<decltype(next_subsegment)::digits> / 2)
+            {
                 return true;
             }
 
-            BOOST_IF_CONSTEXPR (std::is_same<decltype(has_further_digits), bool>::value) {
-                return next_subsegment.value ==
+            return next_subsegment.value ==
                            power_of_10<decltype(next_subsegment)::digits> / 2 &&
                        ((current_digits & 1) | has_further_digits) != 0;
+        }
+
+        template <class UintWithKnownDigits, class HasFurtherDigits, class... Args, 
+                  typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
+        JKJ_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
+            std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
+            HasFurtherDigits has_further_digits, Args... args) noexcept 
+        {
+            if (next_subsegment.value > power_of_10<decltype(next_subsegment)::digits> / 2) 
+            {
+                return true;
             }
-            else {
-                return next_subsegment.value ==
-                           power_of_10<decltype(next_subsegment)::digits> / 2 &&
-                       ((current_digits & 1) != 0 || has_further_digits(args...));
-            }
+
+            return next_subsegment.value ==
+                        power_of_10<decltype(next_subsegment)::digits> / 2 &&
+                    ((current_digits & 1) != 0 || has_further_digits(args...));
         }
 
         namespace has_further_digits_impl {
