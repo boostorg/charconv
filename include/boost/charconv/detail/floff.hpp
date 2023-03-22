@@ -22,11 +22,12 @@
 #define BOOST_CHARCONV_DETAIL_FLOFF
 
 #include <boost/charconv/detail/config.hpp>
+#include <type_traits>
+#include <limits>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
-#include <limits>
-#include <type_traits>
+#include <cstddef>
 
 // Suppress additional buffer overrun check.
 // I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
@@ -879,6 +880,18 @@ namespace jkj { namespace floff {
             static constexpr auto fractional_part_rounding_thresholds64 =
                 generate_fractional_part_rounding_thresholds_holder<std::uint64_t, 18>();
         };
+
+        #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+
+        constexpr char additional_static_data_holder::radix_100_table[];
+
+        constexpr fractional_part_rounding_thresholds_holder<std::uint32_t, 8>  
+        additional_static_data_holder::fractional_part_rounding_thresholds32;
+
+        constexpr fractional_part_rounding_thresholds_holder<std::uint64_t, 18> 
+        additional_static_data_holder::fractional_part_rounding_thresholds64;
+
+        #endif
 
         struct compute_mul_result {
             std::uint64_t result;
@@ -1736,6 +1749,15 @@ namespace jkj { namespace floff {
                 {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
         };
 
+        #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+
+        constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::cache_bits;
+        constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::min_k;
+        constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::max_k;
+        constexpr jkj::floff::detail::wuint::uint128 main_cache_holder<jkj::floff::ieee754_binary64>::cache[];
+
+        #endif
+
         // Compressed cache for double
         struct compressed_cache_detail {
             static constexpr int compression_ratio = 27;
@@ -2023,6 +2045,20 @@ namespace jkj { namespace floff {
             {27245, 29296}, {27294, 29344}, {27320, 29370}, {27324, 0}};
     };
 
+    #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+
+    constexpr std::size_t extended_cache_long::max_cache_blocks;
+    constexpr std::size_t extended_cache_long::cache_bits_unit;
+    constexpr int extended_cache_long::segment_length;
+    constexpr bool extended_cache_long::constant_block_count;
+    constexpr int extended_cache_long::e_min;
+    constexpr int extended_cache_long::k_min;
+    constexpr int extended_cache_long::cache_bit_index_offset_base;
+    constexpr std::uint64_t extended_cache_long::cache[];
+    constexpr extended_cache_long::multiplier_index_info extended_cache_long::multiplier_index_info_table[];
+
+    #endif
+
     struct extended_cache_compact {
         static constexpr std::size_t max_cache_blocks = 6;
         static constexpr std::size_t cache_bits_unit = 64;
@@ -2134,6 +2170,22 @@ namespace jkj { namespace floff {
                                                               0xee, 0xee, 0xee, 0xee, 0xac, 0x68,
                                                               0x24, 0x8a, 0x46, 0x62, 0x24, 0x13};
     };
+
+    #ifdef BOOST_CXX17_INLINE_VARIABLES
+
+    constexpr std::size_t extended_cache_compact::max_cache_blocks;
+    constexpr std::size_t extended_cache_compact::cache_bits_unit;
+    constexpr int extended_cache_compact::segment_length;
+    constexpr bool extended_cache_compact::constant_block_count;
+    constexpr int extended_cache_compact::collapse_factor;
+    constexpr int extended_cache_compact::e_min;
+    constexpr int extended_cache_compact::k_min;
+    constexpr int extended_cache_compact::cache_bit_index_offset_base;
+    constexpr int extended_cache_compact::cache_block_count_offset_base;
+    constexpr extended_cache_compact::multiplier_index_info extended_cache_compact::multiplier_index_info_table[];
+    constexpr std::uint8_t extended_cache_compact::cache_block_counts[];
+
+    #endif
 
     // precision means the number of decimal significand digits minus 1.
     // Assumes round-to-nearest, tie-to-even rounding.
@@ -2759,7 +2811,7 @@ namespace jkj { namespace floff {
                 constexpr auto additional_neg_exp_of_5_v =
                     int(decltype(additional_neg_exp_of_10_c)::value);
 
-                static_assert(additional_neg_exp_of_5_v < ExtendedCache::segment_length);
+                // static_assert(additional_neg_exp_of_5_v < ExtendedCache::segment_length);
 
 
                 constexpr auto min_neg_exp_of_5 =
