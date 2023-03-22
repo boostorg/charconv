@@ -1658,7 +1658,8 @@ namespace jkj { namespace floff {
                 (main_cache_holder<ieee754_binary64>::max_k -
                  main_cache_holder<ieee754_binary64>::min_k + compression_ratio) /
                 compression_ratio;
-
+            
+            /*
             struct cache_holder_t {
                 wuint::uint128 table[compressed_table_size];
             };
@@ -1670,7 +1671,39 @@ namespace jkj { namespace floff {
                 }
                 return res;
             }();
+            */
+            struct cache_holder_t 
+            {
+                static constexpr wuint::uint128 table[] = {
+                    {0xff77b1fcbebcdc4f, 0x25e8e89c13bb0f7b},
+                    {0xa5178fff668ae0b6, 0x626e974dbe39a873},
+                    {0x855c3be0a17fcd26, 0x5cf2eea09a550680},
+                    {0xd77485cb25823ac7, 0x7d633293366b828c},
+                    {0xae0b158b4738705e, 0x9624ab50b148d446},
+                    {0x8c974f7383725573, 0x1e414218c73a13fc},
+                    {0xe3231912d5bf60e6, 0x10e1fff697ed6c6a},
+                    {0xb77ada0617e3bbcb, 0x09ce6ebb40173745},
+                    {0x9436c0760c86e30b, 0xf9a0b6720aaf6522},
+                    {0xef73d256a5c0f77c, 0x963e66858f6d4441},
+                    {0xc16d9a0095928a27, 0x75b7053c0f178294},
+                    {0x9c40000000000000, 0x0000000000000000},
+                    {0xfc6f7c4045812296, 0x4d00000000000000},
+                    {0xcbea6f8ceb02bb39, 0x9bf4f8a69f764491},
+                    {0xa4b8cab1a1563f52, 0x577001b891185939},
+                    {0x850fadc09923329e, 0x03e2cf6bc604ddb1},
+                    {0xd6f8d7509292d603, 0x45a9d2845d3c42b7},
+                    {0xada72ccc20054ae9, 0xaf561aa79a10ae6b},
+                    {0x8c469ab843b89562, 0x93956d7478ccec8f},
+                    {0xe2a0b5dc971f303a, 0x2e44ae64840fd61e},
+                    {0xb7118682dbb66a77, 0x3fbc8c33221dc2a2},
+                    {0x93e1ab8252f33b45, 0xcabb90e5c942b504},
+                    {0xeeea5d5004981478, 0x1858ccfce06cac75},
+                };
 
+                static_assert(sizeof(table) == compressed_table_size * sizeof(wuint::uint128), "Table should have 23 elements");
+            };
+
+            /*
             struct pow5_holder_t {
                 std::uint64_t table[compression_ratio];
             };
@@ -1683,6 +1716,17 @@ namespace jkj { namespace floff {
                 }
                 return res;
             }();
+            */
+            struct pow5_holder_t 
+            {
+                static constexpr std::uint64_t table[] = {
+                    1, 5, 25, 125, 625, 3125, 15625, 78125, 390625, 1953125, 9765625, 48828125, 244140625, 1220703125,
+                    6103515625, 30517578125, 152587890625, 762939453125, 3814697265625, 19073486328125, 95367431640625,
+                    476837158203125, 2384185791015625, 11920928955078125, 59604644775390625, 298023223876953125, 1490116119384765625
+                };
+
+                static_assert(sizeof(table) == compression_ratio * sizeof(std::uint64_t), "Table should have 27 elements");
+            };
         };
     }
 
@@ -1714,7 +1758,7 @@ namespace jkj { namespace floff {
                 auto const offset = k - kb;
 
                 // Get the base cache.
-                auto const base_cache = detail::compressed_cache_detail::cache.table[cache_index];
+                constexpr auto base_cache = detail::compressed_cache_detail::cache_holder_t::table[cache_index];
 
                 if (offset == 0) {
                     return base_cache;
@@ -1729,7 +1773,7 @@ namespace jkj { namespace floff {
                     assert(alpha > 0 && alpha < 64);
 
                     // Try to recover the real cache.
-                    auto const pow5 = detail::compressed_cache_detail::pow5.table[offset];
+                    constexpr auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
                     auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
                     auto const middle_low = wuint::umul128(base_cache.low(), pow5);
 
