@@ -5,6 +5,7 @@
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <cstdint>
@@ -57,6 +58,11 @@ char const* fmt_from_type( double )
     return "%.17g";
 }
 
+char const* fmt_from_type_scientific( double )
+{
+    return "%.17e";
+}
+
 template<class T> void test_sprintf( T value )
 {
     char buffer[ 256 ];
@@ -69,6 +75,35 @@ template<class T> void test_sprintf( T value )
     std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type( value ), value );
 
     BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) );
+}
+
+template<class T> void test_sprintf_float( T value, boost::charconv::chars_format fmt )
+{
+    char buffer[ 256 ];
+
+    auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt );
+
+    BOOST_TEST_EQ( r.ec, 0 );
+
+    char buffer2[ 256 ];
+    if (fmt == boost::charconv::chars_format::general)
+    {
+        std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type( value ), value );
+    }
+    else if (fmt == boost::charconv::chars_format::scientific)
+    {
+        std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type_scientific( value ), value );
+    }
+
+    if(!BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) ))
+    {
+        // Set precision for integer part + decimal digits
+        // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
+        std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
+                  << "   Value: " << value
+                  << "\nTo chars: " << std::string( buffer, r.ptr )
+                  << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+    }
 }
 
 // integral types, random values
@@ -236,16 +271,20 @@ int main()
         for( int i = 0; i < N; ++i )
         {
             double w0 = rng() * 1.0; // 0 .. 2^64
-            test_sprintf( w0 );
+            test_sprintf_float( w0, boost::charconv::chars_format::general );
+            test_sprintf_float( w0, boost::charconv::chars_format::scientific );
 
             double w1 = rng() * q; // 0.0 .. 1.0
-            test_sprintf( w1 );
+            test_sprintf_float( w1, boost::charconv::chars_format::general );
+            test_sprintf_float( w1, boost::charconv::chars_format::scientific );
 
             double w2 = DBL_MAX / rng(); // large values
-            test_sprintf( w2 );
+            test_sprintf_float( w2, boost::charconv::chars_format::general );
+            test_sprintf_float( w2, boost::charconv::chars_format::scientific );
 
             double w3 = DBL_MIN * rng(); // small values
-            test_sprintf( w3 );
+            test_sprintf_float( w3, boost::charconv::chars_format::general );
+            test_sprintf_float( w3, boost::charconv::chars_format::scientific );
         }
 
         test_sprintf_bv_fp<double>();

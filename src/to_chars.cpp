@@ -288,24 +288,25 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value, boost::charconv::chars_format fmt, int precision) noexcept
 {
-    (void)fmt;
-
-    if (precision == -1)
+    
+    if (fmt == boost::charconv::chars_format::scientific)
     {
-        precision = std::numeric_limits<double>::max_digits10;
+        if (precision == -1)
+        {
+            precision = std::numeric_limits<double>::max_digits10;
+        }
+        if (precision > static_cast<std::ptrdiff_t>(last - first))
+        {
+            return { first, EOVERFLOW };
+        }
+        auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first);
+        return { ptr, 0 };
     }
-    if (precision > static_cast<std::ptrdiff_t>(last - first))
+    else
     {
-        return { first, EOVERFLOW };
+        std::snprintf( first, last - first, "%.*g", std::numeric_limits<double>::max_digits10, value );
+        return { first + std::strlen(first), 0 };
     }
-    auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first);
-    while (*ptr == '0')
-    {
-        --ptr;
-    }
-    return { ptr, 0 };
-    //std::snprintf( first, last - first, "%.*g", std::numeric_limits<double>::max_digits10, value );
-    //return { first + std::strlen(first), 0 };
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value ) noexcept
