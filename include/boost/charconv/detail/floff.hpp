@@ -1237,7 +1237,7 @@ namespace jkj { namespace floff {
                 return true;
             }
             
-            return fractional_part >= 0x8000'0000 && ((current_digits & 1) != 0 || has_further_digits(args...));
+            return fractional_part >= 0x80000000 && ((current_digits & 1) != 0 || has_further_digits(args...));
         }
 
         template <class HasFurtherDigits, class... Args,
@@ -2286,7 +2286,7 @@ namespace jkj { namespace floff {
                 // Convert to fixed-point form with 64/32-bit boundary for the fractional part.
 
                 // 19 digits.
-                if (first_segment >= 100'0000'0000'0000'0000ull) {
+                if (first_segment >= 1000000000000000000ull) {
                     if (remaining_digits == 1) {
                         prod = wuint::umul128(first_segment, 1329227995784915873ull);
                         // ceil(2^63 + 2^64/10^18)
@@ -2304,7 +2304,7 @@ namespace jkj { namespace floff {
                     decimal_exponent += 18;
                 }
                 // 18 digits.
-                else if (first_segment >= 10'0000'0000'0000'0000ull) {
+                else if (first_segment >= 100000000000000000ull) {
                     if (remaining_digits == 1) {
                         prod = wuint::umul128(first_segment, 830767497365572421ull);
                         // ceil(2^63 + 2^64/10^17)
@@ -2324,27 +2324,27 @@ namespace jkj { namespace floff {
                 // This branch can be taken only for subnormal numbers.
                 else {
                     // At least 10 digits.
-                    if (first_segment >= 10'0000'0000) {
+                    if (first_segment >= 1000000000) {
                         // 15 ~ 17 digits.
-                        if (first_segment >= 100'0000'0000'0000ull) {
+                        if (first_segment >= 100000000000000ull) {
                             decimal_exponent += 6;
                         }
                         // 12 ~ 14 digits.
-                        else if (first_segment >= 1000'0000'0000ull) {
+                        else if (first_segment >= 100000000000ull) {
                             first_segment *= 1000;
                             decimal_exponent += 3;
                         }
                         // 10 ~ 11 digits.
                         else {
-                            first_segment *= 100'0000;
+                            first_segment *= 1000000;
                         }
 
                         // 17 or 14 or 11 digits.
-                        if (first_segment >= 1'0000'0000'0000'0000ull) {
+                        if (first_segment >= 10000000000000000ull) {
                             decimal_exponent += 10;
                         }
                         // 16 or 13 or 10 digits.
-                        else if (first_segment >= 1000'0000'0000'0000ull) {
+                        else if (first_segment >= 1000000000000000ull) {
                             first_segment *= 10;
                             decimal_exponent += 9;
                         }
@@ -2375,7 +2375,7 @@ namespace jkj { namespace floff {
                         auto segment32 = std::uint32_t(first_segment);
 
                         // 7 ~ 9 digits
-                        if (segment32 >= 100'0000) {
+                        if (segment32 >= 1000000) {
                             decimal_exponent += 6;
                         }
                         // 4 ~ 6 digits
@@ -2385,15 +2385,15 @@ namespace jkj { namespace floff {
                         }
                         // 3 digits
                         else {
-                            segment32 *= 100'0000;
+                            segment32 *= 1000000;
                         }
 
                         // 9 or 6 or 3 digits
-                        if (segment32 >= 1'0000'0000) {
+                        if (segment32 >= 100000000) {
                             decimal_exponent += 2;
                         }
                         // 8 or 5 digits
-                        else if (segment32 >= 1000'0000) {
+                        else if (segment32 >= 10000000) {
                             segment32 *= 10;
                             decimal_exponent += 1;
                         }
@@ -2491,9 +2491,9 @@ namespace jkj { namespace floff {
             auto const first_subsegment =
                 std::uint32_t(wuint::umul128_upper64(first_segment, 7922816251426433760ull) >> 32);
             auto const second_third_subsegments =
-                first_segment - first_subsegment * 100'0000'0000ull;
-            assert(first_subsegment < 10'0000'0000);
-            assert(second_third_subsegments < 100'0000'0000ull);
+                first_segment - first_subsegment * 10000000000ull;
+            assert(first_subsegment < 1000000000);
+            assert(second_third_subsegments < 10000000000ull);
 
             int remaining_digits_in_the_current_subsegment;
             std::uint64_t prod; // holds intermediate values for digit generation.
@@ -2501,21 +2501,21 @@ namespace jkj { namespace floff {
             // Print the first subsegment.
             if (first_subsegment != 0) {
                 // 9 digits (19 digits in total).
-                if (first_subsegment >= 1'0000'0000) {
+                if (first_subsegment >= 100000000) {
                     // 1441151882 = ceil(2^57 / 10^8) + 1
                     prod = first_subsegment * std::uint64_t(1441151882);
                     prod >>= 25;
                     remaining_digits_in_the_current_subsegment = 8;
                 }
                 // 7 or 8 digits (17 or 18 digits in total).
-                else if (first_subsegment >= 100'0000) {
+                else if (first_subsegment >= 1000000) {
                     // 281474978 = ceil(2^48 / 10^6) + 1
                     prod = first_subsegment * std::uint64_t(281474978);
                     prod >>= 16;
                     remaining_digits_in_the_current_subsegment = 6;
                 }
                 // 5 or 6 digits (15 or 16 digits in total).
-                else if (first_subsegment >= 1'0000) {
+                else if (first_subsegment >= 10000) {
                     // 429497 = ceil(2^32 / 10^4)
                     prod = first_subsegment * std::uint64_t(429497);
                     remaining_digits_in_the_current_subsegment = 4;
@@ -2641,7 +2641,7 @@ namespace jkj { namespace floff {
             // Since the final result is of 2 digits, we can do the computation in 32-bits.
             auto const third_subsegment =
                 std::uint32_t(second_third_subsegments) - second_subsegment * 100;
-            assert(second_subsegment < 1'0000'0000);
+            assert(second_subsegment < 100000000);
             assert(third_subsegment < 100);
             {
                 std::uint32_t initial_digits;
@@ -2654,12 +2654,12 @@ namespace jkj { namespace floff {
                 }
                 else {
                     // 7 or 8 digits (9 or 10 digits in total).
-                    if (second_subsegment >= 100'0000) {
+                    if (second_subsegment >= 1000000) {
                         prod = (second_subsegment * std::uint64_t(281474978)) >> 16;
                         remaining_digits_in_the_current_subsegment = 6;
                     }
                     // 5 or 6 digits (7 or 8 digits in total).
-                    else if (second_subsegment >= 1'0000) {
+                    else if (second_subsegment >= 10000) {
                         prod = second_subsegment * std::uint64_t(429497);
                         remaining_digits_in_the_current_subsegment = 4;
                     }
@@ -2969,7 +2969,7 @@ namespace jkj { namespace floff {
                                                   14);
                                 auto const second_subsegment =
                                     std::uint32_t(first_second_subsegments) -
-                                    1'0000'0000 * first_subsegment;
+                                    100000000 * first_subsegment;
 
                                 // Print the first subsegment.
                                 print_8_digits(first_subsegment, buffer);
@@ -3014,7 +3014,7 @@ namespace jkj { namespace floff {
                                                                      3022314549036573ull) >>
                                               14);
                             auto const third_subsegment = std::uint32_t(second_third_subsegments) -
-                                                          1'0000'0000 * second_subsegment;
+                                                          100000000 * second_subsegment;
 
                             // Print the first subsegment (1 ~ 6 digits).
                             std::uint64_t prod;
@@ -3261,7 +3261,7 @@ namespace jkj { namespace floff {
                             std::uint32_t(jkj::floff::detail::wuint::umul128_upper64(
                                 first_second_subsegments, 1844674407371));
                         auto const second_subsegment =
-                            std::uint32_t(first_second_subsegments) - 1000'0000 * first_subsegment;
+                            std::uint32_t(first_second_subsegments) - 10000000 * first_subsegment;
 
                         int digits_in_the_second_subsegment;
 
@@ -3559,7 +3559,7 @@ namespace jkj { namespace floff {
 
                             bool segment_boundary_rounding_bit = ((third_subsegment & 1) != 0);
                             third_subsegment >>= 1;
-                            third_subsegment += (first_bit_of_third_subsegment ? 5'0000'0000 : 0);
+                            third_subsegment += (first_bit_of_third_subsegment ? 500000000 : 0);
 
                             std::uint64_t prod;
                             if ((remaining_digits & 1) != 0) {
@@ -4056,7 +4056,7 @@ case n:                                                                         
                                               first_second_subsegments, 3022314549036573ull) >>
                                           14);
                         auto const second_subsegment = std::uint32_t(first_second_subsegments) -
-                                                       1'0000'0000 * first_subsegment;
+                                                       100000000 * first_subsegment;
 
                         print_8_digits(first_subsegment, buffer);
                         print_8_digits(second_subsegment, buffer + 8);
@@ -4162,7 +4162,7 @@ case n:                                                                         
                                               first_second_subsegments, 3022314549036573ull) >>
                                           14);
                         auto const second_subsegment = std::uint32_t(first_second_subsegments) -
-                                                       1'0000'0000 * first_subsegment;
+                                                       100000000 * first_subsegment;
 
                         print_8_digits(first_subsegment, buffer);
                         buffer += 8;
