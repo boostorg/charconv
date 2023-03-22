@@ -112,12 +112,12 @@ namespace jkj { namespace floff {
 
         // Refers to the format specification class.
         using format =
-            std::conditional_t<detail::physical_bits<T> == 32, ieee754_binary32, ieee754_binary64>;
+            typename std::conditional<detail::physical_bits<T> == 32, ieee754_binary32, ieee754_binary64>::type;
 
         // Defines an unsigned integer type that is large enough to carry a variable of type T.
         // Most of the operations will be done on this integer type.
         using carrier_uint =
-            std::conditional_t<detail::physical_bits<T> == 32, std::uint32_t, std::uint64_t>;
+            typename std::conditional<detail::physical_bits<T> == 32, std::uint32_t, std::uint64_t>::type;
         static_assert(sizeof(carrier_uint) == sizeof(T));
 
         // Number of bits in the above unsigned integer type.
@@ -597,7 +597,7 @@ namespace jkj { namespace floff {
         template <unsigned int exp>
         struct power_of_10_impl {
             static_assert(exp <= 19);
-            using type = std::conditional_t<exp <= 9, std::uint32_t, std::uint64_t>;
+            using type = typename std::conditional<exp <= 9, std::uint32_t, std::uint64_t>::type;
 
             static constexpr type value = compute_power(type(10), exp);
         };
@@ -888,16 +888,62 @@ namespace jkj { namespace floff {
         // Load the necessary bits into blocks_ptr and then return the number of cache blocks
         // loaded. The most significant block is loaded into blocks_ptr[0].
         template <class ExtendedCache, bool zero_out,
-                  class CacheBlockType = std::decay_t<decltype(ExtendedCache::cache[0])>>
+                  class CacheBlockType = typename std::decay<decltype(ExtendedCache::cache[0])>::type,
+                  typename std::enable_if<(ExtendedCache::constant_block_count), bool>::type = true>
+        inline std::uint8_t cache_block_count_helper(CacheBlockType*, int, int, std::uint32_t) noexcept 
+        {
+            return std::uint8_t(ExtendedCache::max_cache_blocks);
+        }
+
+        template <class ExtendedCache, bool zero_out,
+                  class CacheBlockType = typename std::decay<decltype(ExtendedCache::cache[0])>::type,
+                  typename std::enable_if<!(ExtendedCache::constant_block_count), bool>::type = true>
+        inline std::uint8_t cache_block_count_helper(CacheBlockType* blocks_ptr, int e, int k, std::uint32_t multiplier_index) noexcept 
+        {
+            const auto mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
+
+            auto const cache_block_count_index =
+                        mul_info.cache_block_count_index_offset +
+                        std::uint32_t(e - ExtendedCache::e_min) / ExtendedCache::collapse_factor -
+                        ExtendedCache::cache_block_count_offset_base;
+
+            BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks < 3) {
+                // 1-bit packing.
+                return std::uint8_t(
+                            (ExtendedCache::cache_block_counts[cache_block_count_index /
+                                                                8] >>
+                            (cache_block_count_index % 8)) &
+                            0x1) +
+                        1;
+            }
+            else BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks < 4) {
+                // 2-bit packing.
+                return std::uint8_t(
+                    (ExtendedCache::cache_block_counts[cache_block_count_index / 4] >>
+                        (2 * (cache_block_count_index % 4))) &
+                    0x3);
+            }
+            else {
+                // 4-bit packing.
+                return std::uint8_t(
+                    (ExtendedCache::cache_block_counts[cache_block_count_index / 2] >>
+                        (4 * (cache_block_count_index % 2))) &
+                    0xf);
+            }
+        }
+
+        template <class ExtendedCache, bool zero_out,
+                  class CacheBlockType = typename std::decay<decltype(ExtendedCache::cache[0])>::type>
         JKJ_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, int e, int k,
-                                                         std::uint32_t multiplier_index) noexcept {
+                                                         std::uint32_t multiplier_index) noexcept 
+        {
             BOOST_IF_CONSTEXPR (zero_out) {
                 std::memset(blocks_ptr, 0,
                             sizeof(CacheBlockType) * ExtendedCache::max_cache_blocks);
             }
 
             auto const mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
-
+            /*
             std::uint8_t cache_block_count = [&] {
                 BOOST_IF_CONSTEXPR (ExtendedCache::constant_block_count) {
                     return std::uint8_t(ExtendedCache::max_cache_blocks);
@@ -933,13 +979,14 @@ namespace jkj { namespace floff {
                     }
                 }
             }();
+            */
 
             std::uint32_t number_of_leading_zero_blocks;
             std::uint32_t first_cache_block_index;
             std::uint32_t bit_offset;
             std::uint32_t excessive_bits_to_left;
             std::uint32_t excessive_bits_to_right;
-
+            std::uint8_t  cache_block_count = cache_block_count_helper<ExtendedCache, zero_out, CacheBlockType>(blocks_ptr, e, k, multiplier_index);
             // The request window starting/ending positions.
             auto start_bit_index = int(mul_info.cache_bit_index_offset) + e -
                                    ExtendedCache::cache_bit_index_offset_base;
@@ -2695,7 +2742,7 @@ namespace jkj { namespace floff {
             }
             auto const exp2_base = e + bits::countr_zero(significand);
 
-            using cache_block_type = std::decay_t<decltype(ExtendedCache::cache[0])>;
+            using cache_block_type = typename std::decay<decltype(ExtendedCache::cache[0])>::type;
             cache_block_type blocks[ExtendedCache::max_cache_blocks];
             cache_block_count_t<ExtendedCache::constant_block_count,
                                 ExtendedCache::max_cache_blocks>
