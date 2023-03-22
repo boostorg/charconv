@@ -21,6 +21,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_FLOFF
 #define BOOST_CHARCONV_DETAIL_FLOFF
 
+#include <boost/charconv/detail/config.hpp>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -69,7 +70,7 @@ namespace jkj { namespace floff {
 
         template <class T>
         constexpr std::size_t value_bits =
-            std::numeric_limits<std::enable_if_t<std::is_unsigned_v<T>, T>>::digits;
+            std::numeric_limits<typename std::enable_if<std::is_unsigned<T>::value, T>::type>::digits;
     }
 
     // These classes expose encoding specs of IEEE-754-like floating-point formats.
@@ -602,7 +603,7 @@ namespace jkj { namespace floff {
         };
 
         template <unsigned int exp>
-        inline constexpr auto power_of_10 = power_of_10_impl<exp>::value;
+        BOOST_INLINE_VARIABLE constexpr auto power_of_10 = power_of_10_impl<exp>::value;
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for fast/constexpr log computation.
@@ -694,7 +695,7 @@ namespace jkj { namespace floff {
                                                            std::size_t number_of_blocks) noexcept {
                 assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
 
-                if constexpr (max_blocks == 3) {
+                BOOST_IF_CONSTEXPR (max_blocks == 3) {
                     wuint::uint128 mul_result;
                     std::uint64_t carry = 0;
 
@@ -748,7 +749,7 @@ namespace jkj { namespace floff {
 
                 blocks_ptr[0] *= multiplier;
                 if (number_of_blocks > 1) {
-                    if constexpr (max_blocks == 3) {
+                    BOOST_IF_CONSTEXPR (max_blocks == 3) {
                         wuint::uint128 mul_result;
                         std::uint64_t carry = 0;
 
@@ -789,7 +790,7 @@ namespace jkj { namespace floff {
                                        std::size_t number_of_blocks) noexcept {
                 assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
 
-                if constexpr (max_blocks == 3) {
+                BOOST_IF_CONSTEXPR (max_blocks == 3) {
                     wuint::uint128 mul_result;
                     std::uint64_t carry = 0;
 
@@ -890,7 +891,7 @@ namespace jkj { namespace floff {
                   class CacheBlockType = std::decay_t<decltype(ExtendedCache::cache[0])>>
         JKJ_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, int e, int k,
                                                          std::uint32_t multiplier_index) noexcept {
-            if constexpr (zero_out) {
+            BOOST_IF_CONSTEXPR (zero_out) {
                 std::memset(blocks_ptr, 0,
                             sizeof(CacheBlockType) * ExtendedCache::max_cache_blocks);
             }
@@ -898,7 +899,7 @@ namespace jkj { namespace floff {
             auto const mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
 
             std::uint8_t cache_block_count = [&] {
-                if constexpr (ExtendedCache::constant_block_count) {
+                BOOST_IF_CONSTEXPR (ExtendedCache::constant_block_count) {
                     return std::uint8_t(ExtendedCache::max_cache_blocks);
                 }
                 else {
@@ -907,7 +908,7 @@ namespace jkj { namespace floff {
                         std::uint32_t(e - ExtendedCache::e_min) / ExtendedCache::collapse_factor -
                         ExtendedCache::cache_block_count_offset_base;
 
-                    if constexpr (ExtendedCache::max_cache_blocks < 3) {
+                    BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks < 3) {
                         // 1-bit packing.
                         return std::uint8_t(
                                    (ExtendedCache::cache_block_counts[cache_block_count_index /
@@ -916,7 +917,7 @@ namespace jkj { namespace floff {
                                    0x1) +
                                1;
                     }
-                    else if constexpr (ExtendedCache::max_cache_blocks < 4) {
+                    else BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks < 4) {
                         // 2-bit packing.
                         return std::uint8_t(
                             (ExtendedCache::cache_block_counts[cache_block_count_index / 4] >>
@@ -959,7 +960,7 @@ namespace jkj { namespace floff {
                 excessive_bits_to_left = std::uint32_t(src_start_bit_index - start_bit_index) %
                                          std::uint32_t(ExtendedCache::cache_bits_unit);
 
-                if constexpr (!zero_out) {
+                BOOST_IF_CONSTEXPR (!zero_out) {
                     std::memset(blocks_ptr, 0,
                                 number_of_leading_zero_blocks * sizeof(CacheBlockType));
                 }
@@ -1018,7 +1019,7 @@ namespace jkj { namespace floff {
             auto const number_of_blocks_to_load = cache_block_count - number_of_leading_zero_blocks;
             auto* const dst_ptr = blocks_ptr + number_of_leading_zero_blocks;
             if (bit_offset == 0) {
-                if constexpr (ExtendedCache::max_cache_blocks == 3) {
+                BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks == 3) {
                     switch (number_of_blocks_to_load) {
                     case 3:
                         std::memcpy(dst_ptr, ExtendedCache::cache + first_cache_block_index,
@@ -1048,7 +1049,7 @@ namespace jkj { namespace floff {
                 }
             }
             else {
-                if constexpr (ExtendedCache::max_cache_blocks == 3) {
+                BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks == 3) {
                     switch (number_of_blocks_to_load) {
                     case 3:
                         *(dst_ptr + 2) =
@@ -1130,7 +1131,7 @@ namespace jkj { namespace floff {
         };
 
         template <unsigned int n>
-        inline constexpr auto uconst = std::integral_constant<unsigned int, n>{};
+        BOOST_INLINE_VARIABLE constexpr auto uconst = std::integral_constant<unsigned int, n>{};
 
         template <unsigned int digits, bool dummy = (digits <= 9)>
         struct uint_with_known_number_of_digits;
@@ -1157,7 +1158,7 @@ namespace jkj { namespace floff {
                 return true;
             }
 
-            if constexpr (std::is_same_v<decltype(has_further_digits), bool>) {
+            BOOST_IF_CONSTEXPR (std::is_same<decltype(has_further_digits), bool>::value) {
                 return ((fractional_part >> 31) & ((current_digits & 1) | has_further_digits)) != 0;
             }
             else {
@@ -1175,7 +1176,7 @@ namespace jkj { namespace floff {
                 return false;
             }
 
-            if constexpr (std::is_same_v<decltype(has_further_digits), bool>) {
+            BOOST_IF_CONSTEXPR (std::is_same<decltype(has_further_digits), bool>::value) {
                 return ((current_digits & 1) | has_further_digits) != 0;
             }
             else {
@@ -1191,7 +1192,7 @@ namespace jkj { namespace floff {
                 return true;
             }
 
-            if constexpr (std::is_same_v<decltype(has_further_digits), bool>) {
+            BOOST_IF_CONSTEXPR (std::is_same<decltype(has_further_digits), bool>::value) {
                 return next_subsegment.value ==
                            power_of_10<decltype(next_subsegment)::digits> / 2 &&
                        ((current_digits & 1) | has_further_digits) != 0;
@@ -1269,10 +1270,10 @@ namespace jkj { namespace floff {
         }
 
         inline void print_1_digit(std::uint32_t n, char* buffer) noexcept {
-            if constexpr ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
+            BOOST_IF_CONSTEXPR ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
                           '5' == '0' + 5 && '6' == '0' + 6 && '7' == '0' + 7 && '8' == '0' + 8 &&
                           '9' == '0' + 9) {
-                if constexpr (('0' & 0xf) == 0) {
+                BOOST_IF_CONSTEXPR (('0' & 0xf) == 0) {
                     *buffer = char('0' | n);
                 }
                 else {
@@ -1703,7 +1704,7 @@ namespace jkj { namespace floff {
             assert(k >= detail::main_cache_holder<FloatFormat>::min_k &&
                    k <= detail::main_cache_holder<FloatFormat>::max_k);
 
-            if constexpr (std::is_same_v<FloatFormat, ieee754_binary64>) {
+            BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value) {
                 // Compute the base index.
                 auto const cache_index =
                     int(std::uint32_t(k - detail::main_cache_holder<FloatFormat>::min_k) /
@@ -2646,14 +2647,14 @@ namespace jkj { namespace floff {
                 // When the smallest absolute value of negative exponent for 5 is too big,
                 // so whenever the exponent for 5 is negative, the result cannot be an
                 // integer.
-                if constexpr (min_neg_exp_of_5 > 23) {
+                BOOST_IF_CONSTEXPR (min_neg_exp_of_5 > 23) {
                     return has_further_digits_impl::no_neg_k_can_be_integer<
                         k_right_threshold, additional_neg_exp_of_2_v>(k, exp2_base);
                 }
                 // When the smallest absolute value of negative exponent for 5 is big enough, so
                 // the only negative exponent for 5 that allows the result to be an integer is the
                 // smallest one.
-                else if constexpr (min_neg_exp_of_5 + ExtendedCache::segment_length > 23) {
+                else BOOST_IF_CONSTEXPR (min_neg_exp_of_5 + ExtendedCache::segment_length > 23) {
                     // k < k_left_threshold iff k - k1 < -min_neg_exp_of_5.
                     static_assert(additional_neg_exp_of_5_v + ExtendedCache::segment_length >=
                                   min_neg_exp_of_5 + 1 + ExtendedCache::k_min);
@@ -2706,7 +2707,7 @@ namespace jkj { namespace floff {
                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
                     significand, blocks, cache_block_count);
 
-                if constexpr (ExtendedCache::segment_length == 22) {
+                BOOST_IF_CONSTEXPR (ExtendedCache::segment_length == 22) {
                     // No rounding, continue.
                     if (remaining_digits > digits_in_the_second_segment) {
                         remaining_digits -= digits_in_the_second_segment;
@@ -3434,7 +3435,7 @@ namespace jkj { namespace floff {
                     }
                 } // ExtendedCache::segment_length == 22
 
-                else if constexpr (ExtendedCache::segment_length == 252) {
+                else BOOST_IF_CONSTEXPR (ExtendedCache::segment_length == 252) {
                     int overlapping_digits = 252 - digits_in_the_second_segment;
                     int remaining_subsegment_pairs = 14;
 
@@ -3859,7 +3860,7 @@ case n:                                                                         
                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
                     significand, blocks, cache_block_count);
 
-                if constexpr (ExtendedCache::segment_length == 22) {
+                BOOST_IF_CONSTEXPR (ExtendedCache::segment_length == 22) {
                     // When at least two subsegments left.
                     if (remaining_digits > 16) {
                         auto const first_second_subsegments =
