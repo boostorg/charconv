@@ -961,43 +961,6 @@ namespace jkj { namespace floff {
             }
 
             auto const mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
-            /*
-            std::uint8_t cache_block_count = [&] {
-                BOOST_IF_CONSTEXPR (ExtendedCache::constant_block_count) {
-                    return std::uint8_t(ExtendedCache::max_cache_blocks);
-                }
-                else {
-                    auto const cache_block_count_index =
-                        mul_info.cache_block_count_index_offset +
-                        std::uint32_t(e - ExtendedCache::e_min) / ExtendedCache::collapse_factor -
-                        ExtendedCache::cache_block_count_offset_base;
-
-                    BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks < 3) {
-                        // 1-bit packing.
-                        return std::uint8_t(
-                                   (ExtendedCache::cache_block_counts[cache_block_count_index /
-                                                                      8] >>
-                                    (cache_block_count_index % 8)) &
-                                   0x1) +
-                               1;
-                    }
-                    else BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks < 4) {
-                        // 2-bit packing.
-                        return std::uint8_t(
-                            (ExtendedCache::cache_block_counts[cache_block_count_index / 4] >>
-                             (2 * (cache_block_count_index % 4))) &
-                            0x3);
-                    }
-                    else {
-                        // 4-bit packing.
-                        return std::uint8_t(
-                            (ExtendedCache::cache_block_counts[cache_block_count_index / 2] >>
-                             (4 * (cache_block_count_index % 2))) &
-                            0xf);
-                    }
-                }
-            }();
-            */
 
             std::uint32_t number_of_leading_zero_blocks;
             std::uint32_t first_cache_block_index;
@@ -1195,8 +1158,22 @@ namespace jkj { namespace floff {
             }
         };
 
+        /*
         template <unsigned int n>
         BOOST_INLINE_VARIABLE constexpr auto uconst = std::integral_constant<unsigned int, n>{};
+        */
+        template <unsigned n>
+        struct uconst
+        {
+            static constexpr unsigned value = n;
+        };
+
+        BOOST_INLINE_VARIABLE constexpr uconst<0>  uconst0;
+        BOOST_INLINE_VARIABLE constexpr uconst<1>  uconst1;
+        BOOST_INLINE_VARIABLE constexpr uconst<6>  uconst6;
+        BOOST_INLINE_VARIABLE constexpr uconst<9>  uconst9;
+        BOOST_INLINE_VARIABLE constexpr uconst<14> uconst14;
+        BOOST_INLINE_VARIABLE constexpr uconst<16> uconst16;
 
         template <unsigned int digits, bool dummy = (digits <= 9)>
         struct uint_with_known_number_of_digits;
@@ -3105,7 +3082,7 @@ namespace jkj { namespace floff {
 
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod), 1,
-                                            has_further_digits, uconst<1>, uconst<0>)) {
+                                            has_further_digits, uconst1, uconst0)) {
                                         goto round_up_one_digit;
                                     }
                                     goto print_last_one_digit;
@@ -3118,7 +3095,7 @@ namespace jkj { namespace floff {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
                                             uint_with_known_number_of_digits<2>{next_digits},
-                                            has_further_digits, uconst<1>, uconst<0>)) {
+                                            has_further_digits, uconst1, uconst0)) {
                                         goto round_up_two_digits;
                                     }
                                     goto print_last_two_digits;
@@ -3139,7 +3116,7 @@ namespace jkj { namespace floff {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
                                             uint_with_known_number_of_digits<1>{next_digits},
-                                            has_further_digits, uconst<1>, uconst<0>)) {
+                                            has_further_digits, uconst1, uconst0)) {
                                         goto round_up_two_digits;
                                     }
                                     goto print_last_two_digits;
@@ -3150,7 +3127,7 @@ namespace jkj { namespace floff {
 
                             if (check_rounding_condition_with_next_bit(
                                     current_digits, segment_boundary_rounding_bit,
-                                    has_further_digits, uconst<0>, uconst<0>)) {
+                                    has_further_digits, uconst0, uconst0)) {
                                 goto round_up;
                             }
                             goto print_last_digits;
@@ -3197,7 +3174,7 @@ namespace jkj { namespace floff {
                                                                     [digits_in_the_second_segment -
                                                                      1] &
                                                             0x7fffffff) ||
-                                                       has_further_digits(uconst<1>, uconst<0>);
+                                                       has_further_digits(uconst1, uconst0);
                                             })) {
                                         goto round_up_two_digits;
                                     }
@@ -3227,8 +3204,8 @@ namespace jkj { namespace floff {
                             second_segment22_at_most_9_digits_rounding:
                                 if (check_rounding_condition_inside_subsegment(
                                         current_digits, std::uint32_t(prod),
-                                        digits_in_the_second_segment, has_further_digits, uconst<1>,
-                                        uconst<0>)) {
+                                        digits_in_the_second_segment, has_further_digits, uconst1,
+                                        uconst0)) {
                                     goto round_up;
                                 }
                                 goto print_last_digits;
@@ -3242,7 +3219,7 @@ namespace jkj { namespace floff {
 
                                 if (check_rounding_condition_with_next_bit(
                                         current_digits, segment_boundary_rounding_bit,
-                                        has_further_digits, uconst<0>, uconst<0>)) {
+                                        has_further_digits, uconst0, uconst1)) {
                                     goto round_up_two_digits;
                                 }
                                 goto print_last_two_digits;
@@ -3343,7 +3320,7 @@ namespace jkj { namespace floff {
                                                     current_digits,
                                                     uint_with_known_number_of_digits<6>{
                                                         first_subsegment},
-                                                    has_further_digits, uconst<1>, uconst<16>)) {
+                                                    has_further_digits, uconst1, uconst16)) {
                                                 goto round_up_two_digits;
                                             }
                                             goto print_last_two_digits;
@@ -3394,7 +3371,7 @@ namespace jkj { namespace floff {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
                                             uint_with_known_number_of_digits<7>{second_subsegment},
-                                            has_further_digits, uconst<1>, uconst<9>)) {
+                                            has_further_digits, uconst1, uconst9)) {
                                         goto round_up;
                                     }
                                 }
@@ -3404,7 +3381,7 @@ namespace jkj { namespace floff {
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod),
                                             remaining_digits_in_the_current_subsegment,
-                                            has_further_digits, uconst<1>, uconst<16>)) {
+                                            has_further_digits, uconst1, uconst16)) {
                                         goto round_up;
                                     }
                                 }
@@ -3481,7 +3458,7 @@ namespace jkj { namespace floff {
                                                     current_digits,
                                                     uint_with_known_number_of_digits<7>{
                                                         second_subsegment},
-                                                    has_further_digits, uconst<1>, uconst<9>)) {
+                                                    has_further_digits, uconst1, uconst9)) {
                                                 goto round_up_two_digits;
                                             }
                                             goto print_last_two_digits;
@@ -3533,7 +3510,7 @@ namespace jkj { namespace floff {
                                 if (digits_in_the_second_subsegment == 0) {
                                     if (check_rounding_condition_with_next_bit(
                                             current_digits, first_bit_of_third_subsegment,
-                                            has_further_digits, uconst<0>, uconst<9>)) {
+                                            has_further_digits, uconst0, uconst9)) {
                                         goto round_up;
                                     }
                                 }
@@ -3543,7 +3520,7 @@ namespace jkj { namespace floff {
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod),
                                             digits_in_the_second_subsegment, has_further_digits,
-                                            uconst<1>, uconst<9>)) {
+                                            uconst1, uconst9)) {
                                         goto round_up;
                                     }
                                 }
@@ -3574,7 +3551,7 @@ namespace jkj { namespace floff {
                                 if (remaining_digits == 1) {
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod), 8,
-                                            has_further_digits, uconst<1>, uconst<0>)) {
+                                            has_further_digits, uconst1, uconst0)) {
                                         goto round_up_one_digit;
                                     }
                                     goto print_last_one_digit;
@@ -3608,14 +3585,14 @@ namespace jkj { namespace floff {
                             second_segment22_more_than_9_digits_third_subsegment_rounding:
                                 if (check_rounding_condition_inside_subsegment(
                                         current_digits, std::uint32_t(prod), 9 - remaining_digits,
-                                        has_further_digits, uconst<1>, uconst<0>)) {
+                                        has_further_digits, uconst1, uconst0)) {
                                     goto round_up_two_digits;
                                 }
                             }
                             else {
                                 if (check_rounding_condition_with_next_bit(
                                         current_digits, segment_boundary_rounding_bit,
-                                        has_further_digits, uconst<0>, uconst<0>)) {
+                                        has_further_digits, uconst0, uconst0)) {
                                     goto round_up_two_digits;
                                 }
                             }
@@ -3646,7 +3623,7 @@ namespace jkj { namespace floff {
 #define JKJ_FLOFF_252_HAS_FURTHER_DIGITS(n)                                                        \
 case n:                                                                                            \
     return has_further_digits(additional_neg_exp_of_2,                                             \
-                              uconst<decltype(additional_neg_exp_of_10)::value + (n - 1) * 18>);
+                              std::integral_constant<std::uint32_t, decltype(additional_neg_exp_of_10)::value + (n - 1) * 18>());
                         switch (remaining_subsegment_pairs) {
                             JKJ_FLOFF_252_HAS_FURTHER_DIGITS(1);
                             JKJ_FLOFF_252_HAS_FURTHER_DIGITS(2);
@@ -3726,8 +3703,8 @@ case n:                                                                         
                                             if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                                     current_digits,
                                                     uint_with_known_number_of_digits<9>{first_part},
-                                                    compute_has_further_digits, uconst<1>,
-                                                    uconst<9>)) {
+                                                    compute_has_further_digits, uconst1,
+                                                    uconst9)) {
                                                 goto round_up_two_digits;
                                             }
                                             goto print_last_two_digits;
@@ -3781,7 +3758,7 @@ case n:                                                                         
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod),
                                             digits_in_the_first_part, compute_has_further_digits,
-                                            uconst<1>, uconst<9>)) {
+                                            uconst1, uconst9)) {
                                         goto round_up;
                                     }
                                 }
@@ -3789,7 +3766,7 @@ case n:                                                                         
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
                                             uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
-                                            compute_has_further_digits, uconst<1>, uconst<0>)) {
+                                            compute_has_further_digits, uconst1, uconst0)) {
                                         goto round_up;
                                     }
                                 }
@@ -3818,7 +3795,7 @@ case n:                                                                         
                                         if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                                 current_digits,
                                                 uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
-                                                compute_has_further_digits, uconst<1>, uconst<0>)) {
+                                                compute_has_further_digits, uconst1, uconst0)) {
                                             goto round_up_two_digits;
                                         }
                                         goto print_last_two_digits;
@@ -3872,14 +3849,14 @@ case n:                                                                         
                                 if (check_rounding_condition_inside_subsegment(
                                         current_digits, std::uint32_t(prod),
                                         digits_in_the_second_part, compute_has_further_digits,
-                                        uconst<1>, uconst<0>)) {
+                                        uconst1, uconst0)) {
                                     goto round_up;
                                 }
                             }
                             else {
                                 if (check_rounding_condition_with_next_bit(
                                         current_digits, subsegment_boundary_rounding_bit,
-                                        compute_has_further_digits, uconst<0>, uconst<0>)) {
+                                        compute_has_further_digits, uconst0, uconst0)) {
                                     goto round_up;
                                 }
                             }
@@ -3956,7 +3933,7 @@ case n:                                                                         
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod),
                                             remaining_digits_in_the_current_subsegment,
-                                            compute_has_further_digits, uconst<1>, uconst<0>)) {
+                                            compute_has_further_digits, uconst1, uconst0)) {
                                         goto round_up;
                                     }
                                     goto print_last_digits;
@@ -3964,7 +3941,7 @@ case n:                                                                         
                                 else {
                                     if (check_rounding_condition_with_next_bit(
                                             current_digits, subsegment_boundary_rounding_bit,
-                                            compute_has_further_digits, uconst<0>, uconst<0>)) {
+                                            compute_has_further_digits, uconst0, uconst0)) {
                                         goto round_up_two_digits;
                                     }
                                     goto print_last_two_digits;
@@ -4013,7 +3990,7 @@ case n:                                                                         
                                 if (check_rounding_condition_inside_subsegment(
                                         current_digits, std::uint32_t(prod),
                                         remaining_digits_in_the_current_subsegment,
-                                        compute_has_further_digits, uconst<1>, uconst<9>)) {
+                                        compute_has_further_digits, uconst1, uconst9)) {
                                     goto round_up;
                                 }
                                 goto print_last_digits;
@@ -4022,7 +3999,7 @@ case n:                                                                         
                                 if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                         current_digits,
                                         uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
-                                        compute_has_further_digits, uconst<1>, uconst<9>)) {
+                                        compute_has_further_digits, uconst1, uconst9)) {
                                     goto round_up_two_digits;
                                 }
                                 goto print_last_two_digits;
@@ -4036,7 +4013,7 @@ case n:                                                                         
             }
 
             // Print all remaining segments.
-            while (has_further_digits(uconst<1>, uconst<0>)) {
+            while (has_further_digits(uconst1, uconst0)) {
                 // Get new segment.
                 ++multiplier_index;
                 k += ExtendedCache::segment_length;
@@ -4098,7 +4075,7 @@ case n:                                                                         
                                 if (remaining_digits == 1) {
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod), 5,
-                                            has_further_digits, uconst<1>, uconst<0>)) {
+                                            has_further_digits, uconst1, uconst0)) {
                                         goto round_up_one_digit;
                                     }
                                     goto print_last_one_digit;
@@ -4130,7 +4107,7 @@ case n:                                                                         
 
                                     if (check_rounding_condition_with_next_bit(
                                             current_digits, segment_boundary_rounding_bit,
-                                            has_further_digits, uconst<0>, uconst<0>)) {
+                                            has_further_digits, uconst0, uconst0)) {
                                         goto round_up_two_digits;
                                     }
                                     goto print_last_two_digits;
@@ -4143,7 +4120,7 @@ case n:                                                                         
                         segment_loop22_more_than_16_digits_rounding:
                             if (check_rounding_condition_inside_subsegment(
                                     current_digits, std::uint32_t(prod), 6 - remaining_digits,
-                                    has_further_digits, uconst<1>, uconst<0>)) {
+                                    has_further_digits, uconst1, uconst0)) {
                                 goto round_up_two_digits;
                             }
                             goto print_last_two_digits;
@@ -4182,7 +4159,7 @@ case n:                                                                         
                             if (remaining_digits == 1) {
                                 if (check_rounding_condition_inside_subsegment(
                                         current_digits, std::uint32_t(prod), 7, has_further_digits,
-                                        uconst<1>, uconst<6>)) {
+                                        uconst1, uconst6)) {
                                     goto round_up_one_digit;
                                 }
                                 goto print_last_one_digit;
@@ -4216,14 +4193,14 @@ case n:                                                                         
                         segment_loop22_more_than_8_digits_rounding:
                             if (check_rounding_condition_inside_subsegment(
                                     current_digits, std::uint32_t(prod), 8 - remaining_digits,
-                                    has_further_digits, uconst<1>, uconst<6>)) {
+                                    has_further_digits, uconst1, uconst6)) {
                                 goto round_up_two_digits;
                             }
                         }
                         else {
                             if (check_rounding_condition_with_next_bit(
                                     current_digits, first_bit_of_third_subsegment,
-                                    has_further_digits, uconst<0>, uconst<6>)) {
+                                    has_further_digits, uconst0, uconst6)) {
                                 goto round_up_two_digits;
                             }
                         }
@@ -4248,7 +4225,7 @@ case n:                                                                         
                             if (remaining_digits == 1) {
                                 if (check_rounding_condition_inside_subsegment(
                                         current_digits, std::uint32_t(prod), 7, has_further_digits,
-                                        uconst<1>, uconst<14>)) {
+                                        uconst1, uconst14)) {
                                     goto round_up_one_digit;
                                 }
                                 goto print_last_one_digit;
@@ -4282,14 +4259,14 @@ case n:                                                                         
                         segment_loop22_at_most_8_digits_rounding:
                             if (check_rounding_condition_inside_subsegment(
                                     current_digits, std::uint32_t(prod), 8 - remaining_digits,
-                                    has_further_digits, uconst<1>, uconst<14>)) {
+                                    has_further_digits, uconst1, uconst14)) {
                                 goto round_up_two_digits;
                             }
                         }
                         else {
                             if (check_rounding_condition_with_next_bit(
                                     current_digits, first_bit_of_second_subsegment,
-                                    has_further_digits, uconst<0>, uconst<14>)) {
+                                    has_further_digits, uconst0, uconst14)) {
                                 goto round_up_two_digits;
                             }
                         }
@@ -4321,7 +4298,7 @@ case n:                                                                         
 #define JKJ_FLOFF_252_HAS_FURTHER_DIGITS(n)                                                        \
 case n:                                                                                            \
     return has_further_digits(additional_neg_exp_of_2,                                             \
-                              uconst<decltype(additional_neg_exp_of_10)::value + (n - 1) * 18>);
+                              std::integral_constant<std::uint32_t, decltype(additional_neg_exp_of_10)::value + (n - 1) * 18>());
                                 switch (remaining_subsegment_pairs) {
                                     JKJ_FLOFF_252_HAS_FURTHER_DIGITS(1);
                                     JKJ_FLOFF_252_HAS_FURTHER_DIGITS(2);
@@ -4367,7 +4344,7 @@ case n:                                                                         
                                     if (remaining_digits == 1) {
                                         if (check_rounding_condition_inside_subsegment(
                                                 current_digits, std::uint32_t(prod), 8,
-                                                compute_has_further_digits, uconst<1>, uconst<9>)) {
+                                                compute_has_further_digits, uconst1, uconst9)) {
                                             goto round_up_one_digit;
                                         }
                                         goto print_last_one_digit;
@@ -4402,7 +4379,7 @@ case n:                                                                         
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod),
                                             9 - remaining_digits, compute_has_further_digits,
-                                            uconst<1>, uconst<9>)) {
+                                            uconst1, uconst9)) {
                                         goto round_up_two_digits;
                                     }
                                 }
@@ -4410,7 +4387,7 @@ case n:                                                                         
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
                                             uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
-                                            compute_has_further_digits, uconst<1>, uconst<0>)) {
+                                            compute_has_further_digits, uconst1, uconst0)) {
                                         goto round_up_two_digits;
                                     }
                                 }
@@ -4430,7 +4407,7 @@ case n:                                                                         
                                 if (remaining_digits == 1) {
                                     if (check_rounding_condition_inside_subsegment(
                                             current_digits, std::uint32_t(prod), 8,
-                                            compute_has_further_digits, uconst<1>, uconst<0>)) {
+                                            compute_has_further_digits, uconst1, uconst0)) {
                                         goto round_up_one_digit;
                                     }
                                     goto print_last_one_digit;
@@ -4464,14 +4441,14 @@ case n:                                                                         
                             segment_loop252_final18_second_part_rounding:
                                 if (check_rounding_condition_inside_subsegment(
                                         current_digits, std::uint32_t(prod), 9 - remaining_digits,
-                                        compute_has_further_digits, uconst<1>, uconst<0>)) {
+                                        compute_has_further_digits, uconst1, uconst0)) {
                                     goto round_up_two_digits;
                                 }
                             }
                             else {
                                 if (check_rounding_condition_with_next_bit(
                                         current_digits, subsegment_boundary_rounding_bit,
-                                        compute_has_further_digits, uconst<0>, uconst<0>)) {
+                                        compute_has_further_digits, uconst0, uconst0)) {
                                     goto round_up_two_digits;
                                 }
                             }
