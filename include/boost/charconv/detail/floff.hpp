@@ -28,6 +28,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstddef>
+#include <climits>
 
 // Suppress additional buffer overrun check.
 // I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
@@ -65,13 +66,24 @@
 
 namespace jkj { namespace floff {
     namespace detail {
-        template <class T>
-        constexpr std::size_t physical_bits =
-            sizeof(T) * std::numeric_limits<unsigned char>::digits;
+        template <typename T>
+        struct physical_bits
+        {
+            static constexpr std::size_t value = sizeof(T) * CHAR_BIT;
+        };
 
-        template <class T>
-        constexpr std::size_t value_bits =
-            std::numeric_limits<typename std::enable_if<std::is_unsigned<T>::value, T>::type>::digits;
+        template <typename T>
+        struct value_bits
+        {
+            static constexpr std::size_t value = std::numeric_limits<typename std::enable_if<std::is_unsigned<T>::value, T>::type>::digits;
+        };
+
+        #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+
+        template <typename T> constexpr std::size_t physical_bits<T>::value;
+        template <typename T> constexpr std::size_t value_bits<T>::value;
+
+        #endif
     }
 
     // These classes expose encoding specs of IEEE-754-like floating-point formats.
@@ -104,7 +116,7 @@ namespace jkj { namespace floff {
         // I don't know if there is a truly reliable way of detecting
         // IEEE-754 binary32/binary64 formats; I just did my best here.
         static_assert(std::numeric_limits<T>::is_iec559 && std::numeric_limits<T>::radix == 2 &&
-                          (detail::physical_bits<T> == 32 || detail::physical_bits<T> == 64),
+                          (detail::physical_bits<T>::value == 32 || detail::physical_bits<T>::value == 64),
                       "default_ieee754_traits only works for 32-bits or 64-bits types "
                       "supporting binary32 or binary64 formats!");
 
@@ -113,16 +125,16 @@ namespace jkj { namespace floff {
 
         // Refers to the format specification class.
         using format =
-            typename std::conditional<detail::physical_bits<T> == 32, ieee754_binary32, ieee754_binary64>::type;
+            typename std::conditional<detail::physical_bits<T>::value == 32, ieee754_binary32, ieee754_binary64>::type;
 
         // Defines an unsigned integer type that is large enough to carry a variable of type T.
         // Most of the operations will be done on this integer type.
         using carrier_uint =
-            typename std::conditional<detail::physical_bits<T> == 32, std::uint32_t, std::uint64_t>::type;
+            typename std::conditional<detail::physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>::type;
         static_assert(sizeof(carrier_uint) == sizeof(T));
 
         // Number of bits in the above unsigned integer type.
-        static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>);
+        static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>::value);
 
         // Convert from carrier_uint into the original type.
         // Depending on the floating-point encoding format, this operation might not be possible for
@@ -147,7 +159,7 @@ namespace jkj { namespace floff {
         static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
             constexpr int significand_bits = format::significand_bits;
             constexpr int exponent_bits = format::exponent_bits;
-            static_assert(detail::value_bits<unsigned int> > exponent_bits);
+            static_assert(detail::value_bits<unsigned int>::value > exponent_bits);
             constexpr auto exponent_bits_mask =
                 (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
             return (unsigned int)(u >> significand_bits) & exponent_bits_mask;
