@@ -849,26 +849,6 @@ namespace jkj { namespace floff {
             }
         };
 
-        template <class UInt, unsigned int count>
-        struct fractional_part_rounding_thresholds_holder {
-            UInt values[count];
-            constexpr UInt operator[](unsigned int n) const noexcept { return values[n]; }
-        };
-
-        template <class UInt, unsigned int count>
-        static constexpr fractional_part_rounding_thresholds_holder<UInt, count>
-        generate_fractional_part_rounding_thresholds_holder() noexcept {
-            constexpr std::size_t bit_width = sizeof(UInt) * 8;
-            constexpr UInt msb = UInt(UInt(1) << (bit_width - 1));
-            fractional_part_rounding_thresholds_holder<UInt, count> ret_value{};
-            UInt divisor = 5;
-            for (unsigned int i = 0; i < count; ++i) {
-                ret_value.values[i] = (msb | (msb / divisor)) + 1;
-                divisor *= 10;
-            }
-            return ret_value;
-        }
-
         struct additional_static_data_holder {
             static constexpr char radix_100_table[] = {
                 '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', //
@@ -893,21 +873,28 @@ namespace jkj { namespace floff {
                 '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'  //
             };
 
-            static constexpr auto fractional_part_rounding_thresholds32 =
-                generate_fractional_part_rounding_thresholds_holder<std::uint32_t, 8>();
-            static constexpr auto fractional_part_rounding_thresholds64 =
-                generate_fractional_part_rounding_thresholds_holder<std::uint64_t, 18>();
+            static constexpr std::uint32_t fractional_part_rounding_thresholds32[] = {
+                UINT32_C(2576980378), UINT32_C(2190433321), UINT32_C(2151778616), UINT32_C(2147913145),
+                UINT32_C(2147526598), UINT32_C(2147487943), UINT32_C(2147484078), UINT32_C(2147483691)
+            };
+
+            static constexpr std::uint64_t fractional_part_rounding_thresholds64[] = {
+                UINT64_C(11068046444225730970), UINT64_C(9407839477591871325), UINT64_C(9241818780928485360),
+                UINT64_C(9225216711262146764),  UINT64_C(9223556504295512904), UINT64_C(9223390483598849518),
+                UINT64_C(9223373881529183179),  UINT64_C(9223372221322216546), UINT64_C(9223372055301519882),
+                UINT64_C(9223372038699450216),  UINT64_C(9223372037039243249), UINT64_C(9223372036873222553),
+                UINT64_C(9223372036856620483),  UINT64_C(9223372036854960276), UINT64_C(9223372036854794255),
+                UINT64_C(9223372036854777653),  UINT64_C(9223372036854775993), UINT64_C(9223372036854775827)
+            };
         };
 
         #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
 
         constexpr char additional_static_data_holder::radix_100_table[];
 
-        constexpr fractional_part_rounding_thresholds_holder<std::uint32_t, 8>  
-        additional_static_data_holder::fractional_part_rounding_thresholds32;
+        constexpr std::uint32_t additional_static_data_holder::fractional_part_rounding_thresholds32[];
 
-        constexpr fractional_part_rounding_thresholds_holder<std::uint64_t, 18> 
-        additional_static_data_holder::fractional_part_rounding_thresholds64;
+        constexpr std::uint64_t additional_static_data_holder::fractional_part_rounding_thresholds64[];
 
         #endif
 
