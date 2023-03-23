@@ -615,8 +615,13 @@ namespace jkj { namespace floff {
             static constexpr type value = compute_power(type(10), exp);
         };
 
-        template <unsigned int exp>
-        BOOST_INLINE_VARIABLE constexpr auto power_of_10 = power_of_10_impl<exp>::value;
+        static constexpr std::uint64_t power_of_10[] = {
+            UINT64_C(1), UINT64_C(10), UINT64_C(100), UINT64_C(1000), UINT64_C(10000), 
+            UINT64_C(100000), UINT64_C(1000000), UINT64_C(10000000), UINT64_C(100000000),
+            UINT64_C(1000000000), UINT64_C(10000000000), UINT64_C(100000000000), UINT64_C(1000000000000),
+            UINT64_C(10000000000000), UINT64_C(100000000000000), UINT64_C(1000000000000000), 
+            UINT64_C(10000000000000000), UINT64_C(100000000000000000), UINT64_C(1000000000000000000)
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for fast/constexpr log computation.
@@ -1288,13 +1293,13 @@ namespace jkj { namespace floff {
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
             HasFurtherDigits has_further_digits, Args... args) noexcept 
         {
-            if (next_subsegment.value > power_of_10<decltype(next_subsegment)::digits> / 2)
+            if (next_subsegment.value > power_of_10[decltype(next_subsegment)::digits] / 2)
             {
                 return true;
             }
 
             return next_subsegment.value ==
-                           power_of_10<decltype(next_subsegment)::digits> / 2 &&
+                           power_of_10[decltype(next_subsegment)::digits] / 2 &&
                        ((current_digits & 1) | has_further_digits) != 0;
         }
 
@@ -1304,13 +1309,13 @@ namespace jkj { namespace floff {
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
             HasFurtherDigits has_further_digits, Args... args) noexcept 
         {
-            if (next_subsegment.value > power_of_10<decltype(next_subsegment)::digits> / 2) 
+            if (next_subsegment.value > power_of_10[decltype(next_subsegment)::digits] / 2) 
             {
                 return true;
             }
 
             return next_subsegment.value ==
-                        power_of_10<decltype(next_subsegment)::digits> / 2 &&
+                        power_of_10[decltype(next_subsegment)::digits] / 2 &&
                     ((current_digits & 1) != 0 || has_further_digits(args...));
         }
 
@@ -2912,11 +2917,11 @@ namespace jkj { namespace floff {
                             assert(digits_in_the_second_segment != 0);
 
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
-                                power_of_10<19>, blocks, cache_block_count);
+                                power_of_10[19], blocks, cache_block_count);
 
                             auto subsegment =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                    generate_and_discard_lower(power_of_10<3>, blocks,
+                                    generate_and_discard_lower(power_of_10[3], blocks,
                                                                cache_block_count);
 
                             if (digits_in_the_second_segment == 1) {
@@ -2943,7 +2948,7 @@ namespace jkj { namespace floff {
                                 // The number of overlapping digits is in the range 13 ~ 19.
                                 auto const subsegment =
                                     fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                        generate_and_discard_lower(power_of_10<9>, blocks,
+                                        generate_and_discard_lower(power_of_10[9], blocks,
                                                                    cache_block_count);
 
                                 std::uint64_t prod;
@@ -2968,7 +2973,7 @@ namespace jkj { namespace floff {
                                 // The number of digits in the segment is in the range 10 ~ 16.
                                 auto const first_second_subsegments =
                                     fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                        generate_and_discard_lower(power_of_10<16>, blocks,
+                                        generate_and_discard_lower(power_of_10[16], blocks,
                                                                    cache_block_count);
 
                                 // The first segment is of 8 digits, and the second segment is of
@@ -3012,11 +3017,11 @@ namespace jkj { namespace floff {
                             // The number of digits in the segment is in the range 17 ~ 22.
                             auto const first_subsegment =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
-                                    power_of_10<6>, blocks, cache_block_count);
+                                    power_of_10[6], blocks, cache_block_count);
 
                             auto const second_third_subsegments =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                    generate_and_discard_lower(power_of_10<16>, blocks,
+                                    generate_and_discard_lower(power_of_10[16], blocks,
                                                                cache_block_count);
 
                             // ceil(2^(64+14)/10^8) = 3022314549036573
@@ -3090,7 +3095,7 @@ namespace jkj { namespace floff {
                     else {
                         if (digits_in_the_second_segment <= 2) {
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
-                                power_of_10<19>, blocks, cache_block_count);
+                                power_of_10[19], blocks, cache_block_count);
 
                             // Get one more bit for potential rounding on the segment boundary.
                             auto subsegment =
@@ -3173,7 +3178,7 @@ namespace jkj { namespace floff {
 
                             // Get one more bit for potential rounding on the segment boundary.
                             auto segment = fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                generate_and_discard_lower(power_of_10<9> << 1, blocks,
+                                generate_and_discard_lower(power_of_10[9] << 1, blocks,
                                                            cache_block_count);
 
                             std::uint64_t prod;
@@ -3261,7 +3266,7 @@ namespace jkj { namespace floff {
                         // Get one more bit for potential rounding condition check.
                         auto first_second_subsegments =
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
-                                power_of_10<13> << 1, blocks, cache_block_count);
+                                power_of_10[13] << 1, blocks, cache_block_count);
                         bool first_bit_of_third_subsegment = ((first_second_subsegments & 1) != 0);
                         first_second_subsegments >>= 1;
 
@@ -3566,7 +3571,7 @@ namespace jkj { namespace floff {
                             // shift the multiplier.
                             auto third_subsegment =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                    generate_and_discard_lower(power_of_10<9>, blocks,
+                                    generate_and_discard_lower(power_of_10[9], blocks,
                                                                cache_block_count);
 
                             bool segment_boundary_rounding_bit = ((third_subsegment & 1) != 0);
@@ -3637,14 +3642,14 @@ namespace jkj { namespace floff {
 
                     while (overlapping_digits >= 18) {
                         fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
-                            power_of_10<18>, blocks, cache_block_count);
+                            power_of_10[18], blocks, cache_block_count);
                         --remaining_subsegment_pairs;
                         overlapping_digits -= 18;
                     }
 
                     auto subsegment_pair =
                         fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
-                            power_of_10<18> << 1, blocks, cache_block_count);
+                            power_of_10[18] << 1, blocks, cache_block_count);
                     auto subsegment_boundary_rounding_bit = (subsegment_pair & 1) != 0;
                     subsegment_pair >>= 1;
 
@@ -3679,9 +3684,9 @@ case n:                                                                         
                     // Deal with the first subsegment pair.
                     {
                         // Divide it into two 9-digits subsegments.
-                        auto const first_part = std::uint32_t(subsegment_pair / power_of_10<9>);
+                        auto const first_part = std::uint32_t(subsegment_pair / power_of_10[9]);
                         auto const second_part =
-                            std::uint32_t(subsegment_pair) - power_of_10<9> * first_part;
+                            std::uint32_t(subsegment_pair) - power_of_10[9] * first_part;
 
                         auto print_subsegment = [&](auto subsegment, int digits_in_the_subsegment) {
                             remaining_digits -= digits_in_the_subsegment;
@@ -3795,7 +3800,7 @@ case n:                                                                         
                                 else {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
-                                            uint_with_known_number_of_digits<9>{second_part},
+                                            uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
                                             compute_has_further_digits, uconst<1>, uconst<0>)) {
                                         goto round_up;
                                     }
@@ -3824,7 +3829,7 @@ case n:                                                                         
                                     if (remaining_digits == 0) {
                                         if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                                 current_digits,
-                                                uint_with_known_number_of_digits<9>{second_part},
+                                                uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
                                                 compute_has_further_digits, uconst<1>, uconst<0>)) {
                                             goto round_up_two_digits;
                                         }
@@ -3899,15 +3904,15 @@ case n:                                                                         
                     for (; remaining_subsegment_pairs > 0; --remaining_subsegment_pairs) {
                         subsegment_pair =
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
-                                power_of_10<18>, blocks, cache_block_count);
+                                power_of_10[18], blocks, cache_block_count);
 
-                        subsegment_pair += (subsegment_boundary_rounding_bit ? power_of_10<18> : 0);
+                        subsegment_pair += (subsegment_boundary_rounding_bit ? power_of_10[18] : 0);
                         subsegment_boundary_rounding_bit = (subsegment_pair & 1) != 0;
                         subsegment_pair >>= 1;
 
-                        auto const first_part = std::uint32_t(subsegment_pair / power_of_10<9>);
+                        auto const first_part = std::uint32_t(subsegment_pair / power_of_10[9]);
                         auto const second_part =
-                            std::uint32_t(subsegment_pair) - power_of_10<9> * first_part;
+                            std::uint32_t(subsegment_pair) - power_of_10[9] * first_part;
 
                         // The first part can be printed without rounding.
                         if (remaining_digits > 9) {
@@ -4028,7 +4033,7 @@ case n:                                                                         
                             else {
                                 if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                         current_digits,
-                                        uint_with_known_number_of_digits<9>{second_part},
+                                        uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
                                         compute_has_further_digits, uconst<1>, uconst<9>)) {
                                     goto round_up_two_digits;
                                 }
@@ -4061,7 +4066,7 @@ case n:                                                                         
                     if (remaining_digits > 16) {
                         auto const first_second_subsegments =
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
-                                power_of_10<16>, blocks, cache_block_count);
+                                power_of_10[16], blocks, cache_block_count);
 
                         auto const first_subsegment =
                             std::uint32_t(jkj::floff::detail::wuint::umul128_upper64(
@@ -4077,7 +4082,7 @@ case n:                                                                         
                         if (remaining_digits > 22) {
                             auto const third_subsegment =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                    generate_and_discard_lower(power_of_10<6>, blocks,
+                                    generate_and_discard_lower(power_of_10[6], blocks,
                                                                cache_block_count);
 
                             print_6_digits(third_subsegment, buffer + 16);
@@ -4091,7 +4096,7 @@ case n:                                                                         
 
                             auto third_subsegment =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                    generate_and_discard_lower(power_of_10<6> << 1, blocks,
+                                    generate_and_discard_lower(power_of_10[6] << 1, blocks,
                                                                cache_block_count);
 
                             bool segment_boundary_rounding_bit = ((third_subsegment & 1) != 0);
@@ -4161,7 +4166,7 @@ case n:                                                                         
                         // Get one more bit for potential rounding conditions check.
                         auto first_second_subsegments =
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                generate_and_discard_lower(power_of_10<16> << 1, blocks,
+                                generate_and_discard_lower(power_of_10[16] << 1, blocks,
                                                            cache_block_count);
 
                         bool first_bit_of_third_subsegment = ((first_second_subsegments & 1) != 0);
@@ -4241,7 +4246,7 @@ case n:                                                                         
                         // Get one more bit for potential rounding conditions check.
                         auto first_subsegment =
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                generate_and_discard_lower(power_of_10<8> << 1, blocks,
+                                generate_and_discard_lower(power_of_10[8] << 1, blocks,
                                                            cache_block_count);
 
                         bool first_bit_of_second_subsegment = ((first_subsegment & 1) != 0);
@@ -4311,10 +4316,10 @@ case n:                                                                         
                         if (remaining_digits > 18) {
                             auto const subsegment_pair =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
-                                    power_of_10<18>, blocks, cache_block_count);
-                            auto const first_part = std::uint32_t(subsegment_pair / power_of_10<9>);
+                                    power_of_10[18], blocks, cache_block_count);
+                            auto const first_part = std::uint32_t(subsegment_pair / power_of_10[9]);
                             auto const second_part =
-                                std::uint32_t(subsegment_pair) - power_of_10<9> * first_part;
+                                std::uint32_t(subsegment_pair) - power_of_10[9] * first_part;
 
                             print_9_digits(first_part, buffer);
                             print_9_digits(second_part, buffer + 9);
@@ -4353,16 +4358,16 @@ case n:                                                                         
 
                             auto last_subsegment_pair =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
-                                    generate_and_discard_lower(power_of_10<18> << 1, blocks,
+                                    generate_and_discard_lower(power_of_10[18] << 1, blocks,
                                                                cache_block_count);
                             bool const subsegment_boundary_rounding_bit =
                                 ((last_subsegment_pair & 1) != 0);
                             last_subsegment_pair >>= 1;
 
                             auto const first_part =
-                                std::uint32_t(last_subsegment_pair / power_of_10<9>);
+                                std::uint32_t(last_subsegment_pair / power_of_10[9]);
                             auto const second_part =
-                                std::uint32_t(last_subsegment_pair) - power_of_10<9> * first_part;
+                                std::uint32_t(last_subsegment_pair) - power_of_10[9] * first_part;
 
                             if (remaining_digits <= 9) {
                                 std::uint64_t prod;
@@ -4416,7 +4421,7 @@ case n:                                                                         
                                 else {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
-                                            uint_with_known_number_of_digits<9>{second_part},
+                                            uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
                                             compute_has_further_digits, uconst<1>, uconst<0>)) {
                                         goto round_up_two_digits;
                                     }
