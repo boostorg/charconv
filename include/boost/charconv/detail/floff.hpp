@@ -596,7 +596,7 @@ namespace jkj { namespace floff {
         ////////////////////////////////////////////////////////////////////////////////////////
 
         template <class Int>
-        constexpr Int compute_power(Int a, unsigned int exp) noexcept {
+        BOOST_CHARCONV_CXX14_CONSTEXPR Int compute_power(Int a, unsigned int exp) noexcept {
             Int res = 1;
             while (exp > 0) {
                 if (exp % 2 != 0) {
@@ -608,6 +608,7 @@ namespace jkj { namespace floff {
             return res;
         }
 
+        /*
         template <unsigned int exp>
         struct power_of_10_impl {
             static_assert(exp <= 19);
@@ -615,6 +616,7 @@ namespace jkj { namespace floff {
 
             static constexpr type value = compute_power(type(10), exp);
         };
+        */
 
         static constexpr std::uint64_t power_of_10[] = {
             UINT64_C(1), UINT64_C(10), UINT64_C(100), UINT64_C(1000), UINT64_C(10000), 
@@ -1303,9 +1305,9 @@ namespace jkj { namespace floff {
                     return false;
                 }
 
-                constexpr std::uint64_t mod_inv =
+                BOOST_CXX14_CONSTEXPR std::uint64_t mod_inv =
                     compute_power(0xcccccccccccccccd, (unsigned int)(min_neg_exp_of_5));
-                constexpr std::uint64_t max_quot =
+                BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
                     0xffffffffffffffff /
                     compute_power(std::uint64_t(5), (unsigned int)(min_neg_exp_of_5));
 
@@ -1328,18 +1330,18 @@ namespace jkj { namespace floff {
                 }
 
                 if (k >= k_middle_threshold) {
-                    constexpr std::uint64_t mod_inv =
+                    BOOST_CXX14_CONSTEXPR std::uint64_t mod_inv =
                         compute_power(0xcccccccccccccccd, (unsigned int)(min_neg_exp_of_5));
-                    constexpr std::uint64_t max_quot =
+                    BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
                         0xffffffffffffffff /
                         compute_power(std::uint64_t(5), (unsigned int)(min_neg_exp_of_5));
 
                     return (significand * mod_inv) > max_quot;
                 }
                 else {
-                    constexpr std::uint64_t mod_inv = compute_power(
+                    BOOST_CXX14_CONSTEXPR std::uint64_t mod_inv = compute_power(
                         0xcccccccccccccccd, (unsigned int)(min_neg_exp_of_5 + segment_length));
-                    constexpr std::uint64_t max_quot =
+                    BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
                         0xffffffffffffffff /
                         compute_power(std::uint64_t(5),
                                       (unsigned int)(min_neg_exp_of_5 + segment_length));
