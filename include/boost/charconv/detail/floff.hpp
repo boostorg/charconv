@@ -131,7 +131,7 @@ namespace jkj { namespace floff {
         // Most of the operations will be done on this integer type.
         using carrier_uint =
             typename std::conditional<detail::physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>::type;
-        static_assert(sizeof(carrier_uint) == sizeof(T));
+        static_assert(sizeof(carrier_uint) == sizeof(T), "carrier_uint must be T");
 
         // Number of bits in the above unsigned integer type.
         static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>::value);
@@ -159,7 +159,7 @@ namespace jkj { namespace floff {
         static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
             constexpr int significand_bits = format::significand_bits;
             constexpr int exponent_bits = format::exponent_bits;
-            static_assert(detail::value_bits<unsigned int>::value > exponent_bits);
+            static_assert(detail::value_bits<unsigned int>::value > exponent_bits, "Value must have more bits than the exponent");
             constexpr auto exponent_bits_mask =
                 (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
             return (unsigned int)(u >> significand_bits) & exponent_bits_mask;
@@ -642,7 +642,7 @@ namespace jkj { namespace floff {
 
             template <multiply m, subtract f, shift k, min_exponent e_min, max_exponent e_max>
             constexpr int compute(int e) noexcept {
-                assert(std::int32_t(e_min) <= e && e <= std::int32_t(e_max));
+                //assert(std::int32_t(e_min) <= e && e <= std::int32_t(e_max));
                 return int((std::int32_t(e) * std::int32_t(m) - std::int32_t(f)) >> std::size_t(k));
             }
 
@@ -706,7 +706,7 @@ namespace jkj { namespace floff {
 
         template <std::size_t max_blocks>
         struct fixed_point_calculator {
-            static_assert(1 < max_blocks);
+            static_assert(1 < max_blocks, "Max blocks must be greater than 1");
 
             // Multiply multiplier to the fractional blocks and take the resulting integer part.
             // The fractional blocks are updated.
@@ -1196,7 +1196,7 @@ namespace jkj { namespace floff {
         JKJ_FORCEINLINE bool check_rounding_condition_inside_subsegment(
             std::uint32_t current_digits, std::uint32_t fractional_part,
             int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
-            Args... args) noexcept 
+            Args...) noexcept 
         {
             if (fractional_part >=
                 additional_static_data_holder::fractional_part_rounding_thresholds32
@@ -1229,7 +1229,7 @@ namespace jkj { namespace floff {
         JKJ_FORCEINLINE bool
         check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                HasFurtherDigits has_further_digits,
-                                               Args... args) noexcept 
+                                               Args...) noexcept 
         {
             if (!next_bit) 
             {
@@ -2188,8 +2188,8 @@ namespace jkj { namespace floff {
                     ExtendedCache::segment_length;
 
                 // k >= k_right_threshold iff k - k1 >= 0.
-                static_assert(additional_neg_exp_of_5_v + ExtendedCache::segment_length >=
-                              1 + ExtendedCache::k_min);
+                static_assert(additional_neg_exp_of_5_v + ExtendedCache::segment_length >= 1 + ExtendedCache::k_min, 
+                "additional_neg_exp_of_5_v + ExtendedCache::segment_length >= 1 + ExtendedCache::k_min");
                 constexpr auto k_right_threshold =
                     ExtendedCache::k_min +
                     ((additional_neg_exp_of_5_v + ExtendedCache::segment_length - 1 -
@@ -2209,8 +2209,8 @@ namespace jkj { namespace floff {
                 // smallest one.
                 else BOOST_IF_CONSTEXPR (min_neg_exp_of_5 + ExtendedCache::segment_length > 23) {
                     // k < k_left_threshold iff k - k1 < -min_neg_exp_of_5.
-                    static_assert(additional_neg_exp_of_5_v + ExtendedCache::segment_length >=
-                                  min_neg_exp_of_5 + 1 + ExtendedCache::k_min);
+                    static_assert(additional_neg_exp_of_5_v + ExtendedCache::segment_length >= min_neg_exp_of_5 + 1 + ExtendedCache::k_min,
+                    "additional_neg_exp_of_5_v + ExtendedCache::segment_length >= min_neg_exp_of_5 + 1 + ExtendedCache::k_min");
                     constexpr auto k_left_threshold =
                         ExtendedCache::k_min +
                         ((additional_neg_exp_of_5_v - min_neg_exp_of_5 +
@@ -2226,7 +2226,8 @@ namespace jkj { namespace floff {
                 // the only negative exponents for 5 that allows the result to be an integer are the
                 // smallest one and the next smallest one.
                 else {
-                    static_assert(min_neg_exp_of_5 + 2 * ExtendedCache::segment_length > 23);
+                    static_assert(min_neg_exp_of_5 + 2 * ExtendedCache::segment_length > 23,
+                                  "min_neg_exp_of_5 + 2 * ExtendedCache::segment_length > 23");
 
                     constexpr auto k_left_threshold =
                         ExtendedCache::k_min +
