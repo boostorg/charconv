@@ -156,21 +156,21 @@ namespace jkj { namespace floff {
         // Extract exponent bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. This function does not do bias adjustment.
-        static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
-            constexpr int significand_bits = format::significand_bits;
-            constexpr int exponent_bits = format::exponent_bits;
-            static_assert(detail::value_bits<unsigned int>::value > exponent_bits, "Value must have more bits than the exponent");
-            constexpr auto exponent_bits_mask =
-                (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
-            return (unsigned int)(u >> significand_bits) & exponent_bits_mask;
+        static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept
+        {
+            //constexpr int significand_bits = format::significand_bits;
+            //constexpr int exponent_bits = format::exponent_bits;
+            //static_assert(detail::value_bits<unsigned int>::value > exponent_bits, "Value must have more bits than the exponent");
+            //constexpr auto exponent_bits_mask = (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
+            return (unsigned int)(u >> format::exponent_bits) & (unsigned int)(((unsigned int)(1) << format::exponent_bits) - 1);
         }
 
         // Extract significand bits from a bit pattern.
         // The result must be aligned to the LSB so that there is no additional zero paddings
         // on the right. The result does not contain the implicit bit.
-        static constexpr carrier_uint extract_significand_bits(carrier_uint u) noexcept {
-            constexpr auto mask = carrier_uint((carrier_uint(1) << format::significand_bits) - 1);
-            return carrier_uint(u & mask);
+        static constexpr carrier_uint extract_significand_bits(carrier_uint u) noexcept 
+        {
+            return carrier_uint(u & carrier_uint((carrier_uint(1) << format::significand_bits) - 1));
         }
 
         // Remove the exponent bits and extract significand bits together with the sign bit.
@@ -190,40 +190,49 @@ namespace jkj { namespace floff {
             1 - (1 << (carrier_bits - format::significand_bits - 2));
 
         // Obtain the actual value of the binary exponent from the extracted exponent bits.
-        static constexpr int binary_exponent(unsigned int exponent_bits) noexcept {
+        static constexpr int binary_exponent(unsigned int exponent_bits) noexcept 
+        {
+            return exponent_bits == 0 ? format::min_exponent : int(exponent_bits) + format::exponent_bias;
+            /*
             if (exponent_bits == 0) {
                 return format::min_exponent;
             }
             else {
                 return int(exponent_bits) + format::exponent_bias;
             }
+            */
         }
 
         // Obtain the actual value of the binary exponent from the extracted significand bits and
         // exponent bits.
         static constexpr carrier_uint binary_significand(carrier_uint significand_bits,
-                                                         unsigned int exponent_bits) noexcept {
+                                                         unsigned int exponent_bits) noexcept 
+        {
+            return exponent_bits == 0 ? significand_bits : (significand_bits | (carrier_uint(1) << format::significand_bits));
+            /*
             if (exponent_bits == 0) {
                 return significand_bits;
             }
             else {
                 return significand_bits | (carrier_uint(1) << format::significand_bits);
             }
+            */
         }
 
 
         /* Various boolean observer functions */
 
         static constexpr bool is_nonzero(carrier_uint u) noexcept { return (u << 1) != 0; }
-        static constexpr bool is_positive(carrier_uint u) noexcept {
-            constexpr auto sign_bit = carrier_uint(1)
-                                      << (format::significand_bits + format::exponent_bits);
-            return u < sign_bit;
+        static constexpr bool is_positive(carrier_uint u) noexcept 
+        {
+            //constexpr auto sign_bit = carrier_uint(1) << (format::significand_bits + format::exponent_bits);
+            return u < carrier_uint(1) << (format::significand_bits + format::exponent_bits);
         }
         static constexpr bool is_negative(carrier_uint u) noexcept { return !is_positive(u); }
-        static constexpr bool is_finite(unsigned int exponent_bits) noexcept {
-            constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
-            return exponent_bits != exponent_bits_all_set;
+        static constexpr bool is_finite(unsigned int exponent_bits) noexcept
+        {
+            //constexpr unsigned int exponent_bits_all_set = (1u << format::exponent_bits) - 1;
+            return exponent_bits != (1u << format::exponent_bits) - 1;
         }
         static constexpr bool has_all_zero_significand_bits(carrier_uint u) noexcept {
             return (u << 1) == 0;
@@ -623,8 +632,11 @@ namespace jkj { namespace floff {
             UINT64_C(100000), UINT64_C(1000000), UINT64_C(10000000), UINT64_C(100000000),
             UINT64_C(1000000000), UINT64_C(10000000000), UINT64_C(100000000000), UINT64_C(1000000000000),
             UINT64_C(10000000000000), UINT64_C(100000000000000), UINT64_C(1000000000000000), 
-            UINT64_C(10000000000000000), UINT64_C(100000000000000000), UINT64_C(1000000000000000000)
+            UINT64_C(10000000000000000), UINT64_C(100000000000000000), UINT64_C(1000000000000000000), 
+            UINT64_C(10000000000000000000)
         };
+
+        static_assert(sizeof(power_of_10) == 20 * sizeof(std::uint64_t), "There should be the first 20 powers of 10");
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for fast/constexpr log computation.
@@ -649,7 +661,7 @@ namespace jkj { namespace floff {
             // For constexpr computation.
             // Returns -1 when n = 0.
             template <class UInt>
-            constexpr int floor_log2(UInt n) noexcept {
+            BOOST_CHARCONV_CXX14_CONSTEXPR int floor_log2(UInt n) noexcept {
                 int count = -1;
                 while (n != 0) {
                     ++count;
@@ -918,7 +930,7 @@ namespace jkj { namespace floff {
         template <class ExtendedCache, bool zero_out,
                   class CacheBlockType = typename std::decay<decltype(ExtendedCache::cache[0])>::type,
                   typename std::enable_if<!(ExtendedCache::constant_block_count), bool>::type = true>
-        inline std::uint8_t cache_block_count_helper(CacheBlockType* blocks_ptr, int e, int k, std::uint32_t multiplier_index) noexcept 
+        inline std::uint8_t cache_block_count_helper(CacheBlockType*, int e, int, std::uint32_t multiplier_index) noexcept 
         {
             const auto mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
 
@@ -1258,7 +1270,7 @@ namespace jkj { namespace floff {
                   typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
         JKJ_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
-            HasFurtherDigits has_further_digits, Args... args) noexcept 
+            HasFurtherDigits has_further_digits, Args...) noexcept 
         {
             if (next_subsegment.value > power_of_10[decltype(next_subsegment)::digits] / 2)
             {
@@ -1825,8 +1837,8 @@ namespace jkj { namespace floff {
         template <class FloatFormat>
         static constexpr typename detail::main_cache_holder<FloatFormat>::cache_entry_type
         get_cache(int k) noexcept {
-            assert(k >= detail::main_cache_holder<FloatFormat>::min_k &&
-                   k <= detail::main_cache_holder<FloatFormat>::max_k);
+            //assert(k >= detail::main_cache_holder<FloatFormat>::min_k &&
+            //       k <= detail::main_cache_holder<FloatFormat>::max_k);
             return detail::main_cache_holder<FloatFormat>::cache[std::size_t(
                 k - detail::main_cache_holder<FloatFormat>::min_k)];
         }
@@ -1834,7 +1846,7 @@ namespace jkj { namespace floff {
 
     struct main_cache_compressed {
         template <class FloatFormat>
-        static constexpr typename detail::main_cache_holder<FloatFormat>::cache_entry_type
+        static BOOST_CHARCONV_CXX14_CONSTEXPR typename detail::main_cache_holder<FloatFormat>::cache_entry_type
         get_cache(int k) noexcept {
             assert(k >= detail::main_cache_holder<FloatFormat>::min_k &&
                    k <= detail::main_cache_holder<FloatFormat>::max_k);
