@@ -3772,7 +3772,7 @@ case n:                                                                         
                         auto const second_part =
                             std::uint32_t(subsegment_pair) - power_of_10[9] * first_part;
 
-                        auto print_subsegment = [&](auto subsegment, int digits_in_the_subsegment) {
+                        auto print_subsegment = [&](std::uint32_t subsegment, int digits_in_the_subsegment) {
                             remaining_digits -= digits_in_the_subsegment;
 
                             // Move all overlapping digits into the integer part.
