@@ -22,6 +22,7 @@
 #define BOOST_CHARCONV_DETAIL_FLOFF
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/chars_format.hpp>
 #include <type_traits>
 #include <limits>
 #include <cassert>
@@ -2294,7 +2295,8 @@ namespace jkj { namespace floff {
     // precision means the number of decimal significand digits minus 1.
     // Assumes round-to-nearest, tie-to-even rounding.
     template <class MainCache = main_cache_full, class ExtendedCache>
-    JKJ_SAFEBUFFERS char* floff(double const x, int const precision, char* buffer) noexcept {
+    JKJ_SAFEBUFFERS char* floff(double const x, int const precision, char* buffer, boost::charconv::chars_format fmt) noexcept 
+    {
         assert(precision >= 0);
         using namespace detail;
 
@@ -4562,14 +4564,28 @@ case n:                                                                         
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
     fill_remaining_digits_with_0s:
-        std::memset(buffer, '0', remaining_digits);
-        buffer += remaining_digits;
+        if (fmt != boost::charconv::chars_format::general)
+        {
+            std::memset(buffer, '0', remaining_digits);
+            buffer += remaining_digits;
+        }
 
     insert_decimal_dot:
         buffer_starting_pos[0] = buffer_starting_pos[1];
         buffer_starting_pos[1] = '.';
 
     print_exponent_and_return:
+        if (fmt == boost::charconv::chars_format::general)
+        {
+            --buffer;
+            while (*buffer == '0')
+            {
+                --buffer;
+            }
+
+            ++buffer;
+        }
+        
         if (decimal_exponent >= 0) {
             std::memcpy(buffer, "e+", 2);
         }

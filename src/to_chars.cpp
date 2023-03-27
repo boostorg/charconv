@@ -290,7 +290,12 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value, boost::charconv::chars_format fmt, int precision) noexcept
 {
     
-    if (fmt == boost::charconv::chars_format::scientific)
+    if (fmt == boost::charconv::chars_format::general)
+    {
+        auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, std::numeric_limits<double>::max_digits10 - 1, first, fmt);
+        return { ptr, 0 };
+    }
+    else if (fmt == boost::charconv::chars_format::scientific)
     {
         if (precision == -1)
         {
@@ -300,7 +305,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first, EOVERFLOW };
         }
-        auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first);
+        auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first, fmt);
         return { ptr, 0 };
     }
     else
