@@ -2355,7 +2355,7 @@ namespace jkj { namespace floff {
 
         constexpr int kappa = 2;
         int k = kappa - detail::log::floor_log10_pow2(e);
-        std::uint32_t current_digits;
+        std::uint32_t current_digits {};
         char* const buffer_starting_pos = buffer;
         int decimal_exponent = -k;
         int remaining_digits = precision + 1;
@@ -3125,7 +3125,7 @@ namespace jkj { namespace floff {
                                                           100000000 * second_subsegment;
 
                             // Print the first subsegment (1 ~ 6 digits).
-                            std::uint64_t prod;
+                            std::uint64_t prod {};
                             auto remaining_digits_in_the_current_subsegment =
                                 digits_in_the_second_segment - 16;
                             switch (remaining_digits_in_the_current_subsegment) {
