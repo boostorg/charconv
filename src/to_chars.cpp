@@ -16,6 +16,7 @@ namespace boost { namespace charconv { namespace detail {
 // Thanks to reddit user u/mcmcc:
 // https://www.reddit.com/r/cpp/comments/so3wx9/dragonbox_110_is_released_a_fast_floattostring/hw8z26r/?context=3
 
+/*
 static constexpr char radix_100_table[] = {
     '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', //
     '0', '5', '0', '6', '0', '7', '0', '8', '0', '9', //
@@ -277,7 +278,7 @@ void print_9_digits(std::uint32_t s32, int& exponent, char* buffer) noexcept
         buffer += (1 + (unsigned(s32 >= 10) & unsigned(buffer[2] > '0')) * 2);
     }
 }
-
+*/
 }}} // Namespaces
 
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, float value ) noexcept

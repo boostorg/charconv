@@ -33,15 +33,10 @@
 // Suppress additional buffer overrun check.
 // I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
 // attacks. No, they aren't.
-#if defined(__GNUC__) || defined(__clang__)
-    #define JKJ_SAFEBUFFERS
-    #define JKJ_FORCEINLINE inline __attribute__((always_inline))
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
     #define JKJ_SAFEBUFFERS __declspec(safebuffers)
-    #define JKJ_FORCEINLINE __forceinline
 #else
     #define JKJ_SAFEBUFFERS
-    #define JKJ_FORCEINLINE inline
 #endif
 
 #if defined(__has_builtin)
@@ -50,9 +45,7 @@
     #define JKJ_HAS_BUILTIN(x) false
 #endif
 
-#if __has_cpp_attribute(assume)
-    #define JKJ_UNRECHABLE [[assume(false)]]
-#elif defined(__GNUC__) && JKJ_HAS_BUILTIN(__builtin_unreachable)
+#if defined(__GNUC__) && JKJ_HAS_BUILTIN(__builtin_unreachable)
     #define JKJ_UNRECHABLE __builtin_unreachable()
 #elif defined(_MSC_VER)
     #define JKJ_UNRECHABLE __assume(false)
@@ -723,12 +716,13 @@ namespace jkj { namespace floff {
             // Multiply multiplier to the fractional blocks and take the resulting integer part.
             // The fractional blocks are updated.
             template <class MultiplierType>
-            JKJ_FORCEINLINE static MultiplierType generate(MultiplierType multiplier,
+            BOOST_FORCEINLINE static MultiplierType generate(MultiplierType multiplier,
                                                            std::uint64_t* blocks_ptr,
                                                            std::size_t number_of_blocks) noexcept {
                 assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
 
-                BOOST_IF_CONSTEXPR (max_blocks == 3) {
+                BOOST_IF_CONSTEXPR (max_blocks == 3)
+                {
                     wuint::uint128 mul_result;
                     std::uint64_t carry = 0;
 
@@ -737,14 +731,14 @@ namespace jkj { namespace floff {
                         mul_result = wuint::umul128(blocks_ptr[2], multiplier);
                         blocks_ptr[2] = mul_result.low();
                         carry = mul_result.high();
-                        [[fallthrough]];
+                        BOOST_FALLTHROUGH;
 
                     case 2:
                         mul_result = wuint::umul128(blocks_ptr[1], multiplier);
                         mul_result += carry;
                         blocks_ptr[1] = mul_result.low();
                         carry = mul_result.high();
-                        [[fallthrough]];
+                        BOOST_FALLTHROUGH;
 
                     case 1:
                         mul_result = wuint::umul128(blocks_ptr[0], multiplier);
@@ -756,26 +750,25 @@ namespace jkj { namespace floff {
                         JKJ_UNRECHABLE;
                     }
                 }
-                else {
-                    auto mul_result = wuint::umul128(blocks_ptr[number_of_blocks - 1], multiplier);
-                    blocks_ptr[number_of_blocks - 1] = mul_result.low();
-                    auto carry = mul_result.high();
-                    for (std::size_t i = 1; i < number_of_blocks; ++i) {
-                        mul_result =
-                            wuint::umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
-                        mul_result += carry;
-                        blocks_ptr[number_of_blocks - i - 1] = mul_result.low();
-                        carry = mul_result.high();
-                    }
 
-                    return MultiplierType(carry);
+                auto mul_result = wuint::umul128(blocks_ptr[number_of_blocks - 1], multiplier);
+                blocks_ptr[number_of_blocks - 1] = mul_result.low();
+                auto carry = mul_result.high();
+                for (std::size_t i = 1; i < number_of_blocks; ++i) {
+                    mul_result =
+                        wuint::umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
+                    mul_result += carry;
+                    blocks_ptr[number_of_blocks - i - 1] = mul_result.low();
+                    carry = mul_result.high();
                 }
+
+                return MultiplierType(carry);
             }
 
             // Multiply multiplier to the fractional blocks and discard the resulting integer part.
             // The fractional blocks are updated.
             template <class MultiplierType>
-            JKJ_FORCEINLINE static void discard_upper(MultiplierType multiplier,
+            BOOST_FORCEINLINE static void discard_upper(MultiplierType multiplier,
                                                       std::uint64_t* blocks_ptr,
                                                       std::size_t number_of_blocks) noexcept {
                 assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
@@ -818,12 +811,13 @@ namespace jkj { namespace floff {
             // Multiply multiplier to the fractional blocks and take the resulting integer part.
             // Don't care about what happens to the fractional blocks.
             template <class MultiplierType>
-            JKJ_FORCEINLINE static MultiplierType
+            BOOST_FORCEINLINE static MultiplierType
             generate_and_discard_lower(MultiplierType multiplier, std::uint64_t* blocks_ptr,
                                        std::size_t number_of_blocks) noexcept {
                 assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
 
-                BOOST_IF_CONSTEXPR (max_blocks == 3) {
+                BOOST_IF_CONSTEXPR (max_blocks == 3) 
+                {
                     wuint::uint128 mul_result;
                     std::uint64_t carry = 0;
 
@@ -831,13 +825,13 @@ namespace jkj { namespace floff {
                     case 3:
                         mul_result = wuint::umul128(blocks_ptr[2], multiplier);
                         carry = mul_result.high();
-                        [[fallthrough]];
+                        BOOST_FALLTHROUGH;
 
                     case 2:
                         mul_result = wuint::umul128(blocks_ptr[1], multiplier);
                         mul_result += carry;
                         carry = mul_result.high();
-                        [[fallthrough]];
+                        BOOST_FALLTHROUGH;
 
                     case 1:
                         mul_result = wuint::umul128(blocks_ptr[0], multiplier);
@@ -848,18 +842,17 @@ namespace jkj { namespace floff {
                         JKJ_UNRECHABLE;
                     }
                 }
-                else {
-                    auto mul_result = wuint::umul128(blocks_ptr[number_of_blocks - 1], multiplier);
-                    auto carry = mul_result.high();
-                    for (std::size_t i = 1; i < number_of_blocks; ++i) {
-                        mul_result =
-                            wuint::umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
-                        mul_result += carry;
-                        carry = mul_result.high();
-                    }
 
-                    return MultiplierType(carry);
+                auto mul_result = wuint::umul128(blocks_ptr[number_of_blocks - 1], multiplier);
+                auto carry = mul_result.high();
+                for (std::size_t i = 1; i < number_of_blocks; ++i) {
+                    mul_result =
+                        wuint::umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
+                    mul_result += carry;
+                    carry = mul_result.high();
                 }
+
+                return MultiplierType(carry);
             }
         };
 
@@ -966,7 +959,7 @@ namespace jkj { namespace floff {
 
         template <class ExtendedCache, bool zero_out,
                   class CacheBlockType = typename std::decay<decltype(ExtendedCache::cache[0])>::type>
-        JKJ_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, int e, int k,
+        BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, int e, int k,
                                                          std::uint32_t multiplier_index) noexcept 
         {
             BOOST_IF_CONSTEXPR (zero_out) {
@@ -1098,14 +1091,14 @@ namespace jkj { namespace floff {
                             (ExtendedCache::cache[first_cache_block_index + 2] << bit_offset) |
                             (ExtendedCache::cache[first_cache_block_index + 3] >>
                              (ExtendedCache::cache_bits_unit - bit_offset));
-                        [[fallthrough]];
+                        BOOST_FALLTHROUGH;
 
                     case 2:
                         *(dst_ptr + 1) =
                             (ExtendedCache::cache[first_cache_block_index + 1] << bit_offset) |
                             (ExtendedCache::cache[first_cache_block_index + 2] >>
                              (ExtendedCache::cache_bits_unit - bit_offset));
-                        [[fallthrough]];
+                        BOOST_FALLTHROUGH;
 
                     case 1:
                         *dst_ptr = (ExtendedCache::cache[first_cache_block_index] << bit_offset) |
@@ -1205,7 +1198,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        JKJ_FORCEINLINE bool check_rounding_condition_inside_subsegment(
+        BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
             std::uint32_t current_digits, std::uint32_t fractional_part,
             int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
             Args...) noexcept 
@@ -1221,7 +1214,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        JKJ_FORCEINLINE bool check_rounding_condition_inside_subsegment(
+        BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
             std::uint32_t current_digits, std::uint32_t fractional_part,
             int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
             Args... args) noexcept 
@@ -1238,7 +1231,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        JKJ_FORCEINLINE bool
+        BOOST_FORCEINLINE bool
         check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                HasFurtherDigits has_further_digits,
                                                Args...) noexcept 
@@ -1253,7 +1246,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        JKJ_FORCEINLINE bool
+        BOOST_FORCEINLINE bool
         check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                HasFurtherDigits has_further_digits,
                                                Args... args) noexcept 
@@ -1268,7 +1261,7 @@ namespace jkj { namespace floff {
 
         template <class UintWithKnownDigits, class HasFurtherDigits, class... Args, 
                   typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        JKJ_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
+        BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
             HasFurtherDigits has_further_digits, Args...) noexcept 
         {
@@ -1284,7 +1277,7 @@ namespace jkj { namespace floff {
 
         template <class UintWithKnownDigits, class HasFurtherDigits, class... Args, 
                   typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        JKJ_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
+        BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
             HasFurtherDigits has_further_digits, Args... args) noexcept 
         {
@@ -4671,7 +4664,6 @@ case n:                                                                         
 }} // Namespace jkj::floff
 
 #undef JKJ_UNRECHABLE
-#undef JKJ_FORCEINLINE
 #undef JKJ_SAFEBUFFERS
 #undef JKJ_HAS_BUILTIN
 
