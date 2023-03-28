@@ -58,6 +58,12 @@
     #include <intrin.h>
 #endif
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127) // Extensive use of BOOST_IF_CONSTEXPR emits warnings under C++11 and 14
+# pragma warning(disable: 4554) // parentheses are used be warning is still emitted
+#endif
+
 namespace jkj { namespace floff {
     namespace detail {
         template <typename T>
@@ -2535,13 +2541,13 @@ namespace jkj { namespace floff {
                             segment32 *= 100;
                         }
 
-                        std::uint64_t prod;
+                        std::uint64_t prod_64 {};
                         if (remaining_digits == 1) {
-                            prod = (segment32 * std::uint64_t(1441151882)) >> 25;
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod_64 = (segment32 * std::uint64_t(1441151882)) >> 25;
+                            current_digits = std::uint32_t(prod_64 >> 32);
 
                             if (check_rounding_condition_inside_subsegment(
-                                    current_digits, std::uint32_t(prod), 8, has_more_segments)) {
+                                    current_digits, std::uint32_t(prod_64), 8, has_more_segments)) {
                                 if (++current_digits == 10) {
                                     *buffer = '1';
                                     ++buffer;
@@ -2553,11 +2559,11 @@ namespace jkj { namespace floff {
                             ++buffer;
                         }
                         else {
-                            prod = (segment32 * std::uint64_t(450359963)) >> 29;
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod_64 = (segment32 * std::uint64_t(450359963)) >> 29;
+                            current_digits = std::uint32_t(prod_64 >> 32);
 
                             if (check_rounding_condition_inside_subsegment(
-                                    current_digits, std::uint32_t(prod), 7, has_more_segments)) {
+                                    current_digits, std::uint32_t(prod_64), 7, has_more_segments)) {
                                 if (++current_digits == 100) {
                                     std::memcpy(buffer, "1.0", 3);
                                     buffer += 3;
@@ -4705,6 +4711,10 @@ case n:                                                                         
         goto print_exponent_and_return;
     }
 }} // Namespace jkj::floff
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 #undef JKJ_UNRECHABLE
 #undef JKJ_SAFEBUFFERS
