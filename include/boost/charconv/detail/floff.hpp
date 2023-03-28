@@ -1175,6 +1175,7 @@ namespace jkj { namespace floff {
         template <unsigned n>
         struct uconst
         {
+            constexpr uconst() {}
             static constexpr unsigned value = n;
         };
 
@@ -1201,7 +1202,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
+        static BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
             std::uint32_t current_digits, std::uint32_t fractional_part,
             int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
             Args...) noexcept 
@@ -1217,7 +1218,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
+        static BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
             std::uint32_t current_digits, std::uint32_t fractional_part,
             int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
             Args... args) noexcept 
@@ -1234,7 +1235,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        BOOST_FORCEINLINE bool
+        static BOOST_FORCEINLINE bool
         check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                HasFurtherDigits has_further_digits,
                                                Args...) noexcept 
@@ -1249,7 +1250,7 @@ namespace jkj { namespace floff {
 
         template <class HasFurtherDigits, class... Args,
                   typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        BOOST_FORCEINLINE bool
+        static BOOST_FORCEINLINE bool
         check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                HasFurtherDigits has_further_digits,
                                                Args... args) noexcept 
@@ -1264,7 +1265,7 @@ namespace jkj { namespace floff {
 
         template <class UintWithKnownDigits, class HasFurtherDigits, class... Args, 
                   typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
+        static BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
             HasFurtherDigits has_further_digits, Args...) noexcept 
         {
@@ -1280,7 +1281,7 @@ namespace jkj { namespace floff {
 
         template <class UintWithKnownDigits, class HasFurtherDigits, class... Args, 
                   typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-        BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
+        static BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
             std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
             HasFurtherDigits has_further_digits, Args... args) noexcept 
         {
