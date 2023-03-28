@@ -34,7 +34,7 @@
 // Suppress additional buffer overrun check.
 // I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
 // attacks. No, they aren't.
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
     #define JKJ_SAFEBUFFERS __declspec(safebuffers)
 #else
     #define JKJ_SAFEBUFFERS
