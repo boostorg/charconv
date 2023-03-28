@@ -2313,6 +2313,8 @@ namespace jkj { namespace floff {
                                                     JKJ_UNRECHABLE;
                                                 }
                 #undef JKJ_FLOFF_252_HAS_FURTHER_DIGITS
+
+                BOOST_UNREACHABLE_RETURN(false);
             }
 
 
