@@ -1748,7 +1748,7 @@ namespace jkj { namespace floff {
                 {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
         };
 
-        #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+        #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
         constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::cache_bits;
         constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::min_k;
@@ -2047,7 +2047,7 @@ namespace jkj { namespace floff {
             {27245, 29296}, {27294, 29344}, {27320, 29370}, {27324, 0}};
     };
 
-    #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+    #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
     constexpr std::size_t extended_cache_long::max_cache_blocks;
     constexpr std::size_t extended_cache_long::cache_bits_unit;
