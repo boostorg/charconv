@@ -857,6 +857,7 @@ namespace jkj { namespace floff {
             }
         };
 
+        namespace {
         struct additional_static_data_holder {
             static constexpr char radix_100_table[] = {
                 '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', //
@@ -905,6 +906,7 @@ namespace jkj { namespace floff {
         constexpr std::uint64_t additional_static_data_holder::fractional_part_rounding_thresholds64[];
 
         #endif
+        } 
 
         struct compute_mul_result {
             std::uint64_t result;
@@ -1838,7 +1840,8 @@ namespace jkj { namespace floff {
         }
     };
 
-    struct main_cache_compressed {
+    struct main_cache_compressed 
+    {
         template <class FloatFormat>
         static BOOST_CHARCONV_CXX14_CONSTEXPR typename detail::main_cache_holder<FloatFormat>::cache_entry_type
         get_cache(int k) noexcept {
@@ -2116,6 +2119,22 @@ namespace jkj { namespace floff {
             0x61, 0x45, 0x23, 0x41, 0x23, 0x31, 0x12, 0x12, 0x01};
     };
 
+    #ifdef BOOST_CXX17_INLINE_VARIABLES
+
+    constexpr std::size_t extended_cache_compact::max_cache_blocks;
+    constexpr std::size_t extended_cache_compact::cache_bits_unit;
+    constexpr int extended_cache_compact::segment_length;
+    constexpr bool extended_cache_compact::constant_block_count;
+    constexpr int extended_cache_compact::collapse_factor;
+    constexpr int extended_cache_compact::e_min;
+    constexpr int extended_cache_compact::k_min;
+    constexpr int extended_cache_compact::cache_bit_index_offset_base;
+    constexpr int extended_cache_compact::cache_block_count_offset_base;
+    constexpr extended_cache_compact::multiplier_index_info extended_cache_compact::multiplier_index_info_table[];
+    constexpr std::uint8_t extended_cache_compact::cache_block_counts[];
+
+    #endif
+
     struct extended_cache_super_compact {
         static constexpr std::size_t max_cache_blocks = 15;
         static constexpr std::size_t cache_bits_unit = 64;
@@ -2163,17 +2182,18 @@ namespace jkj { namespace floff {
 
     #ifdef BOOST_CXX17_INLINE_VARIABLES
 
-    constexpr std::size_t extended_cache_compact::max_cache_blocks;
-    constexpr std::size_t extended_cache_compact::cache_bits_unit;
-    constexpr int extended_cache_compact::segment_length;
-    constexpr bool extended_cache_compact::constant_block_count;
-    constexpr int extended_cache_compact::collapse_factor;
-    constexpr int extended_cache_compact::e_min;
-    constexpr int extended_cache_compact::k_min;
-    constexpr int extended_cache_compact::cache_bit_index_offset_base;
-    constexpr int extended_cache_compact::cache_block_count_offset_base;
-    constexpr extended_cache_compact::multiplier_index_info extended_cache_compact::multiplier_index_info_table[];
-    constexpr std::uint8_t extended_cache_compact::cache_block_counts[];
+    constexpr std::size_t extended_cache_super_compact::max_cache_blocks;
+    constexpr std::size_t extended_cache_super_compact::cache_bits_unit;
+    constexpr int extended_cache_super_compact::segment_length;
+    constexpr bool extended_cache_super_compact::constant_block_count;
+    constexpr int extended_cache_super_compact::collapse_factor;
+    constexpr int extended_cache_super_compact::e_min;
+    constexpr int extended_cache_super_compact::k_min;
+    constexpr int extended_cache_super_compact::cache_bit_index_offset_base;
+    constexpr int extended_cache_super_compact::cache_block_count_offset_base;
+    constexpr std::uint64_t extended_cache_super_compact::cache[];
+    constexpr extended_cache_super_compact::multiplier_index_info extended_cache_super_compact::multiplier_index_info_table[];
+    constexpr std::uint8_t extended_cache_super_compact::cache_block_counts[];
 
     #endif
 
