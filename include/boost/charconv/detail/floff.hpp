@@ -859,7 +859,7 @@ namespace jkj { namespace floff {
                     carry = mul_result.high();
                 }
 
-                return MultiplierType(carry);
+                return static_cast<MultiplierType>(carry);
             }
         };
 
@@ -1047,9 +1047,8 @@ namespace jkj { namespace floff {
 
             // If the request window goes further than the right boundary of the source window,
             if (end_bit_index > src_end_bit_index) {
-                auto const number_of_trailing_zero_blocks =
-                    std::uint32_t(end_bit_index - src_end_bit_index) /
-                    std::uint32_t(ExtendedCache::cache_bits_unit);
+                const auto number_of_trailing_zero_blocks = 
+                    static_cast<std::uint8_t>(end_bit_index - src_end_bit_index / ExtendedCache::cache_bits_unit);
                 excessive_bits_to_right = std::uint32_t(end_bit_index - src_end_bit_index) %
                                           std::uint32_t(ExtendedCache::cache_bits_unit);
 
@@ -2416,11 +2415,12 @@ namespace jkj { namespace floff {
             // smallest possible value of the first segment is 10^kappa, so it is of at least
             // kappa+1 digits.
 
-            if (remaining_digits <= 2) {
+            if (remaining_digits <= 2) 
+            {
                 wuint::uint128 prod;
                 std::uint64_t fractional_part64;
                 std::uint64_t fractional_part_rounding_threshold64;
-                std::uint32_t current_digits;
+                std::uint32_t current_digits32;
 
                 // Convert to fixed-point form with 64/32-bit boundary for the fractional part.
 
@@ -2439,7 +2439,7 @@ namespace jkj { namespace floff {
                             fractional_part_rounding_thresholds64[16];
                     }
                     fractional_part64 = (prod.low() >> 56) | (prod.high() << 8);
-                    current_digits = std::uint32_t(prod.high() >> 56);
+                    current_digits32 = std::uint32_t(prod.high() >> 56);
                     decimal_exponent += 18;
                 }
                 // 18 digits.
@@ -2457,7 +2457,7 @@ namespace jkj { namespace floff {
                             fractional_part_rounding_thresholds64[15];
                     }
                     fractional_part64 = (prod.low() >> 52) | (prod.high() << 12);
-                    current_digits = std::uint32_t(prod.high() >> 52);
+                    current_digits32 = std::uint32_t(prod.high() >> 52);
                     decimal_exponent += 17;
                 }
                 // This branch can be taken only for subnormal numbers.
@@ -2506,7 +2506,7 @@ namespace jkj { namespace floff {
                                 fractional_part_rounding_thresholds64[14];
                         }
                         fractional_part64 = (prod.low() >> 44) | (prod.high() << 20);
-                        current_digits = std::uint32_t(prod.high() >> 44);
+                        current_digits32 = std::uint32_t(prod.high() >> 44);
                     }
                     // At most 9 digits (and at least 3 digits).
                     else {
@@ -2544,7 +2544,7 @@ namespace jkj { namespace floff {
                         std::uint64_t prod_64 {};
                         if (remaining_digits == 1) {
                             prod_64 = (segment32 * std::uint64_t(1441151882)) >> 25;
-                            current_digits = std::uint32_t(prod_64 >> 32);
+                            current_digits32 = std::uint32_t(prod_64 >> 32);
 
                             if (check_rounding_condition_inside_subsegment(
                                     current_digits, std::uint32_t(prod_64), 8, has_more_segments)) {
@@ -2555,12 +2555,12 @@ namespace jkj { namespace floff {
                                     goto print_exponent_and_return;
                                 }
                             }
-                            print_1_digit(current_digits, buffer);
+                            print_1_digit(current_digits32, buffer);
                             ++buffer;
                         }
                         else {
                             prod_64 = (segment32 * std::uint64_t(450359963)) >> 29;
-                            current_digits = std::uint32_t(prod_64 >> 32);
+                            current_digits32 = std::uint32_t(prod_64 >> 32);
 
                             if (check_rounding_condition_inside_subsegment(
                                     current_digits, std::uint32_t(prod_64), 7, has_more_segments)) {
@@ -2572,10 +2572,10 @@ namespace jkj { namespace floff {
                                 }
                             }
                             buffer[0] =
-                                additional_static_data_holder::radix_100_table[current_digits * 2];
+                                additional_static_data_holder::radix_100_table[current_digits32 * 2];
                             buffer[1] = '.';
                             buffer[2] =
-                                additional_static_data_holder::radix_100_table[current_digits * 2 +
+                                additional_static_data_holder::radix_100_table[current_digits32 * 2 +
                                                                                1];
                             buffer += 3;
                         }
@@ -2586,33 +2586,33 @@ namespace jkj { namespace floff {
                 // Perform rounding, print the digit, and return.
                 if (remaining_digits == 1) {
                     if (fractional_part64 >= fractional_part_rounding_threshold64 ||
-                        ((fractional_part64 >> 63) & (has_more_segments | (current_digits & 1))) !=
+                        ((fractional_part64 >> 63) & (has_more_segments | (current_digits32 & 1))) !=
                             0) {
-                        if (++current_digits == 10) {
+                        if (++current_digits32 == 10) {
                             *buffer = '1';
                             ++buffer;
                             ++decimal_exponent;
                             goto print_exponent_and_return;
                         }
                     }
-                    print_1_digit(current_digits, buffer);
+                    print_1_digit(current_digits32, buffer);
                     ++buffer;
                 }
                 else {
                     if (fractional_part64 >= fractional_part_rounding_threshold64 ||
-                        ((fractional_part64 >> 63) & (has_more_segments | (current_digits & 1))) !=
+                        ((fractional_part64 >> 63) & (has_more_segments | (current_digits32 & 1))) !=
                             0) {
-                        if (++current_digits == 100) {
+                        if (++current_digits32 == 100) {
                             std::memcpy(buffer, "1.0", 3);
                             buffer += 3;
                             ++decimal_exponent;
                             goto print_exponent_and_return;
                         }
                     }
-                    buffer[0] = additional_static_data_holder::radix_100_table[current_digits * 2];
+                    buffer[0] = additional_static_data_holder::radix_100_table[current_digits32 * 2];
                     buffer[1] = '.';
                     buffer[2] =
-                        additional_static_data_holder::radix_100_table[current_digits * 2 + 1];
+                        additional_static_data_holder::radix_100_table[current_digits32 * 2 + 1];
                     buffer += 3;
                 }
                 goto print_exponent_and_return;
@@ -2737,11 +2737,12 @@ namespace jkj { namespace floff {
             if (remaining_digits <= 2) {
                 // In this case the first subsegment must be nonzero.
 
-                if (remaining_digits == 1) {
-                    auto const prod = wuint::umul128(second_third_subsegments, 18446744074ull);
+                if (remaining_digits == 1) 
+                {
+                    const auto prod128 = wuint::umul128(second_third_subsegments, 18446744074ull);
 
-                    current_digits = std::uint32_t(prod.high());
-                    auto const fractional_part64 = prod.low() + 1;
+                    current_digits = std::uint32_t(prod128.high());
+                    auto const fractional_part64 = prod128.low() + 1;
                     // 18446744074 is even, so prod.low() cannot be equal to 2^64 - 1.
                     assert(fractional_part64 != 0);
 
@@ -2753,11 +2754,12 @@ namespace jkj { namespace floff {
                     }
                     goto print_last_one_digit;
                 } // remaining_digits == 1
-                else {
-                    auto const prod = wuint::umul128(second_third_subsegments, 184467440738ull);
+                else 
+                {
+                    const auto prod128 = wuint::umul128(second_third_subsegments, 184467440738ull);
 
-                    current_digits = std::uint32_t(prod.high());
-                    auto const fractional_part64 = prod.low() + 1;
+                    current_digits = std::uint32_t(prod128.high());
+                    auto const fractional_part64 = prod128.low() + 1;
                     // 184467440738 is even, so prod.low() cannot be equal to 2^64 - 1.
                     assert(fractional_part64 != 0);
 
