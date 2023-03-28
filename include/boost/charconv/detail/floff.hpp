@@ -903,7 +903,7 @@ namespace jkj { namespace floff {
             };
         };
 
-        #ifdef BOOST_NO_CXX17_INLINE_VARIABLES
+        #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
         constexpr char additional_static_data_holder::radix_100_table[];
 
