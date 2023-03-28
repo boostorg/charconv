@@ -906,7 +906,7 @@ namespace jkj { namespace floff {
         constexpr std::uint64_t additional_static_data_holder::fractional_part_rounding_thresholds64[];
 
         #endif
-        } 
+        } // Anonymous namespace
 
         struct compute_mul_result {
             std::uint64_t result;
@@ -1419,6 +1419,7 @@ namespace jkj { namespace floff {
             }
         }
 
+        namespace {
         template <class FloatFormat>
         struct main_cache_holder;
 
@@ -1749,6 +1750,7 @@ namespace jkj { namespace floff {
         constexpr jkj::floff::detail::wuint::uint128 main_cache_holder<jkj::floff::ieee754_binary64>::cache[];
 
         #endif
+        } // Anonymous namespace
 
         // Compressed cache for double
         struct compressed_cache_detail {
@@ -1900,6 +1902,7 @@ namespace jkj { namespace floff {
         }
     };
 
+    namespace {
     struct extended_cache_long {
         static constexpr std::size_t max_cache_blocks = 3;
         static constexpr std::size_t cache_bits_unit = 64;
@@ -2051,6 +2054,7 @@ namespace jkj { namespace floff {
     constexpr extended_cache_long::multiplier_index_info extended_cache_long::multiplier_index_info_table[];
 
     #endif
+    } // Anonymous namespace
 
     struct extended_cache_compact {
         static constexpr std::size_t max_cache_blocks = 6;
