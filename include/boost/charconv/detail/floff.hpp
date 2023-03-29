@@ -1769,7 +1769,8 @@ namespace jkj { namespace floff {
                 {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
         };
 
-        #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
+        #if (defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)) || \
+            (defined(__clang_major__) && __clang_major__ == 5)
 
         constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::cache_bits;
         constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::min_k;
