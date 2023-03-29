@@ -716,8 +716,16 @@ namespace jkj { namespace floff {
             }
         }
 
+        #ifdef BOOST_MSVC
+        # pragma warning(push)
+        # pragma warning(disable: 4702) // use of BOOST_IF_CONSTEXPR can result in unreachable code if max_blocks is 3
+                                        // Other older compilers will emit warnings if the unreachable code is wrapped
+                                        // in an else block (e.g. no return statment)
+        #endif
+
         template <std::size_t max_blocks>
-        struct fixed_point_calculator {
+        struct fixed_point_calculator 
+        {
             static_assert(1 < max_blocks, "Max blocks must be greater than 1");
 
             // Multiply multiplier to the fractional blocks and take the resulting integer part.
@@ -862,6 +870,10 @@ namespace jkj { namespace floff {
                 return static_cast<MultiplierType>(carry);
             }
         };
+
+        #ifdef BOOST_MSVC
+        # pragma warning(pop)
+        #endif
 
         namespace {
         struct additional_static_data_holder {
