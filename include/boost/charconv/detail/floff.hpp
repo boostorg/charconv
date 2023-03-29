@@ -1354,7 +1354,7 @@ namespace jkj { namespace floff {
                 }
                 else {
                     BOOST_CXX14_CONSTEXPR std::uint64_t mod_inv = compute_power(
-                        0xcccccccccccccccd, (unsigned int)(min_neg_exp_of_5 + segment_length));
+                        UINT64_C(0xcccccccccccccccd), (unsigned int)(min_neg_exp_of_5 + segment_length));
                     BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
                         0xffffffffffffffff /
                         compute_power(std::uint64_t(5),
@@ -2207,6 +2207,11 @@ namespace jkj { namespace floff {
 
     #endif
 
+    #ifdef BOOST_MSVC
+    # pragma warning(push)
+    # pragma warning(disable: 4100) // MSVC 14.0 warning of unused formal parameter is incorrect
+    #endif
+
         template <unsigned v1, unsigned v2, typename ExtendedCache>
         bool has_further_digits(std::uint64_t significand, int exp2_base, int& k, jkj::floff::detail::uconst<v1> additional_neg_exp_of_2_c, jkj::floff::detail::uconst<v2> additional_neg_exp_of_10_c) noexcept
         {
@@ -2322,6 +2327,10 @@ namespace jkj { namespace floff {
 
                 BOOST_UNREACHABLE_RETURN(false);
             }
+
+    #ifdef BOOST_MSVC
+    # pragma warning(pop)
+    #endif
 
 
     // precision means the number of decimal significand digits minus 1.
