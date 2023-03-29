@@ -1300,6 +1300,11 @@ namespace jkj { namespace floff {
                     ((current_digits & 1) != 0 || has_further_digits(args...));
         }
 
+        #ifdef BOOST_MSVC
+        # pragma warning(push)
+        # pragma warning(disable: 4307) // MSVC 14.1 emits warnings for uint64_t constants
+        #endif
+
         namespace has_further_digits_impl {
             template <int k_right_threshold, int additional_neg_exp_of_2>
             bool no_neg_k_can_be_integer(int k, int exp2_base) noexcept {
@@ -1364,6 +1369,10 @@ namespace jkj { namespace floff {
                 }
             }
         }
+
+        #ifdef BOOST_MSVC
+        #pragma warning(pop)
+        #endif
 
         inline void print_1_digit(std::uint32_t n, char* buffer) noexcept {
             BOOST_IF_CONSTEXPR ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
