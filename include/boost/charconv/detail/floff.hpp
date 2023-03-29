@@ -3065,7 +3065,7 @@ namespace jkj { namespace floff {
                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
                     significand, blocks, cache_block_count);
 
-                BOOST_IF_CONSTEXPR (ExtendedCache::segment_length == 22) {
+                BOOST_CHARCONV_IF_CONSTEXPR (ExtendedCache::segment_length == 22) {
                     // No rounding, continue.
                     if (remaining_digits > digits_in_the_second_segment) {
                         remaining_digits -= digits_in_the_second_segment;
@@ -3792,7 +3792,7 @@ namespace jkj { namespace floff {
                     }
                 } // ExtendedCache::segment_length == 22
 
-                else BOOST_IF_CONSTEXPR (ExtendedCache::segment_length == 252) {
+                else BOOST_CHARCONV_IF_CONSTEXPR (ExtendedCache::segment_length == 252) {
                     int overlapping_digits = 252 - digits_in_the_second_segment;
                     int remaining_subsegment_pairs = 14;
 
@@ -4217,7 +4217,7 @@ case n:                                                                         
                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
                     significand, blocks, cache_block_count);
 
-                BOOST_IF_CONSTEXPR (ExtendedCache::segment_length == 22) {
+                BOOST_CHARCONV_IF_CONSTEXPR (ExtendedCache::segment_length == 22) {
                     // When at least two subsegments left.
                     if (remaining_digits > 16) {
                         std::uint64_t first_second_subsegments =
