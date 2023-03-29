@@ -162,7 +162,7 @@ namespace jkj { namespace floff {
             //constexpr int exponent_bits = format::exponent_bits;
             //static_assert(detail::value_bits<unsigned int>::value > exponent_bits, "Value must have more bits than the exponent");
             //constexpr auto exponent_bits_mask = (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
-            return (unsigned int)(u >> format::exponent_bits) & (unsigned int)(((unsigned int)(1) << format::exponent_bits) - 1);
+            return static_cast<unsigned>(u >> format::exponent_bits) & static_cast<unsigned>((1U << format::exponent_bits) - 1);
         }
 
         // Extract significand bits from a bit pattern.
@@ -843,7 +843,7 @@ namespace jkj { namespace floff {
                     case 1:
                         mul_result = wuint::umul128(blocks_ptr[0], multiplier);
                         mul_result += carry;
-                        return mul_result.high();
+                        return static_cast<MultiplierType>(mul_result.high());
 
                     default:
                         JKJ_UNRECHABLE;
@@ -1320,10 +1320,10 @@ namespace jkj { namespace floff {
                 }
 
                 BOOST_CXX14_CONSTEXPR std::uint64_t mod_inv =
-                    compute_power(0xcccccccccccccccd, (unsigned int)(min_neg_exp_of_5));
+                    compute_power(UINT64_C(0xcccccccccccccccd), static_cast<unsigned>(min_neg_exp_of_5));
                 BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
-                    0xffffffffffffffff /
-                    compute_power(std::uint64_t(5), (unsigned int)(min_neg_exp_of_5));
+                    UINT64_C(0xffffffffffffffff) /
+                    compute_power(std::uint64_t(5), static_cast<unsigned>(min_neg_exp_of_5));
 
                 return (significand * mod_inv) > max_quot;
             }
@@ -1345,20 +1345,20 @@ namespace jkj { namespace floff {
 
                 if (k >= k_middle_threshold) {
                     BOOST_CXX14_CONSTEXPR std::uint64_t mod_inv =
-                        compute_power(0xcccccccccccccccd, (unsigned int)(min_neg_exp_of_5));
+                        compute_power(UINT64_C(0xcccccccccccccccd), static_cast<unsigned>(min_neg_exp_of_5));
                     BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
-                        0xffffffffffffffff /
-                        compute_power(std::uint64_t(5), (unsigned int)(min_neg_exp_of_5));
+                        UINT64_C(0xffffffffffffffff) /
+                        compute_power(std::uint64_t(5), static_cast<unsigned>(min_neg_exp_of_5));
 
                     return (significand * mod_inv) > max_quot;
                 }
                 else {
                     BOOST_CXX14_CONSTEXPR std::uint64_t mod_inv = compute_power(
-                        UINT64_C(0xcccccccccccccccd), (unsigned int)(min_neg_exp_of_5 + segment_length));
+                        UINT64_C(0xcccccccccccccccd), static_cast<unsigned>(min_neg_exp_of_5 + segment_length));
                     BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
-                        0xffffffffffffffff /
+                        UINT64_C(0xffffffffffffffff) /
                         compute_power(std::uint64_t(5),
-                                      (unsigned int)(min_neg_exp_of_5 + segment_length));
+                                      static_cast<unsigned>(min_neg_exp_of_5 + segment_length));
 
                     return (significand * mod_inv) > max_quot;
                 }
@@ -3820,9 +3820,8 @@ case n:                                                                         
                     // Deal with the first subsegment pair.
                     {
                         // Divide it into two 9-digits subsegments.
-                        auto const first_part = std::uint32_t(subsegment_pair / power_of_10[9]);
-                        auto const second_part =
-                            std::uint32_t(subsegment_pair) - power_of_10[9] * first_part;
+                        const auto first_part = static_cast<std::uint32_t>(subsegment_pair / power_of_10[9]);
+                        const auto second_part = static_cast<std::uint32_t>(subsegment_pair - power_of_10[9] * first_part);
 
                         auto print_subsegment = [&](std::uint32_t subsegment, int digits_in_the_subsegment) {
                             remaining_digits -= digits_in_the_subsegment;
@@ -4046,9 +4045,8 @@ case n:                                                                         
                         subsegment_boundary_rounding_bit = (subsegment_pair & 1) != 0;
                         subsegment_pair >>= 1;
 
-                        auto const first_part = std::uint32_t(subsegment_pair / power_of_10[9]);
-                        auto const second_part =
-                            std::uint32_t(subsegment_pair) - power_of_10[9] * first_part;
+                        const auto first_part = static_cast<std::uint32_t>(subsegment_pair / power_of_10[9]);
+                        const auto second_part = static_cast<std::uint32_t>(subsegment_pair - power_of_10[9] * first_part);
 
                         // The first part can be printed without rounding.
                         if (remaining_digits > 9) {
@@ -4200,15 +4198,13 @@ case n:                                                                         
                 BOOST_IF_CONSTEXPR (ExtendedCache::segment_length == 22) {
                     // When at least two subsegments left.
                     if (remaining_digits > 16) {
-                        auto const first_second_subsegments =
+                        std::uint64_t first_second_subsegments =
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
                                 power_of_10[16], blocks, cache_block_count);
 
-                        auto const first_subsegment =
-                            std::uint32_t(jkj::floff::detail::wuint::umul128_upper64(
-                                              first_second_subsegments, 3022314549036573ull) >>
-                                          14);
-                        auto const second_subsegment = std::uint32_t(first_second_subsegments) -
+                        const std::uint32_t first_subsegment =
+                            std::uint32_t(jkj::floff::detail::wuint::umul128_upper64(first_second_subsegments, UINT64_C(3022314549036573)) >> 14);
+                        const std::uint32_t second_subsegment = std::uint32_t(first_second_subsegments) -
                                                        100000000 * first_subsegment;
 
                         print_8_digits(first_subsegment, buffer);
@@ -4216,10 +4212,10 @@ case n:                                                                         
 
                         // When more segments left.
                         if (remaining_digits > 22) {
-                            auto const third_subsegment =
+                            const auto third_subsegment = static_cast<std::uint32_t>(
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
                                     generate_and_discard_lower(power_of_10[6], blocks,
-                                                               cache_block_count);
+                                                               cache_block_count));
 
                             print_6_digits(third_subsegment, buffer + 16);
                             buffer += 22;
@@ -4453,9 +4449,8 @@ case n:                                                                         
                             auto const subsegment_pair =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
                                     power_of_10[18], blocks, cache_block_count);
-                            auto const first_part = std::uint32_t(subsegment_pair / power_of_10[9]);
-                            auto const second_part =
-                                std::uint32_t(subsegment_pair) - power_of_10[9] * first_part;
+                            const auto first_part = static_cast<std::uint32_t>(subsegment_pair / power_of_10[9]);
+                            const auto second_part = static_cast<std::uint32_t>(subsegment_pair - power_of_10[9] * first_part);
 
                             print_9_digits(first_part, buffer);
                             print_9_digits(second_part, buffer + 9);
