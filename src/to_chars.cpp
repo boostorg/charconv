@@ -291,15 +291,14 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value, boost::charconv::chars_format fmt, int precision) noexcept
 {
     
-    if (fmt == boost::charconv::chars_format::general)
+    if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
     {
         const auto abs_value = std::abs(value);
         if (abs_value < 1E17 && abs_value > 1E-17)
         {
             if (value < 0)
             {
-                *first = '-';
-                ++first;
+                *first++ = '-';
             }
             return boost::charconv::to_chars(first, last, static_cast<std::uint64_t>(abs_value));
         }
@@ -322,13 +321,15 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first, fmt);
         return { ptr, 0 };
     }
-    /*
-    else
+    else if (fmt == boost::charconv::chars_format::hex)
     {
-        std::snprintf( first, last - first, "%.*g", std::numeric_limits<double>::max_digits10, value );
-        return { first + std::strlen(first), 0 };
+        if (precision == -1)
+        {
+            precision = std::numeric_limits<double>::max_digits10;
+        }
+
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
     }
-    */
     return { first + std::strlen(first), 0 };
 }
 

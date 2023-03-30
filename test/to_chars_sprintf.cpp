@@ -5,6 +5,8 @@
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <string>
+#include <sstream>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -93,6 +95,14 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     else if (fmt == boost::charconv::chars_format::scientific)
     {
         std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type_scientific( value ), value );
+    }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        std::stringstream ss;
+        ss << std::hexfloat << value;
+        std::string hex_value = ss.str();
+        hex_value = hex_value.substr(2); // Remove the 0x
+        std::memcpy(buffer2, hex_value.c_str(), sizeof(buffer2));
     }
 
     if(!BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) ))
@@ -273,6 +283,7 @@ int main()
             double w0 = rng() * 1.0; // 0 .. 2^64
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
+            // test_sprintf_float( w0, boost::charconv::chars_format::hex );
 
             double w1 = rng() * q; // 0.0 .. 1.0
             test_sprintf_float( w1, boost::charconv::chars_format::general );

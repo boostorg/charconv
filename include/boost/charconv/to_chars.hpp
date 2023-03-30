@@ -458,7 +458,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 // Floating Point Detail
 // ---------------------------------------------------------------------------------------------------------------------
 template <typename Real>
-to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
+to_chars_result to_chars_hex(char* first, char* last, Real value, unsigned precision) noexcept
 {
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
@@ -470,7 +470,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t, std::uint64_t>::type;
 
     Unsigned_Integer uint_value;
-    std::memcpy(uint_value, value, sizeof(Unsigned_Integer));
+    std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
 
     if (uint_value == 0)
     {
@@ -561,7 +561,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
             }
 
             const Unsigned_Integer mask = (static_cast<Unsigned_Integer>(1) << remaining_bits) - 1;
-            hex_significand_bits &= mask;
+            hexit_aligned_significand &= mask;
         }
     }
 
