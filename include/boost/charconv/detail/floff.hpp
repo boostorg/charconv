@@ -1447,11 +1447,7 @@ namespace jkj { namespace floff {
         }
 
         namespace {
-        template <class FloatFormat>
-        struct main_cache_holder;
-
-        template <>
-        struct main_cache_holder<jkj::floff::ieee754_binary64> {
+        struct main_cache_holder {
             using cache_entry_type = jkj::floff::detail::wuint::uint128;
             static constexpr int cache_bits = 128;
             static constexpr int min_k = -292;
@@ -1772,10 +1768,10 @@ namespace jkj { namespace floff {
         #if (defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)) || \
             (defined(__clang_major__) && __clang_major__ == 5)
 
-        constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::cache_bits;
-        constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::min_k;
-        constexpr int main_cache_holder<jkj::floff::ieee754_binary64>::max_k;
-        constexpr jkj::floff::detail::wuint::uint128 main_cache_holder<jkj::floff::ieee754_binary64>::cache[];
+        constexpr int main_cache_holder::cache_bits;
+        constexpr int main_cache_holder::min_k;
+        constexpr int main_cache_holder::max_k;
+        constexpr main_cache_holder::cache_entry_type main_cache_holder::cache[];
 
         #endif
         } // Anonymous namespace
@@ -1784,8 +1780,8 @@ namespace jkj { namespace floff {
         struct compressed_cache_detail {
             static constexpr int compression_ratio = 27;
             static constexpr std::size_t compressed_table_size =
-                (main_cache_holder<ieee754_binary64>::max_k -
-                 main_cache_holder<ieee754_binary64>::min_k + compression_ratio) /
+                (main_cache_holder::max_k -
+                 main_cache_holder::min_k + compression_ratio) /
                 compression_ratio;
             
             /*
@@ -1861,34 +1857,34 @@ namespace jkj { namespace floff {
 
     struct main_cache_full {
         template <class FloatFormat>
-        static constexpr typename detail::main_cache_holder<FloatFormat>::cache_entry_type
+        static constexpr typename detail::main_cache_holder::cache_entry_type
         get_cache(int k) noexcept {
             //assert(k >= detail::main_cache_holder<FloatFormat>::min_k &&
             //       k <= detail::main_cache_holder<FloatFormat>::max_k);
-            return detail::main_cache_holder<FloatFormat>::cache[std::size_t(
-                k - detail::main_cache_holder<FloatFormat>::min_k)];
+            return detail::main_cache_holder::cache[std::size_t(
+                k - detail::main_cache_holder::min_k)];
         }
     };
 
     struct main_cache_compressed 
     {
         template <class FloatFormat>
-        static BOOST_CHARCONV_CXX14_CONSTEXPR typename detail::main_cache_holder<FloatFormat>::cache_entry_type
+        static BOOST_CHARCONV_CXX14_CONSTEXPR typename detail::main_cache_holder::cache_entry_type
         get_cache(int k) noexcept {
-            assert(k >= detail::main_cache_holder<FloatFormat>::min_k &&
-                   k <= detail::main_cache_holder<FloatFormat>::max_k);
+            assert(k >= detail::main_cache_holder::min_k &&
+                   k <= detail::main_cache_holder::max_k);
 
             BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value) {
                 // Compute the base index.
                 auto const cache_index =
-                    int(std::uint32_t(k - detail::main_cache_holder<FloatFormat>::min_k) /
+                    int(std::uint32_t(k - detail::main_cache_holder::min_k) /
                         detail::compressed_cache_detail::compression_ratio);
                 auto const kb = cache_index * detail::compressed_cache_detail::compression_ratio +
-                                detail::main_cache_holder<FloatFormat>::min_k;
+                                detail::main_cache_holder::min_k;
                 auto const offset = k - kb;
 
                 // Get the base cache.
-                constexpr auto base_cache = detail::compressed_cache_detail::cache_holder_t::table[cache_index];
+                const auto base_cache = detail::compressed_cache_detail::cache_holder_t::table[cache_index];
 
                 if (offset == 0) {
                     return base_cache;
@@ -1903,7 +1899,7 @@ namespace jkj { namespace floff {
                     assert(alpha > 0 && alpha < 64);
 
                     // Try to recover the real cache.
-                    constexpr auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
+                    const auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
                     auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
                     auto const middle_low = wuint::umul128(base_cache.low(), pow5);
 
@@ -1924,8 +1920,8 @@ namespace jkj { namespace floff {
             }
             else {
                 // Just use the full cache for anything other than binary64
-                return detail::main_cache_holder<FloatFormat>::cache[std::size_t(
-                    k - detail::main_cache_holder<FloatFormat>::min_k)];
+                return detail::main_cache_holder::cache[std::size_t(
+                    k - detail::main_cache_holder::min_k)];
             }
         }
     };
