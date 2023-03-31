@@ -294,7 +294,9 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
     {
         const auto abs_value = std::abs(value);
-        if (abs_value < LLONG_MAX && abs_value > (1.0 / LLONG_MAX))
+        constexpr double max_value = static_cast<double>((std::numeric_limits<std::uint64_t>::max)());
+        constexpr double min_value = 1.0 / max_value;
+        if (abs_value < max_value && abs_value > min_value)
         {
             if (value < 0)
             {

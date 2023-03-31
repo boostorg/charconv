@@ -93,10 +93,14 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     BOOST_TEST_EQ( r.ec, 0 );
 
     char buffer2[ 256 ];
+
+    constexpr T max_value = static_cast<T>((std::numeric_limits<std::uint64_t>::max)());
+    constexpr T min_value = 1.0 / max_value;
+
     if (fmt == boost::charconv::chars_format::general)
     {
         // See https://godbolt.org/z/dd33nM6ax
-        if (value < LLONG_MAX && value > static_cast<double>(1)/LLONG_MAX)
+        if (value < max_value && value > min_value)
         {
             std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type_fixed( value ), value );
         }
@@ -119,7 +123,7 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     }
     else if (fmt == boost::charconv::chars_format::fixed)
     {
-        if (value < LLONG_MAX && value > static_cast<double>(1)/LLONG_MAX)
+        if (value < max_value && value > min_value)
         {
             std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type_fixed( value ), value );
         }
