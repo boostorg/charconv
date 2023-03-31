@@ -114,7 +114,7 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
         max_value = static_cast<T>((std::numeric_limits<std::uint64_t>::max)());
     }
 
-    const T min_value = 1.0 / max_value;
+    const T min_value = static_cast<T>(1.0) / max_value;
 
     if (fmt == boost::charconv::chars_format::general)
     {
