@@ -458,7 +458,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 // Floating Point Detail
 // ---------------------------------------------------------------------------------------------------------------------
 template <typename Real>
-to_chars_result to_chars_hex(char* first, char* last, Real value, unsigned precision) noexcept
+to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
 {
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
@@ -499,7 +499,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, unsigned preci
     const std::uint32_t abs_unbiased_exponent = static_cast<std::uint32_t>(unbiased_exponent < 0 ? -unbiased_exponent : unbiased_exponent);
 
     // If the requested precision is less than the full precision we round at this step
-    if (precision < hex_significand_values)
+    if (static_cast<Unsigned_Integer>(precision) < hex_significand_values)
     {
         const Unsigned_Integer lost_bits = (hex_significand_values - precision) * 4;
         const Unsigned_Integer lsb = hexit_aligned_significand;
@@ -512,7 +512,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, unsigned preci
     // Perform a bounds check before proceeding
     const auto abs_unbiased_exponent_digits = num_digits(abs_unbiased_exponent);
     // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
-    const auto total_length = (value < 0) + 2 + precision + 2 + abs_unbiased_exponent_digits;
+    const int total_length = (value < 0) + 2 + precision + 2 + abs_unbiased_exponent_digits;
 
     if (total_length > buffer_size)
     {
