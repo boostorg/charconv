@@ -55,6 +55,16 @@ char const* fmt_from_type( float )
     return "%.9g";
 }
 
+char const* fmt_from_type_scientific( float )
+{
+    return "%.9e";
+}
+
+char const* fmt_from_type_fixed( float )
+{
+    return "%.0f";
+}
+
 char const* fmt_from_type( double )
 {
     return "%.17g";
@@ -94,8 +104,17 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
 
     char buffer2[ 256 ];
 
-    constexpr T max_value = static_cast<T>((std::numeric_limits<std::uint64_t>::max)());
-    constexpr T min_value = 1.0 / max_value;
+    T max_value;
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        max_value = static_cast<T>((std::numeric_limits<std::uint32_t>::max)());
+    }
+    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
+    {
+        max_value = static_cast<T>((std::numeric_limits<std::uint64_t>::max)());
+    }
+
+    const T min_value = 1.0 / max_value;
 
     if (fmt == boost::charconv::chars_format::general)
     {
@@ -288,16 +307,28 @@ int main()
         for( int i = 0; i < N; ++i )
         {
             float w0 = static_cast<float>( rng() ); // 0 .. 2^64
-            test_sprintf( w0 );
+            test_sprintf_float( w0, boost::charconv::chars_format::general );
+            test_sprintf_float( w0, boost::charconv::chars_format::scientific );
+            // test_sprintf_float( w0, boost::charconv::chars_format::hex );
+            test_sprintf_float( w0, boost::charconv::chars_format::fixed );
 
             float w1 = static_cast<float>( rng() * q ); // 0.0 .. 1.0
-            test_sprintf( w1 );
+            test_sprintf_float( w1, boost::charconv::chars_format::general );
+            test_sprintf_float( w1, boost::charconv::chars_format::scientific );
+            // test_sprintf_float( w1, boost::charconv::chars_format::hex );
+            test_sprintf_float( w1, boost::charconv::chars_format::fixed );
 
             float w2 = FLT_MAX / static_cast<float>( rng() ); // large values
-            test_sprintf( w2 );
+            test_sprintf_float( w2, boost::charconv::chars_format::general );
+            test_sprintf_float( w2, boost::charconv::chars_format::scientific );
+            // test_sprintf_float( w2, boost::charconv::chars_format::hex );
+            test_sprintf_float( w2, boost::charconv::chars_format::fixed );
 
             float w3 = FLT_MIN * static_cast<float>( rng() ); // small values
-            test_sprintf( w3 );
+            test_sprintf_float( w3, boost::charconv::chars_format::general );
+            test_sprintf_float( w3, boost::charconv::chars_format::scientific );
+            // test_sprintf_float( w3, boost::charconv::chars_format::hex );
+            test_sprintf_float( w3, boost::charconv::chars_format::fixed );
         }
 
         test_sprintf_bv_fp<float>();

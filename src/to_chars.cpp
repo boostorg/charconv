@@ -282,9 +282,49 @@ void print_9_digits(std::uint32_t s32, int& exponent, char* buffer) noexcept
 */
 }}} // Namespaces
 
-boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, float value ) noexcept
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value, boost::charconv::chars_format fmt, int precision) noexcept
 {
-    std::snprintf( first, last - first, "%.*g", std::numeric_limits<float>::max_digits10, value );
+    if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
+    {
+        const auto abs_value = std::abs(value);
+        constexpr float max_value = static_cast<float>((std::numeric_limits<std::uint32_t>::max)());
+        constexpr float min_value = 1.0f / max_value;
+        if (abs_value < max_value && abs_value > min_value)
+        {
+            if (value < 0)
+            {
+                *first++ = '-';
+            }
+            return boost::charconv::to_chars(first, last, static_cast<std::uint32_t>(abs_value));
+        }
+        else
+        {
+            auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, std::numeric_limits<float>::max_digits10 - 1, first, fmt);
+            return { ptr, 0 };            
+        }
+    }
+    else if (fmt == boost::charconv::chars_format::scientific)
+    {
+        if (precision == -1)
+        {
+            precision = std::numeric_limits<float>::max_digits10;
+        }
+        if (precision > static_cast<std::ptrdiff_t>(last - first))
+        {
+            return { first, EOVERFLOW };
+        }
+        auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first, fmt);
+        return { ptr, 0 };
+    }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        if (precision == -1)
+        {
+            precision = std::numeric_limits<float>::max_digits10;
+        }
+
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+    }
     return { first + std::strlen(first), 0 };
 }
 

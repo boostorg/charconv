@@ -723,7 +723,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost
 #endif
 // floating point overloads
 
-BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value,
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value, 
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value ) noexcept;
