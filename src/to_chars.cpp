@@ -294,7 +294,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
     {
         const auto abs_value = std::abs(value);
-        if (abs_value < 1E17 && abs_value > 1E-17)
+        if (abs_value < LLONG_MAX && abs_value > (1.0 / LLONG_MAX))
         {
             if (value < 0)
             {
