@@ -134,11 +134,16 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     }
     else if (fmt == boost::charconv::chars_format::hex)
     {
+        // GCC 4.X does not support std:::hexfloat
+        #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+
         std::stringstream ss;
         ss << std::hexfloat << value;
         std::string hex_value = ss.str();
         hex_value = hex_value.substr(2); // Remove the 0x
         std::memcpy(buffer2, hex_value.c_str(), sizeof(buffer2));
+
+        #endif
     }
     else if (fmt == boost::charconv::chars_format::fixed)
     {
@@ -309,26 +314,37 @@ int main()
             float w0 = static_cast<float>( rng() ); // 0 .. 2^64
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w0, boost::charconv::chars_format::hex );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w0, boost::charconv::chars_format::hex );
+            #endif
 
             float w1 = static_cast<float>( rng() * q ); // 0.0 .. 1.0
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w1, boost::charconv::chars_format::hex );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w1, boost::charconv::chars_format::hex );
+            #endif
+
 
             float w2 = FLT_MAX / static_cast<float>( rng() ); // large values
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w2, boost::charconv::chars_format::hex );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w2, boost::charconv::chars_format::hex );
+            #endif
+
 
             float w3 = FLT_MIN * static_cast<float>( rng() ); // small values
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w3, boost::charconv::chars_format::hex );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w3, boost::charconv::chars_format::hex );
+            #endif
+
         }
 
         test_sprintf_bv_fp<float>();
@@ -342,26 +358,34 @@ int main()
             double w0 = rng() * 1.0; // 0 .. 2^64
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w0, boost::charconv::chars_format::hex );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w0, boost::charconv::chars_format::hex );
+            #endif
 
             double w1 = rng() * q; // 0.0 .. 1.0
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w1, boost::charconv::chars_format::hex );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w1, boost::charconv::chars_format::hex );
+            #endif
 
             double w2 = DBL_MAX / rng(); // large values
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w2, boost::charconv::chars_format::hex );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w2, boost::charconv::chars_format::hex );
+            #endif
 
             double w3 = DBL_MIN * rng(); // small values
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
-            // test_sprintf_float( w3, boost::charconv::chars_format::hex );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            // test_sprintf_float( w3, boost::charconv::chars_format::hex );
+            #endif
         }
 
         test_sprintf_bv_fp<double>();
