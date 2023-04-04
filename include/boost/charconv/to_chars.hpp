@@ -468,11 +468,6 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         return {last, EOVERFLOW};
     }
     
-    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t, std::uint64_t>::type;
-
-    Unsigned_Integer uint_value;
-    std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
-
     // Handle edge cases first
     switch (std::fpclassify(value))
     {
@@ -486,82 +481,95 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Extract the significand and the exponent
-    constexpr Unsigned_Integer exponent_shift = std::is_same<Real, float>::value ? ieee754_binary32::significand_bits : ieee754_binary64::significand_bits;
-    const Unsigned_Integer significand = uint_value & ((static_cast<Unsigned_Integer>(1) << (exponent_shift - 1)) - 1);
-    const std::int32_t exponent = static_cast<std::int32_t>(uint_value >> exponent_shift);
-    constexpr Unsigned_Integer hex_significand_values = std::is_same<Real, float>::value ? 6 : 13; // ceil(ieee_binaryXX::significand_bits / 4)
-    constexpr Unsigned_Integer hex_significand_bits = hex_significand_values * 4;
+    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t, std::uint64_t>::type;
+    using type_layout = typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32, ieee754_binary64>::type;
 
-    // Align the significand to 4 and remove the bias from the exponent
-    Unsigned_Integer hexit_aligned_significand = std::is_same<Real, float>::value ? significand << 1 : significand;
-    constexpr std::int32_t exponent_bias = std::is_same<Real, float>::value ? ieee754_binary32::exponent_bias : ieee754_binary64::exponent_bias;
-    const std::int32_t unbiased_exponent = exponent != 0 ? exponent - exponent_bias : 1 - exponent_bias;
-    const std::uint32_t abs_unbiased_exponent = static_cast<std::uint32_t>(unbiased_exponent < 0 ? -unbiased_exponent : unbiased_exponent);
+    Unsigned_Integer uint_value;
+    std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
+    const Unsigned_Integer significand = uint_value & type_layout::denorm_mask;
+    const auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits);
 
-    // If the requested precision is less than the full precision we round at this step
-    if (static_cast<Unsigned_Integer>(precision) < hex_significand_values)
+    // Align the significand to the hexit boundaries (i.e. divisible by 4)
+    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 : 13;
+    constexpr auto nibble_bits = CHAR_BIT / 2;
+    constexpr auto hex_bits = hex_precision * nibble_bits;
+    constexpr Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
+    Unsigned_Integer aligned_significand;
+    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
     {
-        const Unsigned_Integer lost_bits = (hex_significand_values - precision) * 4;
-        const Unsigned_Integer lsb = hexit_aligned_significand;
-        const Unsigned_Integer round_bit = hexit_aligned_significand << 1;
-        const Unsigned_Integer tail_bit = round_bit - 1;
-        const Unsigned_Integer round = round_bit & (tail_bit | lsb) & (static_cast<Unsigned_Integer>(1) << lost_bits);
-        hexit_aligned_significand += round;
+        aligned_significand = significand << 1;
+    }
+    else
+    {
+        aligned_significand = significand;
     }
 
-    // Perform a bounds check before proceeding
-    const auto abs_unbiased_exponent_digits = num_digits(abs_unbiased_exponent);
-    // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
-    const int total_length = (value < 0) + 2 + precision + 2 + abs_unbiased_exponent_digits;
+    // Adjust the exponent based on the bias as described in IEEE 754
+    std::int32_t unbiased_exponent;
+    if (exponent == 0 && significand != 0)
+    {
+        // Subnormal value since we already handled zero
+        unbiased_exponent = 1 - type_layout::exponent_bias;
+    }
+    else
+    {
+        aligned_significand |= static_cast<Unsigned_Integer>(1) << hex_bits;
+        unbiased_exponent = exponent + type_layout::exponent_bias;
+    }
 
+    std::uint32_t abs_unbiased_exponent = unbiased_exponent < 0 ? static_cast<std::uint32_t>(-unbiased_exponent) : 
+                                                                  static_cast<std::uint32_t>(unbiased_exponent);
+    
+    // Bounds check
+    // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
+    const std::ptrdiff_t total_length = (value < 0) + 2 + precision + 2 + num_digits(abs_unbiased_exponent);
     if (total_length > buffer_size)
     {
         return {last, EOVERFLOW};
     }
 
-    // Print the sign
-    if (value < 0)
+    // Round if required
+    if (precision < hex_precision)
     {
-        *first++ = '-';
+        const int lost_bits = (hex_precision - precision) * nibble_bits;
+        const Unsigned_Integer lsb_bit = aligned_significand;
+        const Unsigned_Integer round_bit = aligned_significand << 1;
+        const Unsigned_Integer tail_bit = round_bit - 1;
+        const Unsigned_Integer round = round_bit & (tail_bit | lsb_bit) & (static_cast<Unsigned_Integer>(1) << lost_bits);
+        aligned_significand += round;
     }
 
-    // Print the integer part then mask
-    // charconv does not add a leading 0x like printf
-    const std::uint32_t integer_part = static_cast<std::uint32_t>(hexit_aligned_significand >> hex_significand_bits);
-    *first++ = static_cast<char>('0' + integer_part);
-    constexpr Unsigned_Integer integer_part_mask = (static_cast<Unsigned_Integer>(1) << hex_significand_bits) - 1;
-    hexit_aligned_significand &= integer_part_mask;
+    // Print the leading hexit and then mask away
+    const std::uint32_t leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
+    *first++ = static_cast<char>('0' + leading_nibble);
+    aligned_significand &= hex_mask;
 
     // Print the fractional part
     if (precision > 0)
     {
         *first++ = '.';
-
-        Unsigned_Integer remaining_bits = hex_significand_bits;
-        remaining_bits -= 4;
+        std::int32_t remaining_bits = hex_bits;
 
         while (true)
         {
-            const std::uint32_t nibble = static_cast<std::uint32_t>(hexit_aligned_significand >> remaining_bits);
-            *first++ = digit_table[nibble];
+            remaining_bits -= nibble_bits;
+            const std::uint32_t current_nibble = static_cast<std::uint32_t>(aligned_significand >> remaining_bits);
+            *first++ = digit_table[current_nibble];
 
             --precision;
             if (precision == 0)
             {
                 break;
             }
-
-            remaining_bits -= 4;
-
-            if (remaining_bits == 0)
+            else if (remaining_bits == 0)
             {
-                std::memset(first, '0', precision);
+                std::memset(first, '0', static_cast<std::size_t>(precision));
                 first += precision;
                 break;
             }
 
-            const Unsigned_Integer mask = (static_cast<Unsigned_Integer>(1) << remaining_bits) - 1;
-            hexit_aligned_significand &= mask;
+            // Mask away the hexit we just printed
+            aligned_significand &= (static_cast<Unsigned_Integer>(1) << remaining_bits) - 1;
         }
     }
 
