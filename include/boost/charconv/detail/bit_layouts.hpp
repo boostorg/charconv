@@ -34,6 +34,8 @@ struct ieee754_binary32
     static constexpr int max_exponent = 127;
     static constexpr int exponent_bias = -127;
     static constexpr int decimal_digits = 9;
+
+    static constexpr std::uint32_t denorm_mask = (UINT32_C(1) << (significand_bits)) - 1;
 };
 
 struct IEEEd2bits
@@ -59,6 +61,8 @@ struct ieee754_binary64
     static constexpr int max_exponent = 1023;
     static constexpr int exponent_bias = -1023;
     static constexpr int decimal_digits = 17;
+    
+    static constexpr std::uint64_t denorm_mask = (UINT64_C(1) << (significand_bits)) - 1;
 };
 
 // 80 bit long double (e.g. x86-64)
