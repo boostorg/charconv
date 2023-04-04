@@ -25,6 +25,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <climits>
+#include <cmath>
 
 namespace boost { namespace charconv {
 
@@ -472,17 +473,16 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     Unsigned_Integer uint_value;
     std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
 
-    if (uint_value == 0)
+    // Handle edge cases first
+    switch (std::fpclassify(value))
     {
-        if (buffer_size < 4)
-        {
+        case FP_INFINITE:
             return {last, EOVERFLOW};
-        }
-        else
-        {
+        case FP_NAN:
+            return {last, EINVAL};
+        case FP_ZERO:
             std::memcpy(first, "0p+0", 4);
             return {first + 4, 0};
-        }
     }
 
     // Extract the significand and the exponent
