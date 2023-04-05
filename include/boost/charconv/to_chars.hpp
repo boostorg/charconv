@@ -565,10 +565,14 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
             {
                 break;
             }
-            else if (remaining_bits == 0 && precision != -1) // Do not print trailing zeros with unspecified precision
+            else if (remaining_bits == 0)
             {
-                std::memset(first, '0', static_cast<std::size_t>(real_precision));
-                first += real_precision;
+                // Do not print trailing zeros with unspecified precision
+                if (precision != -1)
+                {
+                    std::memset(first, '0', static_cast<std::size_t>(real_precision));
+                    first += real_precision;
+                }
                 break;
             }
 
