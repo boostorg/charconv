@@ -318,11 +318,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     }
     else if (fmt == boost::charconv::chars_format::hex)
     {
-        if (precision == -1)
-        {
-            precision = std::numeric_limits<float>::max_digits10;
-        }
-
         return boost::charconv::detail::to_chars_hex(first, last, value, precision);
     }
     return { first + std::strlen(first), 0 };
@@ -365,11 +360,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     }
     else if (fmt == boost::charconv::chars_format::hex)
     {
-        if (precision == -1)
-        {
-            precision = std::numeric_limits<double>::max_digits10;
-        }
-
         return boost::charconv::detail::to_chars_hex(first, last, value, precision);
     }
     return { first + std::strlen(first), 0 };

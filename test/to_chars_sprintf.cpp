@@ -360,7 +360,7 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
             #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
-            // test_sprintf_float( w0, boost::charconv::chars_format::hex );
+            test_sprintf_float( w0, boost::charconv::chars_format::hex );
             #endif
 
             double w1 = rng() * q; // 0.0 .. 1.0

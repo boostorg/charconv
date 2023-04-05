@@ -461,9 +461,13 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
 {
+   // If the user did not specify a precision than we use the maximum representable amount
+   // and remove trailing zeros at the end
+   int real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
+    
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
-    if (buffer_size < precision || first > last)
+    if (buffer_size < real_precision || first > last)
     {
         return {last, EOVERFLOW};
     }
@@ -517,21 +521,21 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         unbiased_exponent = exponent + type_layout::exponent_bias;
     }
 
-    std::uint32_t abs_unbiased_exponent = unbiased_exponent < 0 ? static_cast<std::uint32_t>(-unbiased_exponent) : 
-                                                                  static_cast<std::uint32_t>(unbiased_exponent);
+    const std::uint32_t abs_unbiased_exponent = unbiased_exponent < 0 ? static_cast<std::uint32_t>(-unbiased_exponent) : 
+                                                                        static_cast<std::uint32_t>(unbiased_exponent);
     
     // Bounds check
     // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
-    const std::ptrdiff_t total_length = (value < 0) + 2 + precision + 2 + num_digits(abs_unbiased_exponent);
+    const std::ptrdiff_t total_length = (value < 0) + 2 + real_precision + 2 + num_digits(abs_unbiased_exponent);
     if (total_length > buffer_size)
     {
         return {last, EOVERFLOW};
     }
 
     // Round if required
-    if (precision < hex_precision)
+    if (real_precision < hex_precision)
     {
-        const int lost_bits = (hex_precision - precision) * nibble_bits;
+        const int lost_bits = (hex_precision - real_precision) * nibble_bits;
         const Unsigned_Integer lsb_bit = aligned_significand;
         const Unsigned_Integer round_bit = aligned_significand << 1;
         const Unsigned_Integer tail_bit = round_bit - 1;
@@ -545,7 +549,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     aligned_significand &= hex_mask;
 
     // Print the fractional part
-    if (precision > 0)
+    if (real_precision > 0)
     {
         *first++ = '.';
         std::int32_t remaining_bits = hex_bits;
@@ -556,21 +560,32 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
             const std::uint32_t current_nibble = static_cast<std::uint32_t>(aligned_significand >> remaining_bits);
             *first++ = digit_table[current_nibble];
 
-            --precision;
-            if (precision == 0)
+            --real_precision;
+            if (real_precision == 0)
             {
                 break;
             }
-            else if (remaining_bits == 0)
+            else if (remaining_bits == 0 && precision != -1) // Do not print trailing zeros with unspecified precision
             {
-                std::memset(first, '0', static_cast<std::size_t>(precision));
-                first += precision;
+                std::memset(first, '0', static_cast<std::size_t>(real_precision));
+                first += real_precision;
                 break;
             }
 
             // Mask away the hexit we just printed
             aligned_significand &= (static_cast<Unsigned_Integer>(1) << remaining_bits) - 1;
         }
+    }
+
+    // Remove any trailing zeros if the precsion was unspecified
+    if (precision == -1)
+    {
+        --first;
+        while (*first == '0')
+        {
+            --first;
+        }
+        ++first;
     }
 
     // Print the exponent
