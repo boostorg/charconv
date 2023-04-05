@@ -141,7 +141,7 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
         ss << std::hexfloat << value;
         std::string hex_value = ss.str();
         hex_value = hex_value.substr(2); // Remove the 0x
-        std::memcpy(buffer2, hex_value.c_str(), sizeof(buffer2));
+        std::memcpy(buffer2, hex_value.c_str(), hex_value.size() + 1);
 
         #endif
     }
