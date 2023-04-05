@@ -594,7 +594,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 
     // Print the exponent
     *first++ = 'p';
-    if (exponent < 0)
+    if (unbiased_exponent < 0)
     {
         *first++ = '-';
     }
