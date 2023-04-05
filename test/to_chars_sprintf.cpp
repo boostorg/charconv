@@ -135,7 +135,8 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     else if (fmt == boost::charconv::chars_format::hex)
     {
         // GCC 4.X does not support std:::hexfloat
-        #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+        // GCC and Clang on Windows both diverge slightly from what they should be doing
+        #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && !defined(_MSC_VER))
 
         std::stringstream ss;
         ss << std::hexfloat << value;
@@ -315,7 +316,7 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             // test_sprintf_float( w0, boost::charconv::chars_format::hex );
             #endif
 
@@ -323,7 +324,7 @@ int main()
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             // test_sprintf_float( w1, boost::charconv::chars_format::hex );
             #endif
 
@@ -332,7 +333,7 @@ int main()
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             // test_sprintf_float( w2, boost::charconv::chars_format::hex );
             #endif
 
@@ -341,7 +342,7 @@ int main()
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             // test_sprintf_float( w3, boost::charconv::chars_format::hex );
             #endif
 
@@ -359,7 +360,7 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             test_sprintf_float( w0, boost::charconv::chars_format::hex );
             #endif
 
@@ -367,7 +368,7 @@ int main()
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             // test_sprintf_float( w1, boost::charconv::chars_format::hex );
             #endif
 
@@ -375,7 +376,7 @@ int main()
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             // test_sprintf_float( w2, boost::charconv::chars_format::hex );
             #endif
 
@@ -383,7 +384,7 @@ int main()
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
-            #if (defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && defined(__clang__))
             // test_sprintf_float( w3, boost::charconv::chars_format::hex );
             #endif
         }
