@@ -2108,29 +2108,29 @@ namespace boost { namespace charconv { namespace detail {
             template <unsigned additional_neg_exp_of_2, unsigned additional_neg_exp_of_10, typename ExtendedCache>
             bool compute_has_further_digits(unsigned remaining_subsegment_pairs, std::uint64_t significand, int exp2_base, int& k) noexcept
             {
-                #define JKJ_FLOFF_252_HAS_FURTHER_DIGITS(n)                                                        \
+                #define BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(n)                                                        \
                 case n:                                                                                            \
                     return has_further_digits<additional_neg_exp_of_2, additional_neg_exp_of_10 + (n - 1) * 18, ExtendedCache>(significand, exp2_base, k)                                             
                                                 switch (remaining_subsegment_pairs) {
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(1);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(2);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(3);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(4);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(5);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(6);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(7);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(8);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(9);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(10);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(11);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(12);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(13);
-                                                    JKJ_FLOFF_252_HAS_FURTHER_DIGITS(14);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(1);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(2);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(3);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(4);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(5);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(6);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(7);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(8);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(9);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(10);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(11);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(12);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(13);
+                                                    BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(14);
 
                                                 default:
                                                     BOOST_UNREACHABLE_RETURN(remaining_subsegment_pairs);
                                                 }
-                #undef JKJ_FLOFF_252_HAS_FURTHER_DIGITS
+                #undef BOOST_CHARCONV_252_HAS_FURTHER_DIGITS
 
                 BOOST_UNREACHABLE_RETURN(false);
             }
