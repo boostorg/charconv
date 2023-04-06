@@ -14,9 +14,12 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
-
+//
 // Some parts are copied from Dragonbox project.
-
+//
+// Copyright 2023 Matt Borland
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_CHARCONV_DETAIL_FLOFF
 #define BOOST_CHARCONV_DETAIL_FLOFF
@@ -27,7 +30,6 @@
 #include <boost/charconv/chars_format.hpp>
 #include <type_traits>
 #include <limits>
-#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <cstddef>
@@ -576,7 +578,6 @@ namespace boost { namespace charconv { namespace detail {
 
             template <multiply m, subtract f, shift k, min_exponent e_min, max_exponent e_max>
             constexpr int compute(int e) noexcept {
-                //assert(std::int32_t(e_min) <= e && e <= std::int32_t(e_max));
                 return int((std::int32_t(e) * std::int32_t(m) - std::int32_t(f)) >> std::size_t(k));
             }
 
@@ -656,7 +657,7 @@ namespace boost { namespace charconv { namespace detail {
             BOOST_FORCEINLINE static MultiplierType generate(MultiplierType multiplier,
                                                            std::uint64_t* blocks_ptr,
                                                            std::size_t number_of_blocks) noexcept {
-                assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
+                BOOST_CHARCONV_ASSERT(0 < number_of_blocks && number_of_blocks <= max_blocks);
 
                 BOOST_IF_CONSTEXPR (max_blocks == 3)
                 {
@@ -708,7 +709,7 @@ namespace boost { namespace charconv { namespace detail {
             BOOST_FORCEINLINE static void discard_upper(MultiplierType multiplier,
                                                       std::uint64_t* blocks_ptr,
                                                       std::size_t number_of_blocks) noexcept {
-                assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
+                BOOST_CHARCONV_ASSERT(0 < number_of_blocks && number_of_blocks <= max_blocks);
 
                 blocks_ptr[0] *= multiplier;
                 if (number_of_blocks > 1) {
@@ -751,7 +752,7 @@ namespace boost { namespace charconv { namespace detail {
             BOOST_FORCEINLINE static MultiplierType
             generate_and_discard_lower(MultiplierType multiplier, std::uint64_t* blocks_ptr,
                                        std::size_t number_of_blocks) noexcept {
-                assert(0 < number_of_blocks && number_of_blocks <= max_blocks);
+                BOOST_CHARCONV_ASSERT(0 < number_of_blocks && number_of_blocks <= max_blocks);
 
                 BOOST_IF_CONSTEXPR (max_blocks == 3) 
                 {
@@ -955,7 +956,7 @@ namespace boost { namespace charconv { namespace detail {
 
                 if (start_bit_index < src_start_block_bit_index) {
                     auto shift_amount = src_start_block_bit_index - start_bit_index;
-                    assert(shift_amount >= 0 && shift_amount < int(ExtendedCache::cache_bits_unit));
+                    BOOST_CHARCONV_ASSERT(shift_amount >= 0 && shift_amount < int(ExtendedCache::cache_bits_unit));
 
                     blocks_ptr[number_of_leading_zero_blocks] =
                         ((ExtendedCache::cache[src_start_block_index] >> shift_amount) &
@@ -1078,7 +1079,7 @@ namespace boost { namespace charconv { namespace detail {
                         excessive_bits_to_right <
                     ExtendedCache::segment_length + 1) {
                 blocks_ptr[cache_block_count - 1] += (CacheBlockType(1) << excessive_bits_to_right);
-                assert(blocks_ptr[cache_block_count - 1] != 0);
+                BOOST_CHARCONV_ASSERT(blocks_ptr[cache_block_count - 1] != 0);
             }
 
             return cache_block_count;
@@ -1750,8 +1751,6 @@ namespace boost { namespace charconv { namespace detail {
         template <class FloatFormat>
         static constexpr typename detail::main_cache_holder::cache_entry_type
         get_cache(int k) noexcept {
-            //assert(k >= detail::main_cache_holder<FloatFormat>::min_k &&
-            //       k <= detail::main_cache_holder<FloatFormat>::max_k);
             return detail::main_cache_holder::cache[std::size_t(
                 k - detail::main_cache_holder::min_k)];
         }
@@ -1762,8 +1761,7 @@ namespace boost { namespace charconv { namespace detail {
         template <class FloatFormat>
         static BOOST_CHARCONV_CXX14_CONSTEXPR typename detail::main_cache_holder::cache_entry_type
         get_cache(int k) noexcept {
-            assert(k >= detail::main_cache_holder::min_k &&
-                   k <= detail::main_cache_holder::max_k);
+            BOOST_CHARCONV_ASSERT(k >= detail::main_cache_holder::min_k && k <= detail::main_cache_holder::max_k);
 
             BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value) {
                 // Compute the base index.
@@ -1787,7 +1785,7 @@ namespace boost { namespace charconv { namespace detail {
                     // Compute the required amount of bit-shift.
                     auto const alpha =
                         log::floor_log2_pow10(kb + offset) - log::floor_log2_pow10(kb) - offset;
-                    assert(alpha > 0 && alpha < 64);
+                    BOOST_CHARCONV_ASSERT(alpha > 0 && alpha < 64);
 
                     // Try to recover the real cache.
                     const auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
@@ -1803,7 +1801,7 @@ namespace boost { namespace charconv { namespace detail {
                         wuint::uint128{(recovered_cache.low() >> alpha) | high_to_middle,
                                        ((middle_low.low() >> alpha) | middle_to_low)};
 
-                    assert(recovered_cache.low() + 1 != 0);
+                    BOOST_CHARCONV_ASSERT(recovered_cache.low() + 1 != 0);
                     recovered_cache = {recovered_cache.high(), recovered_cache.low() + 1};
 
                     return recovered_cache;
@@ -2130,9 +2128,6 @@ namespace boost { namespace charconv { namespace detail {
                 constexpr auto additional_neg_exp_of_5_v =
                     int(decltype(additional_neg_exp_of_10_c)::value);
 
-                // static_assert(additional_neg_exp_of_5_v < ExtendedCache::segment_length);
-
-
                 constexpr auto min_neg_exp_of_5 =
                     (-ExtendedCache::k_min + additional_neg_exp_of_5_v) %
                     ExtendedCache::segment_length;
@@ -2247,7 +2242,7 @@ namespace boost { namespace charconv { namespace detail {
     template <class MainCache = main_cache_full, class ExtendedCache>
     BOOST_CHARCONV_SAFEBUFFERS char* floff(double const x, int const precision, char* buffer, boost::charconv::chars_format fmt) noexcept 
     {
-        assert(precision >= 0);
+        BOOST_CHARCONV_ASSERT(precision >= 0);
         using namespace detail;
 
         std::uint64_t br = default_float_traits<double>::float_to_carrier(x);
@@ -2549,8 +2544,8 @@ namespace boost { namespace charconv { namespace detail {
                 std::uint32_t(wuint::umul128_upper64(first_segment, 7922816251426433760ull) >> 32);
             auto const second_third_subsegments =
                 first_segment - first_subsegment * 10000000000ull;
-            assert(first_subsegment < 1000000000);
-            assert(second_third_subsegments < 10000000000ull);
+            BOOST_CHARCONV_ASSERT(first_subsegment < 1000000000);
+            BOOST_CHARCONV_ASSERT(second_third_subsegments < 10000000000ull);
 
             int remaining_digits_in_the_current_subsegment;
             std::uint64_t prod; // holds intermediate values for digit generation.
@@ -2662,7 +2657,7 @@ namespace boost { namespace charconv { namespace detail {
                     current_digits = std::uint32_t(prod128.high());
                     auto const fractional_part64 = prod128.low() + 1;
                     // 18446744074 is even, so prod.low() cannot be equal to 2^64 - 1.
-                    assert(fractional_part64 != 0);
+                    BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
 
                     if (fractional_part64 >= additional_static_data_holder::
                                                  fractional_part_rounding_thresholds64[8] ||
@@ -2679,7 +2674,7 @@ namespace boost { namespace charconv { namespace detail {
                     current_digits = std::uint32_t(prod128.high());
                     auto const fractional_part64 = prod128.low() + 1;
                     // 184467440738 is even, so prod.low() cannot be equal to 2^64 - 1.
-                    assert(fractional_part64 != 0);
+                    BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
 
                     if (fractional_part64 >= additional_static_data_holder::
                                                  fractional_part_rounding_thresholds64[7] ||
@@ -2700,8 +2695,8 @@ namespace boost { namespace charconv { namespace detail {
             // Since the final result is of 2 digits, we can do the computation in 32-bits.
             auto const third_subsegment =
                 std::uint32_t(second_third_subsegments) - second_subsegment * 100;
-            assert(second_subsegment < 100000000);
-            assert(third_subsegment < 100);
+            BOOST_CHARCONV_ASSERT(second_subsegment < 100000000);
+            BOOST_CHARCONV_ASSERT(third_subsegment < 100);
             {
                 std::uint32_t initial_digits;
                 if (first_subsegment != 0) {
@@ -2878,7 +2873,7 @@ namespace boost { namespace charconv { namespace detail {
                         remaining_digits -= digits_in_the_second_segment;
 
                         if (digits_in_the_second_segment <= 2) {
-                            assert(digits_in_the_second_segment != 0);
+                            BOOST_CHARCONV_ASSERT(digits_in_the_second_segment != 0);
 
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
                                 power_of_10[19], blocks, cache_block_count);
@@ -2902,7 +2897,7 @@ namespace boost { namespace charconv { namespace detail {
                             }
                         } // digits_in_the_second_segment <= 2
                         else if (digits_in_the_second_segment <= 16) {
-                            assert(22 - digits_in_the_second_segment <= 19);
+                            BOOST_CHARCONV_ASSERT(22 - digits_in_the_second_segment <= 19);
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
                                 compute_power(std::uint64_t(10), 22 - digits_in_the_second_segment),
                                 blocks, cache_block_count);
@@ -3099,10 +3094,10 @@ namespace boost { namespace charconv { namespace detail {
                                     goto print_last_two_digits;
                                 }
                                 current_digits = next_digits;
-                                assert(remaining_digits == 2);
+                                BOOST_CHARCONV_ASSERT(remaining_digits == 2);
                             }
                             else {
-                                assert(digits_in_the_second_segment == 1);
+                                BOOST_CHARCONV_ASSERT(digits_in_the_second_segment == 1);
                                 // Convert subsegment into fixed-point fractional form where the
                                 // integer part is of two digits. The integer part is ignored.
                                 // 429496730 = ceil(2^32/10^1)
@@ -3120,7 +3115,7 @@ namespace boost { namespace charconv { namespace detail {
                                     goto print_last_two_digits;
                                 }
                                 current_digits = next_digits;
-                                assert(remaining_digits == 1);
+                                BOOST_CHARCONV_ASSERT(remaining_digits == 1);
                             }
 
                             if (check_rounding_condition_with_next_bit(
@@ -3134,7 +3129,7 @@ namespace boost { namespace charconv { namespace detail {
                         // When there are at most 9 digits in the segment.
                         if (digits_in_the_second_segment <= 9) {
                             // Throw away all overlapping digits.
-                            assert(22 - digits_in_the_second_segment <= 19);
+                            BOOST_CHARCONV_ASSERT(22 - digits_in_the_second_segment <= 19);
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
                                 compute_power(std::uint64_t(10), 22 - digits_in_the_second_segment),
                                 blocks, cache_block_count);
@@ -3187,7 +3182,7 @@ namespace boost { namespace charconv { namespace detail {
                                 buffer += 2;
                             }
 
-                            assert(remaining_digits >= 3);
+                            BOOST_CHARCONV_ASSERT(remaining_digits >= 3);
                             for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
                                 prod = std::uint32_t(prod) * std::uint64_t(100);
                                 print_2_digits(std::uint32_t(prod >> 32), buffer);
@@ -3353,7 +3348,7 @@ namespace boost { namespace charconv { namespace detail {
                                     buffer += 2;
                                 }
 
-                                assert(remaining_digits >= 3);
+                                BOOST_CHARCONV_ASSERT(remaining_digits >= 3);
                                 if (remaining_digits > 4) {
                                     prod = std::uint32_t(prod) * std::uint64_t(100);
                                     print_2_digits(std::uint32_t(prod >> 32), buffer);
@@ -3493,7 +3488,7 @@ namespace boost { namespace charconv { namespace detail {
                                     buffer += 2;
                                 }
 
-                                assert(remaining_digits >= 3);
+                                BOOST_CHARCONV_ASSERT(remaining_digits >= 3);
                                 if (remaining_digits > 4) {
                                     prod = std::uint32_t(prod) * std::uint64_t(100);
                                     print_2_digits(std::uint32_t(prod >> 32), buffer);
@@ -4485,7 +4480,7 @@ namespace boost { namespace charconv { namespace detail {
         // Find all preceding 9's.
         while (true) {
             // '0' is written on buffer_starting_pos, so we have this:
-            assert(first_9_pos != buffer_starting_pos);
+            BOOST_CHARCONV_ASSERT(first_9_pos != buffer_starting_pos);
             if (first_9_pos == buffer_starting_pos + 1) {
                 break;
             }
