@@ -299,7 +299,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         }
         else
         {
-            auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, std::numeric_limits<float>::max_digits10 - 1, first, fmt);
+            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, std::numeric_limits<float>::max_digits10 - 1, first, fmt);
             return { ptr, 0 };            
         }
     }
@@ -313,7 +313,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first, EOVERFLOW };
         }
-        auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first, fmt);
+        auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
         return { ptr, 0 };
     }
     else if (fmt == boost::charconv::chars_format::hex)
@@ -341,7 +341,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         }
         else
         {
-            auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, std::numeric_limits<double>::max_digits10 - 1, first, fmt);
+            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, std::numeric_limits<double>::max_digits10 - 1, first, fmt);
             return { ptr, 0 };
         }
     }
@@ -355,7 +355,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first, EOVERFLOW };
         }
-        auto* ptr = jkj::floff::floff<jkj::floff::main_cache_full, jkj::floff::extended_cache_long>(value, precision, first, fmt);
+        auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
         return { ptr, 0 };
     }
     else if (fmt == boost::charconv::chars_format::hex)

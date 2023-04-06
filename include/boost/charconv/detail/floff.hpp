@@ -22,6 +22,8 @@
 #define BOOST_CHARCONV_DETAIL_FLOFF
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <type_traits>
 #include <limits>
@@ -64,8 +66,7 @@
 # pragma warning(disable: 4554) // parentheses are used be warning is still emitted
 #endif
 
-namespace jkj { namespace floff {
-    namespace detail {
+namespace boost { namespace charconv { namespace detail {
         template <typename T>
         struct physical_bits
         {
@@ -84,27 +85,6 @@ namespace jkj { namespace floff {
         template <typename T> constexpr std::size_t value_bits<T>::value;
 
         #endif
-    }
-
-    // These classes expose encoding specs of IEEE-754-like floating-point formats.
-    // Currently available formats are IEEE754-binary32 & IEEE754-binary64.
-
-    struct ieee754_binary32 {
-        static constexpr int significand_bits = 23;
-        static constexpr int exponent_bits = 8;
-        static constexpr int min_exponent = -126;
-        static constexpr int max_exponent = 127;
-        static constexpr int exponent_bias = -127;
-        static constexpr int decimal_digits = 9;
-    };
-    struct ieee754_binary64 {
-        static constexpr int significand_bits = 52;
-        static constexpr int exponent_bits = 11;
-        static constexpr int min_exponent = -1022;
-        static constexpr int max_exponent = 1023;
-        static constexpr int exponent_bias = -1023;
-        static constexpr int decimal_digits = 17;
-    };
 
     // A floating-point traits class defines ways to interpret a bit pattern of given size as an
     // encoding of floating-point number. This is a default implementation of such a traits class,
@@ -125,7 +105,7 @@ namespace jkj { namespace floff {
 
         // Refers to the format specification class.
         using format =
-            typename std::conditional<detail::physical_bits<T>::value == 32, ieee754_binary32, ieee754_binary64>::type;
+            typename std::conditional<detail::physical_bits<T>::value == 32, detail::ieee754_binary32, detail::ieee754_binary64>::type;
 
         // Defines an unsigned integer type that is large enough to carry a variable of type T.
         // Most of the operations will be done on this integer type.
@@ -348,7 +328,6 @@ namespace jkj { namespace floff {
         }
     };
 
-    namespace detail {
         ////////////////////////////////////////////////////////////////////////////////////////
         // Bit operation intrinsics.
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -1448,7 +1427,7 @@ namespace jkj { namespace floff {
 
         namespace {
         struct main_cache_holder {
-            using cache_entry_type = jkj::floff::detail::wuint::uint128;
+            using cache_entry_type = boost::charconv::detail::wuint::uint128;
             static constexpr int cache_bits = 128;
             static constexpr int min_k = -292;
             static constexpr int max_k = 326;
@@ -1786,7 +1765,7 @@ namespace jkj { namespace floff {
             
             /*
             struct cache_holder_t {
-                wuint::uint128 table[compressed_table_size];
+                uint128 table[compressed_table_size];
             };
             static constexpr cache_holder_t cache = [] {
                 cache_holder_t res{};
@@ -1853,7 +1832,6 @@ namespace jkj { namespace floff {
                 static_assert(sizeof(table) == compression_ratio * sizeof(std::uint64_t), "Table should have 27 elements");
             };
         };
-    }
 
     struct main_cache_full {
         template <class FloatFormat>
@@ -2231,7 +2209,7 @@ namespace jkj { namespace floff {
     #endif
 
         template <unsigned v1, unsigned v2, typename ExtendedCache>
-        bool has_further_digits(std::uint64_t significand, int exp2_base, int& k, jkj::floff::detail::uconst<v1> additional_neg_exp_of_2_c, jkj::floff::detail::uconst<v2> additional_neg_exp_of_10_c) noexcept
+        bool has_further_digits(std::uint64_t significand, int exp2_base, int& k, boost::charconv::detail::uconst<v1> additional_neg_exp_of_2_c, boost::charconv::detail::uconst<v2> additional_neg_exp_of_10_c) noexcept
         {
                 constexpr auto additional_neg_exp_of_2_v =
                     int(decltype(additional_neg_exp_of_2_c)::value +
@@ -2260,7 +2238,7 @@ namespace jkj { namespace floff {
                 // so whenever the exponent for 5 is negative, the result cannot be an
                 // integer.
                 BOOST_IF_CONSTEXPR (min_neg_exp_of_5 > 23) {
-                    return jkj::floff::detail::has_further_digits_impl::no_neg_k_can_be_integer<
+                    return boost::charconv::detail::has_further_digits_impl::no_neg_k_can_be_integer<
                         k_right_threshold, additional_neg_exp_of_2_v>(k, exp2_base);
                 }
                 // When the smallest absolute value of negative exponent for 5 is big enough, so
@@ -2277,7 +2255,7 @@ namespace jkj { namespace floff {
                          ExtendedCache::segment_length) *
                             ExtendedCache::segment_length;
 
-                    return jkj::floff::detail::has_further_digits_impl::only_one_neg_k_can_be_integer<
+                    return boost::charconv::detail::has_further_digits_impl::only_one_neg_k_can_be_integer<
                         k_left_threshold, k_right_threshold, additional_neg_exp_of_2_v,
                         min_neg_exp_of_5>(k, exp2_base, significand);
                 }
@@ -2300,7 +2278,7 @@ namespace jkj { namespace floff {
                          ExtendedCache::segment_length) *
                             ExtendedCache::segment_length;
 
-                    return jkj::floff::detail::has_further_digits_impl::only_two_neg_k_can_be_integer<
+                    return boost::charconv::detail::has_further_digits_impl::only_two_neg_k_can_be_integer<
                         k_left_threshold, k_middle_threshold, k_right_threshold,
                         additional_neg_exp_of_2_v, min_neg_exp_of_5, ExtendedCache::segment_length>(
                         k, exp2_base, significand);
@@ -2310,8 +2288,8 @@ namespace jkj { namespace floff {
             template <unsigned v1, unsigned v2, typename ExtendedCache>
             inline bool has_further_digits(std::uint64_t significand, int exp2_base, int& k)
             {
-                jkj::floff::detail::uconst<v1> additional_neg_exp_of_2_c;
-                jkj::floff::detail::uconst<v2> additional_neg_exp_of_10_c;
+                boost::charconv::detail::uconst<v1> additional_neg_exp_of_2_c;
+                boost::charconv::detail::uconst<v2> additional_neg_exp_of_10_c;
 
                 return has_further_digits<v1, v2, ExtendedCache>(significand, exp2_base, k, additional_neg_exp_of_2_c, additional_neg_exp_of_10_c);
             }
@@ -3427,7 +3405,7 @@ namespace jkj { namespace floff {
                         // allows us to eliminate an additional shift.
                         // 1844674407371 = ceil(2^64/10^7) = floor(2^64*(10^6/(10^13 - 1))).
                         auto const first_subsegment =
-                            std::uint32_t(jkj::floff::detail::wuint::umul128_upper64(
+                            std::uint32_t(boost::charconv::detail::umul128_upper64(
                                 first_second_subsegments, 1844674407371));
                         auto const second_subsegment =
                             std::uint32_t(first_second_subsegments) - 10000000 * first_subsegment;
@@ -4221,7 +4199,7 @@ case n:                                                                         
                                 power_of_10[16], blocks, cache_block_count);
 
                         const std::uint32_t first_subsegment =
-                            std::uint32_t(jkj::floff::detail::wuint::umul128_upper64(first_second_subsegments, UINT64_C(3022314549036573)) >> 14);
+                            std::uint32_t(boost::charconv::detail::umul128_upper64(first_second_subsegments, UINT64_C(3022314549036573)) >> 14);
                         const std::uint32_t second_subsegment = std::uint32_t(first_second_subsegments) -
                                                        100000000 * first_subsegment;
 
@@ -4325,7 +4303,7 @@ case n:                                                                         
                         // 3022314549036573 = ceil(2^78/10^8) = floor(2^78*(10^8/(10^16 -
                         // 1))).
                         auto const first_subsegment =
-                            std::uint32_t(jkj::floff::detail::wuint::umul128_upper64(
+                            std::uint32_t(boost::charconv::detail::umul128_upper64(
                                               first_second_subsegments, 3022314549036573ull) >>
                                           14);
                         auto const second_subsegment = std::uint32_t(first_second_subsegments) -
@@ -4734,7 +4712,7 @@ case n:                                                                         
 
         goto print_exponent_and_return;
     }
-}} // Namespace jkj::floff
+}}} // Namespaces 
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
