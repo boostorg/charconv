@@ -28,6 +28,7 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <boost/core/bit.hpp>
 #include <type_traits>
 #include <limits>
 #include <cstdint>
@@ -282,103 +283,6 @@ namespace boost { namespace charconv { namespace detail {
             return traits_type::has_even_significand_bits(u);
         }
     };
-
-        ////////////////////////////////////////////////////////////////////////////////////////
-        // Bit operation intrinsics.
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        namespace bits {
-            // Most compilers should be able to optimize this into the ROR instruction.
-            inline std::uint32_t rotr(std::uint32_t n, std::uint32_t r) noexcept {
-                r &= 31;
-                return (n >> r) | (n << (32 - r));
-            }
-            inline std::uint64_t rotr(std::uint64_t n, std::uint32_t r) noexcept {
-                r &= 63;
-                return (n >> r) | (n << (64 - r));
-            }
-
-            // Count leading zero bits.
-            // Undefined behavior for x == 0.
-            inline int countl_zero(std::uint64_t x) noexcept {
-#if BOOST_CHARCONV_HAS_BUILTIN(__builtin_clzll)
-                return __builtin_clzll(x);
-#elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
-                unsigned long index;
-                _BitScanReverse64(&index, x);
-                return 63 - int(index);
-#else
-                // We use the 4-bit de Brujin sequence 0x0f65.
-                // The corresponding sequence is:
-                // 0, 1, 3, 7, 15, 14, 13, 11, 6, 12, 9, 2, 5, 10, 4, 8
-                constexpr std::uint32_t de_brujin = 0x0f650000;
-                // 16-bit de Brujin packed in 4-bits:
-                constexpr std::uint64_t lookup = 0xcba79361d842e5f0;
-
-                int count;
-                std::uint32_t x32;
-                if ((x >> 32) == 0) {
-                    count = 32;
-                    x32 = std::uint32_t(x);
-                }
-                else {
-                    count = 0;
-                    x32 = std::uint32_t(x >> 32);
-                }
-                std::uint32_t x16;
-                if ((x32 >> 16) == 0) {
-                    count += 16;
-                    x16 = std::uint16_t(x32);
-                }
-                else {
-                    x16 = (x32 >> 16);
-                }
-
-                // Set one bit above the leading 1 and clear all other bits.
-                x16 |= (x16 >> 1);
-                x16 |= (x16 >> 2);
-                x16 |= (x16 >> 4);
-                x16 |= (x16 >> 8);
-                ++x16;
-
-                return count + int((lookup >> (((x16 * de_brujin) >> 28) << 2)) & 0xf);
-#endif
-            }
-
-            // Count trailing zero bits.
-            // Undefined behavior for x == 0.
-            inline int countr_zero(std::uint64_t x) noexcept {
-#if BOOST_CHARCONV_HAS_BUILTIN(__builtin_ctzll)
-                return __builtin_ctzll(x);
-#elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
-                unsigned long index;
-                _BitScanForward64(&index, x);
-                return int(index);
-#else
-                // We use the 4-bit de Brujin sequence 0x0f65.
-                // The corresponding sequence is:
-                // 0, 1, 3, 7, 15, 14, 13, 11, 6, 12, 9, 2, 5, 10, 4, 8
-                constexpr std::uint32_t de_brujin = 0x0f650000;
-                // 16-bit de Brujin packed in 4-bits:
-                constexpr std::uint64_t lookup = 0x45697daf38ce2b10;
-
-                // In (-x & x), only the least significant set bit is 1.
-                x &= (0 - x);
-                int count = 0;
-                std::uint32_t x32 = std::uint32_t(x);
-                if (x32 == 0) {
-                    count = 32;
-                    x32 = std::uint32_t(x >> 32);
-                }
-                std::uint32_t x16 = std::uint16_t(x32);
-                if (x16 == 0) {
-                    count += 16;
-                    x16 = x32 >> 16;
-                }
-                return count + int((lookup >> (((x16 * de_brujin) >> 28) << 2)) & 0xf);
-#endif
-            }
-        }
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for wide unsigned integer arithmetic.
@@ -2846,7 +2750,7 @@ namespace boost { namespace charconv { namespace detail {
                 digits_in_the_second_segment = new_k - k;
                 k = new_k;
             }
-            auto const exp2_base = e + bits::countr_zero(significand);
+            auto const exp2_base = e + boost::core::countr_zero(significand);
 
             using cache_block_type = typename std::decay<decltype(ExtendedCache::cache[0])>::type;
             cache_block_type blocks[ExtendedCache::max_cache_blocks];
