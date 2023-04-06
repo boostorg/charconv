@@ -33,33 +33,6 @@
 #include <cstddef>
 #include <climits>
 
-// Suppress additional buffer overrun check.
-// I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
-// attacks. No, they aren't.
-#if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
-    #define JKJ_SAFEBUFFERS __declspec(safebuffers)
-#else
-    #define JKJ_SAFEBUFFERS
-#endif
-
-#if defined(__has_builtin)
-    #define JKJ_HAS_BUILTIN(x) __has_builtin(x)
-#else
-    #define JKJ_HAS_BUILTIN(x) false
-#endif
-
-#if defined(__GNUC__) && JKJ_HAS_BUILTIN(__builtin_unreachable)
-    #define JKJ_UNRECHABLE __builtin_unreachable()
-#elif defined(_MSC_VER)
-    #define JKJ_UNRECHABLE __assume(false)
-#else
-    #define JKJ_UNRECHABLE
-#endif
-
-#if defined(_MSC_VER)
-    #include <intrin.h>
-#endif
-
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4127) // Extensive use of BOOST_IF_CONSTEXPR emits warnings under C++11 and 14
@@ -326,7 +299,7 @@ namespace boost { namespace charconv { namespace detail {
             // Count leading zero bits.
             // Undefined behavior for x == 0.
             inline int countl_zero(std::uint64_t x) noexcept {
-#if JKJ_HAS_BUILTIN(__builtin_clzll)
+#if BOOST_CHARCONV_HAS_BUILTIN(__builtin_clzll)
                 return __builtin_clzll(x);
 #elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
                 unsigned long index;
@@ -373,7 +346,7 @@ namespace boost { namespace charconv { namespace detail {
             // Count trailing zero bits.
             // Undefined behavior for x == 0.
             inline int countr_zero(std::uint64_t x) noexcept {
-#if JKJ_HAS_BUILTIN(__builtin_ctzll)
+#if BOOST_CHARCONV_HAS_BUILTIN(__builtin_ctzll)
                 return __builtin_ctzll(x);
 #elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
                 unsigned long index;
@@ -439,11 +412,11 @@ namespace boost { namespace charconv { namespace detail {
                 constexpr std::uint64_t low() const noexcept { return low_; }
 
                 uint128& operator+=(std::uint64_t n) & noexcept {
-#if JKJ_HAS_BUILTIN(__builtin_addcll)
+#if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
                     unsigned long long carry;
                     low_ = __builtin_addcll(low_, n, 0, &carry);
                     high_ = __builtin_addcll(high_, 0, carry, &carry);
-#elif JKJ_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
+#elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
                     unsigned long long result;
                     auto carry = __builtin_ia32_addcarryx_u64(0, low_, n, &result);
                     low_ = result;
@@ -470,7 +443,7 @@ namespace boost { namespace charconv { namespace detail {
             }
 
             // Get 128-bit result of multiplication of two 64-bit unsigned integers.
-            JKJ_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
+            BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
 #if defined(__SIZEOF_INT128__)
                 auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
                 return {std::uint64_t(result >> 64), std::uint64_t(result)};
@@ -496,7 +469,7 @@ namespace boost { namespace charconv { namespace detail {
 #endif
             }
 
-            JKJ_SAFEBUFFERS inline std::uint64_t umul128_upper64(std::uint64_t x,
+            BOOST_CHARCONV_SAFEBUFFERS inline std::uint64_t umul128_upper64(std::uint64_t x,
                                                                  std::uint64_t y) noexcept {
 #if defined(__SIZEOF_INT128__)
                 auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
@@ -522,7 +495,7 @@ namespace boost { namespace charconv { namespace detail {
 
             // Get upper 128-bits of multiplication of a 64-bit unsigned integer and a 128-bit
             // unsigned integer.
-            JKJ_SAFEBUFFERS inline uint128 umul192_upper128(std::uint64_t x, uint128 y) noexcept {
+            BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul192_upper128(std::uint64_t x, uint128 y) noexcept {
                 auto r = umul128(x, y.high());
                 r += umul128_upper64(x, y.low());
                 return r;
@@ -546,7 +519,7 @@ namespace boost { namespace charconv { namespace detail {
 
             // Get lower 128-bits of multiplication of a 64-bit unsigned integer and a 128-bit
             // unsigned integer.
-            JKJ_SAFEBUFFERS inline uint128 umul192_lower128(std::uint64_t x, uint128 y) noexcept {
+            BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul192_lower128(std::uint64_t x, uint128 y) noexcept {
                 auto high = x * y.high();
                 auto high_low = umul128(x, y.low());
                 return {high + high_low.high(), high_low.low()};
@@ -711,7 +684,7 @@ namespace boost { namespace charconv { namespace detail {
                         return mul_result.high();
 
                     default:
-                        JKJ_UNRECHABLE;
+                        BOOST_UNREACHABLE_RETURN(carry);
                     }
                 }
 
@@ -803,7 +776,7 @@ namespace boost { namespace charconv { namespace detail {
                         return static_cast<MultiplierType>(mul_result.high());
 
                     default:
-                        JKJ_UNRECHABLE;
+                        BOOST_UNREACHABLE_RETURN(carry);
                     }
                 }
 
@@ -1044,7 +1017,7 @@ namespace boost { namespace charconv { namespace detail {
                         break;
 
                     default:
-                        JKJ_UNRECHABLE;
+                        BOOST_UNREACHABLE_RETURN(dst_ptr);
                     }
                 }
                 else {
@@ -1078,7 +1051,7 @@ namespace boost { namespace charconv { namespace detail {
                         break;
 
                     default:
-                        JKJ_UNRECHABLE;
+                        BOOST_UNREACHABLE_RETURN(dst_ptr);
                     }
                 }
                 else {
@@ -2257,7 +2230,7 @@ namespace boost { namespace charconv { namespace detail {
                                                     JKJ_FLOFF_252_HAS_FURTHER_DIGITS(14);
 
                                                 default:
-                                                    JKJ_UNRECHABLE;
+                                                    BOOST_UNREACHABLE_RETURN(remaining_subsegment_pairs);
                                                 }
                 #undef JKJ_FLOFF_252_HAS_FURTHER_DIGITS
 
@@ -2272,7 +2245,7 @@ namespace boost { namespace charconv { namespace detail {
     // precision means the number of decimal significand digits minus 1.
     // Assumes round-to-nearest, tie-to-even rounding.
     template <class MainCache = main_cache_full, class ExtendedCache>
-    JKJ_SAFEBUFFERS char* floff(double const x, int const precision, char* buffer, boost::charconv::chars_format fmt) noexcept 
+    BOOST_CHARCONV_SAFEBUFFERS char* floff(double const x, int const precision, char* buffer, boost::charconv::chars_format fmt) noexcept 
     {
         assert(precision >= 0);
         using namespace detail;
@@ -3057,7 +3030,7 @@ namespace boost { namespace charconv { namespace detail {
                                 goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_even_remaining;
 
                             default:
-                                JKJ_UNRECHABLE;
+                                BOOST_UNREACHABLE_RETURN(prod);
                             }
 
                         second_segment22_more_than_16_digits_first_subsegment_no_rounding_odd_remaining
@@ -4547,9 +4520,5 @@ namespace boost { namespace charconv { namespace detail {
 #ifdef BOOST_MSVC
 # pragma warning(pop)
 #endif
-
-#undef JKJ_UNRECHABLE
-#undef JKJ_SAFEBUFFERS
-#undef JKJ_HAS_BUILTIN
 
 #endif // BOOST_CHARCONV_DETAIL_FLOFF
