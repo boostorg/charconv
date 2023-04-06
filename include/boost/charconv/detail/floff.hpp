@@ -138,10 +138,6 @@ namespace boost { namespace charconv { namespace detail {
         // on the right. This function does not do bias adjustment.
         static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept
         {
-            //constexpr int significand_bits = format::significand_bits;
-            //constexpr int exponent_bits = format::exponent_bits;
-            //static_assert(detail::value_bits<unsigned int>::value > exponent_bits, "Value must have more bits than the exponent");
-            //constexpr auto exponent_bits_mask = (unsigned int)(((unsigned int)(1) << exponent_bits) - 1);
             return static_cast<unsigned>(u >> format::exponent_bits) & static_cast<unsigned>((1U << format::exponent_bits) - 1);
         }
 
@@ -173,14 +169,6 @@ namespace boost { namespace charconv { namespace detail {
         static constexpr int binary_exponent(unsigned int exponent_bits) noexcept 
         {
             return exponent_bits == 0 ? format::min_exponent : int(exponent_bits) + format::exponent_bias;
-            /*
-            if (exponent_bits == 0) {
-                return format::min_exponent;
-            }
-            else {
-                return int(exponent_bits) + format::exponent_bias;
-            }
-            */
         }
 
         // Obtain the actual value of the binary exponent from the extracted significand bits and
@@ -189,18 +177,10 @@ namespace boost { namespace charconv { namespace detail {
                                                          unsigned int exponent_bits) noexcept 
         {
             return exponent_bits == 0 ? significand_bits : (significand_bits | (carrier_uint(1) << format::significand_bits));
-            /*
-            if (exponent_bits == 0) {
-                return significand_bits;
-            }
-            else {
-                return significand_bits | (carrier_uint(1) << format::significand_bits);
-            }
-            */
         }
 
 
-        /* Various boolean observer functions */
+        // Various boolean observer functions
 
         static constexpr bool is_nonzero(carrier_uint u) noexcept { return (u << 1) != 0; }
         static constexpr bool is_positive(carrier_uint u) noexcept 
@@ -595,16 +575,6 @@ namespace boost { namespace charconv { namespace detail {
             }
             return res;
         }
-
-        /*
-        template <unsigned int exp>
-        struct power_of_10_impl {
-            static_assert(exp <= 19);
-            using type = typename std::conditional<exp <= 9, std::uint32_t, std::uint64_t>::type;
-
-            static constexpr type value = compute_power(type(10), exp);
-        };
-        */
 
         static constexpr std::uint64_t power_of_10[] = {
             UINT64_C(1), UINT64_C(10), UINT64_C(100), UINT64_C(1000), UINT64_C(10000), 
@@ -1164,10 +1134,6 @@ namespace boost { namespace charconv { namespace detail {
             }
         };
 
-        /*
-        template <unsigned int n>
-        BOOST_INLINE_VARIABLE constexpr auto uconst = std::integral_constant<unsigned int, n>{};
-        */
         template <unsigned n>
         struct uconst
         {
@@ -1756,26 +1722,14 @@ namespace boost { namespace charconv { namespace detail {
         } // Anonymous namespace
 
         // Compressed cache for double
-        struct compressed_cache_detail {
+        struct compressed_cache_detail 
+        {
             static constexpr int compression_ratio = 27;
             static constexpr std::size_t compressed_table_size =
                 (main_cache_holder::max_k -
                  main_cache_holder::min_k + compression_ratio) /
                 compression_ratio;
-            
-            /*
-            struct cache_holder_t {
-                uint128 table[compressed_table_size];
-            };
-            static constexpr cache_holder_t cache = [] {
-                cache_holder_t res{};
-                for (std::size_t i = 0; i < compressed_table_size; ++i) {
-                    res.table[i] =
-                        main_cache_holder<ieee754_binary64>::cache[i * compression_ratio];
-                }
-                return res;
-            }();
-            */
+
             struct cache_holder_t 
             {
                 static constexpr wuint::uint128 table[] = {
@@ -1807,20 +1761,6 @@ namespace boost { namespace charconv { namespace detail {
                 static_assert(sizeof(table) == compressed_table_size * sizeof(wuint::uint128), "Table should have 23 elements");
             };
 
-            /*
-            struct pow5_holder_t {
-                std::uint64_t table[compression_ratio];
-            };
-            static constexpr pow5_holder_t pow5 = [] {
-                pow5_holder_t res{};
-                std::uint64_t p = 1;
-                for (std::size_t i = 0; i < compression_ratio; ++i) {
-                    res.table[i] = p;
-                    p *= 5;
-                }
-                return res;
-            }();
-            */
             struct pow5_holder_t 
             {
                 static constexpr std::uint64_t table[] = {
@@ -2946,86 +2886,6 @@ namespace boost { namespace charconv { namespace detail {
                                 ExtendedCache::max_cache_blocks>
                 cache_block_count;
 
-            // Determine if 2^(e+k-e1) * 5^(k-k1) * n is not an integer, where e1, k1 are the first
-            // and the second parameters, respectively.
-            /*
-            auto has_further_digits = [significand, exp2_base,
-                                       &k](auto additional_neg_exp_of_2_c,
-                                           auto additional_neg_exp_of_10_c) 
-            {
-                constexpr auto additional_neg_exp_of_2_v =
-                    int(decltype(additional_neg_exp_of_2_c)::value +
-                        decltype(additional_neg_exp_of_10_c)::value);
-                constexpr auto additional_neg_exp_of_5_v =
-                    int(decltype(additional_neg_exp_of_10_c)::value);
-
-                // static_assert(additional_neg_exp_of_5_v < ExtendedCache::segment_length);
-
-
-                constexpr auto min_neg_exp_of_5 =
-                    (-ExtendedCache::k_min + additional_neg_exp_of_5_v) %
-                    ExtendedCache::segment_length;
-
-                // k >= k_right_threshold iff k - k1 >= 0.
-                static_assert(additional_neg_exp_of_5_v + ExtendedCache::segment_length >=
-                              1 + ExtendedCache::k_min);
-                constexpr auto k_right_threshold =
-                    ExtendedCache::k_min +
-                    ((additional_neg_exp_of_5_v + ExtendedCache::segment_length - 1 -
-                      ExtendedCache::k_min) /
-                     ExtendedCache::segment_length) *
-                        ExtendedCache::segment_length;
-
-                // When the smallest absolute value of negative exponent for 5 is too big,
-                // so whenever the exponent for 5 is negative, the result cannot be an
-                // integer.
-                BOOST_IF_CONSTEXPR (min_neg_exp_of_5 > 23) {
-                    return has_further_digits_impl::no_neg_k_can_be_integer<
-                        k_right_threshold, additional_neg_exp_of_2_v>(k, exp2_base);
-                }
-                // When the smallest absolute value of negative exponent for 5 is big enough, so
-                // the only negative exponent for 5 that allows the result to be an integer is the
-                // smallest one.
-                else BOOST_IF_CONSTEXPR (min_neg_exp_of_5 + ExtendedCache::segment_length > 23) {
-                    // k < k_left_threshold iff k - k1 < -min_neg_exp_of_5.
-                    static_assert(additional_neg_exp_of_5_v + ExtendedCache::segment_length >=
-                                  min_neg_exp_of_5 + 1 + ExtendedCache::k_min);
-                    constexpr auto k_left_threshold =
-                        ExtendedCache::k_min +
-                        ((additional_neg_exp_of_5_v - min_neg_exp_of_5 +
-                          ExtendedCache::segment_length - 1 - ExtendedCache::k_min) /
-                         ExtendedCache::segment_length) *
-                            ExtendedCache::segment_length;
-
-                    return has_further_digits_impl::only_one_neg_k_can_be_integer<
-                        k_left_threshold, k_right_threshold, additional_neg_exp_of_2_v,
-                        min_neg_exp_of_5>(k, exp2_base, significand);
-                }
-                // When the smallest absolute value of negative exponent for 5 is big enough, so
-                // the only negative exponents for 5 that allows the result to be an integer are the
-                // smallest one and the next smallest one.
-                else {
-                    static_assert(min_neg_exp_of_5 + 2 * ExtendedCache::segment_length > 23);
-
-                    constexpr auto k_left_threshold =
-                        ExtendedCache::k_min +
-                        ((additional_neg_exp_of_5_v - min_neg_exp_of_5 - 1 - ExtendedCache::k_min) /
-                         ExtendedCache::segment_length) *
-                            ExtendedCache::segment_length;
-                    constexpr auto k_middle_threshold =
-                        ExtendedCache::k_min +
-                        ((additional_neg_exp_of_5_v - min_neg_exp_of_5 +
-                          ExtendedCache::segment_length - 1 - ExtendedCache::k_min) /
-                         ExtendedCache::segment_length) *
-                            ExtendedCache::segment_length;
-
-                    return has_further_digits_impl::only_two_neg_k_can_be_integer<
-                        k_left_threshold, k_middle_threshold, k_right_threshold,
-                        additional_neg_exp_of_2_v, min_neg_exp_of_5, ExtendedCache::segment_length>(
-                        k, exp2_base, significand);
-                }
-            };
-            */
             // Deal with the second segment. The second segment is special because it can have
             // overlapping digits with the first segment. Note that we cannot just move the buffer
             // pointer backward and print the whole segment from there, because it may contain
@@ -3782,36 +3642,6 @@ namespace boost { namespace charconv { namespace detail {
                             power_of_10[18] << 1, blocks, cache_block_count);
                     auto subsegment_boundary_rounding_bit = (subsegment_pair & 1) != 0;
                     subsegment_pair >>= 1;
-
-                    /*
-                    auto compute_has_further_digits = [&](auto additional_neg_exp_of_2,
-                                                          auto additional_neg_exp_of_10) {
-#define JKJ_FLOFF_252_HAS_FURTHER_DIGITS(n)                                                        \
-case n:                                                                                            \
-    return has_further_digits(additional_neg_exp_of_2,                                             \
-                              std::integral_constant<std::uint32_t, decltype(additional_neg_exp_of_10)::value + (n - 1) * 18>());
-                        switch (remaining_subsegment_pairs) {
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(1);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(2);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(3);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(4);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(5);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(6);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(7);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(8);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(9);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(10);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(11);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(12);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(13);
-                            JKJ_FLOFF_252_HAS_FURTHER_DIGITS(14);
-
-                        default:
-                            JKJ_UNRECHABLE;
-                        }
-#undef JKJ_FLOFF_252_HAS_FURTHER_DIGITS
-                    };
-                    */
 
                     // Deal with the first subsegment pair.
                     {
