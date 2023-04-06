@@ -98,9 +98,9 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     int leading_zeros = boost::core::countl_zero(i);
     i <<= static_cast<std::uint64_t>(leading_zeros);
 
-    value128 product = full_multiplication(i, factor_significand);
-    std::uint64_t low = product.low;
-    std::uint64_t high = product.high;
+    uint128 product = umul128(i, factor_significand);
+    std::uint64_t low = product.low();
+    std::uint64_t high = product.high();
 
     // We know that upper has at most one leading zero because
     // both i and  factor_mantissa have a leading one. This means
@@ -119,9 +119,9 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     if (BOOST_UNLIKELY((high & 0x1FF) == 0x1FF) && (low + i < low))
     {
         const std::uint64_t factor_significand_low = significand_128[power - smallest_power];
-        product = full_multiplication(i, factor_significand_low);
-        const std::uint64_t product_low = product.low;
-        const std::uint64_t product_middle2 = product.high;
+        product = umul128(i, factor_significand_low);
+        const std::uint64_t product_low = product.low();
+        const std::uint64_t product_middle2 = product.high();
         const std::uint64_t product_middle1 = low;
         std::uint64_t product_high = high;
         const std::uint64_t product_middle = product_middle1 + product_middle2;

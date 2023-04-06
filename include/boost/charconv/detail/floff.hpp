@@ -284,160 +284,6 @@ namespace boost { namespace charconv { namespace detail {
     };
 
         ////////////////////////////////////////////////////////////////////////////////////////
-        // Utilities for wide unsigned integer arithmetic.
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        namespace wuint {
-            // Compilers might support built-in 128-bit integer types. However, it seems that
-            // emulating them with a pair of 64-bit integers actually produces a better code,
-            // so we avoid using those built-ins. That said, they are still useful for
-            // implementing 64-bit x 64-bit -> 128-bit multiplication.
-
-            // clang-format off
-    #if defined(__SIZEOF_INT128__)
-            // To silence "error: ISO C++ does not support '__int128' for 'type name'
-            // [-Wpedantic]"
-        #if defined(__GNUC__)
-            __extension__
-        #endif
-            using builtin_uint128_t = unsigned __int128;
-    #endif
-            // clang-format on
-
-            struct uint128 {
-                uint128() = default;
-
-                std::uint64_t high_;
-                std::uint64_t low_;
-
-                constexpr uint128(std::uint64_t high, std::uint64_t low) noexcept
-                    : high_{high}, low_{low} {}
-
-                constexpr std::uint64_t high() const noexcept { return high_; }
-                constexpr std::uint64_t low() const noexcept { return low_; }
-
-                uint128& operator+=(std::uint64_t n) & noexcept {
-#if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
-                    unsigned long long carry;
-                    low_ = __builtin_addcll(low_, n, 0, &carry);
-                    high_ = __builtin_addcll(high_, 0, carry, &carry);
-#elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
-                    unsigned long long result;
-                    auto carry = __builtin_ia32_addcarryx_u64(0, low_, n, &result);
-                    low_ = result;
-                    __builtin_ia32_addcarryx_u64(carry, high_, 0, &result);
-                    high_ = result;
-#elif defined(_MSC_VER) && defined(_M_X64)
-                    auto carry = _addcarry_u64(0, low_, n, &low_);
-                    _addcarry_u64(carry, high_, 0, &high_);
-#else
-                    auto sum = low_ + n;
-                    high_ += (sum < low_ ? 1 : 0);
-                    low_ = sum;
-#endif
-                    return *this;
-                }
-            };
-
-            static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept {
-#if defined(_MSC_VER) && defined(_M_IX86)
-                return __emulu(x, y);
-#else
-                return x * static_cast<std::uint64_t>(y);
-#endif
-            }
-
-            // Get 128-bit result of multiplication of two 64-bit unsigned integers.
-            BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
-#if defined(__SIZEOF_INT128__)
-                auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
-                return {static_cast<std::uint64_t>(result >> 64), static_cast<std::uint64_t>(result)};
-#elif defined(_MSC_VER) && defined(_M_X64)
-                uint128 result;
-                result.low_ = _umul128(x, y, &result.high_);
-                return result;
-#else
-                auto a = static_cast<std::uint32_t>(x >> 32);
-                auto b = static_cast<std::uint32_t>(x);
-                auto c = static_cast<std::uint32_t>(y >> 32);
-                auto d = static_cast<std::uint32_t>(y);
-
-                auto ac = umul64(a, c);
-                auto bc = umul64(b, c);
-                auto ad = umul64(a, d);
-                auto bd = umul64(b, d);
-
-                auto intermediate = (bd >> 32) + static_cast<std::uint32_t>(ad) + static_cast<std::uint32_t>(bc);
-
-                return {ac + (intermediate >> 32) + (ad >> 32) + (bc >> 32),
-                        (intermediate << 32) + static_cast<std::uint32_t>(bd)};
-#endif
-            }
-
-            BOOST_CHARCONV_SAFEBUFFERS inline std::uint64_t umul128_upper64(std::uint64_t x,
-                                                                 std::uint64_t y) noexcept {
-#if defined(__SIZEOF_INT128__)
-                auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
-                return static_cast<std::uint64_t>(result >> 64);
-#elif defined(_MSC_VER) && defined(_M_X64)
-                return __umulh(x, y);
-#else
-                auto a = static_cast<std::uint32_t>(x >> 32);
-                auto b = static_cast<std::uint32_t>(x);
-                auto c = static_cast<std::uint32_t>(y >> 32);
-                auto d = static_cast<std::uint32_t>(y);
-
-                auto ac = umul64(a, c);
-                auto bc = umul64(b, c);
-                auto ad = umul64(a, d);
-                auto bd = umul64(b, d);
-
-                auto intermediate = (bd >> 32) + static_cast<std::uint32_t>(ad) + static_cast<std::uint32_t>(bc);
-
-                return ac + (intermediate >> 32) + (ad >> 32) + (bc >> 32);
-#endif
-            }
-
-            // Get upper 128-bits of multiplication of a 64-bit unsigned integer and a 128-bit
-            // unsigned integer.
-            BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul192_upper128(std::uint64_t x, uint128 y) noexcept {
-                auto r = umul128(x, y.high());
-                r += umul128_upper64(x, y.low());
-                return r;
-            }
-
-            // Get upper 64-bits of multiplication of a 32-bit unsigned integer and a 64-bit
-            // unsigned integer.
-            inline std::uint64_t umul96_upper64(std::uint32_t x, std::uint64_t y) noexcept {
-#if defined(__SIZEOF_INT128__) || (defined(_MSC_VER) && defined(_M_X64))
-                return umul128_upper64(static_cast<std::uint64_t>(x) << 32, y);
-#else
-                auto yh = static_cast<std::uint32_t>(y >> 32);
-                auto yl = static_cast<std::uint32_t>(y);
-
-                auto xyh = umul64(x, yh);
-                auto xyl = umul64(x, yl);
-
-                return xyh + (xyl >> 32);
-#endif
-            }
-
-            // Get lower 128-bits of multiplication of a 64-bit unsigned integer and a 128-bit
-            // unsigned integer.
-            BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul192_lower128(std::uint64_t x, uint128 y) noexcept {
-                auto high = x * y.high();
-                auto high_low = umul128(x, y.low());
-                return {high + high_low.high(), high_low.low()};
-            }
-
-            // Get lower 64-bits of multiplication of a 32-bit unsigned integer and a 64-bit
-            // unsigned integer.
-            inline std::uint64_t umul96_lower64(std::uint32_t x, std::uint64_t y) noexcept {
-                return x * y;
-            }
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////
         // Some simple utilities for constexpr computation.
         ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -564,25 +410,25 @@ namespace boost { namespace charconv { namespace detail {
 
                 BOOST_IF_CONSTEXPR (max_blocks == 3)
                 {
-                    wuint::uint128 mul_result;
+                    uint128 mul_result;
                     std::uint64_t carry = 0;
 
                     switch (number_of_blocks) {
                     case 3:
-                        mul_result = wuint::umul128(blocks_ptr[2], multiplier);
+                        mul_result = umul128(blocks_ptr[2], multiplier);
                         blocks_ptr[2] = mul_result.low();
                         carry = mul_result.high();
                         BOOST_FALLTHROUGH;
 
                     case 2:
-                        mul_result = wuint::umul128(blocks_ptr[1], multiplier);
+                        mul_result = umul128(blocks_ptr[1], multiplier);
                         mul_result += carry;
                         blocks_ptr[1] = mul_result.low();
                         carry = mul_result.high();
                         BOOST_FALLTHROUGH;
 
                     case 1:
-                        mul_result = wuint::umul128(blocks_ptr[0], multiplier);
+                        mul_result = umul128(blocks_ptr[0], multiplier);
                         mul_result += carry;
                         blocks_ptr[0] = mul_result.low();
                         return mul_result.high();
@@ -592,12 +438,12 @@ namespace boost { namespace charconv { namespace detail {
                     }
                 }
 
-                auto mul_result = wuint::umul128(blocks_ptr[number_of_blocks - 1], multiplier);
+                auto mul_result = umul128(blocks_ptr[number_of_blocks - 1], multiplier);
                 blocks_ptr[number_of_blocks - 1] = mul_result.low();
                 auto carry = mul_result.high();
                 for (std::size_t i = 1; i < number_of_blocks; ++i) {
                     mul_result =
-                        wuint::umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
+                        umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
                     mul_result += carry;
                     blocks_ptr[number_of_blocks - i - 1] = mul_result.low();
                     carry = mul_result.high();
@@ -617,29 +463,29 @@ namespace boost { namespace charconv { namespace detail {
                 blocks_ptr[0] *= multiplier;
                 if (number_of_blocks > 1) {
                     BOOST_IF_CONSTEXPR (max_blocks == 3) {
-                        wuint::uint128 mul_result;
+                        uint128 mul_result;
                         std::uint64_t carry = 0;
 
                         if (number_of_blocks > 2) {
-                            mul_result = wuint::umul128(multiplier, blocks_ptr[2]);
+                            mul_result = umul128(multiplier, blocks_ptr[2]);
                             blocks_ptr[2] = mul_result.low();
                             carry = mul_result.high();
                         }
 
-                        mul_result = wuint::umul128(multiplier, blocks_ptr[1]);
+                        mul_result = umul128(multiplier, blocks_ptr[1]);
                         mul_result += carry;
                         blocks_ptr[1] = mul_result.low();
                         blocks_ptr[0] += mul_result.high();
                     }
                     else {
                         auto mul_result =
-                            wuint::umul128(multiplier, blocks_ptr[number_of_blocks - 1]);
+                            umul128(multiplier, blocks_ptr[number_of_blocks - 1]);
                         blocks_ptr[number_of_blocks - 1] = mul_result.low();
                         auto carry = mul_result.high();
 
                         for (std::uint8_t i = 2; i < number_of_blocks; ++i) {
                             mul_result =
-                                wuint::umul128(multiplier, blocks_ptr[number_of_blocks - i]);
+                                umul128(multiplier, blocks_ptr[number_of_blocks - i]);
                             mul_result += carry;
                             blocks_ptr[number_of_blocks - i] = mul_result.low();
                             carry = mul_result.high();
@@ -659,23 +505,23 @@ namespace boost { namespace charconv { namespace detail {
 
                 BOOST_IF_CONSTEXPR (max_blocks == 3) 
                 {
-                    wuint::uint128 mul_result;
+                    uint128 mul_result;
                     std::uint64_t carry = 0;
 
                     switch (number_of_blocks) {
                     case 3:
-                        mul_result = wuint::umul128(blocks_ptr[2], multiplier);
+                        mul_result = umul128(blocks_ptr[2], multiplier);
                         carry = mul_result.high();
                         BOOST_FALLTHROUGH;
 
                     case 2:
-                        mul_result = wuint::umul128(blocks_ptr[1], multiplier);
+                        mul_result = umul128(blocks_ptr[1], multiplier);
                         mul_result += carry;
                         carry = mul_result.high();
                         BOOST_FALLTHROUGH;
 
                     case 1:
-                        mul_result = wuint::umul128(blocks_ptr[0], multiplier);
+                        mul_result = umul128(blocks_ptr[0], multiplier);
                         mul_result += carry;
                         return static_cast<MultiplierType>(mul_result.high());
 
@@ -684,11 +530,11 @@ namespace boost { namespace charconv { namespace detail {
                     }
                 }
 
-                auto mul_result = wuint::umul128(blocks_ptr[number_of_blocks - 1], multiplier);
+                auto mul_result = umul128(blocks_ptr[number_of_blocks - 1], multiplier);
                 auto carry = mul_result.high();
                 for (std::size_t i = 1; i < number_of_blocks; ++i) {
                     mul_result =
-                        wuint::umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
+                        umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
                     mul_result += carry;
                     carry = mul_result.high();
                 }
@@ -1270,7 +1116,7 @@ namespace boost { namespace charconv { namespace detail {
 
         namespace {
         struct main_cache_holder {
-            using cache_entry_type = boost::charconv::detail::wuint::uint128;
+            using cache_entry_type = boost::charconv::detail::uint128;
             static constexpr int cache_bits = 128;
             static constexpr int min_k = -292;
             static constexpr int max_k = 326;
@@ -1609,7 +1455,7 @@ namespace boost { namespace charconv { namespace detail {
 
             struct cache_holder_t 
             {
-                static constexpr wuint::uint128 table[] = {
+                static constexpr uint128 table[] = {
                     {0xff77b1fcbebcdc4f, 0x25e8e89c13bb0f7b},
                     {0xa5178fff668ae0b6, 0x626e974dbe39a873},
                     {0x855c3be0a17fcd26, 0x5cf2eea09a550680},
@@ -1635,7 +1481,7 @@ namespace boost { namespace charconv { namespace detail {
                     {0xeeea5d5004981478, 0x1858ccfce06cac75},
                 };
 
-                static_assert(sizeof(table) == compressed_table_size * sizeof(wuint::uint128), "Table should have 23 elements");
+                static_assert(sizeof(table) == compressed_table_size * sizeof(uint128), "Table should have 23 elements");
             };
 
             struct pow5_holder_t 
@@ -1683,7 +1529,6 @@ namespace boost { namespace charconv { namespace detail {
                 }
                 else {
                     namespace log = detail::log;
-                    namespace wuint = detail::wuint;
 
                     // Compute the required amount of bit-shift.
                     const auto alpha =
@@ -1692,8 +1537,8 @@ namespace boost { namespace charconv { namespace detail {
 
                     // Try to recover the real cache.
                     const auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
-                    auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
-                    const auto middle_low = wuint::umul128(base_cache.low(), pow5);
+                    auto recovered_cache = umul128(base_cache.high(), pow5);
+                    const auto middle_low = umul128(base_cache.low(), pow5);
 
                     recovered_cache += middle_low.high();
 
@@ -1701,7 +1546,7 @@ namespace boost { namespace charconv { namespace detail {
                     const auto middle_to_low = recovered_cache.low() << (64 - alpha);
 
                     recovered_cache =
-                        wuint::uint128{(recovered_cache.low() >> alpha) | high_to_middle,
+                        uint128{(recovered_cache.low() >> alpha) | high_to_middle,
                                        ((middle_low.low() >> alpha) | middle_to_low)};
 
                     BOOST_CHARCONV_ASSERT(recovered_cache.low() + 1 != 0);
@@ -2220,7 +2065,7 @@ namespace boost { namespace charconv { namespace detail {
             // Integer check is okay for binary64.
             //auto [first_segment, has_more_segments] 
               compute_mul_result segments = [&] {
-                const auto r = wuint::umul192_upper128(significand << beta, main_cache);
+                const auto r = umul192_upper128(significand << beta, main_cache);
                 return compute_mul_result{r.high(), r.low() != 0};
             }();
             auto first_segment = segments.result;
@@ -2233,7 +2078,7 @@ namespace boost { namespace charconv { namespace detail {
 
             if (remaining_digits <= 2) 
             {
-                wuint::uint128 prod;
+                uint128 prod;
                 std::uint64_t fractional_part64;
                 std::uint64_t fractional_part_rounding_threshold64;
                 std::uint32_t current_digits32;
@@ -2243,13 +2088,13 @@ namespace boost { namespace charconv { namespace detail {
                 // 19 digits.
                 if (first_segment >= UINT64_C(1000000000000000000)) {
                     if (remaining_digits == 1) {
-                        prod = wuint::umul128(first_segment, UINT64_C(1329227995784915873));
+                        prod = umul128(first_segment, UINT64_C(1329227995784915873));
                         // ceil(2^63 + 2^64/10^18)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[17];
                     }
                     else {
-                        prod = wuint::umul128(first_segment, UINT64_C(13292279957849158730));
+                        prod = umul128(first_segment, UINT64_C(13292279957849158730));
                         // ceil(2^63 + 2^64/10^17)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[16];
@@ -2261,13 +2106,13 @@ namespace boost { namespace charconv { namespace detail {
                 // 18 digits.
                 else if (first_segment >= UINT64_C(100000000000000000)) {
                     if (remaining_digits == 1) {
-                        prod = wuint::umul128(first_segment, UINT64_C(830767497365572421));
+                        prod = umul128(first_segment, UINT64_C(830767497365572421));
                         // ceil(2^63 + 2^64/10^17)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[16];
                     }
                     else {
-                        prod = wuint::umul128(first_segment, UINT64_C(8307674973655724206));
+                        prod = umul128(first_segment, UINT64_C(8307674973655724206));
                         // ceil(2^63 + 2^64/10^16)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[15];
@@ -2310,13 +2155,13 @@ namespace boost { namespace charconv { namespace detail {
                         }
 
                         if (remaining_digits == 1) {
-                            prod = wuint::umul128(first_segment, UINT64_C(32451855365842673));
+                            prod = umul128(first_segment, UINT64_C(32451855365842673));
                             // ceil(2^63 + 2^64/10^16)
                             fractional_part_rounding_threshold64 = additional_static_data_holder::
                                 fractional_part_rounding_thresholds64[15];
                         }
                         else {
-                            prod = wuint::umul128(first_segment, UINT64_C(324518553658426727));
+                            prod = umul128(first_segment, UINT64_C(324518553658426727));
                             // ceil(2^63 + 2^64/10^15)
                             fractional_part_rounding_threshold64 = additional_static_data_holder::
                                 fractional_part_rounding_thresholds64[14];
@@ -2444,7 +2289,7 @@ namespace boost { namespace charconv { namespace detail {
             // MSVC doesn't know how to do Grandlund-Montgomery for large 64-bit integers.
             // 7922816251426433760 = ceil(2^96/10^10) = floor(2^96*(10^9/(10^19 - 1)))
             const auto first_subsegment =
-                static_cast<std::uint32_t>(wuint::umul128_upper64(first_segment, UINT64_C(7922816251426433760)) >> 32);
+                static_cast<std::uint32_t>(umul128_upper64(first_segment, UINT64_C(7922816251426433760)) >> 32);
             const auto second_third_subsegments =
                 first_segment - first_subsegment * UINT64_C(10000000000);
             BOOST_CHARCONV_ASSERT(first_subsegment < UINT64_C(1000000000));
@@ -2555,7 +2400,7 @@ namespace boost { namespace charconv { namespace detail {
 
                 if (remaining_digits == 1) 
                 {
-                    const auto prod128 = wuint::umul128(second_third_subsegments, UINT64_C(18446744074));
+                    const auto prod128 = umul128(second_third_subsegments, UINT64_C(18446744074));
 
                     current_digits = static_cast<std::uint32_t>(prod128.high());
                     const auto fractional_part64 = prod128.low() + 1;
@@ -2572,7 +2417,7 @@ namespace boost { namespace charconv { namespace detail {
                 } // remaining_digits == 1
                 else 
                 {
-                    const auto prod128 = wuint::umul128(second_third_subsegments, UINT64_C(184467440738));
+                    const auto prod128 = umul128(second_third_subsegments, UINT64_C(184467440738));
 
                     current_digits = static_cast<std::uint32_t>(prod128.high());
                     const auto fractional_part64 = prod128.low() + 1;
@@ -2594,7 +2439,7 @@ namespace boost { namespace charconv { namespace detail {
             // eliminate an additional shift.
             // 184467440737095517 = ceil(2^64/100) < floor(2^64*(10^8/(10^10 - 1))).
             const auto second_subsegment = static_cast<std::uint32_t>(
-                wuint::umul128_upper64(second_third_subsegments, UINT64_C(184467440737095517)));
+                umul128_upper64(second_third_subsegments, UINT64_C(184467440737095517)));
             // Since the final result is of 2 digits, we can do the computation in 32-bits.
             const auto third_subsegment =
                 static_cast<std::uint32_t>(second_third_subsegments) - second_subsegment * 100;
@@ -2843,7 +2688,7 @@ namespace boost { namespace charconv { namespace detail {
                                 // ceil(2^(64+14)/10^8) = 3022314549036573
                                 // = floor(2^(64+14)*(10^8/(10^16 - 1)))
                                 const auto first_subsegment =
-                                    static_cast<std::uint32_t>(wuint::umul128_upper64(first_second_subsegments,
+                                    static_cast<std::uint32_t>(umul128_upper64(first_second_subsegments,
                                                                          UINT64_C(3022314549036573)) >>
                                                   14);
                                 const auto second_subsegment =
@@ -2889,7 +2734,7 @@ namespace boost { namespace charconv { namespace detail {
                             // ceil(2^(64+14)/10^8) = 3022314549036573
                             // = floor(2^(64+14)*(10^8/(10^16 - 1)))
                             const auto second_subsegment =
-                                static_cast<std::uint32_t>(wuint::umul128_upper64(second_third_subsegments,
+                                static_cast<std::uint32_t>(umul128_upper64(second_third_subsegments,
                                                                      UINT64_C(3022314549036573)) >>
                                               14);
                             const auto third_subsegment = static_cast<std::uint32_t>(second_third_subsegments) -
