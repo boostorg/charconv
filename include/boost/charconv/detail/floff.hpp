@@ -90,7 +90,7 @@ namespace boost { namespace charconv { namespace detail {
         static_assert(sizeof(carrier_uint) == sizeof(T), "carrier_uint must be T");
 
         // Number of bits in the above unsigned integer type.
-        static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>::value);
+        static constexpr int carrier_bits = static_cast<int>(detail::physical_bits<carrier_uint>::value);
 
         // Convert from carrier_uint into the original type.
         // Depending on the floating-point encoding format, this operation might not be possible for
@@ -122,18 +122,18 @@ namespace boost { namespace charconv { namespace detail {
         // on the right. The result does not contain the implicit bit.
         static constexpr carrier_uint extract_significand_bits(carrier_uint u) noexcept 
         {
-            return carrier_uint(u & carrier_uint((carrier_uint(1) << format::significand_bits) - 1));
+            return static_cast<carrier_uint>(u & static_cast<carrier_uint>((static_cast<carrier_uint>(1) << format::significand_bits) - 1));
         }
 
         // Remove the exponent bits and extract significand bits together with the sign bit.
         static constexpr carrier_uint remove_exponent_bits(carrier_uint u,
                                                            unsigned int exponent_bits) noexcept {
-            return u ^ (carrier_uint(exponent_bits) << format::significand_bits);
+            return u ^ (static_cast<carrier_uint>(exponent_bits) << format::significand_bits);
         }
 
         // Shift the obtained signed significand bits to the left by 1 to remove the sign bit.
         static constexpr carrier_uint remove_sign_bit_and_shift(carrier_uint u) noexcept {
-            return carrier_uint(carrier_uint(u) << 1);
+            return static_cast<carrier_uint>(static_cast<carrier_uint>(u) << 1);
         }
 
         // The actual value of exponent is obtained by adding this value to the extracted exponent
@@ -144,7 +144,7 @@ namespace boost { namespace charconv { namespace detail {
         // Obtain the actual value of the binary exponent from the extracted exponent bits.
         static constexpr int binary_exponent(unsigned int exponent_bits) noexcept 
         {
-            return exponent_bits == 0 ? format::min_exponent : int(exponent_bits) + format::exponent_bias;
+            return exponent_bits == 0 ? format::min_exponent : static_cast<int>(exponent_bits) + format::exponent_bias;
         }
 
         // Obtain the actual value of the binary exponent from the extracted significand bits and
@@ -152,7 +152,7 @@ namespace boost { namespace charconv { namespace detail {
         static constexpr carrier_uint binary_significand(carrier_uint significand_bits,
                                                          unsigned int exponent_bits) noexcept 
         {
-            return exponent_bits == 0 ? significand_bits : (significand_bits | (carrier_uint(1) << format::significand_bits));
+            return exponent_bits == 0 ? significand_bits : (significand_bits | (static_cast<carrier_uint>(1) << format::significand_bits));
         }
 
 
@@ -161,8 +161,7 @@ namespace boost { namespace charconv { namespace detail {
         static constexpr bool is_nonzero(carrier_uint u) noexcept { return (u << 1) != 0; }
         static constexpr bool is_positive(carrier_uint u) noexcept 
         {
-            //constexpr auto sign_bit = carrier_uint(1) << (format::significand_bits + format::exponent_bits);
-            return u < carrier_uint(1) << (format::significand_bits + format::exponent_bits);
+            return u < static_cast<carrier_uint>(1) << (format::significand_bits + format::exponent_bits);
         }
         static constexpr bool is_negative(carrier_uint u) noexcept { return !is_positive(u); }
         static constexpr bool is_finite(unsigned int exponent_bits) noexcept
@@ -344,7 +343,7 @@ namespace boost { namespace charconv { namespace detail {
 #if defined(_MSC_VER) && defined(_M_IX86)
                 return __emulu(x, y);
 #else
-                return x * std::uint64_t(y);
+                return x * static_cast<std::uint64_t>(y);
 #endif
             }
 
@@ -352,26 +351,26 @@ namespace boost { namespace charconv { namespace detail {
             BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
 #if defined(__SIZEOF_INT128__)
                 auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
-                return {std::uint64_t(result >> 64), std::uint64_t(result)};
+                return {static_cast<std::uint64_t>(result >> 64), static_cast<std::uint64_t>(result)};
 #elif defined(_MSC_VER) && defined(_M_X64)
                 uint128 result;
                 result.low_ = _umul128(x, y, &result.high_);
                 return result;
 #else
-                auto a = std::uint32_t(x >> 32);
-                auto b = std::uint32_t(x);
-                auto c = std::uint32_t(y >> 32);
-                auto d = std::uint32_t(y);
+                auto a = static_cast<std::uint32_t>(x >> 32);
+                auto b = static_cast<std::uint32_t>(x);
+                auto c = static_cast<std::uint32_t>(y >> 32);
+                auto d = static_cast<std::uint32_t>(y);
 
                 auto ac = umul64(a, c);
                 auto bc = umul64(b, c);
                 auto ad = umul64(a, d);
                 auto bd = umul64(b, d);
 
-                auto intermediate = (bd >> 32) + std::uint32_t(ad) + std::uint32_t(bc);
+                auto intermediate = (bd >> 32) + static_cast<std::uint32_t>(ad) + static_cast<std::uint32_t>(bc);
 
                 return {ac + (intermediate >> 32) + (ad >> 32) + (bc >> 32),
-                        (intermediate << 32) + std::uint32_t(bd)};
+                        (intermediate << 32) + static_cast<std::uint32_t>(bd)};
 #endif
             }
 
@@ -379,21 +378,21 @@ namespace boost { namespace charconv { namespace detail {
                                                                  std::uint64_t y) noexcept {
 #if defined(__SIZEOF_INT128__)
                 auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
-                return std::uint64_t(result >> 64);
+                return static_cast<std::uint64_t>(result >> 64);
 #elif defined(_MSC_VER) && defined(_M_X64)
                 return __umulh(x, y);
 #else
-                auto a = std::uint32_t(x >> 32);
-                auto b = std::uint32_t(x);
-                auto c = std::uint32_t(y >> 32);
-                auto d = std::uint32_t(y);
+                auto a = static_cast<std::uint32_t>(x >> 32);
+                auto b = static_cast<std::uint32_t>(x);
+                auto c = static_cast<std::uint32_t>(y >> 32);
+                auto d = static_cast<std::uint32_t>(y);
 
                 auto ac = umul64(a, c);
                 auto bc = umul64(b, c);
                 auto ad = umul64(a, d);
                 auto bd = umul64(b, d);
 
-                auto intermediate = (bd >> 32) + std::uint32_t(ad) + std::uint32_t(bc);
+                auto intermediate = (bd >> 32) + static_cast<std::uint32_t>(ad) + static_cast<std::uint32_t>(bc);
 
                 return ac + (intermediate >> 32) + (ad >> 32) + (bc >> 32);
 #endif
@@ -411,10 +410,10 @@ namespace boost { namespace charconv { namespace detail {
             // unsigned integer.
             inline std::uint64_t umul96_upper64(std::uint32_t x, std::uint64_t y) noexcept {
 #if defined(__SIZEOF_INT128__) || (defined(_MSC_VER) && defined(_M_X64))
-                return umul128_upper64(std::uint64_t(x) << 32, y);
+                return umul128_upper64(static_cast<std::uint64_t>(x) << 32, y);
 #else
-                auto yh = std::uint32_t(y >> 32);
-                auto yl = std::uint32_t(y);
+                auto yh = static_cast<std::uint32_t>(y >> 32);
+                auto yl = static_cast<std::uint32_t>(y);
 
                 auto xyh = umul64(x, yh);
                 auto xyl = umul64(x, yl);
@@ -482,7 +481,7 @@ namespace boost { namespace charconv { namespace detail {
 
             template <multiply m, subtract f, shift k, min_exponent e_min, max_exponent e_max>
             constexpr int compute(int e) noexcept {
-                return int((std::int32_t(e) * std::int32_t(m) - std::int32_t(f)) >> std::size_t(k));
+                return static_cast<int>((std::int32_t(e) * std::int32_t(m) - std::int32_t(f)) >> std::size_t(k));
             }
 
             // For constexpr computation.
@@ -777,7 +776,7 @@ namespace boost { namespace charconv { namespace detail {
 
             auto const cache_block_count_index =
                         mul_info.cache_block_count_index_offset +
-                        std::uint32_t(e - ExtendedCache::e_min) / ExtendedCache::collapse_factor -
+                        static_cast<std::uint32_t>(e - ExtendedCache::e_min) / ExtendedCache::collapse_factor -
                         ExtendedCache::cache_block_count_offset_base;
 
             BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks < 3) {
@@ -824,43 +823,43 @@ namespace boost { namespace charconv { namespace detail {
             std::uint32_t excessive_bits_to_right;
             std::uint8_t  cache_block_count = cache_block_count_helper<ExtendedCache, zero_out, CacheBlockType>(blocks_ptr, e, k, multiplier_index);
             // The request window starting/ending positions.
-            auto start_bit_index = int(mul_info.cache_bit_index_offset) + e -
+            auto start_bit_index = static_cast<int>(mul_info.cache_bit_index_offset) + e -
                                    ExtendedCache::cache_bit_index_offset_base;
             auto end_bit_index =
-                start_bit_index + cache_block_count * int(ExtendedCache::cache_bits_unit);
+                start_bit_index + cache_block_count * static_cast<int>(ExtendedCache::cache_bits_unit);
 
             // The source window starting/ending positions.
-            auto const src_start_bit_index = int(mul_info.first_cache_bit_index);
+            auto const src_start_bit_index = static_cast<int>(mul_info.first_cache_bit_index);
             auto const src_end_bit_index =
-                int(ExtendedCache::multiplier_index_info_table[multiplier_index + 1]
+                static_cast<int>(ExtendedCache::multiplier_index_info_table[multiplier_index + 1]
                         .first_cache_bit_index);
 
             // If the request window goes further than the left boundary of the source window,
             if (start_bit_index < src_start_bit_index) {
                 number_of_leading_zero_blocks =
-                    std::uint32_t(src_start_bit_index - start_bit_index) /
-                    std::uint32_t(ExtendedCache::cache_bits_unit);
-                excessive_bits_to_left = std::uint32_t(src_start_bit_index - start_bit_index) %
-                                         std::uint32_t(ExtendedCache::cache_bits_unit);
+                    static_cast<std::uint32_t>(src_start_bit_index - start_bit_index) /
+                    static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
+                excessive_bits_to_left = static_cast<std::uint32_t>(src_start_bit_index - start_bit_index) %
+                                         static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
 
                 BOOST_IF_CONSTEXPR (!zero_out) {
                     std::memset(blocks_ptr, 0,
                                 number_of_leading_zero_blocks * sizeof(CacheBlockType));
                 }
                 start_bit_index +=
-                    number_of_leading_zero_blocks * int(ExtendedCache::cache_bits_unit);
+                    number_of_leading_zero_blocks * static_cast<int>(ExtendedCache::cache_bits_unit);
 
                 auto const src_start_block_index =
-                    int(std::uint32_t(src_start_bit_index) /
-                        std::uint32_t(ExtendedCache::cache_bits_unit));
+                    static_cast<int>(static_cast<std::uint32_t>(src_start_bit_index) /
+                        static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit));
                 auto const src_start_block_bit_index =
-                    src_start_block_index * int(ExtendedCache::cache_bits_unit);
+                    src_start_block_index * static_cast<int>(ExtendedCache::cache_bits_unit);
 
                 first_cache_block_index = src_start_block_index;
 
                 if (start_bit_index < src_start_block_bit_index) {
                     auto shift_amount = src_start_block_bit_index - start_bit_index;
-                    BOOST_CHARCONV_ASSERT(shift_amount >= 0 && shift_amount < int(ExtendedCache::cache_bits_unit));
+                    BOOST_CHARCONV_ASSERT(shift_amount >= 0 && shift_amount < static_cast<int>(ExtendedCache::cache_bits_unit));
 
                     blocks_ptr[number_of_leading_zero_blocks] =
                         ((ExtendedCache::cache[src_start_block_index] >> shift_amount) &
@@ -868,19 +867,19 @@ namespace boost { namespace charconv { namespace detail {
                           excessive_bits_to_left));
 
                     ++number_of_leading_zero_blocks;
-                    bit_offset = std::uint32_t(int(ExtendedCache::cache_bits_unit) - shift_amount);
+                    bit_offset = static_cast<std::uint32_t>(static_cast<int>(ExtendedCache::cache_bits_unit) - shift_amount);
                     excessive_bits_to_left = 0;
                 }
                 else {
-                    bit_offset = std::uint32_t(start_bit_index - src_start_block_bit_index);
+                    bit_offset = static_cast<std::uint32_t>(start_bit_index - src_start_block_bit_index);
                 }
             }
             else {
                 number_of_leading_zero_blocks = 0;
                 first_cache_block_index =
-                    std::uint32_t(start_bit_index) / std::uint32_t(ExtendedCache::cache_bits_unit);
+                    static_cast<std::uint32_t>(start_bit_index) / static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
                 bit_offset =
-                    std::uint32_t(start_bit_index) % std::uint32_t(ExtendedCache::cache_bits_unit);
+                    static_cast<std::uint32_t>(start_bit_index) % static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
                 excessive_bits_to_left = 0;
             }
 
@@ -888,8 +887,8 @@ namespace boost { namespace charconv { namespace detail {
             if (end_bit_index > src_end_bit_index) {
                 const auto number_of_trailing_zero_blocks = 
                     static_cast<std::uint8_t>(end_bit_index - src_end_bit_index / ExtendedCache::cache_bits_unit);
-                excessive_bits_to_right = std::uint32_t(end_bit_index - src_end_bit_index) %
-                                          std::uint32_t(ExtendedCache::cache_bits_unit);
+                excessive_bits_to_right = static_cast<std::uint32_t>(end_bit_index - src_end_bit_index) %
+                                          static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
 
                 cache_block_count -= number_of_trailing_zero_blocks;
             }
@@ -979,7 +978,7 @@ namespace boost { namespace charconv { namespace detail {
             // To compute ceil(2^Q * x / D), we need to check if
             // 2^Q * x / D = 2^(Q + e + k - eta - 1) * 5^(k - eta) is an integer or not.
             if (k < ExtendedCache::segment_length ||
-                e + k + cache_block_count * int(ExtendedCache::cache_bits_unit) -
+                e + k + cache_block_count * static_cast<int>(ExtendedCache::cache_bits_unit) -
                         excessive_bits_to_right <
                     ExtendedCache::segment_length + 1) {
                 blocks_ptr[cache_block_count - 1] += (CacheBlockType(1) << excessive_bits_to_right);
@@ -1163,7 +1162,7 @@ namespace boost { namespace charconv { namespace detail {
                     compute_power(UINT64_C(0xcccccccccccccccd), static_cast<unsigned>(min_neg_exp_of_5));
                 BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
                     UINT64_C(0xffffffffffffffff) /
-                    compute_power(std::uint64_t(5), static_cast<unsigned>(min_neg_exp_of_5));
+                    compute_power(UINT64_C(5), static_cast<unsigned>(min_neg_exp_of_5));
 
                 return (significand * mod_inv) > max_quot;
             }
@@ -1188,7 +1187,7 @@ namespace boost { namespace charconv { namespace detail {
                         compute_power(UINT64_C(0xcccccccccccccccd), static_cast<unsigned>(min_neg_exp_of_5));
                     BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
                         UINT64_C(0xffffffffffffffff) /
-                        compute_power(std::uint64_t(5), static_cast<unsigned>(min_neg_exp_of_5));
+                        compute_power(UINT64_C(5), static_cast<unsigned>(min_neg_exp_of_5));
 
                     return (significand * mod_inv) > max_quot;
                 }
@@ -1197,7 +1196,7 @@ namespace boost { namespace charconv { namespace detail {
                         UINT64_C(0xcccccccccccccccd), static_cast<unsigned>(min_neg_exp_of_5 + segment_length));
                     BOOST_CXX14_CONSTEXPR std::uint64_t max_quot =
                         UINT64_C(0xffffffffffffffff) /
-                        compute_power(std::uint64_t(5),
+                        compute_power(UINT64_C(5),
                                       static_cast<unsigned>(min_neg_exp_of_5 + segment_length));
 
                     return (significand * mod_inv) > max_quot;
@@ -1231,41 +1230,41 @@ namespace boost { namespace charconv { namespace detail {
 
         inline void print_6_digits(std::uint32_t n, char* buffer) noexcept {
             // 429497 = ceil(2^32/10^4)
-            auto prod = (n * std::uint64_t(429497)) + 1;
-            print_2_digits(std::uint32_t(prod >> 32), buffer);
+            auto prod = (n * UINT64_C(429497)) + 1;
+            print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
             for (int i = 0; i < 2; ++i) {
-                prod = std::uint32_t(prod) * std::uint64_t(100);
-                print_2_digits(std::uint32_t(prod >> 32), buffer + 2 + i * 2);
+                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer + 2 + i * 2);
             }
         }
 
         inline void print_7_digits(std::uint32_t n, char* buffer) noexcept {
             // 17592187 = ceil(2^(32+12)/10^6)
-            auto prod = ((n * std::uint64_t(17592187)) >> 12) + 1;
-            print_1_digit(std::uint32_t(prod >> 32), buffer);
+            auto prod = ((n * UINT64_C(17592187)) >> 12) + 1;
+            print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
             for (int i = 0; i < 3; ++i) {
-                prod = std::uint32_t(prod) * std::uint64_t(100);
-                print_2_digits(std::uint32_t(prod >> 32), buffer + 1 + i * 2);
+                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer + 1 + i * 2);
             }
         }
 
         inline void print_8_digits(std::uint32_t n, char* buffer) noexcept {
             // 140737489 = ceil(2^(32+15)/10^6)
-            auto prod = ((n * std::uint64_t(140737489)) >> 15) + 1;
-            print_2_digits(std::uint32_t(prod >> 32), buffer);
+            auto prod = ((n * UINT64_C(140737489)) >> 15) + 1;
+            print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
             for (int i = 0; i < 3; ++i) {
-                prod = std::uint32_t(prod) * std::uint64_t(100);
-                print_2_digits(std::uint32_t(prod >> 32), buffer + 2 + i * 2);
+                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer + 2 + i * 2);
             }
         }
 
         inline void print_9_digits(std::uint32_t n, char* buffer) noexcept {
             // 1441151881 = ceil(2^(32+25)/10^8)
-            auto prod = ((n * std::uint64_t(1441151881)) >> 25) + 1;
-            print_1_digit(std::uint32_t(prod >> 32), buffer);
+            auto prod = ((n * UINT64_C(1441151881)) >> 25) + 1;
+            print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
             for (int i = 0; i < 4; ++i) {
-                prod = std::uint32_t(prod) * std::uint64_t(100);
-                print_2_digits(std::uint32_t(prod >> 32), buffer + 1 + i * 2);
+                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer + 1 + i * 2);
             }
         }
 
@@ -1670,7 +1669,7 @@ namespace boost { namespace charconv { namespace detail {
             BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value) {
                 // Compute the base index.
                 auto const cache_index =
-                    int(std::uint32_t(k - detail::main_cache_holder::min_k) /
+                    static_cast<int>(static_cast<std::uint32_t>(k - detail::main_cache_holder::min_k) /
                         detail::compressed_cache_detail::compression_ratio);
                 auto const kb = cache_index * detail::compressed_cache_detail::compression_ratio +
                                 detail::main_cache_holder::min_k;
@@ -2027,10 +2026,10 @@ namespace boost { namespace charconv { namespace detail {
         bool has_further_digits(std::uint64_t significand, int exp2_base, int& k, boost::charconv::detail::uconst<v1> additional_neg_exp_of_2_c, boost::charconv::detail::uconst<v2> additional_neg_exp_of_10_c) noexcept
         {
                 constexpr auto additional_neg_exp_of_2_v =
-                    int(decltype(additional_neg_exp_of_2_c)::value +
+                    static_cast<int>(decltype(additional_neg_exp_of_2_c)::value +
                         decltype(additional_neg_exp_of_10_c)::value);
                 constexpr auto additional_neg_exp_of_5_v =
-                    int(decltype(additional_neg_exp_of_10_c)::value);
+                    static_cast<int>(decltype(additional_neg_exp_of_10_c)::value);
 
                 constexpr auto min_neg_exp_of_5 =
                     (-ExtendedCache::k_min + additional_neg_exp_of_5_v) %
@@ -2152,12 +2151,12 @@ namespace boost { namespace charconv { namespace detail {
         std::uint64_t br = default_float_traits<double>::float_to_carrier(x);
         bool is_negative = ((br >> 63) != 0);
         br <<= 1;
-        int e = int(br >> (ieee754_binary64::significand_bits + 1));
-        auto significand = (br & ((std::uint64_t(1) << (ieee754_binary64::significand_bits + 1)) -
+        int e = static_cast<int>(br >> (ieee754_binary64::significand_bits + 1));
+        auto significand = (br & ((UINT64_C(1) << (ieee754_binary64::significand_bits + 1)) -
                                   1)); // shifted by 1-bit.
 
         // Infinities or NaN
-        if (e == ((std::uint32_t(1) << ieee754_binary64::exponent_bits) - 1)) {
+        if (e == ((UINT32_C(1) << ieee754_binary64::exponent_bits) - 1)) {
             if (significand == 0) {
                 if (is_negative) {
                     *buffer = '-';
@@ -2242,51 +2241,51 @@ namespace boost { namespace charconv { namespace detail {
                 // Convert to fixed-point form with 64/32-bit boundary for the fractional part.
 
                 // 19 digits.
-                if (first_segment >= 1000000000000000000ull) {
+                if (first_segment >= UINT64_C(1000000000000000000)) {
                     if (remaining_digits == 1) {
-                        prod = wuint::umul128(first_segment, 1329227995784915873ull);
+                        prod = wuint::umul128(first_segment, UINT64_C(1329227995784915873));
                         // ceil(2^63 + 2^64/10^18)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[17];
                     }
                     else {
-                        prod = wuint::umul128(first_segment, 13292279957849158730ull);
+                        prod = wuint::umul128(first_segment, UINT64_C(13292279957849158730));
                         // ceil(2^63 + 2^64/10^17)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[16];
                     }
                     fractional_part64 = (prod.low() >> 56) | (prod.high() << 8);
-                    current_digits32 = std::uint32_t(prod.high() >> 56);
+                    current_digits32 = static_cast<std::uint32_t>(prod.high() >> 56);
                     decimal_exponent += 18;
                 }
                 // 18 digits.
-                else if (first_segment >= 100000000000000000ull) {
+                else if (first_segment >= UINT64_C(100000000000000000)) {
                     if (remaining_digits == 1) {
-                        prod = wuint::umul128(first_segment, 830767497365572421ull);
+                        prod = wuint::umul128(first_segment, UINT64_C(830767497365572421));
                         // ceil(2^63 + 2^64/10^17)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[16];
                     }
                     else {
-                        prod = wuint::umul128(first_segment, 8307674973655724206ull);
+                        prod = wuint::umul128(first_segment, UINT64_C(8307674973655724206));
                         // ceil(2^63 + 2^64/10^16)
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[15];
                     }
                     fractional_part64 = (prod.low() >> 52) | (prod.high() << 12);
-                    current_digits32 = std::uint32_t(prod.high() >> 52);
+                    current_digits32 = static_cast<std::uint32_t>(prod.high() >> 52);
                     decimal_exponent += 17;
                 }
                 // This branch can be taken only for subnormal numbers.
                 else {
                     // At least 10 digits.
-                    if (first_segment >= 1000000000) {
+                    if (first_segment >= UINT64_C(1000000000)) {
                         // 15 ~ 17 digits.
-                        if (first_segment >= 100000000000000ull) {
+                        if (first_segment >= UINT64_C(100000000000000)) {
                             decimal_exponent += 6;
                         }
                         // 12 ~ 14 digits.
-                        else if (first_segment >= 100000000000ull) {
+                        else if (first_segment >= UINT64_C(100000000000)) {
                             first_segment *= 1000;
                             decimal_exponent += 3;
                         }
@@ -2296,11 +2295,11 @@ namespace boost { namespace charconv { namespace detail {
                         }
 
                         // 17 or 14 or 11 digits.
-                        if (first_segment >= 10000000000000000ull) {
+                        if (first_segment >= UINT64_C(10000000000000000)) {
                             decimal_exponent += 10;
                         }
                         // 16 or 13 or 10 digits.
-                        else if (first_segment >= 1000000000000000ull) {
+                        else if (first_segment >= UINT64_C(1000000000000000)) {
                             first_segment *= 10;
                             decimal_exponent += 9;
                         }
@@ -2311,24 +2310,24 @@ namespace boost { namespace charconv { namespace detail {
                         }
 
                         if (remaining_digits == 1) {
-                            prod = wuint::umul128(first_segment, 32451855365842673ull);
+                            prod = wuint::umul128(first_segment, UINT64_C(32451855365842673));
                             // ceil(2^63 + 2^64/10^16)
                             fractional_part_rounding_threshold64 = additional_static_data_holder::
                                 fractional_part_rounding_thresholds64[15];
                         }
                         else {
-                            prod = wuint::umul128(first_segment, 324518553658426727ull);
+                            prod = wuint::umul128(first_segment, UINT64_C(324518553658426727));
                             // ceil(2^63 + 2^64/10^15)
                             fractional_part_rounding_threshold64 = additional_static_data_holder::
                                 fractional_part_rounding_thresholds64[14];
                         }
                         fractional_part64 = (prod.low() >> 44) | (prod.high() << 20);
-                        current_digits32 = std::uint32_t(prod.high() >> 44);
+                        current_digits32 = static_cast<std::uint32_t>(prod.high() >> 44);
                     }
                     // At most 9 digits (and at least 3 digits).
                     else {
                         // The segment fits into 32-bits in this case.
-                        auto segment32 = std::uint32_t(first_segment);
+                        auto segment32 = static_cast<std::uint32_t>(first_segment);
 
                         // 7 ~ 9 digits
                         if (segment32 >= 1000000) {
@@ -2360,11 +2359,11 @@ namespace boost { namespace charconv { namespace detail {
 
                         std::uint64_t prod_64 {};
                         if (remaining_digits == 1) {
-                            prod_64 = (segment32 * std::uint64_t(1441151882)) >> 25;
-                            current_digits32 = std::uint32_t(prod_64 >> 32);
+                            prod_64 = (segment32 * UINT64_C(1441151882)) >> 25;
+                            current_digits32 = static_cast<std::uint32_t>(prod_64 >> 32);
 
                             if (check_rounding_condition_inside_subsegment(
-                                    current_digits, std::uint32_t(prod_64), 8, has_more_segments)) {
+                                    current_digits, static_cast<std::uint32_t>(prod_64), 8, has_more_segments)) {
                                 if (++current_digits == 10) {
                                     *buffer = '1';
                                     ++buffer;
@@ -2376,11 +2375,11 @@ namespace boost { namespace charconv { namespace detail {
                             ++buffer;
                         }
                         else {
-                            prod_64 = (segment32 * std::uint64_t(450359963)) >> 29;
-                            current_digits32 = std::uint32_t(prod_64 >> 32);
+                            prod_64 = (segment32 * UINT64_C(450359963)) >> 29;
+                            current_digits32 = static_cast<std::uint32_t>(prod_64 >> 32);
 
                             if (check_rounding_condition_inside_subsegment(
-                                    current_digits, std::uint32_t(prod_64), 7, has_more_segments)) {
+                                    current_digits, static_cast<std::uint32_t>(prod_64), 7, has_more_segments)) {
                                 if (++current_digits == 100) {
                                     std::memcpy(buffer, "1.0", 3);
                                     buffer += 3;
@@ -2445,11 +2444,11 @@ namespace boost { namespace charconv { namespace detail {
             // MSVC doesn't know how to do Grandlund-Montgomery for large 64-bit integers.
             // 7922816251426433760 = ceil(2^96/10^10) = floor(2^96*(10^9/(10^19 - 1)))
             auto const first_subsegment =
-                std::uint32_t(wuint::umul128_upper64(first_segment, 7922816251426433760ull) >> 32);
+                static_cast<std::uint32_t>(wuint::umul128_upper64(first_segment, UINT64_C(7922816251426433760)) >> 32);
             auto const second_third_subsegments =
-                first_segment - first_subsegment * 10000000000ull;
-            BOOST_CHARCONV_ASSERT(first_subsegment < 1000000000);
-            BOOST_CHARCONV_ASSERT(second_third_subsegments < 10000000000ull);
+                first_segment - first_subsegment * UINT64_C(10000000000);
+            BOOST_CHARCONV_ASSERT(first_subsegment < UINT64_C(1000000000));
+            BOOST_CHARCONV_ASSERT(second_third_subsegments < UINT64_C(10000000000));
 
             int remaining_digits_in_the_current_subsegment;
             std::uint64_t prod; // holds intermediate values for digit generation.
@@ -2459,27 +2458,27 @@ namespace boost { namespace charconv { namespace detail {
                 // 9 digits (19 digits in total).
                 if (first_subsegment >= 100000000) {
                     // 1441151882 = ceil(2^57 / 10^8) + 1
-                    prod = first_subsegment * std::uint64_t(1441151882);
+                    prod = first_subsegment * UINT64_C(1441151882);
                     prod >>= 25;
                     remaining_digits_in_the_current_subsegment = 8;
                 }
                 // 7 or 8 digits (17 or 18 digits in total).
                 else if (first_subsegment >= 1000000) {
                     // 281474978 = ceil(2^48 / 10^6) + 1
-                    prod = first_subsegment * std::uint64_t(281474978);
+                    prod = first_subsegment * UINT64_C(281474978);
                     prod >>= 16;
                     remaining_digits_in_the_current_subsegment = 6;
                 }
                 // 5 or 6 digits (15 or 16 digits in total).
                 else if (first_subsegment >= 10000) {
                     // 429497 = ceil(2^32 / 10^4)
-                    prod = first_subsegment * std::uint64_t(429497);
+                    prod = first_subsegment * UINT64_C(429497);
                     remaining_digits_in_the_current_subsegment = 4;
                 }
                 // 3 or 4 digits (13 or 14 digits in total).
                 else if (first_subsegment >= 100) {
                     // 42949673 = ceil(2^32 / 10^2)
-                    prod = first_subsegment * std::uint64_t(42949673);
+                    prod = first_subsegment * UINT64_C(42949673);
                     remaining_digits_in_the_current_subsegment = 2;
                 }
                 // 1 or 2 digits (11 or 12 digits in total).
@@ -2488,7 +2487,7 @@ namespace boost { namespace charconv { namespace detail {
                     remaining_digits_in_the_current_subsegment = 0;
                 }
 
-                auto const initial_digits = std::uint32_t(prod >> 32);
+                auto const initial_digits = static_cast<std::uint32_t>(prod >> 32);
                 decimal_exponent += (11 - (initial_digits < 10 ? 1 : 0) +
                                      remaining_digits_in_the_current_subsegment);
 
@@ -2502,31 +2501,31 @@ namespace boost { namespace charconv { namespace detail {
                     for (; remaining_digits_in_the_current_subsegment > 0;
                          remaining_digits_in_the_current_subsegment -= 2) {
                         // Write next two digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                         buffer += 2;
                     }
                 }
                 else {
                     for (int i = 0; i < (remaining_digits - 1) / 2; ++i) {
                         // Write next two digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                         buffer += 2;
                     }
 
                     // Distinguish two cases of rounding.
                     if (remaining_digits_in_the_current_subsegment > remaining_digits) {
                         if ((remaining_digits & 1) != 0) {
-                            prod = std::uint32_t(prod) * std::uint64_t(10);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
                         }
                         else {
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
                         }
-                        current_digits = std::uint32_t(prod >> 32);
+                        current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                         if (check_rounding_condition_inside_subsegment(
-                                current_digits, std::uint32_t(prod),
+                                current_digits, static_cast<std::uint32_t>(prod),
                                 remaining_digits_in_the_current_subsegment - remaining_digits,
                                 second_third_subsegments != 0 || has_more_segments)) {
                             goto round_up;
@@ -2534,8 +2533,8 @@ namespace boost { namespace charconv { namespace detail {
                         goto print_last_digits;
                     }
                     else {
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        current_digits = std::uint32_t(prod >> 32);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                         if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                 current_digits,
@@ -2556,9 +2555,9 @@ namespace boost { namespace charconv { namespace detail {
 
                 if (remaining_digits == 1) 
                 {
-                    const auto prod128 = wuint::umul128(second_third_subsegments, 18446744074ull);
+                    const auto prod128 = wuint::umul128(second_third_subsegments, UINT64_C(18446744074));
 
-                    current_digits = std::uint32_t(prod128.high());
+                    current_digits = static_cast<std::uint32_t>(prod128.high());
                     auto const fractional_part64 = prod128.low() + 1;
                     // 18446744074 is even, so prod.low() cannot be equal to 2^64 - 1.
                     BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
@@ -2573,9 +2572,9 @@ namespace boost { namespace charconv { namespace detail {
                 } // remaining_digits == 1
                 else 
                 {
-                    const auto prod128 = wuint::umul128(second_third_subsegments, 184467440738ull);
+                    const auto prod128 = wuint::umul128(second_third_subsegments, UINT64_C(184467440738));
 
-                    current_digits = std::uint32_t(prod128.high());
+                    current_digits = static_cast<std::uint32_t>(prod128.high());
                     auto const fractional_part64 = prod128.low() + 1;
                     // 184467440738 is even, so prod.low() cannot be equal to 2^64 - 1.
                     BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
@@ -2594,36 +2593,36 @@ namespace boost { namespace charconv { namespace detail {
             // second_third_subsegments to find out a better magic number which allows us to
             // eliminate an additional shift.
             // 184467440737095517 = ceil(2^64/100) < floor(2^64*(10^8/(10^10 - 1))).
-            auto const second_subsegment = std::uint32_t(
-                wuint::umul128_upper64(second_third_subsegments, 184467440737095517ull));
+            auto const second_subsegment = static_cast<std::uint32_t>(
+                wuint::umul128_upper64(second_third_subsegments, UINT64_C(184467440737095517)));
             // Since the final result is of 2 digits, we can do the computation in 32-bits.
             auto const third_subsegment =
-                std::uint32_t(second_third_subsegments) - second_subsegment * 100;
+                static_cast<std::uint32_t>(second_third_subsegments) - second_subsegment * 100;
             BOOST_CHARCONV_ASSERT(second_subsegment < 100000000);
             BOOST_CHARCONV_ASSERT(third_subsegment < 100);
             {
                 std::uint32_t initial_digits;
                 if (first_subsegment != 0) {
-                    prod = ((second_subsegment * std::uint64_t(281474977)) >> 16) + 1;
+                    prod = ((second_subsegment * UINT64_C(281474977)) >> 16) + 1;
                     remaining_digits_in_the_current_subsegment = 6;
 
-                    initial_digits = std::uint32_t(prod >> 32);
+                    initial_digits = static_cast<std::uint32_t>(prod >> 32);
                     remaining_digits -= 2;
                 }
                 else {
                     // 7 or 8 digits (9 or 10 digits in total).
                     if (second_subsegment >= 1000000) {
-                        prod = (second_subsegment * std::uint64_t(281474978)) >> 16;
+                        prod = (second_subsegment * UINT64_C(281474978)) >> 16;
                         remaining_digits_in_the_current_subsegment = 6;
                     }
                     // 5 or 6 digits (7 or 8 digits in total).
                     else if (second_subsegment >= 10000) {
-                        prod = second_subsegment * std::uint64_t(429497);
+                        prod = second_subsegment * UINT64_C(429497);
                         remaining_digits_in_the_current_subsegment = 4;
                     }
                     // 3 or 4 digits (5 or 6 digits in total).
                     else if (second_subsegment >= 100) {
-                        prod = second_subsegment * std::uint64_t(42949673);
+                        prod = second_subsegment * UINT64_C(42949673);
                         remaining_digits_in_the_current_subsegment = 2;
                     }
                     // 1 or 2 digits (3 or 4 digits in total).
@@ -2632,7 +2631,7 @@ namespace boost { namespace charconv { namespace detail {
                         remaining_digits_in_the_current_subsegment = 0;
                     }
 
-                    initial_digits = std::uint32_t(prod >> 32);
+                    initial_digits = static_cast<std::uint32_t>(prod >> 32);
                     decimal_exponent += (3 - (initial_digits < 10 ? 1 : 0) +
                                          remaining_digits_in_the_current_subsegment);
 
@@ -2648,31 +2647,31 @@ namespace boost { namespace charconv { namespace detail {
                     for (; remaining_digits_in_the_current_subsegment > 0;
                          remaining_digits_in_the_current_subsegment -= 2) {
                         // Write next two digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                         buffer += 2;
                     }
                 }
                 else {
                     for (int i = 0; i < (remaining_digits - 1) / 2; ++i) {
                         // Write next two digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                         buffer += 2;
                     }
 
                     // Distinguish two cases of rounding.
                     if (remaining_digits_in_the_current_subsegment > remaining_digits) {
                         if ((remaining_digits & 1) != 0) {
-                            prod = std::uint32_t(prod) * std::uint64_t(10);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
                         }
                         else {
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
                         }
-                        current_digits = std::uint32_t(prod >> 32);
+                        current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                         if (check_rounding_condition_inside_subsegment(
-                                current_digits, std::uint32_t(prod),
+                                current_digits, static_cast<std::uint32_t>(prod),
                                 remaining_digits_in_the_current_subsegment - remaining_digits,
                                 third_subsegment != 0 || has_more_segments)) {
                             goto round_up;
@@ -2680,8 +2679,8 @@ namespace boost { namespace charconv { namespace detail {
                         goto print_last_digits;
                     }
                     else {
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        current_digits = std::uint32_t(prod >> 32);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                         if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                 current_digits,
@@ -2707,11 +2706,11 @@ namespace boost { namespace charconv { namespace detail {
                     }
                 }
                 else if (remaining_digits == 1) {
-                    prod = third_subsegment * std::uint64_t(429496730);
-                    current_digits = std::uint32_t(prod >> 32);
+                    prod = third_subsegment * UINT64_C(429496730);
+                    current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                     if (check_rounding_condition_inside_subsegment(
-                            current_digits, std::uint32_t(prod), 1, has_more_segments)) {
+                            current_digits, static_cast<std::uint32_t>(prod), 1, has_more_segments)) {
                         goto round_up_one_digit;
                     }
                     goto print_last_one_digit;
@@ -2741,12 +2740,12 @@ namespace boost { namespace charconv { namespace detail {
 
         {
             auto multiplier_index =
-                std::uint32_t(k + ExtendedCache::segment_length - ExtendedCache::k_min) /
-                std::uint32_t(ExtendedCache::segment_length);
+                static_cast<std::uint32_t>(k + ExtendedCache::segment_length - ExtendedCache::k_min) /
+                static_cast<std::uint32_t>(ExtendedCache::segment_length);
             int digits_in_the_second_segment;
             {
                 auto const new_k =
-                    ExtendedCache::k_min + int(multiplier_index) * ExtendedCache::segment_length;
+                    ExtendedCache::k_min + static_cast<int>(multiplier_index) * ExtendedCache::segment_length;
                 digits_in_the_second_segment = new_k - k;
                 k = new_k;
             }
@@ -2788,22 +2787,22 @@ namespace boost { namespace charconv { namespace detail {
                                                                cache_block_count);
 
                             if (digits_in_the_second_segment == 1) {
-                                auto prod = subsegment * std::uint64_t(429496730);
-                                prod = std::uint32_t(prod) * std::uint64_t(10);
-                                print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                auto prod = subsegment * UINT64_C(429496730);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                                print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 ++buffer;
                             }
                             else {
-                                auto prod = subsegment * std::uint64_t(42949673);
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                auto prod = subsegment * UINT64_C(42949673);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
                         } // digits_in_the_second_segment <= 2
                         else if (digits_in_the_second_segment <= 16) {
                             BOOST_CHARCONV_ASSERT(22 - digits_in_the_second_segment <= 19);
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
-                                compute_power(std::uint64_t(10), 22 - digits_in_the_second_segment),
+                                compute_power(UINT64_C(10), 22 - digits_in_the_second_segment),
                                 blocks, cache_block_count);
 
                             // When there are at most 9 digits, we can store them in 32-bits.
@@ -2816,19 +2815,19 @@ namespace boost { namespace charconv { namespace detail {
 
                                 std::uint64_t prod;
                                 if ((digits_in_the_second_segment & 1) != 0) {
-                                    prod = ((subsegment * std::uint64_t(720575941)) >> 24) + 1;
-                                    print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                    prod = ((subsegment * UINT64_C(720575941)) >> 24) + 1;
+                                    print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     ++buffer;
                                 }
                                 else {
-                                    prod = ((subsegment * std::uint64_t(450359963)) >> 20) + 1;
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = ((subsegment * UINT64_C(450359963)) >> 20) + 1;
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
                                 for (; digits_in_the_second_segment > 2;
                                      digits_in_the_second_segment -= 2) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
                             } // digits_in_the_second_segment <= 9
@@ -2844,11 +2843,11 @@ namespace boost { namespace charconv { namespace detail {
                                 // ceil(2^(64+14)/10^8) = 3022314549036573
                                 // = floor(2^(64+14)*(10^8/(10^16 - 1)))
                                 auto const first_subsegment =
-                                    std::uint32_t(wuint::umul128_upper64(first_second_subsegments,
-                                                                         3022314549036573ull) >>
+                                    static_cast<std::uint32_t>(wuint::umul128_upper64(first_second_subsegments,
+                                                                         UINT64_C(3022314549036573)) >>
                                                   14);
                                 auto const second_subsegment =
-                                    std::uint32_t(first_second_subsegments) -
+                                    static_cast<std::uint32_t>(first_second_subsegments) -
                                     100000000 * first_subsegment;
 
                                 // Print the first subsegment.
@@ -2858,20 +2857,20 @@ namespace boost { namespace charconv { namespace detail {
                                 // Print the second subsegment.
                                 // There are at least 2 digits in the second subsegment.
                                 auto prod =
-                                    ((second_subsegment * std::uint64_t(140737489)) >> 15) + 1;
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    ((second_subsegment * UINT64_C(140737489)) >> 15) + 1;
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                                 digits_in_the_second_segment -= 10;
 
                                 for (; digits_in_the_second_segment > 1;
                                      digits_in_the_second_segment -= 2) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
                                 if (digits_in_the_second_segment != 0) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(10);
-                                    print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                                    print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     ++buffer;
                                 }
                             }
@@ -2890,10 +2889,10 @@ namespace boost { namespace charconv { namespace detail {
                             // ceil(2^(64+14)/10^8) = 3022314549036573
                             // = floor(2^(64+14)*(10^8/(10^16 - 1)))
                             auto const second_subsegment =
-                                std::uint32_t(wuint::umul128_upper64(second_third_subsegments,
-                                                                     3022314549036573ull) >>
+                                static_cast<std::uint32_t>(wuint::umul128_upper64(second_third_subsegments,
+                                                                     UINT64_C(3022314549036573)) >>
                                               14);
-                            auto const third_subsegment = std::uint32_t(second_third_subsegments) -
+                            auto const third_subsegment = static_cast<std::uint32_t>(second_third_subsegments) -
                                                           100000000 * second_subsegment;
 
                             // Print the first subsegment (1 ~ 6 digits).
@@ -2902,28 +2901,28 @@ namespace boost { namespace charconv { namespace detail {
                                 digits_in_the_second_segment - 16;
                             switch (remaining_digits_in_the_current_subsegment) {
                             case 1:
-                                prod = first_subsegment * std::uint64_t(429496730);
+                                prod = first_subsegment * UINT64_C(429496730);
                                 goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_odd_remaining;
 
                             case 2:
-                                prod = first_subsegment * std::uint64_t(42949673);
+                                prod = first_subsegment * UINT64_C(42949673);
                                 goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_even_remaining;
 
                             case 3:
-                                prod = first_subsegment * std::uint64_t(4294968);
+                                prod = first_subsegment * UINT64_C(4294968);
                                 goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_odd_remaining;
 
                             case 4:
-                                prod = first_subsegment * std::uint64_t(429497);
+                                prod = first_subsegment * UINT64_C(429497);
                                 goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_even_remaining;
 
                             case 5:
-                                prod = ((first_subsegment * std::uint64_t(687195)) >> 4) + 1;
+                                prod = ((first_subsegment * UINT64_C(687195)) >> 4) + 1;
                                 goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_odd_remaining;
 
                             case 6:
-                                prod = first_subsegment * std::uint64_t(429497);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = first_subsegment * UINT64_C(429497);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                                 remaining_digits_in_the_current_subsegment = 4;
                                 goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_even_remaining;
@@ -2934,16 +2933,16 @@ namespace boost { namespace charconv { namespace detail {
 
                         second_segment22_more_than_16_digits_first_subsegment_no_rounding_odd_remaining
                             :
-                            prod = std::uint32_t(prod) * std::uint64_t(10);
-                            print_1_digit(std::uint32_t(prod >> 32), buffer);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                            print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                             ++buffer;
 
                         second_segment22_more_than_16_digits_first_subsegment_no_rounding_even_remaining
                             :
                             for (; remaining_digits_in_the_current_subsegment > 1;
                                  remaining_digits_in_the_current_subsegment -= 2) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
 
@@ -2972,21 +2971,21 @@ namespace boost { namespace charconv { namespace detail {
                                 // Convert subsegment into fixed-point fractional form where the
                                 // integer part is of one digit. The integer part is ignored.
                                 // 42949673 = ceil(2^32/10^2)
-                                auto prod = subsegment * std::uint64_t(42949673);
+                                auto prod = subsegment * UINT64_C(42949673);
 
                                 if (remaining_digits == 1) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(10);
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
                                     const bool has_further_digits_v = has_further_digits<1, 0, ExtendedCache>(significand, exp2_base, k, uconst1, uconst0);
-                                    if (check_rounding_condition_inside_subsegment(current_digits, std::uint32_t(prod), 1, has_further_digits_v))
+                                    if (check_rounding_condition_inside_subsegment(current_digits, static_cast<std::uint32_t>(prod), 1, has_further_digits_v))
                                     {
                                         goto round_up_one_digit;
                                     }
                                     goto print_last_one_digit;
                                 }
 
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                auto const next_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                auto const next_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 0) {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
@@ -3005,9 +3004,9 @@ namespace boost { namespace charconv { namespace detail {
                                 // Convert subsegment into fixed-point fractional form where the
                                 // integer part is of two digits. The integer part is ignored.
                                 // 429496730 = ceil(2^32/10^1)
-                                auto prod = subsegment * std::uint64_t(429496730);
-                                prod = std::uint32_t(prod) * std::uint64_t(10);
-                                auto const next_digits = std::uint32_t(prod >> 32);
+                                auto prod = subsegment * UINT64_C(429496730);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                                auto const next_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 0) {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
@@ -3035,7 +3034,7 @@ namespace boost { namespace charconv { namespace detail {
                             // Throw away all overlapping digits.
                             BOOST_CHARCONV_ASSERT(22 - digits_in_the_second_segment <= 19);
                             fixed_point_calculator<ExtendedCache::max_cache_blocks>::discard_upper(
-                                compute_power(std::uint64_t(10), 22 - digits_in_the_second_segment),
+                                compute_power(UINT64_C(10), 22 - digits_in_the_second_segment),
                                 blocks, cache_block_count);
 
                             // Get one more bit for potential rounding on the segment boundary.
@@ -3047,8 +3046,8 @@ namespace boost { namespace charconv { namespace detail {
                             digits_in_the_second_segment -= remaining_digits;
 
                             if ((remaining_digits & 1) != 0) {
-                                prod = ((segment * std::uint64_t(1441151881)) >> 26) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((segment * UINT64_C(1441151881)) >> 26) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 1) {
                                     goto second_segment22_at_most_9_digits_rounding;
@@ -3058,14 +3057,14 @@ namespace boost { namespace charconv { namespace detail {
                                 ++buffer;
                             }
                             else {
-                                prod = ((segment * std::uint64_t(1801439851)) >> 23) + 1;
-                                auto const next_digits = std::uint32_t(prod >> 32);
+                                prod = ((segment * UINT64_C(1801439851)) >> 23) + 1;
+                                auto const next_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 0) {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
                                             uint_with_known_number_of_digits<2>{next_digits}, [&] {
-                                                return std::uint32_t(prod) >=
+                                                return static_cast<std::uint32_t>(prod) >=
                                                            (additional_static_data_holder::
                                                                 fractional_part_rounding_thresholds32
                                                                     [digits_in_the_second_segment -
@@ -3088,19 +3087,19 @@ namespace boost { namespace charconv { namespace detail {
 
                             BOOST_CHARCONV_ASSERT(remaining_digits >= 3);
                             for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
 
                             if (digits_in_the_second_segment != 0) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
                                 remaining_digits = 0;
 
                             second_segment22_at_most_9_digits_rounding:
                                 if (check_rounding_condition_inside_subsegment(
-                                        current_digits, std::uint32_t(prod),
+                                        current_digits, static_cast<std::uint32_t>(prod),
                                         digits_in_the_second_segment, has_further_digits<1, 0, ExtendedCache>(significand, exp2_base, k, uconst1,
                                         uconst0))) {
                                     goto round_up;
@@ -3108,8 +3107,8 @@ namespace boost { namespace charconv { namespace detail {
                                 goto print_last_digits;
                             }
                             else {
-                                prod = std::uint32_t(prod) * std::uint64_t(200);
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(200);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
                                 auto const segment_boundary_rounding_bit =
                                     (current_digits & 1) != 0;
                                 current_digits >>= 1;
@@ -3137,10 +3136,10 @@ namespace boost { namespace charconv { namespace detail {
                         // allows us to eliminate an additional shift.
                         // 1844674407371 = ceil(2^64/10^7) = floor(2^64*(10^6/(10^13 - 1))).
                         auto const first_subsegment =
-                            std::uint32_t(boost::charconv::detail::umul128_upper64(
+                            static_cast<std::uint32_t>(boost::charconv::detail::umul128_upper64(
                                 first_second_subsegments, 1844674407371));
                         auto const second_subsegment =
-                            std::uint32_t(first_second_subsegments) - 10000000 * first_subsegment;
+                            static_cast<std::uint32_t>(first_second_subsegments) - 10000000 * first_subsegment;
 
                         int digits_in_the_second_subsegment;
 
@@ -3159,47 +3158,47 @@ namespace boost { namespace charconv { namespace detail {
 
                                 // When there is no overlapping digit.
                                 if (remaining_digits_in_the_current_subsegment == 6) {
-                                    prod = (first_subsegment * std::uint64_t(429497)) + 1;
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = (first_subsegment * UINT64_C(429497)) + 1;
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                     remaining_digits_in_the_current_subsegment -= 2;
                                 }
                                 // If there are overlapping digits, move all overlapping digits
                                 // into the integer part.
                                 else {
-                                    prod = ((first_subsegment * std::uint64_t(687195)) >> 4) + 1;
+                                    prod = ((first_subsegment * UINT64_C(687195)) >> 4) + 1;
                                     prod *= compute_power(
-                                        std::uint64_t(10),
+                                        UINT64_C(10),
                                         5 - remaining_digits_in_the_current_subsegment);
 
                                     if ((remaining_digits_in_the_current_subsegment & 1) != 0) {
-                                        prod = std::uint32_t(prod) * std::uint64_t(10);
-                                        print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                                        print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                         ++buffer;
                                     }
                                 }
 
                                 for (; remaining_digits_in_the_current_subsegment > 1;
                                      remaining_digits_in_the_current_subsegment -= 2) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
                             }
                             // The first subsegment is the last subsegment to print.
                             else {
                                 if ((remaining_digits & 1) != 0) {
-                                    prod = ((first_subsegment * std::uint64_t(687195)) >> 4) + 1;
+                                    prod = ((first_subsegment * UINT64_C(687195)) >> 4) + 1;
 
                                     // If there are overlapping digits, move all overlapping digits
                                     // into the integer part and then get the next digit.
                                     if (remaining_digits_in_the_current_subsegment < 6) {
                                         prod *= compute_power(
-                                            std::uint64_t(10),
+                                            UINT64_C(10),
                                             5 - remaining_digits_in_the_current_subsegment);
-                                        prod = std::uint32_t(prod) * std::uint64_t(10);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
                                     }
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
                                     remaining_digits_in_the_current_subsegment -= remaining_digits;
 
                                     if (remaining_digits == 1) {
@@ -3223,25 +3222,25 @@ namespace boost { namespace charconv { namespace detail {
                                             goto print_last_two_digits;
                                         }
 
-                                        prod = (first_subsegment * std::uint64_t(429497)) + 1;
+                                        prod = (first_subsegment * UINT64_C(429497)) + 1;
                                     }
                                     // Otherwise, convert the subsegment into a fixed-point
                                     // fraction form, move all overlapping digits into the
                                     // integer part, and then extract the next two digits.
                                     else {
                                         prod =
-                                            ((first_subsegment * std::uint64_t(687195)) >> 4) + 1;
+                                            ((first_subsegment * UINT64_C(687195)) >> 4) + 1;
                                         prod *= compute_power(
-                                            std::uint64_t(10),
+                                            UINT64_C(10),
                                             5 - remaining_digits_in_the_current_subsegment);
 
                                         if (remaining_digits == 0) {
                                             goto second_segment22_more_than_9_digits_first_subsegment_rounding_inside_subsegment;
                                         }
 
-                                        prod = std::uint32_t(prod) * std::uint64_t(100);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
                                     }
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
                                     remaining_digits_in_the_current_subsegment -= remaining_digits;
 
                                     if (remaining_digits == 2) {
@@ -3254,13 +3253,13 @@ namespace boost { namespace charconv { namespace detail {
 
                                 BOOST_CHARCONV_ASSERT(remaining_digits >= 3);
                                 if (remaining_digits > 4) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
 
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
                                 remaining_digits = 0;
 
                             second_segment22_more_than_9_digits_first_subsegment_rounding:
@@ -3276,7 +3275,7 @@ namespace boost { namespace charconv { namespace detail {
                                 second_segment22_more_than_9_digits_first_subsegment_rounding_inside_subsegment
                                     :
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod),
+                                            current_digits, static_cast<std::uint32_t>(prod),
                                             remaining_digits_in_the_current_subsegment,
                                             has_further_digits<1, 16, ExtendedCache>(significand, exp2_base, k, uconst1, uconst16))) {
                                         goto round_up;
@@ -3294,31 +3293,31 @@ namespace boost { namespace charconv { namespace detail {
                             // No rounding, continue.
                             if (remaining_digits > digits_in_the_second_subsegment) {
                                 auto prod =
-                                    ((second_subsegment * std::uint64_t(17592187)) >> 12) + 1;
+                                    ((second_subsegment * UINT64_C(17592187)) >> 12) + 1;
                                 remaining_digits -= digits_in_the_second_subsegment;
 
                                 // When there is no overlapping digit.
                                 if (digits_in_the_second_subsegment == 7) {
-                                    print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                    print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     ++buffer;
                                 }
                                 // If there are overlapping digits, move all overlapping digits
                                 // into the integer part.
                                 else {
-                                    prod *= compute_power(std::uint64_t(10),
+                                    prod *= compute_power(UINT64_C(10),
                                                           6 - digits_in_the_second_subsegment);
 
                                     if ((digits_in_the_second_subsegment & 1) != 0) {
-                                        prod = std::uint32_t(prod) * std::uint64_t(10);
-                                        print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                                        print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                         ++buffer;
                                     }
                                 }
 
                                 for (; digits_in_the_second_subsegment > 1;
                                      digits_in_the_second_subsegment -= 2) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
                             }
@@ -3328,16 +3327,16 @@ namespace boost { namespace charconv { namespace detail {
 
                                 if ((remaining_digits & 1) != 0) {
                                     prod =
-                                        ((second_subsegment * std::uint64_t(17592187)) >> 12) + 1;
+                                        ((second_subsegment * UINT64_C(17592187)) >> 12) + 1;
 
                                     // If there are overlapping digits, move all overlapping digits
                                     // into the integer part and then get the next digit.
                                     if (digits_in_the_second_subsegment < 7) {
-                                        prod *= compute_power(std::uint64_t(10),
+                                        prod *= compute_power(UINT64_C(10),
                                                               6 - digits_in_the_second_subsegment);
-                                        prod = std::uint32_t(prod) * std::uint64_t(10);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
                                     }
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
                                     digits_in_the_second_subsegment -= remaining_digits;
 
                                     if (remaining_digits == 1) {
@@ -3362,7 +3361,7 @@ namespace boost { namespace charconv { namespace detail {
                                         }
 
                                         prod =
-                                            ((second_subsegment * std::uint64_t(10995117)) >> 8) +
+                                            ((second_subsegment * UINT64_C(10995117)) >> 8) +
                                             1;
                                     }
                                     // Otherwise, convert the subsegment into a fixed-point
@@ -3370,18 +3369,18 @@ namespace boost { namespace charconv { namespace detail {
                                     // integer part, and then extract the next two digits.
                                     else {
                                         prod =
-                                            ((second_subsegment * std::uint64_t(17592187)) >> 12) +
+                                            ((second_subsegment * UINT64_C(17592187)) >> 12) +
                                             1;
-                                        prod *= compute_power(std::uint64_t(10),
+                                        prod *= compute_power(UINT64_C(10),
                                                               6 - digits_in_the_second_subsegment);
 
                                         if (remaining_digits == 0) {
                                             goto second_segment22_more_than_9_digits_second_subsegment_rounding_inside_subsegment;
                                         }
 
-                                        prod = std::uint32_t(prod) * std::uint64_t(100);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
                                     }
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
                                     digits_in_the_second_subsegment -= remaining_digits;
 
                                     if (remaining_digits == 2) {
@@ -3394,13 +3393,13 @@ namespace boost { namespace charconv { namespace detail {
 
                                 BOOST_CHARCONV_ASSERT(remaining_digits >= 3);
                                 if (remaining_digits > 4) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
 
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
                                 remaining_digits = 0;
 
                             second_segment22_more_than_9_digits_second_subsegment_rounding:
@@ -3415,7 +3414,7 @@ namespace boost { namespace charconv { namespace detail {
                                 second_segment22_more_than_9_digits_second_subsegment_rounding_inside_subsegment
                                     :
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod),
+                                            current_digits, static_cast<std::uint32_t>(prod),
                                             digits_in_the_second_subsegment, has_further_digits<1, 9, ExtendedCache>(significand, exp2_base, k,
                                             uconst1, uconst9))) {
                                         goto round_up;
@@ -3442,12 +3441,12 @@ namespace boost { namespace charconv { namespace detail {
 
                             std::uint64_t prod;
                             if ((remaining_digits & 1) != 0) {
-                                prod = ((third_subsegment * std::uint64_t(720575941)) >> 24) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((third_subsegment * UINT64_C(720575941)) >> 24) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 1) {
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod), 8,
+                                            current_digits, static_cast<std::uint32_t>(prod), 8,
                                             has_further_digits<1, 0, ExtendedCache>(significand, exp2_base, k, uconst1, uconst0))) {
                                         goto round_up_one_digit;
                                     }
@@ -3458,8 +3457,8 @@ namespace boost { namespace charconv { namespace detail {
                                 ++buffer;
                             }
                             else {
-                                prod = ((third_subsegment * std::uint64_t(450359963)) >> 20) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((third_subsegment * UINT64_C(450359963)) >> 20) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 2) {
                                     goto second_segment22_more_than_9_digits_third_subsegment_rounding;
@@ -3470,18 +3469,18 @@ namespace boost { namespace charconv { namespace detail {
                             }
 
                             for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
 
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                             if (remaining_digits < 9) {
                             second_segment22_more_than_9_digits_third_subsegment_rounding:
                                 if (check_rounding_condition_inside_subsegment(
-                                        current_digits, std::uint32_t(prod), 9 - remaining_digits,
+                                        current_digits, static_cast<std::uint32_t>(prod), 9 - remaining_digits,
                                         has_further_digits<1, 0, ExtendedCache>(significand, exp2_base, k, uconst1, uconst0))) {
                                     goto round_up_two_digits;
                                 }
@@ -3525,25 +3524,25 @@ namespace boost { namespace charconv { namespace detail {
                             remaining_digits -= digits_in_the_subsegment;
 
                             // Move all overlapping digits into the integer part.
-                            auto prod = ((subsegment * std::uint64_t(720575941)) >> 24) + 1;
+                            auto prod = ((subsegment * UINT64_C(720575941)) >> 24) + 1;
                             if (digits_in_the_subsegment < 9) {
                                 prod *=
-                                    compute_power(std::uint32_t(10), 8 - digits_in_the_subsegment);
+                                    compute_power(UINT32_C(10), 8 - digits_in_the_subsegment);
 
                                 if ((digits_in_the_subsegment & 1) != 0) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(10);
-                                    print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
+                                    print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     ++buffer;
                                 }
                             }
                             else {
-                                print_1_digit(std::uint32_t(prod >> 32), buffer);
+                                print_1_digit(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 ++buffer;
                             }
 
                             for (; digits_in_the_subsegment > 1; digits_in_the_subsegment -= 2) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
                         };
@@ -3564,7 +3563,7 @@ namespace boost { namespace charconv { namespace detail {
                                 std::uint64_t prod;
                                 if (digits_in_the_first_part == 9) {
                                     if ((remaining_digits & 1) != 0) {
-                                        prod = ((first_part * std::uint64_t(720575941)) >> 24) + 1;
+                                        prod = ((first_part * UINT64_C(720575941)) >> 24) + 1;
                                     }
                                     else {
                                         if (remaining_digits == 0) 
@@ -3579,27 +3578,27 @@ namespace boost { namespace charconv { namespace detail {
                                             goto print_last_two_digits;
                                         }
 
-                                        prod = ((first_part * std::uint64_t(450359963)) >> 20) + 1;
+                                        prod = ((first_part * UINT64_C(450359963)) >> 20) + 1;
                                     }
                                 }
                                 else {
-                                    prod = ((first_part * std::uint64_t(720575941)) >> 24) + 1;
-                                    prod *= compute_power(std::uint32_t(10),
+                                    prod = ((first_part * UINT64_C(720575941)) >> 24) + 1;
+                                    prod *= compute_power(UINT32_C(10),
                                                           8 - digits_in_the_first_part);
 
                                     if ((remaining_digits & 1) != 0) {
-                                        prod = std::uint32_t(prod) * std::uint64_t(10);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
                                     }
                                     else {
                                         if (remaining_digits == 0) {
                                             goto second_segment252_first_subsegment_rounding_inside_subsegment;
                                         }
 
-                                        prod = std::uint32_t(prod) * std::uint64_t(100);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
                                     }
                                 }
                                 digits_in_the_first_part -= remaining_digits;
-                                current_digits = std::uint32_t(prod >> 32);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits > 2) {
                                     if ((remaining_digits & 1) != 0) {
@@ -3612,20 +3611,20 @@ namespace boost { namespace charconv { namespace detail {
                                     }
 
                                     for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                                        print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                        print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                         buffer += 2;
                                     }
 
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
                                     remaining_digits = 0;
                                 }
 
                                 if (digits_in_the_first_part != 0) {
                                 second_segment252_first_subsegment_rounding_inside_subsegment:
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod),
+                                            current_digits, static_cast<std::uint32_t>(prod),
                                             digits_in_the_first_part, compute_has_further_digits<1, 9, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) 
                                     {
                                         goto round_up;
@@ -3634,7 +3633,7 @@ namespace boost { namespace charconv { namespace detail {
                                 else {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
-                                            uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
+                                            uint_with_known_number_of_digits<9>{static_cast<std::uint32_t>(second_part)},
                                             compute_has_further_digits<1, 0, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                         goto round_up;
                                     }
@@ -3657,40 +3656,40 @@ namespace boost { namespace charconv { namespace detail {
                             std::uint64_t prod;
                             if (digits_in_the_second_part == 9) {
                                 if ((remaining_digits & 1) != 0) {
-                                    prod = ((second_part * std::uint64_t(720575941)) >> 24) + 1;
+                                    prod = ((second_part * UINT64_C(720575941)) >> 24) + 1;
                                 }
                                 else {
                                     if (remaining_digits == 0) {
                                         if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                                 current_digits,
-                                                uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
+                                                uint_with_known_number_of_digits<9>{static_cast<std::uint32_t>(second_part)},
                                                 compute_has_further_digits<1, 0, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                             goto round_up_two_digits;
                                         }
                                         goto print_last_two_digits;
                                     }
 
-                                    prod = ((second_part * std::uint64_t(450359963)) >> 20) + 1;
+                                    prod = ((second_part * UINT64_C(450359963)) >> 20) + 1;
                                 }
                             }
                             else {
-                                prod = ((second_part * std::uint64_t(720575941)) >> 24) + 1;
+                                prod = ((second_part * UINT64_C(720575941)) >> 24) + 1;
                                 prod *=
-                                    compute_power(std::uint32_t(10), 8 - digits_in_the_second_part);
+                                    compute_power(UINT32_C(10), 8 - digits_in_the_second_part);
 
                                 if ((remaining_digits & 1) != 0) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(10);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
                                 }
                                 else {
                                     if (remaining_digits == 0) {
                                         goto second_segment252_second_subsegment_rounding_inside_subsegment;
                                     }
 
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
                                 }
                             }
                             digits_in_the_second_part -= remaining_digits;
-                            current_digits = std::uint32_t(prod >> 32);
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                             if (remaining_digits > 2) {
                                 if ((remaining_digits & 1) != 0) {
@@ -3703,20 +3702,20 @@ namespace boost { namespace charconv { namespace detail {
                                 }
 
                                 for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
 
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
                                 remaining_digits = 0;
                             }
 
                             if (digits_in_the_second_part != 0) {
                             second_segment252_second_subsegment_rounding_inside_subsegment:
                                 if (check_rounding_condition_inside_subsegment(
-                                        current_digits, std::uint32_t(prod),
+                                        current_digits, static_cast<std::uint32_t>(prod),
                                         digits_in_the_second_part, compute_has_further_digits<1, 0, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                     goto round_up;
                                 }
@@ -3763,8 +3762,8 @@ namespace boost { namespace charconv { namespace detail {
                                 int remaining_digits_in_the_current_subsegment =
                                     9 - remaining_digits;
                                 if ((remaining_digits & 1) != 0) {
-                                    prod = ((second_part * std::uint64_t(720575941)) >> 24) + 1;
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    prod = ((second_part * UINT64_C(720575941)) >> 24) + 1;
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                     if (remaining_digits == 1) {
                                         goto second_segment252_loop_second_subsegment_rounding;
@@ -3774,31 +3773,31 @@ namespace boost { namespace charconv { namespace detail {
                                     ++buffer;
                                 }
                                 else {
-                                    prod = ((second_part * std::uint64_t(450359963)) >> 20) + 1;
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    prod = ((second_part * UINT64_C(450359963)) >> 20) + 1;
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                     if (remaining_digits == 2) {
                                         goto second_segment252_loop_second_subsegment_rounding;
                                     }
 
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
 
                                 for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
 
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
                                 remaining_digits = 0;
 
                                 if (remaining_digits_in_the_current_subsegment != 0) {
                                 second_segment252_loop_second_subsegment_rounding:
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod),
+                                            current_digits, static_cast<std::uint32_t>(prod),
                                             remaining_digits_in_the_current_subsegment,
                                             compute_has_further_digits<1, 0, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                         goto round_up;
@@ -3820,8 +3819,8 @@ namespace boost { namespace charconv { namespace detail {
                             std::uint64_t prod;
                             int remaining_digits_in_the_current_subsegment = 9 - remaining_digits;
                             if ((remaining_digits & 1) != 0) {
-                                prod = ((first_part * std::uint64_t(720575941)) >> 24) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((first_part * UINT64_C(720575941)) >> 24) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 1) {
                                     goto second_segment252_loop_first_subsegment_rounding;
@@ -3831,31 +3830,31 @@ namespace boost { namespace charconv { namespace detail {
                                 ++buffer;
                             }
                             else {
-                                prod = ((first_part * std::uint64_t(450359963)) >> 20) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((first_part * UINT64_C(450359963)) >> 20) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 2) {
                                     goto second_segment252_loop_first_subsegment_rounding;
                                 }
 
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
 
                             for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
 
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
                             remaining_digits = 0;
 
                             if (remaining_digits_in_the_current_subsegment != 0) {
                             second_segment252_loop_first_subsegment_rounding:
                                 if (check_rounding_condition_inside_subsegment(
-                                        current_digits, std::uint32_t(prod),
+                                        current_digits, static_cast<std::uint32_t>(prod),
                                         remaining_digits_in_the_current_subsegment,
                                         compute_has_further_digits<1, 9, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                     goto round_up;
@@ -3865,7 +3864,7 @@ namespace boost { namespace charconv { namespace detail {
                             else {
                                 if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                         current_digits,
-                                        uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
+                                        uint_with_known_number_of_digits<9>{static_cast<std::uint32_t>(second_part)},
                                         compute_has_further_digits<1, 9, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                     goto round_up_two_digits;
                                 }
@@ -3901,8 +3900,8 @@ namespace boost { namespace charconv { namespace detail {
                                 power_of_10[16], blocks, cache_block_count);
 
                         const std::uint32_t first_subsegment =
-                            std::uint32_t(boost::charconv::detail::umul128_upper64(first_second_subsegments, UINT64_C(3022314549036573)) >> 14);
-                        const std::uint32_t second_subsegment = std::uint32_t(first_second_subsegments) -
+                            static_cast<std::uint32_t>(boost::charconv::detail::umul128_upper64(first_second_subsegments, UINT64_C(3022314549036573)) >> 14);
+                        const std::uint32_t second_subsegment = static_cast<std::uint32_t>(first_second_subsegments) -
                                                        100000000 * first_subsegment;
 
                         print_8_digits(first_subsegment, buffer);
@@ -3934,12 +3933,12 @@ namespace boost { namespace charconv { namespace detail {
 
                             std::uint64_t prod;
                             if ((remaining_digits & 1) != 0) {
-                                prod = ((third_subsegment * std::uint64_t(687195)) >> 4) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((third_subsegment * UINT64_C(687195)) >> 4) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 1) {
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod), 5,
+                                            current_digits, static_cast<std::uint32_t>(prod), 5,
                                             has_further_digits<1, 0, ExtendedCache>(significand, exp2_base, k, uconst1, uconst0))) {
                                         goto round_up_one_digit;
                                     }
@@ -3950,8 +3949,8 @@ namespace boost { namespace charconv { namespace detail {
                                 ++buffer;
                             }
                             else {
-                                prod = (third_subsegment * std::uint64_t(429497)) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = (third_subsegment * UINT64_C(429497)) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 2) {
                                     goto segment_loop22_more_than_16_digits_rounding;
@@ -3962,13 +3961,13 @@ namespace boost { namespace charconv { namespace detail {
                             }
 
                             if (remaining_digits > 4) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
 
                                 if (remaining_digits == 6) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                     if (check_rounding_condition_with_next_bit(
                                             current_digits, segment_boundary_rounding_bit,
@@ -3979,12 +3978,12 @@ namespace boost { namespace charconv { namespace detail {
                                 }
                             }
 
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                         segment_loop22_more_than_16_digits_rounding:
                             if (check_rounding_condition_inside_subsegment(
-                                    current_digits, std::uint32_t(prod), 6 - remaining_digits,
+                                    current_digits, static_cast<std::uint32_t>(prod), 6 - remaining_digits,
                                     has_further_digits<1, 0, ExtendedCache>(significand, exp2_base, k, uconst1, uconst0))) {
                                 goto round_up_two_digits;
                             }
@@ -4005,11 +4004,11 @@ namespace boost { namespace charconv { namespace detail {
                         // 3022314549036573 = ceil(2^78/10^8) = floor(2^78*(10^8/(10^16 -
                         // 1))).
                         auto const first_subsegment =
-                            std::uint32_t(boost::charconv::detail::umul128_upper64(
-                                              first_second_subsegments, 3022314549036573ull) >>
+                            static_cast<std::uint32_t>(boost::charconv::detail::umul128_upper64(
+                                              first_second_subsegments, UINT64_C(3022314549036573)) >>
                                           14);
-                        auto const second_subsegment = std::uint32_t(first_second_subsegments) -
-                                                       100000000 * first_subsegment;
+                        auto const second_subsegment = static_cast<std::uint32_t>(first_second_subsegments) -
+                                                       UINT32_C(100000000) * first_subsegment;
 
                         print_8_digits(first_subsegment, buffer);
                         buffer += 8;
@@ -4018,12 +4017,12 @@ namespace boost { namespace charconv { namespace detail {
                         // Second subsegment (8 digits).
                         std::uint64_t prod;
                         if ((remaining_digits & 1) != 0) {
-                            prod = ((second_subsegment * std::uint64_t(112589991)) >> 18) + 1;
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = ((second_subsegment * UINT64_C(112589991)) >> 18) + 1;
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                             if (remaining_digits == 1) {
                                 if (check_rounding_condition_inside_subsegment(
-                                        current_digits, std::uint32_t(prod), 7, has_further_digits<1, 6, ExtendedCache>(significand, exp2_base, k,
+                                        current_digits, static_cast<std::uint32_t>(prod), 7, has_further_digits<1, 6, ExtendedCache>(significand, exp2_base, k,
                                         uconst1, uconst6))) {
                                     goto round_up_one_digit;
                                 }
@@ -4034,8 +4033,8 @@ namespace boost { namespace charconv { namespace detail {
                             ++buffer;
                         }
                         else {
-                            prod = ((second_subsegment * std::uint64_t(140737489)) >> 15) + 1;
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = ((second_subsegment * UINT64_C(140737489)) >> 15) + 1;
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                             if (remaining_digits == 2) {
                                 goto segment_loop22_more_than_8_digits_rounding;
@@ -4046,18 +4045,18 @@ namespace boost { namespace charconv { namespace detail {
                         }
 
                         for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
-                            print_2_digits(std::uint32_t(prod >> 32), buffer);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                            print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                             buffer += 2;
                         }
 
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        current_digits = std::uint32_t(prod >> 32);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                         if (remaining_digits < 8) {
                         segment_loop22_more_than_8_digits_rounding:
                             if (check_rounding_condition_inside_subsegment(
-                                    current_digits, std::uint32_t(prod), 8 - remaining_digits,
+                                    current_digits, static_cast<std::uint32_t>(prod), 8 - remaining_digits,
                                     has_further_digits<1, 6, ExtendedCache>(significand, exp2_base, k, uconst1, uconst6))) {
                                 goto round_up_two_digits;
                             }
@@ -4084,12 +4083,12 @@ namespace boost { namespace charconv { namespace detail {
 
                         std::uint64_t prod;
                         if ((remaining_digits & 1) != 0) {
-                            prod = ((first_subsegment * std::uint64_t(112589991)) >> 18) + 1;
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = ((first_subsegment * UINT64_C(112589991)) >> 18) + 1;
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                             if (remaining_digits == 1) {
                                 if (check_rounding_condition_inside_subsegment(
-                                        current_digits, std::uint32_t(prod), 7, has_further_digits<1, 14, ExtendedCache>(significand, exp2_base, k,
+                                        current_digits, static_cast<std::uint32_t>(prod), 7, has_further_digits<1, 14, ExtendedCache>(significand, exp2_base, k,
                                         uconst1, uconst14))) {
                                     goto round_up_one_digit;
                                 }
@@ -4100,8 +4099,8 @@ namespace boost { namespace charconv { namespace detail {
                             ++buffer;
                         }
                         else {
-                            prod = ((first_subsegment * std::uint64_t(140737489)) >> 15) + 1;
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = ((first_subsegment * UINT64_C(140737489)) >> 15) + 1;
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                             if (remaining_digits == 2) {
                                 goto segment_loop22_at_most_8_digits_rounding;
@@ -4112,18 +4111,18 @@ namespace boost { namespace charconv { namespace detail {
                         }
 
                         for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
-                            print_2_digits(std::uint32_t(prod >> 32), buffer);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                            print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                             buffer += 2;
                         }
 
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        current_digits = std::uint32_t(prod >> 32);
+                        prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                        current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                         if (remaining_digits < 8) {
                         segment_loop22_at_most_8_digits_rounding:
                             if (check_rounding_condition_inside_subsegment(
-                                    current_digits, std::uint32_t(prod), 8 - remaining_digits,
+                                    current_digits, static_cast<std::uint32_t>(prod), 8 - remaining_digits,
                                     has_further_digits<1, 14, ExtendedCache>(significand, exp2_base, k, uconst1, uconst14))) {
                                 goto round_up_two_digits;
                             }
@@ -4166,20 +4165,20 @@ namespace boost { namespace charconv { namespace detail {
                             last_subsegment_pair >>= 1;
 
                             auto const first_part =
-                                std::uint32_t(last_subsegment_pair / power_of_10[9]);
+                                static_cast<std::uint32_t>(last_subsegment_pair / power_of_10[9]);
                             auto const second_part =
-                                std::uint32_t(last_subsegment_pair) - power_of_10[9] * first_part;
+                                static_cast<std::uint32_t>(last_subsegment_pair) - power_of_10[9] * first_part;
 
                             if (remaining_digits <= 9) {
                                 std::uint64_t prod;
 
                                 if ((remaining_digits & 1) != 0) {
-                                    prod = ((first_part * std::uint64_t(1441151881)) >> 25) + 1;
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    prod = ((first_part * UINT64_C(1441151881)) >> 25) + 1;
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                     if (remaining_digits == 1) {
                                         if (check_rounding_condition_inside_subsegment(
-                                                current_digits, std::uint32_t(prod), 8,
+                                                current_digits, static_cast<std::uint32_t>(prod), 8,
                                                 compute_has_further_digits<1, 9, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                             goto round_up_one_digit;
                                         }
@@ -4190,8 +4189,8 @@ namespace boost { namespace charconv { namespace detail {
                                     ++buffer;
                                 }
                                 else {
-                                    prod = ((first_part * std::uint64_t(450359963)) >> 20) + 1;
-                                    current_digits = std::uint32_t(prod >> 32);
+                                    prod = ((first_part * UINT64_C(450359963)) >> 20) + 1;
+                                    current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                     if (remaining_digits == 2) {
                                         goto segment_loop252_final18_first_part_rounding;
@@ -4202,18 +4201,18 @@ namespace boost { namespace charconv { namespace detail {
                                 }
 
                                 for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                                    print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                    prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                    print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                     buffer += 2;
                                 }
 
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits < 9) {
                                 segment_loop252_final18_first_part_rounding:
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod),
+                                            current_digits, static_cast<std::uint32_t>(prod),
                                             9 - remaining_digits, compute_has_further_digits<1, 9, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                         goto round_up_two_digits;
                                     }
@@ -4221,7 +4220,7 @@ namespace boost { namespace charconv { namespace detail {
                                 else {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
                                             current_digits,
-                                            uint_with_known_number_of_digits<9>{std::uint32_t(second_part)},
+                                            uint_with_known_number_of_digits<9>{static_cast<std::uint32_t>(second_part)},
                                             compute_has_further_digits<1, 0, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                         goto round_up_two_digits;
                                     }
@@ -4236,12 +4235,12 @@ namespace boost { namespace charconv { namespace detail {
                             std::uint64_t prod;
 
                             if ((remaining_digits & 1) != 0) {
-                                prod = ((second_part * std::uint64_t(1441151881)) >> 25) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((second_part * UINT64_C(1441151881)) >> 25) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 1) {
                                     if (check_rounding_condition_inside_subsegment(
-                                            current_digits, std::uint32_t(prod), 8,
+                                            current_digits, static_cast<std::uint32_t>(prod), 8,
                                             compute_has_further_digits<1, 0, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                         goto round_up_one_digit;
                                     }
@@ -4252,8 +4251,8 @@ namespace boost { namespace charconv { namespace detail {
                                 ++buffer;
                             }
                             else {
-                                prod = ((second_part * std::uint64_t(450359963)) >> 20) + 1;
-                                current_digits = std::uint32_t(prod >> 32);
+                                prod = ((second_part * UINT64_C(450359963)) >> 20) + 1;
+                                current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 2) {
                                     goto segment_loop252_final18_second_part_rounding;
@@ -4264,18 +4263,18 @@ namespace boost { namespace charconv { namespace detail {
                             }
 
                             for (int i = 0; i < (remaining_digits - 3) / 2; ++i) {
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer);
+                                prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                                print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
                                 buffer += 2;
                             }
 
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
-                            current_digits = std::uint32_t(prod >> 32);
+                            prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
+                            current_digits = static_cast<std::uint32_t>(prod >> 32);
 
                             if (remaining_digits < 9) {
                             segment_loop252_final18_second_part_rounding:
                                 if (check_rounding_condition_inside_subsegment(
-                                        current_digits, std::uint32_t(prod), 9 - remaining_digits,
+                                        current_digits, static_cast<std::uint32_t>(prod), 9 - remaining_digits,
                                         compute_has_further_digits<1, 0, ExtendedCache>, remaining_subsegment_pairs, significand, exp2_base, k)) {
                                     goto round_up_two_digits;
                                 }
@@ -4334,9 +4333,9 @@ namespace boost { namespace charconv { namespace detail {
         if (decimal_exponent >= 100) {
             // d1 = decimal_exponent / 10; d2 = decimal_exponent % 10;
             // 6554 = ceil(2^16 / 10)
-            auto prod = std::uint32_t(decimal_exponent) * std::uint32_t(6554);
+            auto prod = static_cast<std::uint32_t>(decimal_exponent) * UINT32_C(6554);
             auto d1 = prod >> 16;
-            prod = std::uint16_t(prod) * std::uint32_t(5); // * 10
+            prod = static_cast<std::uint16_t>(prod) * UINT32_C(5); // * 10
             auto d2 = prod >> 15;                          // >> 16
             print_2_digits(d1, buffer);
             print_1_digit(d2, buffer + 2);
