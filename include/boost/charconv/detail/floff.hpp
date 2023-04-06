@@ -774,7 +774,7 @@ namespace boost { namespace charconv { namespace detail {
         {
             const auto mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
 
-            auto const cache_block_count_index =
+            const auto cache_block_count_index =
                         mul_info.cache_block_count_index_offset +
                         static_cast<std::uint32_t>(e - ExtendedCache::e_min) / ExtendedCache::collapse_factor -
                         ExtendedCache::cache_block_count_offset_base;
@@ -814,7 +814,7 @@ namespace boost { namespace charconv { namespace detail {
                             sizeof(CacheBlockType) * ExtendedCache::max_cache_blocks);
             }
 
-            auto const mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
+            const auto mul_info = ExtendedCache::multiplier_index_info_table[multiplier_index];
 
             std::uint32_t number_of_leading_zero_blocks;
             std::uint32_t first_cache_block_index;
@@ -829,8 +829,8 @@ namespace boost { namespace charconv { namespace detail {
                 start_bit_index + cache_block_count * static_cast<int>(ExtendedCache::cache_bits_unit);
 
             // The source window starting/ending positions.
-            auto const src_start_bit_index = static_cast<int>(mul_info.first_cache_bit_index);
-            auto const src_end_bit_index =
+            const auto src_start_bit_index = static_cast<int>(mul_info.first_cache_bit_index);
+            const auto src_end_bit_index =
                 static_cast<int>(ExtendedCache::multiplier_index_info_table[multiplier_index + 1]
                         .first_cache_bit_index);
 
@@ -849,10 +849,10 @@ namespace boost { namespace charconv { namespace detail {
                 start_bit_index +=
                     number_of_leading_zero_blocks * static_cast<int>(ExtendedCache::cache_bits_unit);
 
-                auto const src_start_block_index =
+                const auto src_start_block_index =
                     static_cast<int>(static_cast<std::uint32_t>(src_start_bit_index) /
                         static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit));
-                auto const src_start_block_bit_index =
+                const auto src_start_block_bit_index =
                     src_start_block_index * static_cast<int>(ExtendedCache::cache_bits_unit);
 
                 first_cache_block_index = src_start_block_index;
@@ -897,7 +897,7 @@ namespace boost { namespace charconv { namespace detail {
             }
 
             // Load blocks.
-            auto const number_of_blocks_to_load = cache_block_count - number_of_leading_zero_blocks;
+            const auto number_of_blocks_to_load = cache_block_count - number_of_leading_zero_blocks;
             auto* const dst_ptr = blocks_ptr + number_of_leading_zero_blocks;
             if (bit_offset == 0) {
                 BOOST_IF_CONSTEXPR (ExtendedCache::max_cache_blocks == 3) {
@@ -1668,12 +1668,12 @@ namespace boost { namespace charconv { namespace detail {
 
             BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value) {
                 // Compute the base index.
-                auto const cache_index =
+                const auto cache_index =
                     static_cast<int>(static_cast<std::uint32_t>(k - detail::main_cache_holder::min_k) /
                         detail::compressed_cache_detail::compression_ratio);
-                auto const kb = cache_index * detail::compressed_cache_detail::compression_ratio +
+                const auto kb = cache_index * detail::compressed_cache_detail::compression_ratio +
                                 detail::main_cache_holder::min_k;
-                auto const offset = k - kb;
+                const auto offset = k - kb;
 
                 // Get the base cache.
                 const auto base_cache = detail::compressed_cache_detail::cache_holder_t::table[cache_index];
@@ -1686,19 +1686,19 @@ namespace boost { namespace charconv { namespace detail {
                     namespace wuint = detail::wuint;
 
                     // Compute the required amount of bit-shift.
-                    auto const alpha =
+                    const auto alpha =
                         log::floor_log2_pow10(kb + offset) - log::floor_log2_pow10(kb) - offset;
                     BOOST_CHARCONV_ASSERT(alpha > 0 && alpha < 64);
 
                     // Try to recover the real cache.
                     const auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
                     auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
-                    auto const middle_low = wuint::umul128(base_cache.low(), pow5);
+                    const auto middle_low = wuint::umul128(base_cache.low(), pow5);
 
                     recovered_cache += middle_low.high();
 
-                    auto const high_to_middle = recovered_cache.high() << (64 - alpha);
-                    auto const middle_to_low = recovered_cache.low() << (64 - alpha);
+                    const auto high_to_middle = recovered_cache.high() << (64 - alpha);
+                    const auto middle_to_low = recovered_cache.low() << (64 - alpha);
 
                     recovered_cache =
                         wuint::uint128{(recovered_cache.low() >> alpha) | high_to_middle,
@@ -2143,7 +2143,7 @@ namespace boost { namespace charconv { namespace detail {
     // precision means the number of decimal significand digits minus 1.
     // Assumes round-to-nearest, tie-to-even rounding.
     template <class MainCache = main_cache_full, class ExtendedCache>
-    BOOST_CHARCONV_SAFEBUFFERS char* floff(double const x, int const precision, char* buffer, boost::charconv::chars_format fmt) noexcept 
+    BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char* buffer, boost::charconv::chars_format fmt) noexcept 
     {
         BOOST_CHARCONV_ASSERT(precision >= 0);
         using namespace detail;
@@ -2214,13 +2214,13 @@ namespace boost { namespace charconv { namespace detail {
 
         {
             // Compute the first digit segment.
-            auto const main_cache = MainCache::template get_cache<ieee754_binary64>(k);
-            int const beta = e + log::floor_log2_pow10(k);
+            const auto main_cache = MainCache::template get_cache<ieee754_binary64>(k);
+            const int beta = e + log::floor_log2_pow10(k);
 
             // Integer check is okay for binary64.
             //auto [first_segment, has_more_segments] 
               compute_mul_result segments = [&] {
-                auto const r = wuint::umul192_upper128(significand << beta, main_cache);
+                const auto r = wuint::umul192_upper128(significand << beta, main_cache);
                 return compute_mul_result{r.high(), r.low() != 0};
             }();
             auto first_segment = segments.result;
@@ -2443,9 +2443,9 @@ namespace boost { namespace charconv { namespace detail {
 
             // MSVC doesn't know how to do Grandlund-Montgomery for large 64-bit integers.
             // 7922816251426433760 = ceil(2^96/10^10) = floor(2^96*(10^9/(10^19 - 1)))
-            auto const first_subsegment =
+            const auto first_subsegment =
                 static_cast<std::uint32_t>(wuint::umul128_upper64(first_segment, UINT64_C(7922816251426433760)) >> 32);
-            auto const second_third_subsegments =
+            const auto second_third_subsegments =
                 first_segment - first_subsegment * UINT64_C(10000000000);
             BOOST_CHARCONV_ASSERT(first_subsegment < UINT64_C(1000000000));
             BOOST_CHARCONV_ASSERT(second_third_subsegments < UINT64_C(10000000000));
@@ -2487,7 +2487,7 @@ namespace boost { namespace charconv { namespace detail {
                     remaining_digits_in_the_current_subsegment = 0;
                 }
 
-                auto const initial_digits = static_cast<std::uint32_t>(prod >> 32);
+                const auto initial_digits = static_cast<std::uint32_t>(prod >> 32);
                 decimal_exponent += (11 - (initial_digits < 10 ? 1 : 0) +
                                      remaining_digits_in_the_current_subsegment);
 
@@ -2558,7 +2558,7 @@ namespace boost { namespace charconv { namespace detail {
                     const auto prod128 = wuint::umul128(second_third_subsegments, UINT64_C(18446744074));
 
                     current_digits = static_cast<std::uint32_t>(prod128.high());
-                    auto const fractional_part64 = prod128.low() + 1;
+                    const auto fractional_part64 = prod128.low() + 1;
                     // 18446744074 is even, so prod.low() cannot be equal to 2^64 - 1.
                     BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
 
@@ -2575,7 +2575,7 @@ namespace boost { namespace charconv { namespace detail {
                     const auto prod128 = wuint::umul128(second_third_subsegments, UINT64_C(184467440738));
 
                     current_digits = static_cast<std::uint32_t>(prod128.high());
-                    auto const fractional_part64 = prod128.low() + 1;
+                    const auto fractional_part64 = prod128.low() + 1;
                     // 184467440738 is even, so prod.low() cannot be equal to 2^64 - 1.
                     BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
 
@@ -2593,10 +2593,10 @@ namespace boost { namespace charconv { namespace detail {
             // second_third_subsegments to find out a better magic number which allows us to
             // eliminate an additional shift.
             // 184467440737095517 = ceil(2^64/100) < floor(2^64*(10^8/(10^10 - 1))).
-            auto const second_subsegment = static_cast<std::uint32_t>(
+            const auto second_subsegment = static_cast<std::uint32_t>(
                 wuint::umul128_upper64(second_third_subsegments, UINT64_C(184467440737095517)));
             // Since the final result is of 2 digits, we can do the computation in 32-bits.
-            auto const third_subsegment =
+            const auto third_subsegment =
                 static_cast<std::uint32_t>(second_third_subsegments) - second_subsegment * 100;
             BOOST_CHARCONV_ASSERT(second_subsegment < 100000000);
             BOOST_CHARCONV_ASSERT(third_subsegment < 100);
@@ -2744,12 +2744,12 @@ namespace boost { namespace charconv { namespace detail {
                 static_cast<std::uint32_t>(ExtendedCache::segment_length);
             int digits_in_the_second_segment;
             {
-                auto const new_k =
+                const auto new_k =
                     ExtendedCache::k_min + static_cast<int>(multiplier_index) * ExtendedCache::segment_length;
                 digits_in_the_second_segment = new_k - k;
                 k = new_k;
             }
-            auto const exp2_base = e + boost::core::countr_zero(significand);
+            const auto exp2_base = e + boost::core::countr_zero(significand);
 
             using cache_block_type = typename std::decay<decltype(ExtendedCache::cache[0])>::type;
             cache_block_type blocks[ExtendedCache::max_cache_blocks];
@@ -2808,7 +2808,7 @@ namespace boost { namespace charconv { namespace detail {
                             // When there are at most 9 digits, we can store them in 32-bits.
                             if (digits_in_the_second_segment <= 9) {
                                 // The number of overlapping digits is in the range 13 ~ 19.
-                                auto const subsegment =
+                                const auto subsegment =
                                     fixed_point_calculator<ExtendedCache::max_cache_blocks>::
                                         generate_and_discard_lower(power_of_10[9], blocks,
                                                                    cache_block_count);
@@ -2833,7 +2833,7 @@ namespace boost { namespace charconv { namespace detail {
                             } // digits_in_the_second_segment <= 9
                             else {
                                 // The number of digits in the segment is in the range 10 ~ 16.
-                                auto const first_second_subsegments =
+                                const auto first_second_subsegments =
                                     fixed_point_calculator<ExtendedCache::max_cache_blocks>::
                                         generate_and_discard_lower(power_of_10[16], blocks,
                                                                    cache_block_count);
@@ -2842,11 +2842,11 @@ namespace boost { namespace charconv { namespace detail {
                                 // 2 ~ 8 digits.
                                 // ceil(2^(64+14)/10^8) = 3022314549036573
                                 // = floor(2^(64+14)*(10^8/(10^16 - 1)))
-                                auto const first_subsegment =
+                                const auto first_subsegment =
                                     static_cast<std::uint32_t>(wuint::umul128_upper64(first_second_subsegments,
                                                                          UINT64_C(3022314549036573)) >>
                                                   14);
-                                auto const second_subsegment =
+                                const auto second_subsegment =
                                     static_cast<std::uint32_t>(first_second_subsegments) -
                                     100000000 * first_subsegment;
 
@@ -2877,22 +2877,22 @@ namespace boost { namespace charconv { namespace detail {
                         } // digits_in_the_second_segment <= 16
                         else {
                             // The number of digits in the segment is in the range 17 ~ 22.
-                            auto const first_subsegment =
+                            const auto first_subsegment =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
                                     power_of_10[6], blocks, cache_block_count);
 
-                            auto const second_third_subsegments =
+                            const auto second_third_subsegments =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::
                                     generate_and_discard_lower(power_of_10[16], blocks,
                                                                cache_block_count);
 
                             // ceil(2^(64+14)/10^8) = 3022314549036573
                             // = floor(2^(64+14)*(10^8/(10^16 - 1)))
-                            auto const second_subsegment =
+                            const auto second_subsegment =
                                 static_cast<std::uint32_t>(wuint::umul128_upper64(second_third_subsegments,
                                                                      UINT64_C(3022314549036573)) >>
                                               14);
-                            auto const third_subsegment = static_cast<std::uint32_t>(second_third_subsegments) -
+                            const auto third_subsegment = static_cast<std::uint32_t>(second_third_subsegments) -
                                                           100000000 * second_subsegment;
 
                             // Print the first subsegment (1 ~ 6 digits).
@@ -2985,7 +2985,7 @@ namespace boost { namespace charconv { namespace detail {
                                 }
 
                                 prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
-                                auto const next_digits = static_cast<std::uint32_t>(prod >> 32);
+                                const auto next_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 0) {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
@@ -3006,7 +3006,7 @@ namespace boost { namespace charconv { namespace detail {
                                 // 429496730 = ceil(2^32/10^1)
                                 auto prod = subsegment * UINT64_C(429496730);
                                 prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
-                                auto const next_digits = static_cast<std::uint32_t>(prod >> 32);
+                                const auto next_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 0) {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
@@ -3058,7 +3058,7 @@ namespace boost { namespace charconv { namespace detail {
                             }
                             else {
                                 prod = ((segment * UINT64_C(1801439851)) >> 23) + 1;
-                                auto const next_digits = static_cast<std::uint32_t>(prod >> 32);
+                                const auto next_digits = static_cast<std::uint32_t>(prod >> 32);
 
                                 if (remaining_digits == 0) {
                                     if (check_rounding_condition_subsegment_boundary_with_next_subsegment(
@@ -3109,7 +3109,7 @@ namespace boost { namespace charconv { namespace detail {
                             else {
                                 prod = static_cast<std::uint32_t>(prod) * UINT64_C(200);
                                 current_digits = static_cast<std::uint32_t>(prod >> 32);
-                                auto const segment_boundary_rounding_bit =
+                                const auto segment_boundary_rounding_bit =
                                     (current_digits & 1) != 0;
                                 current_digits >>= 1;
 
@@ -3135,10 +3135,10 @@ namespace boost { namespace charconv { namespace detail {
                         // first_second_subsegments to find out a better magic number which
                         // allows us to eliminate an additional shift.
                         // 1844674407371 = ceil(2^64/10^7) = floor(2^64*(10^6/(10^13 - 1))).
-                        auto const first_subsegment =
+                        const auto first_subsegment =
                             static_cast<std::uint32_t>(boost::charconv::detail::umul128_upper64(
                                 first_second_subsegments, 1844674407371));
-                        auto const second_subsegment =
+                        const auto second_subsegment =
                             static_cast<std::uint32_t>(first_second_subsegments) - 10000000 * first_subsegment;
 
                         int digits_in_the_second_subsegment;
@@ -4003,11 +4003,11 @@ namespace boost { namespace charconv { namespace detail {
 
                         // 3022314549036573 = ceil(2^78/10^8) = floor(2^78*(10^8/(10^16 -
                         // 1))).
-                        auto const first_subsegment =
+                        const auto first_subsegment =
                             static_cast<std::uint32_t>(boost::charconv::detail::umul128_upper64(
                                               first_second_subsegments, UINT64_C(3022314549036573)) >>
                                           14);
-                        auto const second_subsegment = static_cast<std::uint32_t>(first_second_subsegments) -
+                        const auto second_subsegment = static_cast<std::uint32_t>(first_second_subsegments) -
                                                        UINT32_C(100000000) * first_subsegment;
 
                         print_8_digits(first_subsegment, buffer);
@@ -4143,7 +4143,7 @@ namespace boost { namespace charconv { namespace detail {
                          --remaining_subsegment_pairs) {
                         // No rounding, continue.
                         if (remaining_digits > 18) {
-                            auto const subsegment_pair =
+                            const auto subsegment_pair =
                                 fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(
                                     power_of_10[18], blocks, cache_block_count);
                             const auto first_part = static_cast<std::uint32_t>(subsegment_pair / power_of_10[9]);
@@ -4164,9 +4164,9 @@ namespace boost { namespace charconv { namespace detail {
                                 ((last_subsegment_pair & 1) != 0);
                             last_subsegment_pair >>= 1;
 
-                            auto const first_part =
+                            const auto first_part =
                                 static_cast<std::uint32_t>(last_subsegment_pair / power_of_10[9]);
-                            auto const second_part =
+                            const auto second_part =
                                 static_cast<std::uint32_t>(last_subsegment_pair) - power_of_10[9] * first_part;
 
                             if (remaining_digits <= 9) {
