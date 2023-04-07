@@ -599,8 +599,8 @@ struct fixed_point_calculator
 # pragma warning(pop)
 #endif
 
-namespace {
-struct additional_static_data_holder 
+template <bool b>
+struct additional_static_data_holder_impl
 {
     static constexpr char radix_100_table[] = {
         '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', //
@@ -642,14 +642,13 @@ struct additional_static_data_holder
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
-constexpr char additional_static_data_holder::radix_100_table[];
-
-constexpr std::uint32_t additional_static_data_holder::fractional_part_rounding_thresholds32[];
-
-constexpr std::uint64_t additional_static_data_holder::fractional_part_rounding_thresholds64[];
+template <bool b> constexpr char additional_static_data_holder_impl<b>::radix_100_table[];
+template <bool b> constexpr std::uint32_t additional_static_data_holder_impl<b>::fractional_part_rounding_thresholds32[];
+template <bool b> constexpr std::uint64_t additional_static_data_holder_impl<b>::fractional_part_rounding_thresholds64[];
 
 #endif
-} // Anonymous namespace
+
+using additional_static_data_holder = additional_static_data_holder_impl<true>;
 
 struct compute_mul_result 
 {
@@ -1185,8 +1184,8 @@ inline void print_9_digits(std::uint32_t n, char* buffer) noexcept
     }
 }
 
-namespace {
-struct main_cache_holder 
+template <bool b>
+struct main_cache_holder_impl
 {
     using cache_entry_type = boost::charconv::detail::uint128;
     static constexpr int cache_bits = 128;
@@ -1508,13 +1507,14 @@ struct main_cache_holder
 #if (defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)) || \
     (defined(__clang_major__) && __clang_major__ == 5)
 
-constexpr int main_cache_holder::cache_bits;
-constexpr int main_cache_holder::min_k;
-constexpr int main_cache_holder::max_k;
-constexpr main_cache_holder::cache_entry_type main_cache_holder::cache[];
+template <bool b> constexpr int main_cache_holder_impl<b>::cache_bits;
+template <bool b> constexpr int main_cache_holder_impl<b>::min_k;
+template <bool b> constexpr int main_cache_holder_impl<b>::max_k;
+template <bool b> constexpr typename main_cache_holder_impl<b>::cache_entry_type main_cache_holder_impl<b>::cache[];
 
 #endif
-} // Anonymous namespace
+
+using main_cache_holder = main_cache_holder_impl<true>;
 
 // Compressed cache for double
 struct compressed_cache_detail 
@@ -1635,8 +1635,8 @@ struct main_cache_compressed
     }
 };
 
-namespace {
-struct extended_cache_long 
+template <bool b>
+struct extended_cache_long_impl
 {
     static constexpr std::size_t max_cache_blocks = 3;
     static constexpr std::size_t cache_bits_unit = 64;
@@ -1778,18 +1778,19 @@ struct extended_cache_long
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
-constexpr std::size_t extended_cache_long::max_cache_blocks;
-constexpr std::size_t extended_cache_long::cache_bits_unit;
-constexpr int extended_cache_long::segment_length;
-constexpr bool extended_cache_long::constant_block_count;
-constexpr int extended_cache_long::e_min;
-constexpr int extended_cache_long::k_min;
-constexpr int extended_cache_long::cache_bit_index_offset_base;
-constexpr std::uint64_t extended_cache_long::cache[];
-constexpr extended_cache_long::multiplier_index_info extended_cache_long::multiplier_index_info_table[];
+template <bool b> constexpr std::size_t extended_cache_long_impl<b>::max_cache_blocks;
+template <bool b> constexpr std::size_t extended_cache_long_impl<b>::cache_bits_unit;
+template <bool b> constexpr int extended_cache_long_impl<b>::segment_length;
+template <bool b> constexpr bool extended_cache_long_impl<b>::constant_block_count;
+template <bool b> constexpr int extended_cache_long_impl<b>::e_min;
+template <bool b> constexpr int extended_cache_long_impl<b>::k_min;
+template <bool b> constexpr int extended_cache_long_impl<b>::cache_bit_index_offset_base;
+template <bool b> constexpr std::uint64_t extended_cache_long_impl<b>::cache[];
+template <bool b> constexpr typename extended_cache_long_impl<b>::multiplier_index_info extended_cache_long_impl<b>::multiplier_index_info_table[];
 
 #endif
-} // Anonymous namespace
+
+using extended_cache_long = extended_cache_long_impl<true>;
 
 struct extended_cache_compact 
 {
