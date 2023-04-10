@@ -4,6 +4,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/dragonbox.hpp>
 #include <boost/charconv/to_chars.hpp>
 #include <limits>
 #include <cstdio>
@@ -329,9 +330,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
     {
         const auto abs_value = std::abs(value);
-        constexpr double max_value = static_cast<double>((std::numeric_limits<std::uint64_t>::max)());
-        constexpr double min_value = 1.0 / max_value;
-        if (abs_value < max_value && abs_value > min_value)
+        if (abs_value > 1e16 && abs_value < 1e20)
         {
             if (value < 0)
             {
@@ -339,9 +338,18 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
             }
             return boost::charconv::to_chars(first, last, static_cast<std::uint64_t>(abs_value));
         }
+        else if (abs_value > 1e-288 && abs_value < 1e288)
+        {
+            auto* ptr = jkj::dragonbox::to_chars(value, first);
+            return { ptr, 0 };
+        }
         else
         {
-            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, std::numeric_limits<double>::max_digits10 - 1, first, fmt);
+            if (precision == -1)
+            {
+                precision = std::numeric_limits<double>::max_digits10 - 1;
+            }
+            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
             return { ptr, 0 };
         }
     }
