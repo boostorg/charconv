@@ -20,51 +20,41 @@ namespace boost { namespace charconv { namespace detail {
 // so we avoid using those built-ins. That said, they are still useful for
 // implementing 64-bit x 64-bit -> 128-bit multiplication.
 
-class uint128 
+struct uint128 
 {
-public:
-    uint128() = default;
-
-    constexpr uint128(std::uint64_t high, std::uint64_t low) noexcept
-        : high_{high}, low_{low} {}
-
-    constexpr std::uint64_t high() const noexcept { return high_; }
-    constexpr std::uint64_t low() const noexcept { return low_; }
+    std::uint64_t high;
+    std::uint64_t low;
 
     uint128& operator+=(std::uint64_t n) & noexcept 
     {
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
         
         unsigned long long carry;
-        low_ = __builtin_addcll(low_, n, 0, &carry);
-        high_ = __builtin_addcll(high_, 0, carry, &carry);
+        low = __builtin_addcll(low, n, 0, &carry);
+        high = __builtin_addcll(high, 0, carry, &carry);
         
         #elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
         
         unsigned long long result;
-        auto carry = __builtin_ia32_addcarryx_u64(0, low_, n, &result);
-        low_ = result;
-        __builtin_ia32_addcarryx_u64(carry, high_, 0, &result);
-        high_ = result;
+        auto carry = __builtin_ia32_addcarryx_u64(0, low, n, &result);
+        low = result;
+        __builtin_ia32_addcarryx_u64(carry, high, 0, &result);
+        high = result;
         
         #elif defined(_MSC_VER) && defined(_M_X64)
         
-        auto carry = _addcarry_u64(0, low_, n, &low_);
-        _addcarry_u64(carry, high_, 0, &high_);
+        auto carry = _addcarry_u64(0, low, n, &low);
+        _addcarry_u64(carry, high, 0, &high);
         
         #else
         
-        auto sum = low_ + n;
-        high_ += (sum < low_ ? 1 : 0);
-        low_ = sum;
+        auto sum = low + n;
+        high += (sum < low ? 1 : 0);
+        low = sum;
         
         #endif
         return *this;
     }
-
-private:
-    std::uint64_t high_;
-    std::uint64_t low_;
 };
 
 static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept 
@@ -151,8 +141,8 @@ BOOST_CHARCONV_SAFEBUFFERS inline std::uint64_t umul128_upper64(std::uint64_t x,
 // unsigned integer.
 BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul192_upper128(std::uint64_t x, uint128 y) noexcept
 {
-    auto r = umul128(x, y.high());
-    r += umul128_upper64(x, y.low());
+    auto r = umul128(x, y.high);
+    r += umul128_upper64(x, y.low);
     return r;
 }
 
@@ -181,9 +171,9 @@ inline std::uint64_t umul96_upper64(std::uint32_t x, std::uint64_t y) noexcept
 // unsigned integer.
 BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul192_lower128(std::uint64_t x, uint128 y) noexcept
 {
-    auto high = x * y.high();
-    auto high_low = umul128(x, y.low());
-    return {high + high_low.high(), high_low.low()};
+    auto high = x * y.high;
+    auto highlow = umul128(x, y.low);
+    return {high + highlow.high, highlow.low};
 }
 
 // Get lower 64-bits of multiplication of a 32-bit unsigned integer and a 64-bit

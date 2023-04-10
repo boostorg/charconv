@@ -461,22 +461,22 @@ struct fixed_point_calculator
             {
             case 3:
                 mul_result = umul128(blocks_ptr[2], multiplier);
-                blocks_ptr[2] = mul_result.low();
-                carry = mul_result.high();
+                blocks_ptr[2] = mul_result.low;
+                carry = mul_result.high;
                 BOOST_FALLTHROUGH;
 
             case 2:
                 mul_result = umul128(blocks_ptr[1], multiplier);
                 mul_result += carry;
-                blocks_ptr[1] = mul_result.low();
-                carry = mul_result.high();
+                blocks_ptr[1] = mul_result.low;
+                carry = mul_result.high;
                 BOOST_FALLTHROUGH;
 
             case 1:
                 mul_result = umul128(blocks_ptr[0], multiplier);
                 mul_result += carry;
-                blocks_ptr[0] = mul_result.low();
-                return mul_result.high();
+                blocks_ptr[0] = mul_result.low;
+                return mul_result.high;
 
             default:
                 BOOST_UNREACHABLE_RETURN(carry);
@@ -484,14 +484,14 @@ struct fixed_point_calculator
         }
 
         auto mul_result = umul128(blocks_ptr[number_of_blocks - 1], multiplier);
-        blocks_ptr[number_of_blocks - 1] = mul_result.low();
-        auto carry = mul_result.high();
+        blocks_ptr[number_of_blocks - 1] = mul_result.low;
+        auto carry = mul_result.high;
         for (std::size_t i = 1; i < number_of_blocks; ++i) 
         {
             mul_result = umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
             mul_result += carry;
-            blocks_ptr[number_of_blocks - i - 1] = mul_result.low();
-            carry = mul_result.high();
+            blocks_ptr[number_of_blocks - i - 1] = mul_result.low;
+            carry = mul_result.high;
         }
 
         return MultiplierType(carry);
@@ -517,27 +517,27 @@ struct fixed_point_calculator
                 if (number_of_blocks > 2)
                 {
                     mul_result = umul128(multiplier, blocks_ptr[2]);
-                    blocks_ptr[2] = mul_result.low();
-                    carry = mul_result.high();
+                    blocks_ptr[2] = mul_result.low;
+                    carry = mul_result.high;
                 }
 
                 mul_result = umul128(multiplier, blocks_ptr[1]);
                 mul_result += carry;
-                blocks_ptr[1] = mul_result.low();
-                blocks_ptr[0] += mul_result.high();
+                blocks_ptr[1] = mul_result.low;
+                blocks_ptr[0] += mul_result.high;
             }
             else 
             {
                 auto mul_result = umul128(multiplier, blocks_ptr[number_of_blocks - 1]);
-                blocks_ptr[number_of_blocks - 1] = mul_result.low();
-                auto carry = mul_result.high();
+                blocks_ptr[number_of_blocks - 1] = mul_result.low;
+                auto carry = mul_result.high;
 
                 for (std::uint8_t i = 2; i < number_of_blocks; ++i) 
                 {
                     mul_result = umul128(multiplier, blocks_ptr[number_of_blocks - i]);
                     mul_result += carry;
-                    blocks_ptr[number_of_blocks - i] = mul_result.low();
-                    carry = mul_result.high();
+                    blocks_ptr[number_of_blocks - i] = mul_result.low;
+                    carry = mul_result.high;
                 }
 
                 blocks_ptr[0] += carry;
@@ -563,19 +563,19 @@ struct fixed_point_calculator
             {
             case 3:
                 mul_result = umul128(blocks_ptr[2], multiplier);
-                carry = mul_result.high();
+                carry = mul_result.high;
                 BOOST_FALLTHROUGH;
 
             case 2:
                 mul_result = umul128(blocks_ptr[1], multiplier);
                 mul_result += carry;
-                carry = mul_result.high();
+                carry = mul_result.high;
                 BOOST_FALLTHROUGH;
 
             case 1:
                 mul_result = umul128(blocks_ptr[0], multiplier);
                 mul_result += carry;
-                return static_cast<MultiplierType>(mul_result.high());
+                return static_cast<MultiplierType>(mul_result.high);
 
             default:
                 BOOST_UNREACHABLE_RETURN(carry);
@@ -583,12 +583,12 @@ struct fixed_point_calculator
         }
 
         auto mul_result = umul128(blocks_ptr[number_of_blocks - 1], multiplier);
-        auto carry = mul_result.high();
+        auto carry = mul_result.high;
         for (std::size_t i = 1; i < number_of_blocks; ++i)
         {
             mul_result = umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
             mul_result += carry;
-            carry = mul_result.high();
+            carry = mul_result.high;
         }
 
         return static_cast<MultiplierType>(carry);
@@ -1611,18 +1611,18 @@ struct main_cache_compressed
 
                 // Try to recover the real cache.
                 const auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
-                auto recovered_cache = umul128(base_cache.high(), pow5);
-                const auto middle_low = umul128(base_cache.low(), pow5);
+                auto recovered_cache = umul128(base_cache.high, pow5);
+                const auto middle_low = umul128(base_cache.low, pow5);
 
-                recovered_cache += middle_low.high();
+                recovered_cache += middle_low.high;
 
-                const auto high_to_middle = recovered_cache.high() << (64 - alpha);
-                const auto middle_to_low = recovered_cache.low() << (64 - alpha);
+                const auto high_to_middle = recovered_cache.high << (64 - alpha);
+                const auto middle_to_low = recovered_cache.low << (64 - alpha);
 
-                recovered_cache = uint128{(recovered_cache.low() >> alpha) | high_to_middle, ((middle_low.low() >> alpha) | middle_to_low)};
+                recovered_cache = uint128{(recovered_cache.low >> alpha) | high_to_middle, ((middle_low.low >> alpha) | middle_to_low)};
 
-                BOOST_CHARCONV_ASSERT(recovered_cache.low() + 1 != 0);
-                recovered_cache = {recovered_cache.high(), recovered_cache.low() + 1};
+                BOOST_CHARCONV_ASSERT(recovered_cache.low + 1 != 0);
+                recovered_cache = {recovered_cache.high, recovered_cache.low + 1};
 
                 return recovered_cache;
             }
@@ -2157,7 +2157,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
         //auto [first_segment, has_more_segments] 
         compute_mul_result segments = [&] {
             const auto r = umul192_upper128(significand << beta, main_cache);
-            return compute_mul_result{r.high(), r.low() != 0};
+            return compute_mul_result{r.high, r.low != 0};
         }();
 
         auto first_segment = segments.result;
@@ -2193,8 +2193,8 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                     fractional_part_rounding_threshold64 = additional_static_data_holder::
                         fractional_part_rounding_thresholds64[16];
                 }
-                fractional_part64 = (prod.low() >> 56) | (prod.high() << 8);
-                current_digits32 = static_cast<std::uint32_t>(prod.high() >> 56);
+                fractional_part64 = (prod.low >> 56) | (prod.high << 8);
+                current_digits32 = static_cast<std::uint32_t>(prod.high >> 56);
                 decimal_exponent += 18;
             }
             // 18 digits.
@@ -2213,8 +2213,8 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                     fractional_part_rounding_threshold64 = additional_static_data_holder::fractional_part_rounding_thresholds64[15];
                 }
                 
-                fractional_part64 = (prod.low() >> 52) | (prod.high() << 12);
-                current_digits32 = static_cast<std::uint32_t>(prod.high() >> 52);
+                fractional_part64 = (prod.low >> 52) | (prod.high << 12);
+                current_digits32 = static_cast<std::uint32_t>(prod.high >> 52);
                 decimal_exponent += 17;
             }
             // This branch can be taken only for subnormal numbers.
@@ -2272,8 +2272,8 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                         fractional_part_rounding_threshold64 = additional_static_data_holder::
                             fractional_part_rounding_thresholds64[14];
                     }
-                    fractional_part64 = (prod.low() >> 44) | (prod.high() << 20);
-                    current_digits32 = static_cast<std::uint32_t>(prod.high() >> 44);
+                    fractional_part64 = (prod.low >> 44) | (prod.high << 20);
+                    current_digits32 = static_cast<std::uint32_t>(prod.high >> 44);
                 }
                 // At most 9 digits (and at least 3 digits).
                 else 
@@ -2545,9 +2545,9 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             {
                 const auto prod128 = umul128(second_third_subsegments, UINT64_C(18446744074));
 
-                current_digits = static_cast<std::uint32_t>(prod128.high());
-                const auto fractional_part64 = prod128.low() + 1;
-                // 18446744074 is even, so prod.low() cannot be equal to 2^64 - 1.
+                current_digits = static_cast<std::uint32_t>(prod128.high);
+                const auto fractional_part64 = prod128.low + 1;
+                // 18446744074 is even, so prod.low cannot be equal to 2^64 - 1.
                 BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
 
                 if (fractional_part64 >= additional_static_data_holder::fractional_part_rounding_thresholds64[8] ||
@@ -2562,9 +2562,9 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             {
                 const auto prod128 = umul128(second_third_subsegments, UINT64_C(184467440738));
 
-                current_digits = static_cast<std::uint32_t>(prod128.high());
-                const auto fractional_part64 = prod128.low() + 1;
-                // 184467440738 is even, so prod.low() cannot be equal to 2^64 - 1.
+                current_digits = static_cast<std::uint32_t>(prod128.high);
+                const auto fractional_part64 = prod128.low + 1;
+                // 184467440738 is even, so prod.low cannot be equal to 2^64 - 1.
                 BOOST_CHARCONV_ASSERT(fractional_part64 != 0);
 
                 if (fractional_part64 >= additional_static_data_holder::fractional_part_rounding_thresholds64[7] ||

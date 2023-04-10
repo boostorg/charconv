@@ -99,8 +99,8 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     i <<= static_cast<std::uint64_t>(leading_zeros);
 
     uint128 product = umul128(i, factor_significand);
-    std::uint64_t low = product.low();
-    std::uint64_t high = product.high();
+    std::uint64_t low = product.low;
+    std::uint64_t high = product.high;
 
     // We know that upper has at most one leading zero because
     // both i and  factor_mantissa have a leading one. This means
@@ -120,8 +120,8 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     {
         const std::uint64_t factor_significand_low = significand_128[power - smallest_power];
         product = umul128(i, factor_significand_low);
-        const std::uint64_t product_low = product.low();
-        const std::uint64_t product_middle2 = product.high();
+        const std::uint64_t product_low = product.low;
+        const std::uint64_t product_middle2 = product.high;
         const std::uint64_t product_middle1 = low;
         std::uint64_t product_high = high;
         const std::uint64_t product_middle = product_middle1 + product_middle2;
