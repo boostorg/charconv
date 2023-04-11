@@ -30,7 +30,7 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/dragonbox_common.hpp>
 
-namespace jkj::dragonbox {
+namespace jkj { namespace dragonbox {
 
     // A floating-point traits class defines ways to interpret a bit pattern of given size as an
     // encoding of floating-point number. This is a default implementation of such a traits class,
@@ -51,12 +51,13 @@ namespace jkj::dragonbox {
 
         // Refers to the format specification class.
         using format =
-            std::conditional_t<boost::charconv::detail::physical_bits<T>::value == 32, boost::charconv::detail::ieee754_binary32, boost::charconv::detail::ieee754_binary64>;
+            typename std::conditional<boost::charconv::detail::physical_bits<T>::value == 32, boost::charconv::detail::ieee754_binary32, boost::charconv::detail::ieee754_binary64>::type;
 
         // Defines an unsigned integer type that is large enough to carry a variable of type T.
         // Most of the operations will be done on this integer type.
         using carrier_uint =
-            std::conditional_t<boost::charconv::detail::physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>;
+            typename std::conditional<boost::charconv::detail::physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>::type;
+
         static_assert(sizeof(carrier_uint) == sizeof(T));
 
         // Number of bits in the above unsigned integer type.
@@ -328,12 +329,12 @@ namespace jkj::dragonbox {
                 // "n / 100", but for some reason MSVC generates an inefficient code
                 // (mul + mov for no apparent reason, instead of single imul),
                 // so we does this manually.
-                if constexpr (std::is_same_v<UInt, std::uint32_t> && N == 2) {
+                BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint32_t>::value && N == 2) {
                     return std::uint32_t(boost::charconv::detail::umul64(n, std::uint32_t(1374389535)) >> 37);
                 }
                 // Specialize for 64-bit division by 1000.
                 // Ensure that the correctness condition is met.
-                else if constexpr (std::is_same_v<UInt, std::uint64_t> && N == 3 &&
+                else BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint64_t>::value && N == 3 &&
                               n_max <= std::uint64_t(15534100272597517998ull)) {
                     return boost::charconv::detail::umul128_upper64(n, std::uint64_t(2361183241434822607ull)) >> 7;
                 }
@@ -1266,7 +1267,7 @@ namespace jkj::dragonbox {
                         assert(k >= cache_holder<FloatFormat>::min_k &&
                                k <= cache_holder<FloatFormat>::max_k);
 
-                        if constexpr (std::is_same_v<FloatFormat, boost::charconv::detail::ieee754_binary64>) {
+                        BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, boost::charconv::detail::ieee754_binary64>::value) {
                             // Compute the base index.
                             auto const cache_index =
                                 int(std::uint32_t(k - cache_holder<FloatFormat>::min_k) /
@@ -1404,7 +1405,7 @@ namespace jkj::dragonbox {
             using format::exponent_bias;
             using format::decimal_digits;
 
-            static constexpr int kappa = std::is_same_v<format, boost::charconv::detail::ieee754_binary32> ? 1 : 2;
+            static constexpr int kappa = std::is_same<format, boost::charconv::detail::ieee754_binary32>::value ? 1 : 2;
             static_assert(kappa >= 1);
             static_assert(carrier_bits >= significand_bits + 2 + boost::charconv::detail::log::floor_log2_pow10(kappa + 1));
 
@@ -1513,7 +1514,7 @@ namespace jkj::dragonbox {
                 if (r < deltai) {
                     // Exclude the right endpoint if necessary.
                     if (r == 0 && (is_z_integer & !interval_type.include_right_endpoint())) {
-                        if constexpr (BinaryToDecimalRoundingPolicy::tag ==
+                        BOOST_IF_CONSTEXPR (BinaryToDecimalRoundingPolicy::tag ==
                                       policy_impl::binary_to_decimal_rounding::tag_t::do_not_care) {
                             ret_value.significand *= 10;
                             ret_value.exponent = minus_k + kappa;
@@ -1556,7 +1557,7 @@ namespace jkj::dragonbox {
                 ret_value.significand *= 10;
                 ret_value.exponent = minus_k + kappa;
 
-                if constexpr (BinaryToDecimalRoundingPolicy::tag ==
+                BOOST_IF_CONSTEXPR (BinaryToDecimalRoundingPolicy::tag ==
                               policy_impl::binary_to_decimal_rounding::tag_t::do_not_care) {
                     // Normally, we want to compute
                     // ret_value.significand += r / small_divisor
@@ -1698,7 +1699,7 @@ namespace jkj::dragonbox {
                 // and 29711844 * 2^-81
                 // = 1.2288530660000000001731007559513386695471126586198806762695... * 10^-17
                 // for binary32.
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     if (exponent <= -80) {
                         is_x_integer = false;
                     }
@@ -1832,7 +1833,7 @@ namespace jkj::dragonbox {
             BOOST_FORCEINLINE static int remove_trailing_zeros(carrier_uint& n) noexcept {
                 assert(n != 0);
 
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     constexpr auto mod_inv_5 = std::uint32_t(0xcccc'cccd);
                     constexpr auto mod_inv_25 = mod_inv_5 * mod_inv_5;
 
@@ -1856,7 +1857,7 @@ namespace jkj::dragonbox {
                     return s;
                 }
                 else {
-                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
 
                     // Divide by 10^8 and reduce to 32-bits if divisible.
                     // Since ret_value.significand <= (2^53 * 1000 - 1) / 1000 < 10^16,
@@ -1923,12 +1924,12 @@ namespace jkj::dragonbox {
 
             static compute_mul_result compute_mul(carrier_uint u,
                                                   cache_entry_type const& cache) noexcept {
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     auto r = boost::charconv::detail::umul96_upper64(u, cache);
                     return {carrier_uint(r >> 32), carrier_uint(r) == 0};
                 }
                 else {
-                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
                     auto r = boost::charconv::detail::umul192_upper128(u, cache);
                     return {r.high, r.low == 0};
                 }
@@ -1936,11 +1937,11 @@ namespace jkj::dragonbox {
 
             static constexpr std::uint32_t compute_delta(cache_entry_type const& cache,
                                                          int beta) noexcept {
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     return std::uint32_t(cache >> (cache_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
                     return std::uint32_t(cache.high >> (carrier_bits - 1 - beta));
                 }
             }
@@ -1951,12 +1952,12 @@ namespace jkj::dragonbox {
                 assert(beta >= 1);
                 assert(beta < 64);
 
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     auto r = boost::charconv::detail::umul96_lower64(two_f, cache);
                     return {((r >> (64 - beta)) & 1) != 0, std::uint32_t(r >> (32 - beta)) == 0};
                 }
                 else {
-                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
                     auto r = boost::charconv::detail::umul192_lower128(two_f, cache);
                     return {((r.high >> (64 - beta)) & 1) != 0,
                             ((r.high << beta) | (r.low >> (64 - beta))) == 0};
@@ -1966,12 +1967,12 @@ namespace jkj::dragonbox {
             static constexpr carrier_uint
             compute_left_endpoint_for_shorter_interval_case(cache_entry_type const& cache,
                                                             int beta) noexcept {
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     return carrier_uint((cache - (cache >> (significand_bits + 2))) >>
                                         (cache_bits - significand_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
                     return (cache.high - (cache.high >> (significand_bits + 2))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
@@ -1980,12 +1981,12 @@ namespace jkj::dragonbox {
             static constexpr carrier_uint
             compute_right_endpoint_for_shorter_interval_case(cache_entry_type const& cache,
                                                              int beta) noexcept {
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     return carrier_uint((cache + (cache >> (significand_bits + 1))) >>
                                         (cache_bits - significand_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
                     return (cache.high + (cache.high >> (significand_bits + 1))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
@@ -1994,12 +1995,12 @@ namespace jkj::dragonbox {
             static constexpr carrier_uint
             compute_round_up_for_shorter_interval_case(cache_entry_type const& cache,
                                                        int beta) noexcept {
-                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
+                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
                     return (carrier_uint(cache >> (cache_bits - significand_bits - 2 - beta)) + 1) /
                            2;
                 }
                 else {
-                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
                     return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
                 }
             }
@@ -2054,8 +2055,8 @@ namespace jkj::dragonbox {
                 template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies>
                 static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy,
                                                       RemainingPolicies... remainings) {
-                    if constexpr (std::is_base_of_v<Base, FirstPolicy>) {
-                        if constexpr (FoundPolicyInfo::found_info == policy_found_info::not_found) {
+                    BOOST_IF_CONSTEXPR (std::is_base_of<Base, FirstPolicy>::value) {
+                        BOOST_IF_CONSTEXPR (FoundPolicyInfo::found_info == policy_found_info::not_found) {
                             return get_policy_impl(
                                 found_policy_pair<FirstPolicy, policy_found_info::unique>{},
                                 remainings...);
@@ -2090,7 +2091,7 @@ namespace jkj::dragonbox {
             constexpr bool check_policy_validity(
                 Policy,
                 base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>) {
-                return std::is_base_of_v<typename FirstBaseDefaultPair::base, Policy> ||
+                return std::is_base_of<typename FirstBaseDefaultPair::base, Policy>::value ||
                        check_policy_validity(
                            Policy{}, base_default_pair_list<RemainingBaseDefaultPairs...>{});
             }
@@ -2206,7 +2207,7 @@ namespace jkj::dragonbox {
                 auto two_fc = signed_significand_bits.remove_sign_bit_and_shift();
                 auto exponent = int(exponent_bits);
 
-                if constexpr (tag == decimal_to_binary_rounding::tag_t::to_nearest) {
+                BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::to_nearest) {
                     // Is the input a normal number?
                     if (exponent != 0) {
                         exponent += format::exponent_bias - format::significand_bits;
@@ -2237,8 +2238,8 @@ namespace jkj::dragonbox {
                         // Hence, shorter_interval_case will return 2.225'073'858'507'201'4 *
                         // 10^-308. This is indeed of the shortest length, and it is the unique one
                         // closest to the true value among valid representations of the same length.
-                        static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary32> ||
-                                      std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
+                        static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary32>::value ||
+                                      std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
 
                         if (two_fc == 0) {
                             return decltype(interval_type_provider)::invoke_shorter_interval_case(
@@ -2275,7 +2276,7 @@ namespace jkj::dragonbox {
                                                                           additional_args...);
                         });
                 }
-                else if constexpr (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) {
+                else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) {
                     // Is the input a normal number?
                     if (exponent != 0) {
                         exponent += format::exponent_bias - format::significand_bits;
@@ -2327,9 +2328,7 @@ namespace jkj::dragonbox {
 
         return to_decimal<Float, FloatTraits>(s, exponent_bits, policies...);
     }
-}
 
-namespace jkj::dragonbox {
     namespace to_chars_detail {
         template <class Float, class FloatTraits>
         extern char* to_chars(typename FloatTraits::carrier_uint significand, int exponent,
@@ -2404,7 +2403,7 @@ namespace jkj::dragonbox {
     // Maximum required buffer size (excluding null-terminator)
     template <class FloatFormat>
     inline constexpr std::size_t max_output_string_length =
-        std::is_same_v<FloatFormat, boost::charconv::detail::ieee754_binary32>
+        std::is_same<FloatFormat, boost::charconv::detail::ieee754_binary32>::value
             ?
             // sign(1) + significand(9) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(2)
             (1 + 9 + 1 + 1 + 1 + 2)
@@ -2412,9 +2411,7 @@ namespace jkj::dragonbox {
             // format == ieee754_format::binary64
             // sign(1) + significand(17) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(3)
             (1 + 17 + 1 + 1 + 1 + 3);
-}
 
-namespace jkj::dragonbox {
     namespace to_chars_detail {
         // These "//"'s are to prevent clang-format to ruin this nice alignment.
         // Thanks to reddit user u/mcmcc:
@@ -2465,10 +2462,10 @@ namespace jkj::dragonbox {
         };
 
         static void print_1_digit(std::uint32_t n, char* buffer) noexcept {
-            if constexpr ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
+            BOOST_IF_CONSTEXPR ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
                           '5' == '0' + 5 && '6' == '0' + 6 && '7' == '0' + 7 && '8' == '0' + 8 &&
                           '9' == '0' + 9) {
-                if constexpr (('0' & 0xf) == 0) {
+                BOOST_IF_CONSTEXPR (('0' & 0xf) == 0) {
                     *buffer = char('0' | n);
                 }
                 else {
@@ -2909,6 +2906,6 @@ namespace jkj::dragonbox {
             return buffer;
         }
     }
-}
+}} // Namespaces
 
 #endif
