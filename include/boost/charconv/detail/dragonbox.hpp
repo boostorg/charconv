@@ -25,63 +25,12 @@
 #include <limits>
 #include <type_traits>
 #include <boost/core/bit.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/dragonbox_common.hpp>
 
-// Suppress additional buffer overrun check.
-// I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
-// attacks. No, they aren't.
-#if defined(__GNUC__) || defined(__clang__)
-    #define JKJ_SAFEBUFFERS
-    #define JKJ_FORCEINLINE inline __attribute__((always_inline))
-#elif defined(_MSC_VER)
-    #define JKJ_SAFEBUFFERS __declspec(safebuffers)
-    #define JKJ_FORCEINLINE __forceinline
-#else
-    #define JKJ_SAFEBUFFERS
-    #define JKJ_FORCEINLINE inline
-#endif
-
-#if defined(__has_builtin)
-    #define JKJ_DRAGONBOX_HAS_BUILTIN(x) __has_builtin(x)
-#else
-    #define JKJ_DRAGONBOX_HAS_BUILTIN(x) false
-#endif
-
-#if defined(_MSC_VER)
-    #include <intrin.h>
-#endif
-
 namespace jkj::dragonbox {
-    namespace detail {
-        template <class T>
-        constexpr std::size_t
-            physical_bits = sizeof(T) * std::numeric_limits<unsigned char>::digits;
-
-        template <class T>
-        constexpr std::size_t value_bits =
-            std::numeric_limits<std::enable_if_t<std::is_unsigned_v<T>, T>>::digits;
-    }
-
-    // These classes expose encoding specs of IEEE-754-like floating-point formats.
-    // Currently available formats are IEEE754-binary32 & IEEE754-binary64.
-
-    struct ieee754_binary32 {
-        static constexpr int significand_bits = 23;
-        static constexpr int exponent_bits = 8;
-        static constexpr int min_exponent = -126;
-        static constexpr int max_exponent = 127;
-        static constexpr int exponent_bias = -127;
-        static constexpr int decimal_digits = 9;
-    };
-    struct ieee754_binary64 {
-        static constexpr int significand_bits = 52;
-        static constexpr int exponent_bits = 11;
-        static constexpr int min_exponent = -1022;
-        static constexpr int max_exponent = 1023;
-        static constexpr int exponent_bias = -1023;
-        static constexpr int decimal_digits = 17;
-    };
 
     // A floating-point traits class defines ways to interpret a bit pattern of given size as an
     // encoding of floating-point number. This is a default implementation of such a traits class,
@@ -93,7 +42,7 @@ namespace jkj::dragonbox {
         // I don't know if there is a truly reliable way of detecting
         // IEEE-754 binary32/binary64 formats; I just did my best here.
         static_assert(std::numeric_limits<T>::is_iec559 && std::numeric_limits<T>::radix == 2 &&
-                          (detail::physical_bits<T> == 32 || detail::physical_bits<T> == 64),
+                          (boost::charconv::detail::physical_bits<T>::value == 32 || boost::charconv::detail::physical_bits<T>::value == 64),
                       "default_ieee754_traits only works for 32-bits or 64-bits types "
                       "supporting binary32 or binary64 formats!");
 
@@ -102,16 +51,16 @@ namespace jkj::dragonbox {
 
         // Refers to the format specification class.
         using format =
-            std::conditional_t<detail::physical_bits<T> == 32, ieee754_binary32, ieee754_binary64>;
+            std::conditional_t<boost::charconv::detail::physical_bits<T>::value == 32, boost::charconv::detail::ieee754_binary32, boost::charconv::detail::ieee754_binary64>;
 
         // Defines an unsigned integer type that is large enough to carry a variable of type T.
         // Most of the operations will be done on this integer type.
         using carrier_uint =
-            std::conditional_t<detail::physical_bits<T> == 32, std::uint32_t, std::uint64_t>;
+            std::conditional_t<boost::charconv::detail::physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>;
         static_assert(sizeof(carrier_uint) == sizeof(T));
 
         // Number of bits in the above unsigned integer type.
-        static constexpr int carrier_bits = int(detail::physical_bits<carrier_uint>);
+        static constexpr int carrier_bits = int(boost::charconv::detail::physical_bits<carrier_uint>::value);
 
         // Convert from carrier_uint into the original type.
         // Depending on the floating-point encoding format, this operation might not be possible for
@@ -136,7 +85,7 @@ namespace jkj::dragonbox {
         static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
             constexpr int significand_bits = format::significand_bits;
             constexpr int exponent_bits = format::exponent_bits;
-            static_assert(detail::value_bits<unsigned int> > exponent_bits);
+            static_assert(boost::charconv::detail::value_bits<unsigned int>::value > exponent_bits);
             constexpr auto exponent_bits_mask =
                 (static_cast<unsigned int>(1) << exponent_bits) - 1;
             return static_cast<unsigned int>(u >> significand_bits) & exponent_bits_mask;
@@ -316,85 +265,6 @@ namespace jkj::dragonbox {
     };
 
     namespace detail {
-
-        ////////////////////////////////////////////////////////////////////////////////////////
-        // Utilities for fast/constexpr log computation.
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        namespace log {
-            static_assert((-1 >> 1) == -1, "right-shift for signed integers must be arithmetic");
-
-            // Compute floor(e * c - s).
-            enum class multiply : std::uint32_t {};
-            enum class subtract : std::uint32_t {};
-            enum class shift : std::size_t {};
-            enum class min_exponent : std::int32_t {};
-            enum class max_exponent : std::int32_t {};
-
-            template <multiply m, subtract f, shift k, min_exponent e_min, max_exponent e_max>
-            constexpr int compute(int e) noexcept {
-                assert(std::int32_t(e_min) <= e && e <= std::int32_t(e_max));
-                return int((std::int32_t(e) * std::int32_t(m) - std::int32_t(f)) >> std::size_t(k));
-            }
-
-            // For constexpr computation.
-            // Returns -1 when n = 0.
-            template <class UInt>
-            constexpr int floor_log2(UInt n) noexcept {
-                int count = -1;
-                while (n != 0) {
-                    ++count;
-                    n >>= 1;
-                }
-                return count;
-            }
-
-            static constexpr int floor_log10_pow2_min_exponent = -2620;
-            static constexpr int floor_log10_pow2_max_exponent = 2620;
-            constexpr int floor_log10_pow2(int e) noexcept {
-                using namespace log;
-                return compute<multiply(315653), subtract(0), shift(20),
-                               min_exponent(floor_log10_pow2_min_exponent),
-                               max_exponent(floor_log10_pow2_max_exponent)>(e);
-            }
-
-            static constexpr int floor_log2_pow10_min_exponent = -1233;
-            static constexpr int floor_log2_pow10_max_exponent = 1233;
-            constexpr int floor_log2_pow10(int e) noexcept {
-                using namespace log;
-                return compute<multiply(1741647), subtract(0), shift(19),
-                               min_exponent(floor_log2_pow10_min_exponent),
-                               max_exponent(floor_log2_pow10_max_exponent)>(e);
-            }
-
-            static constexpr int floor_log10_pow2_minus_log10_4_over_3_min_exponent = -2985;
-            static constexpr int floor_log10_pow2_minus_log10_4_over_3_max_exponent = 2936;
-            constexpr int floor_log10_pow2_minus_log10_4_over_3(int e) noexcept {
-                using namespace log;
-                return compute<multiply(631305), subtract(261663), shift(21),
-                               min_exponent(floor_log10_pow2_minus_log10_4_over_3_min_exponent),
-                               max_exponent(floor_log10_pow2_minus_log10_4_over_3_max_exponent)>(e);
-            }
-
-            static constexpr int floor_log5_pow2_min_exponent = -1831;
-            static constexpr int floor_log5_pow2_max_exponent = 1831;
-            constexpr int floor_log5_pow2(int e) noexcept {
-                using namespace log;
-                return compute<multiply(225799), subtract(0), shift(19),
-                               min_exponent(floor_log5_pow2_min_exponent),
-                               max_exponent(floor_log5_pow2_max_exponent)>(e);
-            }
-
-            static constexpr int floor_log5_pow2_minus_log5_3_min_exponent = -3543;
-            static constexpr int floor_log5_pow2_minus_log5_3_max_exponent = 2427;
-            constexpr int floor_log5_pow2_minus_log5_3(int e) noexcept {
-                using namespace log;
-                return compute<multiply(451597), subtract(715764), shift(20),
-                               min_exponent(floor_log5_pow2_minus_log5_3_min_exponent),
-                               max_exponent(floor_log5_pow2_minus_log5_3_max_exponent)>(e);
-            }
-        }
-
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for fast divisibility tests.
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -422,7 +292,7 @@ namespace jkj::dragonbox {
             template <int N>
             constexpr bool check_divisibility_and_divide_by_pow10(std::uint32_t& n) noexcept {
                 // Make sure the computation for max_n does not overflow.
-                static_assert(N + 1 <= log::floor_log10_pow2(31));
+                static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
                 assert(n <= boost::charconv::detail::compute_power(std::uint32_t(10), N + 1));
 
                 using info = divide_by_pow10_info<N>;
@@ -440,7 +310,7 @@ namespace jkj::dragonbox {
             template <int N>
             constexpr std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept {
                 // Make sure the computation for max_n does not overflow.
-                static_assert(N + 1 <= log::floor_log10_pow2(31));
+                static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
                 assert(n <= boost::charconv::detail::compute_power(std::uint32_t(10), N + 1));
 
                 return (n * divide_by_pow10_info<N>::magic_number) >>
@@ -534,7 +404,7 @@ namespace jkj::dragonbox {
         struct cache_holder;
 
         template <>
-        struct cache_holder<ieee754_binary32> {
+        struct cache_holder<boost::charconv::detail::ieee754_binary32> {
             using cache_entry_type = std::uint64_t;
             static constexpr int cache_bits = 64;
             static constexpr int min_k = -31;
@@ -563,7 +433,7 @@ namespace jkj::dragonbox {
         };
 
         template <>
-        struct cache_holder<ieee754_binary64> {
+        struct cache_holder<boost::charconv::detail::ieee754_binary64> {
             using cache_entry_type = boost::charconv::detail::uint128;
             static constexpr int cache_bits = 128;
             static constexpr int min_k = -292;
@@ -885,7 +755,7 @@ namespace jkj::dragonbox {
         struct compressed_cache_detail {
             static constexpr int compression_ratio = 27;
             static constexpr std::size_t compressed_table_size =
-                (cache_holder<ieee754_binary64>::max_k - cache_holder<ieee754_binary64>::min_k +
+                (cache_holder<boost::charconv::detail::ieee754_binary64>::max_k - cache_holder<boost::charconv::detail::ieee754_binary64>::min_k +
                  compression_ratio) /
                 compression_ratio;
 
@@ -895,7 +765,7 @@ namespace jkj::dragonbox {
             static constexpr cache_holder_t cache = [] {
                 cache_holder_t res{};
                 for (std::size_t i = 0; i < compressed_table_size; ++i) {
-                    res.table[i] = cache_holder<ieee754_binary64>::cache[i * compression_ratio];
+                    res.table[i] = cache_holder<boost::charconv::detail::ieee754_binary64>::cache[i * compression_ratio];
                 }
                 return res;
             }();
@@ -971,7 +841,7 @@ namespace jkj::dragonbox {
                     static constexpr bool report_trailing_zeros = false;
 
                     template <class Impl, class ReturnType>
-                    JKJ_FORCEINLINE static constexpr void
+                    BOOST_FORCEINLINE static constexpr void
                     on_trailing_zeros(ReturnType& r) noexcept {
                         r.exponent += Impl::remove_trailing_zeros(r.significand);
                     }
@@ -1047,17 +917,17 @@ namespace jkj::dragonbox {
                     using shorter_interval_type = interval_type::closed;
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(nearest_to_even{});
                     }
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept {
                         return f(s.has_even_significand_bits());
                     }
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept {
                         return f();
                     }
@@ -1069,17 +939,17 @@ namespace jkj::dragonbox {
                     using shorter_interval_type = interval_type::open;
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(nearest_to_odd{});
                     }
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept {
                         return f(!s.has_even_significand_bits());
                     }
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept {
                         return f();
                     }
@@ -1091,17 +961,17 @@ namespace jkj::dragonbox {
                     using shorter_interval_type = interval_type::asymmetric_boundary;
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(nearest_toward_plus_infinity{});
                     }
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept {
                         return f(!s.is_negative());
                     }
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept {
                         return f(!s.is_negative());
                     }
@@ -1113,17 +983,17 @@ namespace jkj::dragonbox {
                     using shorter_interval_type = interval_type::asymmetric_boundary;
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(nearest_toward_minus_infinity{});
                     }
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_normal_interval_case(SignedSignificandBits s, Func&& f) noexcept {
                         return f(s.is_negative());
                     }
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_shorter_interval_case(SignedSignificandBits s, Func&& f) noexcept {
                         return f(s.is_negative());
                     }
@@ -1135,17 +1005,17 @@ namespace jkj::dragonbox {
                     using shorter_interval_type = interval_type::right_closed_left_open;
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(nearest_toward_zero{});
                     }
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept {
                         return f();
                     }
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept {
                         return f();
                     }
@@ -1157,17 +1027,17 @@ namespace jkj::dragonbox {
                     using shorter_interval_type = interval_type::left_closed_right_open;
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(nearest_away_from_zero{});
                     }
 
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept {
                         return f();
                     }
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static constexpr auto
+                    BOOST_FORCEINLINE static constexpr auto
                     invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept {
                         return f();
                     }
@@ -1180,12 +1050,12 @@ namespace jkj::dragonbox {
                         using shorter_interval_type = interval_type::closed;
 
                         template <class SignedSignificandBits, class Func>
-                        JKJ_FORCEINLINE static constexpr auto
+                        BOOST_FORCEINLINE static constexpr auto
                         invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept {
                             return f();
                         }
                         template <class SignedSignificandBits, class Func>
-                        JKJ_FORCEINLINE static constexpr auto
+                        BOOST_FORCEINLINE static constexpr auto
                         invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept {
                             return f();
                         }
@@ -1196,12 +1066,12 @@ namespace jkj::dragonbox {
                         using shorter_interval_type = interval_type::open;
 
                         template <class SignedSignificandBits, class Func>
-                        JKJ_FORCEINLINE static constexpr auto
+                        BOOST_FORCEINLINE static constexpr auto
                         invoke_normal_interval_case(SignedSignificandBits, Func&& f) noexcept {
                             return f();
                         }
                         template <class SignedSignificandBits, class Func>
-                        JKJ_FORCEINLINE static constexpr auto
+                        BOOST_FORCEINLINE static constexpr auto
                         invoke_shorter_interval_case(SignedSignificandBits, Func&& f) noexcept {
                             return f();
                         }
@@ -1211,7 +1081,7 @@ namespace jkj::dragonbox {
                 struct nearest_to_even_static_boundary : base {
                     using decimal_to_binary_rounding_policy = nearest_to_even_static_boundary;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits s,
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.has_even_significand_bits()) {
                             return f(detail::nearest_always_closed{});
@@ -1224,7 +1094,7 @@ namespace jkj::dragonbox {
                 struct nearest_to_odd_static_boundary : base {
                     using decimal_to_binary_rounding_policy = nearest_to_odd_static_boundary;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits s,
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.has_even_significand_bits()) {
                             return f(detail::nearest_always_open{});
@@ -1238,7 +1108,7 @@ namespace jkj::dragonbox {
                     using decimal_to_binary_rounding_policy =
                         nearest_toward_plus_infinity_static_boundary;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits s,
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.is_negative()) {
                             return f(nearest_toward_zero{});
@@ -1252,7 +1122,7 @@ namespace jkj::dragonbox {
                     using decimal_to_binary_rounding_policy =
                         nearest_toward_minus_infinity_static_boundary;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits s,
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.is_negative()) {
                             return f(nearest_away_from_zero{});
@@ -1275,7 +1145,7 @@ namespace jkj::dragonbox {
                 struct toward_plus_infinity : base {
                     using decimal_to_binary_rounding_policy = toward_plus_infinity;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits s,
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.is_negative()) {
                             return f(detail::left_closed_directed{});
@@ -1288,7 +1158,7 @@ namespace jkj::dragonbox {
                 struct toward_minus_infinity : base {
                     using decimal_to_binary_rounding_policy = toward_minus_infinity;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits s,
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.is_negative()) {
                             return f(detail::right_closed_directed{});
@@ -1301,14 +1171,14 @@ namespace jkj::dragonbox {
                 struct toward_zero : base {
                     using decimal_to_binary_rounding_policy = toward_zero;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(detail::left_closed_directed{});
                     }
                 };
                 struct away_from_zero : base {
                     using decimal_to_binary_rounding_policy = away_from_zero;
                     template <class SignedSignificandBits, class Func>
-                    JKJ_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
+                    BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
                         return f(detail::right_closed_directed{});
                     }
                 };
@@ -1396,7 +1266,7 @@ namespace jkj::dragonbox {
                         assert(k >= cache_holder<FloatFormat>::min_k &&
                                k <= cache_holder<FloatFormat>::max_k);
 
-                        if constexpr (std::is_same_v<FloatFormat, ieee754_binary64>) {
+                        if constexpr (std::is_same_v<FloatFormat, boost::charconv::detail::ieee754_binary64>) {
                             // Compute the base index.
                             auto const cache_index =
                                 int(std::uint32_t(k - cache_holder<FloatFormat>::min_k) /
@@ -1415,8 +1285,8 @@ namespace jkj::dragonbox {
                             }
                             else {
                                 // Compute the required amount of bit-shift.
-                                auto const alpha = log::floor_log2_pow10(kb + offset) -
-                                                   log::floor_log2_pow10(kb) - offset;
+                                auto const alpha = boost::charconv::detail::log::floor_log2_pow10(kb + offset) -
+                                                   boost::charconv::detail::log::floor_log2_pow10(kb) - offset;
                                 assert(alpha > 0 && alpha < 64);
 
                                 // Try to recover the real cache.
@@ -1534,15 +1404,15 @@ namespace jkj::dragonbox {
             using format::exponent_bias;
             using format::decimal_digits;
 
-            static constexpr int kappa = std::is_same_v<format, ieee754_binary32> ? 1 : 2;
+            static constexpr int kappa = std::is_same_v<format, boost::charconv::detail::ieee754_binary32> ? 1 : 2;
             static_assert(kappa >= 1);
-            static_assert(carrier_bits >= significand_bits + 2 + log::floor_log2_pow10(kappa + 1));
+            static_assert(carrier_bits >= significand_bits + 2 + boost::charconv::detail::log::floor_log2_pow10(kappa + 1));
 
             static constexpr int min_k = [] {
-                constexpr auto a = -log::floor_log10_pow2_minus_log10_4_over_3(
+                constexpr auto a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(
                     int(max_exponent - significand_bits));
                 constexpr auto b =
-                    -log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
+                    -boost::charconv::detail::log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
                 return a < b ? a : b;
             }();
             static_assert(min_k >= cache_holder<format>::min_k);
@@ -1550,10 +1420,10 @@ namespace jkj::dragonbox {
             static constexpr int max_k = [] {
                 // We do invoke shorter_interval_case for exponent == min_exponent case,
                 // so we should not add 1 here.
-                constexpr auto a = -log::floor_log10_pow2_minus_log10_4_over_3(
+                constexpr auto a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(
                     int(min_exponent - significand_bits /*+ 1*/));
                 constexpr auto b =
-                    -log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
+                    -boost::charconv::detail::log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
                 return a > b ? a : b;
             }();
             static_assert(max_k <= cache_holder<format>::max_k);
@@ -1564,7 +1434,7 @@ namespace jkj::dragonbox {
             static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
             static constexpr int case_shorter_interval_left_endpoint_upper_threshold =
                 2 +
-                log::floor_log2(
+                boost::charconv::detail::log::floor_log2(
                     boost::charconv::detail::compute_power
                         (10, boost::charconv::detail::count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1) /
                     3);
@@ -1572,14 +1442,14 @@ namespace jkj::dragonbox {
             static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
             static constexpr int case_shorter_interval_right_endpoint_upper_threshold =
                 2 +
-                log::floor_log2(
+                boost::charconv::detail::log::floor_log2(
                     boost::charconv::detail::compute_power(10, boost::charconv::detail::count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) /
                     3);
 
             static constexpr int shorter_interval_tie_lower_threshold =
-                -log::floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
+                -boost::charconv::detail::log::floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
             static constexpr int shorter_interval_tie_upper_threshold =
-                -log::floor_log5_pow2(significand_bits + 2) - 2 - significand_bits;
+                -boost::charconv::detail::log::floor_log5_pow2(significand_bits + 2) - 2 - significand_bits;
 
             struct compute_mul_result {
                 carrier_uint result;
@@ -1595,7 +1465,7 @@ namespace jkj::dragonbox {
             template <class ReturnType, class IntervalType, class TrailingZeroPolicy,
                       class BinaryToDecimalRoundingPolicy, class CachePolicy,
                       class... AdditionalArgs>
-            JKJ_SAFEBUFFERS static ReturnType
+            BOOST_CHARCONV_SAFEBUFFERS static ReturnType
             compute_nearest_normal(carrier_uint const two_fc, int const exponent,
                                    AdditionalArgs... additional_args) noexcept {
                 //////////////////////////////////////////////////////////////////////
@@ -1606,9 +1476,9 @@ namespace jkj::dragonbox {
                 IntervalType interval_type{additional_args...};
 
                 // Compute k and beta.
-                int const minus_k = log::floor_log10_pow2(exponent) - kappa;
+                int const minus_k = boost::charconv::detail::log::floor_log10_pow2(exponent) - kappa;
                 auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-                int const beta = exponent + log::floor_log2_pow10(-minus_k);
+                int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
 
                 // Compute zi and deltai.
                 // 10^kappa <= deltai < 10^(kappa + 1)
@@ -1747,15 +1617,15 @@ namespace jkj::dragonbox {
             template <class ReturnType, class IntervalType, class TrailingZeroPolicy,
                       class BinaryToDecimalRoundingPolicy, class CachePolicy,
                       class... AdditionalArgs>
-            JKJ_SAFEBUFFERS static ReturnType
+            BOOST_CHARCONV_SAFEBUFFERS static ReturnType
             compute_nearest_shorter(int const exponent,
                                     AdditionalArgs... additional_args) noexcept {
                 ReturnType ret_value;
                 IntervalType interval_type{additional_args...};
 
                 // Compute k and beta.
-                int const minus_k = log::floor_log10_pow2_minus_log10_4_over_3(exponent);
-                int const beta = exponent + log::floor_log2_pow10(-minus_k);
+                int const minus_k = boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(exponent);
+                int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
 
                 // Compute xi and zi.
                 auto const cache = CachePolicy::template get_cache<format>(-minus_k);
@@ -1804,7 +1674,7 @@ namespace jkj::dragonbox {
             }
 
             template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
-            JKJ_SAFEBUFFERS static ReturnType
+            BOOST_CHARCONV_SAFEBUFFERS static ReturnType
             compute_left_closed_directed(carrier_uint const two_fc, int exponent) noexcept {
                 //////////////////////////////////////////////////////////////////////
                 // Step 1: Schubfach multiplier calculation
@@ -1813,9 +1683,9 @@ namespace jkj::dragonbox {
                 ReturnType ret_value;
 
                 // Compute k and beta.
-                int const minus_k = log::floor_log10_pow2(exponent) - kappa;
+                int const minus_k = boost::charconv::detail::log::floor_log10_pow2(exponent) - kappa;
                 auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-                int const beta = exponent + log::floor_log2_pow10(-minus_k);
+                int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
 
                 // Compute xi and deltai.
                 // 10^kappa <= deltai < 10^(kappa + 1)
@@ -1828,7 +1698,7 @@ namespace jkj::dragonbox {
                 // and 29711844 * 2^-81
                 // = 1.2288530660000000001731007559513386695471126586198806762695... * 10^-17
                 // for binary32.
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     if (exponent <= -80) {
                         is_x_integer = false;
                     }
@@ -1893,7 +1763,7 @@ namespace jkj::dragonbox {
             }
 
             template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
-            JKJ_SAFEBUFFERS static ReturnType
+            BOOST_CHARCONV_SAFEBUFFERS static ReturnType
             compute_right_closed_directed(carrier_uint const two_fc, int const exponent,
                                           bool shorter_interval) noexcept {
                 //////////////////////////////////////////////////////////////////////
@@ -1904,9 +1774,9 @@ namespace jkj::dragonbox {
 
                 // Compute k and beta.
                 int const minus_k =
-                    log::floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
+                    boost::charconv::detail::log::floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
                 auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-                int const beta = exponent + log::floor_log2_pow10(-minus_k);
+                int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
 
                 // Compute zi and deltai.
                 // 10^kappa <= deltai < 10^(kappa + 1)
@@ -1959,10 +1829,10 @@ namespace jkj::dragonbox {
             }
 
             // Remove trailing zeros from n and return the number of zeros removed.
-            JKJ_FORCEINLINE static int remove_trailing_zeros(carrier_uint& n) noexcept {
+            BOOST_FORCEINLINE static int remove_trailing_zeros(carrier_uint& n) noexcept {
                 assert(n != 0);
 
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     constexpr auto mod_inv_5 = std::uint32_t(0xcccc'cccd);
                     constexpr auto mod_inv_25 = mod_inv_5 * mod_inv_5;
 
@@ -1986,7 +1856,7 @@ namespace jkj::dragonbox {
                     return s;
                 }
                 else {
-                    static_assert(std::is_same_v<format, ieee754_binary64>);
+                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
 
                     // Divide by 10^8 and reduce to 32-bits if divisible.
                     // Since ret_value.significand <= (2^53 * 1000 - 1) / 1000 < 10^16,
@@ -2053,12 +1923,12 @@ namespace jkj::dragonbox {
 
             static compute_mul_result compute_mul(carrier_uint u,
                                                   cache_entry_type const& cache) noexcept {
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     auto r = boost::charconv::detail::umul96_upper64(u, cache);
                     return {carrier_uint(r >> 32), carrier_uint(r) == 0};
                 }
                 else {
-                    static_assert(std::is_same_v<format, ieee754_binary64>);
+                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
                     auto r = boost::charconv::detail::umul192_upper128(u, cache);
                     return {r.high, r.low == 0};
                 }
@@ -2066,11 +1936,11 @@ namespace jkj::dragonbox {
 
             static constexpr std::uint32_t compute_delta(cache_entry_type const& cache,
                                                          int beta) noexcept {
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     return std::uint32_t(cache >> (cache_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same_v<format, ieee754_binary64>);
+                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
                     return std::uint32_t(cache.high >> (carrier_bits - 1 - beta));
                 }
             }
@@ -2081,12 +1951,12 @@ namespace jkj::dragonbox {
                 assert(beta >= 1);
                 assert(beta < 64);
 
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     auto r = boost::charconv::detail::umul96_lower64(two_f, cache);
                     return {((r >> (64 - beta)) & 1) != 0, std::uint32_t(r >> (32 - beta)) == 0};
                 }
                 else {
-                    static_assert(std::is_same_v<format, ieee754_binary64>);
+                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
                     auto r = boost::charconv::detail::umul192_lower128(two_f, cache);
                     return {((r.high >> (64 - beta)) & 1) != 0,
                             ((r.high << beta) | (r.low >> (64 - beta))) == 0};
@@ -2096,12 +1966,12 @@ namespace jkj::dragonbox {
             static constexpr carrier_uint
             compute_left_endpoint_for_shorter_interval_case(cache_entry_type const& cache,
                                                             int beta) noexcept {
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     return carrier_uint((cache - (cache >> (significand_bits + 2))) >>
                                         (cache_bits - significand_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same_v<format, ieee754_binary64>);
+                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
                     return (cache.high - (cache.high >> (significand_bits + 2))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
@@ -2110,12 +1980,12 @@ namespace jkj::dragonbox {
             static constexpr carrier_uint
             compute_right_endpoint_for_shorter_interval_case(cache_entry_type const& cache,
                                                              int beta) noexcept {
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     return carrier_uint((cache + (cache >> (significand_bits + 1))) >>
                                         (cache_bits - significand_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same_v<format, ieee754_binary64>);
+                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
                     return (cache.high + (cache.high >> (significand_bits + 1))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
@@ -2124,12 +1994,12 @@ namespace jkj::dragonbox {
             static constexpr carrier_uint
             compute_round_up_for_shorter_interval_case(cache_entry_type const& cache,
                                                        int beta) noexcept {
-                if constexpr (std::is_same_v<format, ieee754_binary32>) {
+                if constexpr (std::is_same_v<format, boost::charconv::detail::ieee754_binary32>) {
                     return (carrier_uint(cache >> (cache_bits - significand_bits - 2 - beta)) + 1) /
                            2;
                 }
                 else {
-                    static_assert(std::is_same_v<format, ieee754_binary64>);
+                    static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
                     return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
                 }
             }
@@ -2308,7 +2178,7 @@ namespace jkj::dragonbox {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
-    JKJ_FORCEINLINE JKJ_SAFEBUFFERS auto
+    BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
     to_decimal(signed_significand_bits<Float, FloatTraits> signed_significand_bits,
                unsigned int exponent_bits, Policies... policies) noexcept {
         // Build policy holder type.
@@ -2367,8 +2237,8 @@ namespace jkj::dragonbox {
                         // Hence, shorter_interval_case will return 2.225'073'858'507'201'4 *
                         // 10^-308. This is indeed of the shortest length, and it is the unique one
                         // closest to the true value among valid representations of the same length.
-                        static_assert(std::is_same_v<format, ieee754_binary32> ||
-                                      std::is_same_v<format, ieee754_binary64>);
+                        static_assert(std::is_same_v<format, boost::charconv::detail::ieee754_binary32> ||
+                                      std::is_same_v<format, boost::charconv::detail::ieee754_binary64>);
 
                         if (two_fc == 0) {
                             return decltype(interval_type_provider)::invoke_shorter_interval_case(
@@ -2449,7 +2319,7 @@ namespace jkj::dragonbox {
     }
 
     template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
-    JKJ_FORCEINLINE JKJ_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept {
+    BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept {
         auto const br = float_bits<Float, FloatTraits>(x);
         auto const exponent_bits = br.extract_exponent_bits();
         auto const s = br.remove_exponent_bits(exponent_bits);
@@ -2534,7 +2404,7 @@ namespace jkj::dragonbox {
     // Maximum required buffer size (excluding null-terminator)
     template <class FloatFormat>
     inline constexpr std::size_t max_output_string_length =
-        std::is_same_v<FloatFormat, ieee754_binary32>
+        std::is_same_v<FloatFormat, boost::charconv::detail::ieee754_binary32>
             ?
             // sign(1) + significand(9) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(2)
             (1 + 9 + 1 + 1 + 1 + 2)
@@ -2543,15 +2413,6 @@ namespace jkj::dragonbox {
             // sign(1) + significand(17) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(3)
             (1 + 17 + 1 + 1 + 1 + 3);
 }
-
-
-#if defined(__GNUC__) || defined(__clang__)
-    #define JKJ_FORCEINLINE inline __attribute__((always_inline))
-#elif defined(_MSC_VER)
-    #define JKJ_FORCEINLINE __forceinline
-#else
-    #define JKJ_FORCEINLINE inline
-#endif
 
 namespace jkj::dragonbox {
     namespace to_chars_detail {
@@ -2634,7 +2495,7 @@ namespace jkj::dragonbox {
         // floor(10^2 * ((10^4 * y) mod 2^32) / 2^32) = 67.
         // See https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/ for more explanation.
 
-        JKJ_FORCEINLINE static void print_9_digits(std::uint32_t s32, int& exponent,
+        BOOST_FORCEINLINE static void print_9_digits(std::uint32_t s32, int& exponent,
                                                    char*& buffer) noexcept {
             // -- IEEE-754 binary32
             // Since we do not cut trailing zeros in advance, s32 must be of 6~9 digits
@@ -3049,9 +2910,5 @@ namespace jkj::dragonbox {
         }
     }
 }
-
-#undef JKJ_FORCEINLINE
-#undef JKJ_SAFEBUFFERS
-#undef JKJ_DRAGONBOX_HAS_BUILTIN
 
 #endif
