@@ -24,6 +24,9 @@
 #include <cstring>
 #include <limits>
 #include <type_traits>
+#include <boost/core/bit.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/dragonbox_common.hpp>
 
 // Suppress additional buffer overrun check.
 // I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
@@ -313,200 +316,6 @@ namespace jkj::dragonbox {
     };
 
     namespace detail {
-        ////////////////////////////////////////////////////////////////////////////////////////
-        // Bit operation intrinsics.
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        namespace bits {
-            // Most compilers should be able to optimize this into the ROR instruction.
-            inline std::uint32_t rotr(std::uint32_t n, std::uint32_t r) noexcept {
-                r &= 31;
-                return (n >> r) | (n << (32 - r));
-            }
-            inline std::uint64_t rotr(std::uint64_t n, std::uint32_t r) noexcept {
-                r &= 63;
-                return (n >> r) | (n << (64 - r));
-            }
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////
-        // Utilities for wide unsigned integer arithmetic.
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        namespace wuint {
-            // Compilers might support built-in 128-bit integer types. However, it seems that
-            // emulating them with a pair of 64-bit integers actually produces a better code,
-            // so we avoid using those built-ins. That said, they are still useful for
-            // implementing 64-bit x 64-bit -> 128-bit multiplication.
-
-            // clang-format off
-#if defined(__SIZEOF_INT128__)
-		// To silence "error: ISO C++ does not support '__int128' for 'type name'
-		// [-Wpedantic]"
-#if defined(__GNUC__)
-			__extension__
-#endif
-				using builtin_uint128_t = unsigned __int128;
-#endif
-            // clang-format on
-
-            struct uint128 {
-                uint128() = default;
-
-                std::uint64_t high_;
-                std::uint64_t low_;
-
-                constexpr uint128(std::uint64_t high, std::uint64_t low) noexcept
-                    : high_{high}, low_{low} {}
-
-                constexpr std::uint64_t high() const noexcept { return high_; }
-                constexpr std::uint64_t low() const noexcept { return low_; }
-
-                uint128& operator+=(std::uint64_t n) & noexcept {
-#if JKJ_DRAGONBOX_HAS_BUILTIN(__builtin_addcll)
-                    unsigned long long carry;
-                    low_ = __builtin_addcll(low_, n, 0, &carry);
-                    high_ = __builtin_addcll(high_, 0, carry, &carry);
-#elif JKJ_DRAGONBOX_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
-                    unsigned long long result;
-                    auto carry = __builtin_ia32_addcarryx_u64(0, low_, n, &result);
-                    low_ = result;
-                    __builtin_ia32_addcarryx_u64(carry, high_, 0, &result);
-                    high_ = result;
-#elif defined(_MSC_VER) && defined(_M_X64)
-                    auto carry = _addcarry_u64(0, low_, n, &low_);
-                    _addcarry_u64(carry, high_, 0, &high_);
-#else
-                    auto sum = low_ + n;
-                    high_ += (sum < low_ ? 1 : 0);
-                    low_ = sum;
-#endif
-                    return *this;
-                }
-            };
-
-            static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept {
-#if defined(_MSC_VER) && defined(_M_IX86)
-                return __emulu(x, y);
-#else
-                return x * std::uint64_t(y);
-#endif
-            }
-
-            // Get 128-bit result of multiplication of two 64-bit unsigned integers.
-            JKJ_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) noexcept {
-#if defined(__SIZEOF_INT128__)
-                auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
-                return {std::uint64_t(result >> 64), std::uint64_t(result)};
-#elif defined(_MSC_VER) && defined(_M_X64)
-                uint128 result;
-                result.low_ = _umul128(x, y, &result.high_);
-                return result;
-#else
-                auto a = std::uint32_t(x >> 32);
-                auto b = std::uint32_t(x);
-                auto c = std::uint32_t(y >> 32);
-                auto d = std::uint32_t(y);
-
-                auto ac = umul64(a, c);
-                auto bc = umul64(b, c);
-                auto ad = umul64(a, d);
-                auto bd = umul64(b, d);
-
-                auto intermediate = (bd >> 32) + std::uint32_t(ad) + std::uint32_t(bc);
-
-                return {ac + (intermediate >> 32) + (ad >> 32) + (bc >> 32),
-                        (intermediate << 32) + std::uint32_t(bd)};
-#endif
-            }
-
-            JKJ_SAFEBUFFERS inline std::uint64_t umul128_upper64(std::uint64_t x,
-                                                                 std::uint64_t y) noexcept {
-#if defined(__SIZEOF_INT128__)
-                auto result = builtin_uint128_t(x) * builtin_uint128_t(y);
-                return std::uint64_t(result >> 64);
-#elif defined(_MSC_VER) && defined(_M_X64)
-                return __umulh(x, y);
-#else
-                auto a = std::uint32_t(x >> 32);
-                auto b = std::uint32_t(x);
-                auto c = std::uint32_t(y >> 32);
-                auto d = std::uint32_t(y);
-
-                auto ac = umul64(a, c);
-                auto bc = umul64(b, c);
-                auto ad = umul64(a, d);
-                auto bd = umul64(b, d);
-
-                auto intermediate = (bd >> 32) + std::uint32_t(ad) + std::uint32_t(bc);
-
-                return ac + (intermediate >> 32) + (ad >> 32) + (bc >> 32);
-#endif
-            }
-
-            // Get upper 128-bits of multiplication of a 64-bit unsigned integer and a 128-bit
-            // unsigned integer.
-            JKJ_SAFEBUFFERS inline uint128 umul192_upper128(std::uint64_t x, uint128 y) noexcept {
-                auto r = umul128(x, y.high());
-                r += umul128_upper64(x, y.low());
-                return r;
-            }
-
-            // Get upper 64-bits of multiplication of a 32-bit unsigned integer and a 64-bit
-            // unsigned integer.
-            inline std::uint64_t umul96_upper64(std::uint32_t x, std::uint64_t y) noexcept {
-#if defined(__SIZEOF_INT128__) || (defined(_MSC_VER) && defined(_M_X64))
-                return umul128_upper64(std::uint64_t(x) << 32, y);
-#else
-                auto yh = std::uint32_t(y >> 32);
-                auto yl = std::uint32_t(y);
-
-                auto xyh = umul64(x, yh);
-                auto xyl = umul64(x, yl);
-
-                return xyh + (xyl >> 32);
-#endif
-            }
-
-            // Get lower 128-bits of multiplication of a 64-bit unsigned integer and a 128-bit
-            // unsigned integer.
-            JKJ_SAFEBUFFERS inline uint128 umul192_lower128(std::uint64_t x, uint128 y) noexcept {
-                auto high = x * y.high();
-                auto high_low = umul128(x, y.low());
-                return {high + high_low.high(), high_low.low()};
-            }
-
-            // Get lower 64-bits of multiplication of a 32-bit unsigned integer and a 64-bit
-            // unsigned integer.
-            inline std::uint64_t umul96_lower64(std::uint32_t x, std::uint64_t y) noexcept {
-                return x * y;
-            }
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////
-        // Some simple utilities for constexpr computation.
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        template <int k, class Int>
-        constexpr Int compute_power(Int a) noexcept {
-            static_assert(k >= 0);
-            Int p = 1;
-            for (int i = 0; i < k; ++i) {
-                p *= a;
-            }
-            return p;
-        }
-
-        template <int a, class UInt>
-        constexpr int count_factors(UInt n) noexcept {
-            static_assert(a > 1);
-            int c = 0;
-            while (n % a == 0) {
-                n /= a;
-                ++c;
-            }
-            return c;
-        }
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for fast/constexpr log computation.
@@ -614,7 +423,7 @@ namespace jkj::dragonbox {
             constexpr bool check_divisibility_and_divide_by_pow10(std::uint32_t& n) noexcept {
                 // Make sure the computation for max_n does not overflow.
                 static_assert(N + 1 <= log::floor_log10_pow2(31));
-                assert(n <= compute_power<N + 1>(std::uint32_t(10)));
+                assert(n <= boost::charconv::detail::compute_power(std::uint32_t(10), N + 1));
 
                 using info = divide_by_pow10_info<N>;
                 n *= info::magic_number;
@@ -632,7 +441,7 @@ namespace jkj::dragonbox {
             constexpr std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept {
                 // Make sure the computation for max_n does not overflow.
                 static_assert(N + 1 <= log::floor_log10_pow2(31));
-                assert(n <= compute_power<N + 1>(std::uint32_t(10)));
+                assert(n <= boost::charconv::detail::compute_power(std::uint32_t(10), N + 1));
 
                 return (n * divide_by_pow10_info<N>::magic_number) >>
                        divide_by_pow10_info<N>::shift_amount;
@@ -650,16 +459,16 @@ namespace jkj::dragonbox {
                 // (mul + mov for no apparent reason, instead of single imul),
                 // so we does this manually.
                 if constexpr (std::is_same_v<UInt, std::uint32_t> && N == 2) {
-                    return std::uint32_t(wuint::umul64(n, std::uint32_t(1374389535)) >> 37);
+                    return std::uint32_t(boost::charconv::detail::umul64(n, std::uint32_t(1374389535)) >> 37);
                 }
                 // Specialize for 64-bit division by 1000.
                 // Ensure that the correctness condition is met.
                 else if constexpr (std::is_same_v<UInt, std::uint64_t> && N == 3 &&
                               n_max <= std::uint64_t(15534100272597517998ull)) {
-                    return wuint::umul128_upper64(n, std::uint64_t(2361183241434822607ull)) >> 7;
+                    return boost::charconv::detail::umul128_upper64(n, std::uint64_t(2361183241434822607ull)) >> 7;
                 }
                 else {
-                    constexpr auto divisor = compute_power<N>(UInt(10));
+                    constexpr auto divisor = boost::charconv::detail::compute_power(UInt(10), N);
                     return n / divisor;
                 }
             }
@@ -755,7 +564,7 @@ namespace jkj::dragonbox {
 
         template <>
         struct cache_holder<ieee754_binary64> {
-            using cache_entry_type = wuint::uint128;
+            using cache_entry_type = boost::charconv::detail::uint128;
             static constexpr int cache_bits = 128;
             static constexpr int min_k = -292;
             static constexpr int max_k = 326;
@@ -1081,7 +890,7 @@ namespace jkj::dragonbox {
                 compression_ratio;
 
             struct cache_holder_t {
-                wuint::uint128 table[compressed_table_size];
+                boost::charconv::detail::uint128 table[compressed_table_size];
             };
             static constexpr cache_holder_t cache = [] {
                 cache_holder_t res{};
@@ -1612,21 +1421,21 @@ namespace jkj::dragonbox {
 
                                 // Try to recover the real cache.
                                 auto const pow5 = compressed_cache_detail::pow5.table[offset];
-                                auto recovered_cache = wuint::umul128(base_cache.high(), pow5);
-                                auto const middle_low = wuint::umul128(base_cache.low(), pow5);
+                                auto recovered_cache = boost::charconv::detail::umul128(base_cache.high, pow5);
+                                auto const middle_low = boost::charconv::detail::umul128(base_cache.low, pow5);
 
-                                recovered_cache += middle_low.high();
+                                recovered_cache += middle_low.high;
 
-                                auto const high_to_middle = recovered_cache.high() << (64 - alpha);
-                                auto const middle_to_low = recovered_cache.low() << (64 - alpha);
+                                auto const high_to_middle = recovered_cache.high << (64 - alpha);
+                                auto const middle_to_low = recovered_cache.low << (64 - alpha);
 
-                                recovered_cache = wuint::uint128{
-                                    (recovered_cache.low() >> alpha) | high_to_middle,
-                                    ((middle_low.low() >> alpha) | middle_to_low)};
+                                recovered_cache = boost::charconv::detail::uint128{
+                                    (recovered_cache.low >> alpha) | high_to_middle,
+                                    ((middle_low.low >> alpha) | middle_to_low)};
 
-                                assert(recovered_cache.low() + 1 != 0);
-                                recovered_cache = {recovered_cache.high(),
-                                                   recovered_cache.low() + 1};
+                                assert(recovered_cache.low + 1 != 0);
+                                recovered_cache = {recovered_cache.high,
+                                                   recovered_cache.low + 1};
 
                                 return recovered_cache;
                             }
@@ -1756,16 +1565,15 @@ namespace jkj::dragonbox {
             static constexpr int case_shorter_interval_left_endpoint_upper_threshold =
                 2 +
                 log::floor_log2(
-                    compute_power<
-                        count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1>(10) /
+                    boost::charconv::detail::compute_power
+                        (10, boost::charconv::detail::count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1) /
                     3);
 
             static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
             static constexpr int case_shorter_interval_right_endpoint_upper_threshold =
                 2 +
                 log::floor_log2(
-                    compute_power<
-                        count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1>(10) /
+                    boost::charconv::detail::compute_power(10, boost::charconv::detail::count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) /
                     3);
 
             static constexpr int shorter_interval_tie_lower_threshold =
@@ -1821,8 +1629,8 @@ namespace jkj::dragonbox {
                 // Step 2: Try larger divisor; remove trailing zeros if necessary
                 //////////////////////////////////////////////////////////////////////
 
-                constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
-                constexpr auto small_divisor = compute_power<kappa>(std::uint32_t(10));
+                constexpr auto big_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa + 1);
+                constexpr auto small_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa);
 
                 // Using an upper bound on zi, we might be able to optimize the division
                 // better than the compiler; we are computing zi / big_divisor here.
@@ -2034,7 +1842,7 @@ namespace jkj::dragonbox {
                 // Step 2: Try larger divisor; remove trailing zeros if necessary
                 //////////////////////////////////////////////////////////////////////
 
-                constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
+                constexpr auto big_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa + 1);
 
                 // Using an upper bound on xi, we might be able to optimize the division
                 // better than the compiler; we are computing xi / big_divisor here.
@@ -2111,7 +1919,7 @@ namespace jkj::dragonbox {
                 // Step 2: Try larger divisor; remove trailing zeros if necessary
                 //////////////////////////////////////////////////////////////////////
 
-                constexpr auto big_divisor = compute_power<kappa + 1>(std::uint32_t(10));
+                constexpr auto big_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa + 1);
 
                 // Using an upper bound on zi, we might be able to optimize the division better than
                 // the compiler; we are computing zi / big_divisor here.
@@ -2160,7 +1968,7 @@ namespace jkj::dragonbox {
 
                     int s = 0;
                     while (true) {
-                        auto q = bits::rotr(n * mod_inv_25, 2);
+                        auto q = boost::core::rotr(n * mod_inv_25, 2);
                         if (q <= std::numeric_limits<std::uint32_t>::max() / 100) {
                             n = q;
                             s += 2;
@@ -2169,7 +1977,7 @@ namespace jkj::dragonbox {
                             break;
                         }
                     }
-                    auto q = bits::rotr(n * mod_inv_5, 1);
+                    auto q = boost::core::rotr(n * mod_inv_5, 1);
                     if (q <= std::numeric_limits<std::uint32_t>::max() / 10) {
                         n = q;
                         s |= 1;
@@ -2186,20 +1994,20 @@ namespace jkj::dragonbox {
 
                     // This magic number is ceil(2^90 / 10^8).
                     constexpr auto magic_number = std::uint64_t(12379400392853802749ull);
-                    auto nm = wuint::umul128(n, magic_number);
+                    auto nm = boost::charconv::detail::umul128(n, magic_number);
 
                     // Is n is divisible by 10^8?
-                    if ((nm.high() & ((std::uint64_t(1) << (90 - 64)) - 1)) == 0 &&
-                        nm.low() < magic_number) {
+                    if ((nm.high & ((std::uint64_t(1) << (90 - 64)) - 1)) == 0 &&
+                        nm.low < magic_number) {
                         // If yes, work with the quotient.
-                        auto n32 = std::uint32_t(nm.high() >> (90 - 64));
+                        auto n32 = std::uint32_t(nm.high >> (90 - 64));
 
                         constexpr auto mod_inv_5 = std::uint32_t(0xcccc'cccd);
                         constexpr auto mod_inv_25 = mod_inv_5 * mod_inv_5;
 
                         int s = 8;
                         while (true) {
-                            auto q = bits::rotr(n32 * mod_inv_25, 2);
+                            auto q = boost::core::rotr(n32 * mod_inv_25, 2);
                             if (q <= std::numeric_limits<std::uint32_t>::max() / 100) {
                                 n32 = q;
                                 s += 2;
@@ -2208,7 +2016,7 @@ namespace jkj::dragonbox {
                                 break;
                             }
                         }
-                        auto q = bits::rotr(n32 * mod_inv_5, 1);
+                        auto q = boost::core::rotr(n32 * mod_inv_5, 1);
                         if (q <= std::numeric_limits<std::uint32_t>::max() / 10) {
                             n32 = q;
                             s |= 1;
@@ -2224,7 +2032,7 @@ namespace jkj::dragonbox {
 
                     int s = 0;
                     while (true) {
-                        auto q = bits::rotr(n * mod_inv_25, 2);
+                        auto q = boost::core::rotr(n * mod_inv_25, 2);
                         if (q <= std::numeric_limits<std::uint64_t>::max() / 100) {
                             n = q;
                             s += 2;
@@ -2233,7 +2041,7 @@ namespace jkj::dragonbox {
                             break;
                         }
                     }
-                    auto q = bits::rotr(n * mod_inv_5, 1);
+                    auto q = boost::core::rotr(n * mod_inv_5, 1);
                     if (q <= std::numeric_limits<std::uint64_t>::max() / 10) {
                         n = q;
                         s |= 1;
@@ -2246,13 +2054,13 @@ namespace jkj::dragonbox {
             static compute_mul_result compute_mul(carrier_uint u,
                                                   cache_entry_type const& cache) noexcept {
                 if constexpr (std::is_same_v<format, ieee754_binary32>) {
-                    auto r = wuint::umul96_upper64(u, cache);
+                    auto r = boost::charconv::detail::umul96_upper64(u, cache);
                     return {carrier_uint(r >> 32), carrier_uint(r) == 0};
                 }
                 else {
                     static_assert(std::is_same_v<format, ieee754_binary64>);
-                    auto r = wuint::umul192_upper128(u, cache);
-                    return {r.high(), r.low() == 0};
+                    auto r = boost::charconv::detail::umul192_upper128(u, cache);
+                    return {r.high, r.low == 0};
                 }
             }
 
@@ -2263,7 +2071,7 @@ namespace jkj::dragonbox {
                 }
                 else {
                     static_assert(std::is_same_v<format, ieee754_binary64>);
-                    return std::uint32_t(cache.high() >> (carrier_bits - 1 - beta));
+                    return std::uint32_t(cache.high >> (carrier_bits - 1 - beta));
                 }
             }
 
@@ -2274,14 +2082,14 @@ namespace jkj::dragonbox {
                 assert(beta < 64);
 
                 if constexpr (std::is_same_v<format, ieee754_binary32>) {
-                    auto r = wuint::umul96_lower64(two_f, cache);
+                    auto r = boost::charconv::detail::umul96_lower64(two_f, cache);
                     return {((r >> (64 - beta)) & 1) != 0, std::uint32_t(r >> (32 - beta)) == 0};
                 }
                 else {
                     static_assert(std::is_same_v<format, ieee754_binary64>);
-                    auto r = wuint::umul192_lower128(two_f, cache);
-                    return {((r.high() >> (64 - beta)) & 1) != 0,
-                            ((r.high() << beta) | (r.low() >> (64 - beta))) == 0};
+                    auto r = boost::charconv::detail::umul192_lower128(two_f, cache);
+                    return {((r.high >> (64 - beta)) & 1) != 0,
+                            ((r.high << beta) | (r.low >> (64 - beta))) == 0};
                 }
             }
 
@@ -2294,7 +2102,7 @@ namespace jkj::dragonbox {
                 }
                 else {
                     static_assert(std::is_same_v<format, ieee754_binary64>);
-                    return (cache.high() - (cache.high() >> (significand_bits + 2))) >>
+                    return (cache.high - (cache.high >> (significand_bits + 2))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
             }
@@ -2308,7 +2116,7 @@ namespace jkj::dragonbox {
                 }
                 else {
                     static_assert(std::is_same_v<format, ieee754_binary64>);
-                    return (cache.high() + (cache.high() >> (significand_bits + 1))) >>
+                    return (cache.high + (cache.high >> (significand_bits + 1))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
             }
@@ -2322,7 +2130,7 @@ namespace jkj::dragonbox {
                 }
                 else {
                     static_assert(std::is_same_v<format, ieee754_binary64>);
-                    return ((cache.high() >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
+                    return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
                 }
             }
 

@@ -330,6 +330,21 @@ static constexpr std::uint64_t power_of_10[] = {
 
 static_assert(sizeof(power_of_10) == 20 * sizeof(std::uint64_t), "There should be the first 20 powers of 10");
 
+
+template <int a, typename UInt>
+BOOST_CHARCONV_CXX14_CONSTEXPR int count_factors(UInt n) noexcept
+{
+    static_assert(a > 1);
+    int c = 0;
+
+    while (n % a == 0)
+    {
+        n /= a;
+        ++c;
+    }
+    return c;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // Utilities for fast/constexpr log computation.
 ////////////////////////////////////////////////////////////////////////////////////////
