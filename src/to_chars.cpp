@@ -5,6 +5,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/detail/dragonbox.hpp>
+#include <boost/charconv/detail/floff.hpp>
 #include <boost/charconv/to_chars.hpp>
 #include <limits>
 #include <cstdio>
@@ -330,7 +331,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
     {
         const auto abs_value = std::abs(value);
-        if (abs_value > 1 && abs_value < 1e16)
+        if (abs_value >= 1 && abs_value < 1e16)
         {
             auto value_struct = jkj::dragonbox::to_decimal(value);
             if (value_struct.is_negative)
