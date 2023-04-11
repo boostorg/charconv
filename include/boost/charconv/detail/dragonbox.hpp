@@ -58,7 +58,7 @@ namespace jkj { namespace dragonbox {
         using carrier_uint =
             typename std::conditional<boost::charconv::detail::physical_bits<T>::value == 32, std::uint32_t, std::uint64_t>::type;
 
-        static_assert(sizeof(carrier_uint) == sizeof(T));
+        static_assert(sizeof(carrier_uint) == sizeof(T), "Type T must have a unsigned type with the same number of bits");
 
         // Number of bits in the above unsigned integer type.
         static constexpr int carrier_bits = int(boost::charconv::detail::physical_bits<carrier_uint>::value);
@@ -86,7 +86,8 @@ namespace jkj { namespace dragonbox {
         static constexpr unsigned int extract_exponent_bits(carrier_uint u) noexcept {
             constexpr int significand_bits = format::significand_bits;
             constexpr int exponent_bits = format::exponent_bits;
-            static_assert(boost::charconv::detail::value_bits<unsigned int>::value > exponent_bits);
+            static_assert(boost::charconv::detail::value_bits<unsigned int>::value > exponent_bits, 
+                          "Must have more value bits than the exponent has bits");
             constexpr auto exponent_bits_mask =
                 (static_cast<unsigned int>(1) << exponent_bits) - 1;
             return static_cast<unsigned int>(u >> significand_bits) & exponent_bits_mask;
@@ -293,7 +294,7 @@ namespace jkj { namespace dragonbox {
             template <int N>
             constexpr bool check_divisibility_and_divide_by_pow10(std::uint32_t& n) noexcept {
                 // Make sure the computation for max_n does not overflow.
-                static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
+                // static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
                 assert(n <= boost::charconv::detail::compute_power(std::uint32_t(10), N + 1));
 
                 using info = divide_by_pow10_info<N>;
@@ -311,7 +312,7 @@ namespace jkj { namespace dragonbox {
             template <int N>
             constexpr std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept {
                 // Make sure the computation for max_n does not overflow.
-                static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
+                // static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
                 assert(n <= boost::charconv::detail::compute_power(std::uint32_t(10), N + 1));
 
                 return (n * divide_by_pow10_info<N>::magic_number) >>
@@ -320,9 +321,8 @@ namespace jkj { namespace dragonbox {
 
             // Compute floor(n / 10^N) for small N.
             // Precondition: n <= n_max
-            template <int N, class UInt, UInt n_max>
+            template <unsigned N, class UInt, UInt n_max>
             constexpr UInt divide_by_pow10(UInt n) noexcept {
-                static_assert(N >= 0);
 
                 // Specialize for 32-bit division by 100.
                 // Compiler is supposed to generate the identical code for just writing
@@ -750,39 +750,6 @@ namespace jkj { namespace dragonbox {
                 {0xca5e89b18b602368, 0x385bb19cb14bdfc5}, {0xfcf62c1dee382c42, 0x46729e03dd9ed7b6},
                 {0x9e19db92b4e31ba9, 0x6c07a2c26a8346d2}, {0xc5a05277621be293, 0xc7098b7305241886},
                 {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
-        };
-
-        // Compressed cache for double
-        struct compressed_cache_detail {
-            static constexpr int compression_ratio = 27;
-            static constexpr std::size_t compressed_table_size =
-                (cache_holder<boost::charconv::detail::ieee754_binary64>::max_k - cache_holder<boost::charconv::detail::ieee754_binary64>::min_k +
-                 compression_ratio) /
-                compression_ratio;
-
-            struct cache_holder_t {
-                boost::charconv::detail::uint128 table[compressed_table_size];
-            };
-            static constexpr cache_holder_t cache = [] {
-                cache_holder_t res{};
-                for (std::size_t i = 0; i < compressed_table_size; ++i) {
-                    res.table[i] = cache_holder<boost::charconv::detail::ieee754_binary64>::cache[i * compression_ratio];
-                }
-                return res;
-            }();
-
-            struct pow5_holder_t {
-                std::uint64_t table[compression_ratio];
-            };
-            static constexpr pow5_holder_t pow5 = [] {
-                pow5_holder_t res{};
-                std::uint64_t p = 1;
-                for (std::size_t i = 0; i < compression_ratio; ++i) {
-                    res.table[i] = p;
-                    p *= 5;
-                }
-                return res;
-            }();
         };
     }
 
@@ -1258,133 +1225,72 @@ namespace jkj { namespace dragonbox {
                             k - cache_holder<FloatFormat>::min_k)];
                     }
                 };
-
-                struct compact : base {
-                    using cache_policy = compact;
-                    template <class FloatFormat>
-                    static constexpr typename cache_holder<FloatFormat>::cache_entry_type
-                    get_cache(int k) noexcept {
-                        assert(k >= cache_holder<FloatFormat>::min_k &&
-                               k <= cache_holder<FloatFormat>::max_k);
-
-                        BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, boost::charconv::detail::ieee754_binary64>::value) {
-                            // Compute the base index.
-                            auto const cache_index =
-                                int(std::uint32_t(k - cache_holder<FloatFormat>::min_k) /
-                                    compressed_cache_detail::compression_ratio);
-                            auto const kb =
-                                cache_index * compressed_cache_detail::compression_ratio +
-                                cache_holder<FloatFormat>::min_k;
-                            auto const offset = k - kb;
-
-                            // Get the base cache.
-                            auto const base_cache =
-                                compressed_cache_detail::cache.table[cache_index];
-
-                            if (offset == 0) {
-                                return base_cache;
-                            }
-                            else {
-                                // Compute the required amount of bit-shift.
-                                auto const alpha = boost::charconv::detail::log::floor_log2_pow10(kb + offset) -
-                                                   boost::charconv::detail::log::floor_log2_pow10(kb) - offset;
-                                assert(alpha > 0 && alpha < 64);
-
-                                // Try to recover the real cache.
-                                auto const pow5 = compressed_cache_detail::pow5.table[offset];
-                                auto recovered_cache = boost::charconv::detail::umul128(base_cache.high, pow5);
-                                auto const middle_low = boost::charconv::detail::umul128(base_cache.low, pow5);
-
-                                recovered_cache += middle_low.high;
-
-                                auto const high_to_middle = recovered_cache.high << (64 - alpha);
-                                auto const middle_to_low = recovered_cache.low << (64 - alpha);
-
-                                recovered_cache = boost::charconv::detail::uint128{
-                                    (recovered_cache.low >> alpha) | high_to_middle,
-                                    ((middle_low.low >> alpha) | middle_to_low)};
-
-                                assert(recovered_cache.low + 1 != 0);
-                                recovered_cache = {recovered_cache.high,
-                                                   recovered_cache.low + 1};
-
-                                return recovered_cache;
-                            }
-                        }
-                        else {
-                            // Just use the full cache for anything other than binary64
-                            return cache_holder<FloatFormat>::cache[std::size_t(
-                                k - cache_holder<FloatFormat>::min_k)];
-                        }
-                    }
-                };
             }
         }
     }
 
     namespace policy {
         namespace sign {
-            inline constexpr auto ignore = detail::policy_impl::sign::ignore{};
-            inline constexpr auto return_sign = detail::policy_impl::sign::return_sign{};
+            BOOST_INLINE_VARIABLE constexpr auto ignore = detail::policy_impl::sign::ignore{};
+            BOOST_INLINE_VARIABLE constexpr auto return_sign = detail::policy_impl::sign::return_sign{};
         }
 
         namespace trailing_zero {
-            inline constexpr auto ignore = detail::policy_impl::trailing_zero::ignore{};
-            inline constexpr auto remove = detail::policy_impl::trailing_zero::remove{};
-            inline constexpr auto report = detail::policy_impl::trailing_zero::report{};
+            BOOST_INLINE_VARIABLE constexpr auto ignore = detail::policy_impl::trailing_zero::ignore{};
+            BOOST_INLINE_VARIABLE constexpr auto remove = detail::policy_impl::trailing_zero::remove{};
+            BOOST_INLINE_VARIABLE constexpr auto report = detail::policy_impl::trailing_zero::report{};
         }
 
         namespace decimal_to_binary_rounding {
-            inline constexpr auto nearest_to_even =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_to_even =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_to_even{};
-            inline constexpr auto nearest_to_odd =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_to_odd =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_to_odd{};
-            inline constexpr auto nearest_toward_plus_infinity =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_toward_plus_infinity =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_toward_plus_infinity{};
-            inline constexpr auto nearest_toward_minus_infinity =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_toward_minus_infinity =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_toward_minus_infinity{};
-            inline constexpr auto nearest_toward_zero =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_toward_zero =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_toward_zero{};
-            inline constexpr auto nearest_away_from_zero =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_away_from_zero =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_away_from_zero{};
 
-            inline constexpr auto nearest_to_even_static_boundary =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_to_even_static_boundary =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_to_even_static_boundary{};
-            inline constexpr auto nearest_to_odd_static_boundary =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_to_odd_static_boundary =
                 detail::policy_impl::decimal_to_binary_rounding::nearest_to_odd_static_boundary{};
-            inline constexpr auto nearest_toward_plus_infinity_static_boundary =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_toward_plus_infinity_static_boundary =
                 detail::policy_impl::decimal_to_binary_rounding::
                     nearest_toward_plus_infinity_static_boundary{};
-            inline constexpr auto nearest_toward_minus_infinity_static_boundary =
+            BOOST_INLINE_VARIABLE constexpr auto nearest_toward_minus_infinity_static_boundary =
                 detail::policy_impl::decimal_to_binary_rounding::
                     nearest_toward_minus_infinity_static_boundary{};
 
-            inline constexpr auto toward_plus_infinity =
+            BOOST_INLINE_VARIABLE constexpr auto toward_plus_infinity =
                 detail::policy_impl::decimal_to_binary_rounding::toward_plus_infinity{};
-            inline constexpr auto toward_minus_infinity =
+            BOOST_INLINE_VARIABLE constexpr auto toward_minus_infinity =
                 detail::policy_impl::decimal_to_binary_rounding::toward_minus_infinity{};
-            inline constexpr auto toward_zero =
+            BOOST_INLINE_VARIABLE constexpr auto toward_zero =
                 detail::policy_impl::decimal_to_binary_rounding::toward_zero{};
-            inline constexpr auto away_from_zero =
+            BOOST_INLINE_VARIABLE constexpr auto away_from_zero =
                 detail::policy_impl::decimal_to_binary_rounding::away_from_zero{};
         }
 
         namespace binary_to_decimal_rounding {
-            inline constexpr auto do_not_care =
+            BOOST_INLINE_VARIABLE constexpr auto do_not_care =
                 detail::policy_impl::binary_to_decimal_rounding::do_not_care{};
-            inline constexpr auto to_even =
+            BOOST_INLINE_VARIABLE constexpr auto to_even =
                 detail::policy_impl::binary_to_decimal_rounding::to_even{};
-            inline constexpr auto to_odd =
+            BOOST_INLINE_VARIABLE constexpr auto to_odd =
                 detail::policy_impl::binary_to_decimal_rounding::to_odd{};
-            inline constexpr auto away_from_zero =
+            BOOST_INLINE_VARIABLE constexpr auto away_from_zero =
                 detail::policy_impl::binary_to_decimal_rounding::away_from_zero{};
-            inline constexpr auto toward_zero =
+            BOOST_INLINE_VARIABLE constexpr auto toward_zero =
                 detail::policy_impl::binary_to_decimal_rounding::toward_zero{};
         }
 
         namespace cache {
-            inline constexpr auto full = detail::policy_impl::cache::full{};
-            inline constexpr auto compact = detail::policy_impl::cache::compact{};
+            BOOST_INLINE_VARIABLE constexpr auto full = detail::policy_impl::cache::full{};
         }
     }
 
@@ -1406,8 +1312,8 @@ namespace jkj { namespace dragonbox {
             using format::decimal_digits;
 
             static constexpr int kappa = std::is_same<format, boost::charconv::detail::ieee754_binary32>::value ? 1 : 2;
-            static_assert(kappa >= 1);
-            static_assert(carrier_bits >= significand_bits + 2 + boost::charconv::detail::log::floor_log2_pow10(kappa + 1));
+            static_assert(kappa >= 1, "Kappa must be >= 1");
+            // static_assert(carrier_bits >= significand_bits + 2 + boost::charconv::detail::log::floor_log2_pow10(kappa + 1));
 
             static constexpr int min_k = [] {
                 constexpr auto a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(
@@ -1416,7 +1322,7 @@ namespace jkj { namespace dragonbox {
                     -boost::charconv::detail::log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
                 return a < b ? a : b;
             }();
-            static_assert(min_k >= cache_holder<format>::min_k);
+            // static_assert(min_k >= cache_holder<format>::min_k, "Min k is not in the cache");
 
             static constexpr int max_k = [] {
                 // We do invoke shorter_interval_case for exponent == min_exponent case,
@@ -1427,7 +1333,7 @@ namespace jkj { namespace dragonbox {
                     -boost::charconv::detail::log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
                 return a > b ? a : b;
             }();
-            static_assert(max_k <= cache_holder<format>::max_k);
+            // static_assert(max_k <= cache_holder<format>::max_k, "Max k is not in the cache");
 
             using cache_entry_type = typename cache_holder<format>::cache_entry_type;
             static constexpr auto cache_bits = cache_holder<format>::cache_bits;
@@ -1493,8 +1399,10 @@ namespace jkj { namespace dragonbox {
                 // this does not cause any problem for the endpoints calculations; it can only
                 // cause a problem when we need to perform integer check for the center.
                 // Fortunately, with these inputs, that branch is never executed, so we are fine.
-                auto const [zi, is_z_integer] = compute_mul((two_fc | 1) << beta, cache);
-
+                //auto const [zi, is_z_integer] = compute_mul((two_fc | 1) << beta, cache);
+                const auto z_res = compute_mul((two_fc | 1) << beta, cache);
+                const auto zi = z_res.result;
+                const auto is_z_integer = z_res.is_integer;
 
                 //////////////////////////////////////////////////////////////////////
                 // Step 2: Try larger divisor; remove trailing zeros if necessary
@@ -1534,8 +1442,11 @@ namespace jkj { namespace dragonbox {
                 }
                 else {
                     // r == deltai; compare fractional parts.
-                    auto const [xi_parity, x_is_integer] =
-                        compute_mul_parity(two_fc - 1, cache, beta);
+                    // auto const [xi_parity, x_is_integer] =
+                    //    compute_mul_parity(two_fc - 1, cache, beta);
+                    const auto x_res = compute_mul_parity(two_fc - 1, cache, beta);
+                    const auto xi_parity = x_res.parity;
+                    const auto x_is_integer = x_res.is_integer;
 
                     if (!(xi_parity | (x_is_integer & interval_type.include_left_endpoint()))) {
                         goto small_divisor_case_label;
@@ -1596,8 +1507,12 @@ namespace jkj { namespace dragonbox {
                         // Since there are only 2 possibilities, we only need to care about the
                         // parity. Also, zi and r should have the same parity since the divisor is
                         // an even number.
-                        auto const [yi_parity, is_y_integer] =
-                            compute_mul_parity(two_fc, cache, beta);
+                        //auto const [yi_parity, is_y_integer] =
+                        //    compute_mul_parity(two_fc, cache, beta);
+                        const auto y_res = compute_mul_parity(two_fc, cache, beta);
+                        const auto yi_parity = y_res.parity;
+                        const auto is_y_integer = y_res.is_integer;
+
                         if (yi_parity != approx_y_parity) {
                             --ret_value.significand;
                         }
@@ -1691,7 +1606,10 @@ namespace jkj { namespace dragonbox {
                 // Compute xi and deltai.
                 // 10^kappa <= deltai < 10^(kappa + 1)
                 auto const deltai = compute_delta(cache, beta);
-                auto [xi, is_x_integer] = compute_mul(two_fc << beta, cache);
+                //auto [xi, is_x_integer] = compute_mul(two_fc << beta, cache);
+                const auto x_res = compute_mul(two_fc << beta, cache);
+                const auto xi = x_res.result;
+                const auto is_x_integer = x_res.is_integer;
 
                 // Deal with the unique exceptional cases
                 // 29711844 * 2^-82
@@ -1738,9 +1656,10 @@ namespace jkj { namespace dragonbox {
                     // (6.1442649164096937243516663440523473127541365101933479309082... * 10^-18)
                     // and 2f_c = 29711482, e = -80
                     // (1.2288529832819387448703332688104694625508273020386695861816... * 10^-17).
-                    auto const [zi_parity, is_z_integer] =
-                        compute_mul_parity(two_fc + 2, cache, beta);
-                    if (zi_parity || is_z_integer) {
+                    //auto const [zi_parity, is_z_integer] =
+                    //    compute_mul_parity(two_fc + 2, cache, beta);
+                    const auto z_res = compute_mul_parity(two_fc + 2, cache, beta);
+                    if (z_res.zi_parity || z_res.is_z_integer) {
                         goto small_divisor_case_label;
                     }
                 }
@@ -1857,7 +1776,7 @@ namespace jkj { namespace dragonbox {
                     return s;
                 }
                 else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double type");
 
                     // Divide by 10^8 and reduce to 32-bits if divisible.
                     // Since ret_value.significand <= (2^53 * 1000 - 1) / 1000 < 10^16,
@@ -1929,7 +1848,7 @@ namespace jkj { namespace dragonbox {
                     return {carrier_uint(r >> 32), carrier_uint(r) == 0};
                 }
                 else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
                     auto r = boost::charconv::detail::umul192_upper128(u, cache);
                     return {r.high, r.low == 0};
                 }
@@ -1941,7 +1860,7 @@ namespace jkj { namespace dragonbox {
                     return std::uint32_t(cache >> (cache_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
                     return std::uint32_t(cache.high >> (carrier_bits - 1 - beta));
                 }
             }
@@ -1957,7 +1876,7 @@ namespace jkj { namespace dragonbox {
                     return {((r >> (64 - beta)) & 1) != 0, std::uint32_t(r >> (32 - beta)) == 0};
                 }
                 else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
                     auto r = boost::charconv::detail::umul192_lower128(two_f, cache);
                     return {((r.high >> (64 - beta)) & 1) != 0,
                             ((r.high << beta) | (r.low >> (64 - beta))) == 0};
@@ -1972,7 +1891,7 @@ namespace jkj { namespace dragonbox {
                                         (cache_bits - significand_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
                     return (cache.high - (cache.high >> (significand_bits + 2))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
@@ -1986,7 +1905,7 @@ namespace jkj { namespace dragonbox {
                                         (cache_bits - significand_bits - 1 - beta));
                 }
                 else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
                     return (cache.high + (cache.high >> (significand_bits + 1))) >>
                            (carrier_bits - significand_bits - 1 - beta);
                 }
@@ -2000,7 +1919,7 @@ namespace jkj { namespace dragonbox {
                            2;
                 }
                 else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
                     return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
                 }
             }
@@ -2239,7 +2158,7 @@ namespace jkj { namespace dragonbox {
                         // 10^-308. This is indeed of the shortest length, and it is the unique one
                         // closest to the true value among valid representations of the same length.
                         static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary32>::value ||
-                                      std::is_same<format, boost::charconv::detail::ieee754_binary64>::value);
+                                      std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Format must be IEEE754 binary 32 or 64");
 
                         if (two_fc == 0) {
                             return decltype(interval_type_provider)::invoke_shorter_interval_case(
@@ -2292,7 +2211,7 @@ namespace jkj { namespace dragonbox {
                         typename policy_holder::cache_policy>(two_fc, exponent);
                 }
                 else {
-                    static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed);
+                    static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed, "Tag should be right_closed_direction");
 
                     bool shorter_interval = false;
 
@@ -2402,7 +2321,7 @@ namespace jkj { namespace dragonbox {
 
     // Maximum required buffer size (excluding null-terminator)
     template <class FloatFormat>
-    inline constexpr std::size_t max_output_string_length =
+    BOOST_INLINE_VARIABLE constexpr std::size_t max_output_string_length =
         std::is_same<FloatFormat, boost::charconv::detail::ieee754_binary32>::value
             ?
             // sign(1) + significand(9) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(2)
