@@ -11,25 +11,33 @@
 #include <cerrno>
 #include <utility>
 
+// These numbers diverge from what the formatting is using printf
+// See: https://godbolt.org/z/zd34KcWMW
 template <typename T>
-void simple_test()
+void printf_divergence()
 {
-    char buffer1[256];
+    char buffer1[256] {};
     T v1 = 3.4;
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer1, "3.4");
 
-    char buffer2[256];
-    T v2 = 1234567890123456.78;
+    char buffer2[256] {};
+    T v2 = 3000.40;
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2);
     BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer2, "123456789012345678.90");
+    BOOST_TEST_CSTR_EQ(buffer2, "3000.4");
+
+    char buffer3[256] {};
+    T v3 = -3000000300000000.5;
+    auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3), v3);
+    BOOST_TEST_EQ(r3.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer3, "-3000000300000000.5");
 }
 
 int main()
 {
-    simple_test<double>();
+    printf_divergence<double>();
 
     return boost::report_errors();
 }

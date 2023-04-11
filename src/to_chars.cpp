@@ -330,7 +330,26 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
     {
         const auto abs_value = std::abs(value);
-        if (abs_value > 1e16 && abs_value < 1e20)
+        if (abs_value > 1 && abs_value < 1e16)
+        {
+            auto value_struct = jkj::dragonbox::to_decimal(value);
+            if (value_struct.is_negative)
+            {
+                *first++ = '-';
+            }
+
+            auto r = boost::charconv::to_chars(first, last, value_struct.significand);
+            if (r.ec != 0)
+            {
+                return r;
+            }
+            
+            std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
+            std::memset(r.ptr + value_struct.exponent, '.', 1);
+
+            return { r.ptr, 0 };
+        }
+        else if (abs_value >= 1e16 && abs_value < 1e20)
         {
             if (value < 0)
             {
