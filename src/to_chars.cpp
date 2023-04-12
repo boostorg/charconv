@@ -327,6 +327,8 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value, boost::charconv::chars_format fmt, int precision) noexcept
 {
+    const std::ptrdiff_t buffer_size = last - first;
+    
     // Unspecified precision so we always go with shortest representation
     if (precision == -1)
     {
@@ -335,7 +337,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
             const auto abs_value = std::abs(value);
             if (abs_value >= 1 && abs_value < 1e18) // 1 x 10^(max_digits10 + 1)
             {
-                auto value_struct = jkj::dragonbox::to_decimal(value);
+                auto value_struct = boost::charconv::detail::to_decimal(value);
                 if (value_struct.is_negative)
                 {
                     *first++ = '-';
@@ -348,7 +350,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
                 }
                 
                 // Bounds check
-                if (value_struct.exponent < 0)
+                if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
                 {
                     std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
                     std::memset(r.ptr + value_struct.exponent, '.', 1);
@@ -358,13 +360,13 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
             }
             else
             {
-                auto* ptr = jkj::dragonbox::to_chars(value, first);
+                auto* ptr = boost::charconv::detail::to_chars(value, first);
                 return { ptr, 0 };
             }
         }
         else if (fmt == boost::charconv::chars_format::scientific)
         {
-            auto* ptr = jkj::dragonbox::to_chars(value, first);
+            auto* ptr = boost::charconv::detail::to_chars(value, first);
             return { ptr, 0 };
         }
     }

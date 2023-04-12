@@ -436,10 +436,10 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integ
     using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
     if (base == 10)
     {
-        return detail::to_chars_integer_impl(first, last, value);
+        return to_chars_integer_impl(first, last, value);
     }
 
-    return detail::to_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
+    return to_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128

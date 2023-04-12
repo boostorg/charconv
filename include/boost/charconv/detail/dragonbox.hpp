@@ -30,15 +30,16 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/dragonbox_common.hpp>
 
-namespace jkj { namespace dragonbox {
+namespace boost { namespace charconv { namespace detail {
 
     // A floating-point traits class defines ways to interpret a bit pattern of given size as an
     // encoding of floating-point number. This is a default implementation of such a traits class,
     // supporting ways to interpret 32-bits into a binary32-encoded floating-point number and to
     // interpret 64-bits into a binary64-encoded floating-point number. Users might specialize this
     // class to change the default behavior for certain types.
+
     template <class T>
-    struct default_float_traits {
+    struct dragonbox_float_traits {
         // I don't know if there is a truly reliable way of detecting
         // IEEE-754 binary32/binary64 formats; I just did my best here.
         static_assert(std::numeric_limits<T>::is_iec559 && std::numeric_limits<T>::radix == 2 &&
@@ -166,23 +167,23 @@ namespace jkj { namespace dragonbox {
     // possible (e.g., no inheritance, no private non-static data member, etc.; this is an
     // unfortunate fact about common ABI convention).
 
-    template <class T, class Traits = default_float_traits<T>>
-    struct float_bits;
+    template <class T, class Traits = dragonbox_float_traits<T>>
+    struct dragonbox_float_bits;
 
-    template <class T, class Traits = default_float_traits<T>>
-    struct signed_significand_bits;
+    template <class T, class Traits = dragonbox_float_traits<T>>
+    struct dragonbox_signed_significand_bits;
 
     template <class T, class Traits>
-    struct float_bits {
+    struct dragonbox_float_bits {
         using type = T;
         using traits_type = Traits;
         using carrier_uint = typename traits_type::carrier_uint;
 
         carrier_uint u;
 
-        float_bits() = default;
-        constexpr explicit float_bits(carrier_uint bit_pattern) noexcept : u{bit_pattern} {}
-        constexpr explicit float_bits(T float_value) noexcept
+        dragonbox_float_bits() = default;
+        constexpr explicit dragonbox_float_bits(carrier_uint bit_pattern) noexcept : u{bit_pattern} {}
+        constexpr explicit dragonbox_float_bits(T float_value) noexcept
             : u{traits_type::float_to_carrier(float_value)} {}
 
         constexpr T to_float() const noexcept { return traits_type::carrier_to_float(u); }
@@ -203,7 +204,7 @@ namespace jkj { namespace dragonbox {
 
         // Remove the exponent bits and extract significand bits together with the sign bit.
         constexpr auto remove_exponent_bits(unsigned int exponent_bits) const noexcept {
-            return signed_significand_bits<type, traits_type>(
+            return dragonbox_signed_significand_bits<type, traits_type>(
                 traits_type::remove_exponent_bits(u, exponent_bits));
         }
 
@@ -240,15 +241,15 @@ namespace jkj { namespace dragonbox {
     };
 
     template <class T, class Traits>
-    struct signed_significand_bits {
+    struct dragonbox_signed_significand_bits {
         using type = T;
         using traits_type = Traits;
         using carrier_uint = typename traits_type::carrier_uint;
 
         carrier_uint u;
 
-        signed_significand_bits() = default;
-        constexpr explicit signed_significand_bits(carrier_uint bit_pattern) noexcept
+        dragonbox_signed_significand_bits() = default;
+        constexpr explicit dragonbox_signed_significand_bits(carrier_uint bit_pattern) noexcept
             : u{bit_pattern} {}
 
         // Shift the obtained signed significand bits to the left by 1 to remove the sign bit.
@@ -266,7 +267,6 @@ namespace jkj { namespace dragonbox {
         }
     };
 
-    namespace detail {
         ////////////////////////////////////////////////////////////////////////////////////////
         // Utilities for fast divisibility tests.
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -344,7 +344,6 @@ namespace jkj { namespace dragonbox {
                 }
             }
         }
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////
     // Return types for the main interface function.
@@ -400,7 +399,6 @@ namespace jkj { namespace dragonbox {
     // Computed cache entries.
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    namespace detail {
         template <class FloatFormat>
         struct cache_holder;
 
@@ -751,16 +749,14 @@ namespace jkj { namespace dragonbox {
                 {0x9e19db92b4e31ba9, 0x6c07a2c26a8346d2}, {0xc5a05277621be293, 0xc7098b7305241886},
                 {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
         };
-    }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////
     // Policies.
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    namespace detail {
         // Forward declare the implementation class.
-        template <class Float, class FloatTraits = default_float_traits<Float>>
+        template <class Float, class FloatTraits = dragonbox_float_traits<Float>>
         struct impl;
 
         namespace policy_impl {
@@ -1011,7 +1007,6 @@ namespace jkj { namespace dragonbox {
                     }
                 };
 
-                namespace detail {
                     struct nearest_always_closed {
                         static constexpr auto tag = tag_t::to_nearest;
                         using normal_interval_type = interval_type::closed;
@@ -1044,7 +1039,6 @@ namespace jkj { namespace dragonbox {
                             return f();
                         }
                     };
-                }
 
                 struct nearest_to_even_static_boundary : base {
                     using decimal_to_binary_rounding_policy = nearest_to_even_static_boundary;
@@ -1052,10 +1046,10 @@ namespace jkj { namespace dragonbox {
                     BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.has_even_significand_bits()) {
-                            return f(detail::nearest_always_closed{});
+                            return f(nearest_always_closed{});
                         }
                         else {
-                            return f(detail::nearest_always_open{});
+                            return f(nearest_always_open{});
                         }
                     }
                 };
@@ -1065,10 +1059,10 @@ namespace jkj { namespace dragonbox {
                     BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.has_even_significand_bits()) {
-                            return f(detail::nearest_always_open{});
+                            return f(nearest_always_open{});
                         }
                         else {
-                            return f(detail::nearest_always_closed{});
+                            return f(nearest_always_closed{});
                         }
                     }
                 };
@@ -1101,14 +1095,12 @@ namespace jkj { namespace dragonbox {
                     }
                 };
 
-                namespace detail {
                     struct left_closed_directed {
                         static constexpr auto tag = tag_t::left_closed_directed;
                     };
                     struct right_closed_directed {
                         static constexpr auto tag = tag_t::right_closed_directed;
                     };
-                }
 
                 struct toward_plus_infinity : base {
                     using decimal_to_binary_rounding_policy = toward_plus_infinity;
@@ -1116,10 +1108,10 @@ namespace jkj { namespace dragonbox {
                     BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.is_negative()) {
-                            return f(detail::left_closed_directed{});
+                            return f(left_closed_directed{});
                         }
                         else {
-                            return f(detail::right_closed_directed{});
+                            return f(right_closed_directed{});
                         }
                     }
                 };
@@ -1129,10 +1121,10 @@ namespace jkj { namespace dragonbox {
                     BOOST_FORCEINLINE static auto delegate(SignedSignificandBits s,
                                                          Func&& f) noexcept {
                         if (s.is_negative()) {
-                            return f(detail::right_closed_directed{});
+                            return f(right_closed_directed{});
                         }
                         else {
-                            return f(detail::left_closed_directed{});
+                            return f(left_closed_directed{});
                         }
                     }
                 };
@@ -1140,14 +1132,14 @@ namespace jkj { namespace dragonbox {
                     using decimal_to_binary_rounding_policy = toward_zero;
                     template <class SignedSignificandBits, class Func>
                     BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-                        return f(detail::left_closed_directed{});
+                        return f(left_closed_directed{});
                     }
                 };
                 struct away_from_zero : base {
                     using decimal_to_binary_rounding_policy = away_from_zero;
                     template <class SignedSignificandBits, class Func>
                     BOOST_FORCEINLINE static auto delegate(SignedSignificandBits, Func&& f) noexcept {
-                        return f(detail::right_closed_directed{});
+                        return f(right_closed_directed{});
                     }
                 };
             }
@@ -1227,7 +1219,6 @@ namespace jkj { namespace dragonbox {
                 };
             }
         }
-    }
 
     namespace policy {
         namespace sign {
@@ -1293,8 +1284,6 @@ namespace jkj { namespace dragonbox {
             BOOST_INLINE_VARIABLE constexpr auto full = detail::policy_impl::cache::full{};
         }
     }
-
-    namespace detail {
         ////////////////////////////////////////////////////////////////////////////////////////
         // The main algorithm.
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -2090,19 +2079,18 @@ namespace jkj { namespace dragonbox {
                 return convert_to_policy_holder(policy_pair_list{});
             }
         }
-    }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////
     // The interface function.
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
+    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
     BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
-    to_decimal(signed_significand_bits<Float, FloatTraits> signed_significand_bits,
+    to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signed_significand_bits,
                unsigned int exponent_bits, Policies... policies) noexcept {
         // Build policy holder type.
-        using namespace detail::policy_impl;
+        using namespace policy_impl;
         using policy_holder = decltype(make_policy_holder(
             base_default_pair_list<base_default_pair<sign::base, sign::return_sign>,
                                    base_default_pair<trailing_zero::base, trailing_zero::remove>,
@@ -2118,12 +2106,12 @@ namespace jkj { namespace dragonbox {
                        policy_holder::report_trailing_zeros>;
 
         return_type ret = policy_holder::delegate(
-            signed_significand_bits,
-            [exponent_bits, signed_significand_bits](auto interval_type_provider) {
+            dragonbox_signed_significand_bits,
+            [exponent_bits, dragonbox_signed_significand_bits](auto interval_type_provider) {
                 using format = typename FloatTraits::format;
                 constexpr auto tag = decltype(interval_type_provider)::tag;
 
-                auto two_fc = signed_significand_bits.remove_sign_bit_and_shift();
+                auto two_fc = dragonbox_signed_significand_bits.remove_sign_bit_and_shift();
                 auto exponent = int(exponent_bits);
 
                 BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::to_nearest) {
@@ -2162,7 +2150,7 @@ namespace jkj { namespace dragonbox {
 
                         if (two_fc == 0) {
                             return decltype(interval_type_provider)::invoke_shorter_interval_case(
-                                signed_significand_bits, [exponent](auto... additional_args) {
+                                dragonbox_signed_significand_bits, [exponent](auto... additional_args) {
                                     return detail::impl<Float, FloatTraits>::
                                         template compute_nearest_shorter<
                                             return_type,
@@ -2184,7 +2172,7 @@ namespace jkj { namespace dragonbox {
                     }
 
                     return decltype(interval_type_provider)::invoke_normal_interval_case(
-                        signed_significand_bits, [two_fc, exponent](auto... additional_args) {
+                        dragonbox_signed_significand_bits, [two_fc, exponent](auto... additional_args) {
                             return detail::impl<Float, FloatTraits>::
                                 template compute_nearest_normal<
                                     return_type,
@@ -2234,13 +2222,13 @@ namespace jkj { namespace dragonbox {
                 }
             });
 
-        policy_holder::handle_sign(signed_significand_bits, ret);
+        policy_holder::handle_sign(dragonbox_signed_significand_bits, ret);
         return ret;
     }
 
-    template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
+    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
     BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept {
-        auto const br = float_bits<Float, FloatTraits>(x);
+        auto const br = dragonbox_float_bits<Float, FloatTraits>(x);
         auto const exponent_bits = br.extract_exponent_bits();
         auto const s = br.remove_exponent_bits(exponent_bits);
         assert(br.is_finite());
@@ -2255,7 +2243,7 @@ namespace jkj { namespace dragonbox {
 
         // Avoid needless ABI overhead incurred by tag dispatch.
         template <class PolicyHolder, class Float, class FloatTraits>
-        char* to_chars_n_impl(float_bits<Float, FloatTraits> br, char* buffer) noexcept {
+        char* to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* buffer) noexcept {
             auto const exponent_bits = br.extract_exponent_bits();
             auto const s = br.remove_exponent_bits(exponent_bits);
 
@@ -2296,9 +2284,9 @@ namespace jkj { namespace dragonbox {
     }
 
     // Returns the next-to-end position
-    template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
+    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
     char* to_chars_n(Float x, char* buffer, Policies... policies) noexcept {
-        using namespace jkj::dragonbox::detail::policy_impl;
+        using namespace policy_impl;
         using policy_holder = decltype(make_policy_holder(
             base_default_pair_list<base_default_pair<decimal_to_binary_rounding::base,
                                                      decimal_to_binary_rounding::nearest_to_even>,
@@ -2307,12 +2295,12 @@ namespace jkj { namespace dragonbox {
                                    base_default_pair<cache::base, cache::full>>{},
             policies...));
 
-        return to_chars_detail::to_chars_n_impl<policy_holder>(float_bits<Float, FloatTraits>(x),
+        return to_chars_detail::to_chars_n_impl<policy_holder>(dragonbox_float_bits<Float, FloatTraits>(x),
                                                                buffer);
     }
 
     // Null-terminate and bypass the return value of fp_to_chars_n
-    template <class Float, class FloatTraits = default_float_traits<Float>, class... Policies>
+    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
     char* to_chars(Float x, char* buffer, Policies... policies) noexcept {
         auto ptr = to_chars_n<Float, FloatTraits>(x, buffer, policies...);
         *ptr = '\0';
@@ -2591,7 +2579,7 @@ namespace jkj { namespace dragonbox {
         }
 
         template <>
-        char* to_chars<float, default_float_traits<float>>(std::uint32_t s32, int exponent,
+        char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent,
                                                            char* buffer) noexcept {
             // Print significand.
             print_9_digits(s32, exponent, buffer);
@@ -2620,7 +2608,7 @@ namespace jkj { namespace dragonbox {
         }
 
         template <>
-        char* to_chars<double, default_float_traits<double>>(std::uint64_t const significand,
+        char* to_chars<double, dragonbox_float_traits<double>>(std::uint64_t const significand,
                                                              int exponent, char* buffer) noexcept {
             // Print significand by decomposing it into a 9-digit block and a 8-digit block.
             std::uint32_t first_block, second_block;
@@ -2825,6 +2813,6 @@ namespace jkj { namespace dragonbox {
             return buffer;
         }
     }
-}} // Namespaces
+}}} // Namespaces
 
 #endif

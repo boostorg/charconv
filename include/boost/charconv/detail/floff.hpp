@@ -801,33 +801,33 @@ inline void print_9_digits(std::uint32_t n, char* buffer) noexcept
 struct main_cache_full 
 {
     template <typename FloatFormat>
-    static constexpr typename detail::main_cache_holder::cache_entry_type get_cache(int k) noexcept
+    static constexpr typename main_cache_holder::cache_entry_type get_cache(int k) noexcept
     {
-        return detail::main_cache_holder::cache[std::size_t(k - detail::main_cache_holder::min_k)];
+        return main_cache_holder::cache[std::size_t(k - main_cache_holder::min_k)];
     }
 };
 
 struct main_cache_compressed 
 {
     template <typename FloatFormat>
-    static BOOST_CHARCONV_CXX14_CONSTEXPR typename detail::main_cache_holder::cache_entry_type get_cache(int k) noexcept
+    static BOOST_CHARCONV_CXX14_CONSTEXPR typename main_cache_holder::cache_entry_type get_cache(int k) noexcept
     {
-        BOOST_CHARCONV_ASSERT(k >= detail::main_cache_holder::min_k && k <= detail::main_cache_holder::max_k);
+        BOOST_CHARCONV_ASSERT(k >= main_cache_holder::min_k && k <= main_cache_holder::max_k);
 
         BOOST_IF_CONSTEXPR (std::is_same<FloatFormat, ieee754_binary64>::value) 
         {
             // Compute the base index.
             const auto cache_index =
-                static_cast<int>(static_cast<std::uint32_t>(k - detail::main_cache_holder::min_k) /
-                    detail::compressed_cache_detail::compression_ratio);
+                static_cast<int>(static_cast<std::uint32_t>(k - main_cache_holder::min_k) /
+                    compressed_cache_detail::compression_ratio);
 
-            const auto kb = cache_index * detail::compressed_cache_detail::compression_ratio +
-                            detail::main_cache_holder::min_k;
+            const auto kb = cache_index * compressed_cache_detail::compression_ratio +
+                            main_cache_holder::min_k;
 
             const auto offset = k - kb;
 
             // Get the base cache.
-            const auto base_cache = detail::compressed_cache_detail::cache_holder_t::table[cache_index];
+            const auto base_cache = compressed_cache_detail::cache_holder_t::table[cache_index];
 
             if (offset == 0)
             {
@@ -835,14 +835,13 @@ struct main_cache_compressed
             }
             else 
             {
-                namespace log = detail::log;
 
                 // Compute the required amount of bit-shift.
                 const auto alpha = log::floor_log2_pow10(kb + offset) - log::floor_log2_pow10(kb) - offset;
                 BOOST_CHARCONV_ASSERT(alpha > 0 && alpha < 64);
 
                 // Try to recover the real cache.
-                const auto pow5 = detail::compressed_cache_detail::pow5_holder_t::table[offset];
+                const auto pow5 = compressed_cache_detail::pow5_holder_t::table[offset];
                 auto recovered_cache = umul128(base_cache.high, pow5);
                 const auto middle_low = umul128(base_cache.low, pow5);
 
@@ -862,7 +861,7 @@ struct main_cache_compressed
         else
         {
             // Just use the full cache for anything other than binary64
-            return detail::main_cache_holder::cache[std::size_t(k - detail::main_cache_holder::min_k)];
+            return main_cache_holder::cache[std::size_t(k - main_cache_holder::min_k)];
         }
     }
 };
@@ -1370,7 +1369,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
     }
 
     constexpr int kappa = 2;
-    int k = kappa - detail::log::floor_log10_pow2(e);
+    int k = kappa - log::floor_log10_pow2(e);
     std::uint32_t current_digits {};
     char* const buffer_starting_pos = buffer;
     int decimal_exponent = -k;
