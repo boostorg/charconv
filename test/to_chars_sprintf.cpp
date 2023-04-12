@@ -67,7 +67,7 @@ char const* fmt_from_type_fixed( float )
 
 char const* fmt_from_type( double )
 {
-    return "%.17g";
+    return "%g";
 }
 
 char const* fmt_from_type_scientific( double )

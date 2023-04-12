@@ -327,70 +327,58 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value, boost::charconv::chars_format fmt, int precision) noexcept
 {
-    
-    if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
+    // Unspecified precision so we always go with shortest representation
+    if (precision == -1)
     {
-        const auto abs_value = std::abs(value);
-        if (abs_value >= 1 && abs_value < 1e16)
+        if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
         {
-            auto value_struct = jkj::dragonbox::to_decimal(value);
-            if (value_struct.is_negative)
+            const auto abs_value = std::abs(value);
+            if (abs_value >= 1 && abs_value < 1e18) // 1 x 10^(max_digits10 + 1)
             {
-                *first++ = '-';
-            }
+                auto value_struct = jkj::dragonbox::to_decimal(value);
+                if (value_struct.is_negative)
+                {
+                    *first++ = '-';
+                }
 
-            auto r = boost::charconv::to_chars(first, last, value_struct.significand);
-            if (r.ec != 0)
-            {
-                return r;
-            }
-            
-            std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
-            std::memset(r.ptr + value_struct.exponent, '.', 1);
+                auto r = boost::charconv::to_chars(first, last, value_struct.significand);
+                if (r.ec != 0)
+                {
+                    return r;
+                }
+                
+                // Bounds check
+                if (value_struct.exponent < 0)
+                {
+                    std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
+                    std::memset(r.ptr + value_struct.exponent, '.', 1);
+                }
 
-            return { r.ptr, 0 };
-        }
-        else if (abs_value >= 1e16 && abs_value < 1e20)
-        {
-            if (value < 0)
-            {
-                *first++ = '-';
+                return { r.ptr, 0 };
             }
-            return boost::charconv::to_chars(first, last, static_cast<std::uint64_t>(abs_value));
+            else
+            {
+                auto* ptr = jkj::dragonbox::to_chars(value, first);
+                return { ptr, 0 };
+            }
         }
-        else if (abs_value > 1e-288 && abs_value < 1e288)
+        else if (fmt == boost::charconv::chars_format::scientific)
         {
             auto* ptr = jkj::dragonbox::to_chars(value, first);
             return { ptr, 0 };
         }
-        else
+    }
+    else
+    {
+        if (fmt != boost::charconv::chars_format::hex)
         {
-            if (precision == -1)
-            {
-                precision = std::numeric_limits<double>::max_digits10 - 1;
-            }
             auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
             return { ptr, 0 };
         }
     }
-    else if (fmt == boost::charconv::chars_format::scientific)
-    {
-        if (precision == -1)
-        {
-            precision = std::numeric_limits<double>::max_digits10;
-        }
-        if (precision > static_cast<std::ptrdiff_t>(last - first))
-        {
-            return { first, EOVERFLOW };
-        }
-        auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
-        return { ptr, 0 };
-    }
-    else if (fmt == boost::charconv::chars_format::hex)
-    {
-        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
-    }
-    return { first + std::strlen(first), 0 };
+
+    // Hex handles both cases already
+    return boost::charconv::detail::to_chars_hex(first, last, value, precision);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value ) noexcept
