@@ -336,8 +336,8 @@ struct dragonbox_signed_significand_bits
         BOOST_CXX14_CONSTEXPR bool check_divisibility_and_divide_by_pow10(std::uint32_t& n) noexcept 
         {
             // Make sure the computation for max_n does not overflow.
-            // static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
-            BOOST_CHARCONV_ASSERT(n <= boost::charconv::detail::compute_power(UINT32_C(10), N + 1));
+            // static_assert(N + 1 <= log::floor_log10_pow2(31));
+            BOOST_CHARCONV_ASSERT(n <= compute_power(UINT32_C(10), N + 1));
 
             using info = divide_by_pow10_info<N>;
             n *= info::magic_number;
@@ -355,8 +355,8 @@ struct dragonbox_signed_significand_bits
         BOOST_CXX14_CONSTEXPR std::uint32_t small_division_by_pow10(std::uint32_t n) noexcept
         {
             // Make sure the computation for max_n does not overflow.
-            // static_assert(N + 1 <= boost::charconv::detail::log::floor_log10_pow2(31));
-            BOOST_CHARCONV_ASSERT(n <= boost::charconv::detail::compute_power(UINT32_C(10), N + 1));
+            // static_assert(N + 1 <= log::floor_log10_pow2(31));
+            BOOST_CHARCONV_ASSERT(n <= compute_power(UINT32_C(10), N + 1));
 
             return (n * divide_by_pow10_info<N>::magic_number) >> divide_by_pow10_info<N>::shift_amount;
         }
@@ -374,17 +374,17 @@ struct dragonbox_signed_significand_bits
             // so we does this manually.
             BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint32_t>::value && N == 2) 
             {
-                return std::uint32_t(boost::charconv::detail::umul64(n, UINT32_C(1374389535)) >> 37);
+                return std::uint32_t(umul64(n, UINT32_C(1374389535)) >> 37);
             }
             // Specialize for 64-bit division by 1000.
             // Ensure that the correctness condition is met.
             else BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint64_t>::value && N == 3 && n_max <= UINT64_C(15534100272597517998))
             {
-                return boost::charconv::detail::umul128_upper64(n, UINT64_C(2361183241434822607)) >> 7;
+                return umul128_upper64(n, UINT64_C(2361183241434822607)) >> 7;
             }
             else 
             {
-                constexpr auto divisor = boost::charconv::detail::compute_power(static_cast<UInt>(10), N);
+                constexpr auto divisor = compute_power(static_cast<UInt>(10), N);
                 return n / divisor;
             }
         }
@@ -451,7 +451,7 @@ template <typename FloatFormat>
 struct cache_holder;
 
 template <>
-struct cache_holder<boost::charconv::detail::ieee754_binary32> 
+struct cache_holder<ieee754_binary32> 
 {
     using cache_entry_type = std::uint64_t;
     static constexpr int cache_bits = 64;
@@ -482,17 +482,17 @@ struct cache_holder<boost::charconv::detail::ieee754_binary32>
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
-constexpr int cache_holder<boost::charconv::detail::ieee754_binary32>::cache_bits;
-constexpr int cache_holder<boost::charconv::detail::ieee754_binary32>::min_k;
-constexpr int cache_holder<boost::charconv::detail::ieee754_binary32>::max_k;
-constexpr typename cache_holder<boost::charconv::detail::ieee754_binary32>::cache_entry_type cache_holder<boost::charconv::detail::ieee754_binary32>::cache[];
+constexpr int cache_holder<ieee754_binary32>::cache_bits;
+constexpr int cache_holder<ieee754_binary32>::min_k;
+constexpr int cache_holder<ieee754_binary32>::max_k;
+constexpr typename cache_holder<ieee754_binary32>::cache_entry_type cache_holder<ieee754_binary32>::cache[];
 
 #endif
 
 template <>
-struct cache_holder<boost::charconv::detail::ieee754_binary64>
+struct cache_holder<ieee754_binary64>
 {
-    using cache_entry_type = boost::charconv::detail::uint128;
+    using cache_entry_type = uint128;
     static constexpr int cache_bits = 128;
     static constexpr int min_k = -292;
     static constexpr int max_k = 326;
@@ -811,10 +811,10 @@ struct cache_holder<boost::charconv::detail::ieee754_binary64>
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
-constexpr int cache_holder<boost::charconv::detail::ieee754_binary64>::cache_bits;
-constexpr int cache_holder<boost::charconv::detail::ieee754_binary64>::min_k;
-constexpr int cache_holder<boost::charconv::detail::ieee754_binary64>::max_k;
-constexpr typename cache_holder<boost::charconv::detail::ieee754_binary64>::cache_entry_type cache_holder<boost::charconv::detail::ieee754_binary64>::cache[];
+constexpr int cache_holder<ieee754_binary64>::cache_bits;
+constexpr int cache_holder<ieee754_binary64>::min_k;
+constexpr int cache_holder<ieee754_binary64>::max_k;
+constexpr typename cache_holder<ieee754_binary64>::cache_entry_type cache_holder<ieee754_binary64>::cache[];
 
 #endif
 
@@ -1489,17 +1489,17 @@ struct impl : private FloatTraits, private FloatTraits::format
     using format::exponent_bias;
     using format::decimal_digits;
 
-    static constexpr int kappa = std::is_same<format, boost::charconv::detail::ieee754_binary32>::value ? 1 : 2;
+    static constexpr int kappa = std::is_same<format, ieee754_binary32>::value ? 1 : 2;
     static_assert(kappa >= 1, "Kappa must be >= 1");
-    // static_assert(carrier_bits >= significand_bits + 2 + boost::charconv::detail::log::floor_log2_pow10(kappa + 1));
+    // static_assert(carrier_bits >= significand_bits + 2 + log::floor_log2_pow10(kappa + 1));
 
-    static constexpr int min_k_a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(int(max_exponent - significand_bits));
-    static constexpr int min_k_b = -boost::charconv::detail::log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
+    static constexpr int min_k_a = -log::floor_log10_pow2_minus_log10_4_over_3(int(max_exponent - significand_bits));
+    static constexpr int min_k_b = -log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
     static constexpr int min_k = min_k_a < min_k_b ? min_k_a : min_k_b;
     // static_assert(min_k >= cache_holder<format>::min_k, "Min k is not in the cache");
 
-    static constexpr int max_k_a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(int(min_exponent - significand_bits /*+ 1*/));
-    static constexpr int max_k_b = -boost::charconv::detail::log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
+    static constexpr int max_k_a = -log::floor_log10_pow2_minus_log10_4_over_3(int(min_exponent - significand_bits /*+ 1*/));
+    static constexpr int max_k_b = -log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
     static constexpr int max_k = max_k_a > max_k_b ? max_k_a : max_k_b;
 
     using cache_entry_type = typename cache_holder<format>::cache_entry_type;
@@ -1507,23 +1507,16 @@ struct impl : private FloatTraits, private FloatTraits::format
 
     static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
     static BOOST_CXX14_CONSTEXPR int case_shorter_interval_left_endpoint_upper_threshold =
-        2 +
-        boost::charconv::detail::log::floor_log2(
-            boost::charconv::detail::compute_power
-                (10, boost::charconv::detail::count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1) /
-            3);
+        2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1) / 3);
 
     static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
     static BOOST_CXX14_CONSTEXPR int case_shorter_interval_right_endpoint_upper_threshold =
-        2 +
-        boost::charconv::detail::log::floor_log2(
-            boost::charconv::detail::compute_power(10, boost::charconv::detail::count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) /
-            3);
+        2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) / 3);
 
     static constexpr int shorter_interval_tie_lower_threshold =
-        -boost::charconv::detail::log::floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
+        -log::floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
     static constexpr int shorter_interval_tie_upper_threshold =
-        -boost::charconv::detail::log::floor_log5_pow2(significand_bits + 2) - 2 - significand_bits;
+        -log::floor_log5_pow2(significand_bits + 2) - 2 - significand_bits;
 
     struct compute_mul_result 
     {
@@ -1539,12 +1532,11 @@ struct impl : private FloatTraits, private FloatTraits::format
 
     //// The main algorithm assumes the input is a normal/subnormal finite number
 
-    template <class ReturnType, class IntervalType, class TrailingZeroPolicy,
-                class BinaryToDecimalRoundingPolicy, class CachePolicy,
-                class... AdditionalArgs>
-    BOOST_CHARCONV_SAFEBUFFERS static ReturnType
-    compute_nearest_normal(carrier_uint const two_fc, int const exponent,
-                            AdditionalArgs... additional_args) noexcept {
+    template <typename ReturnType, typename IntervalType, typename TrailingZeroPolicy,
+              typename BinaryToDecimalRoundingPolicy, typename CachePolicy, typename... AdditionalArgs>
+    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_nearest_normal(carrier_uint const two_fc, const int exponent,
+                                                                        AdditionalArgs... additional_args) noexcept 
+    {
         //////////////////////////////////////////////////////////////////////
         // Step 1: Schubfach multiplier calculation
         //////////////////////////////////////////////////////////////////////
@@ -1553,13 +1545,13 @@ struct impl : private FloatTraits, private FloatTraits::format
         IntervalType interval_type{additional_args...};
 
         // Compute k and beta.
-        int const minus_k = boost::charconv::detail::log::floor_log10_pow2(exponent) - kappa;
-        auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-        int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
+        const int minus_k = log::floor_log10_pow2(exponent) - kappa;
+        const auto cache = CachePolicy::template get_cache<format>(-minus_k);
+        const int beta = exponent + log::floor_log2_pow10(-minus_k);
 
         // Compute zi and deltai.
         // 10^kappa <= deltai < 10^(kappa + 1)
-        auto const deltai = compute_delta(cache, beta);
+        const auto deltai = compute_delta(cache, beta);
         // For the case of binary32, the result of integer check is not correct for
         // 29711844 * 2^-82
         // = 6.1442653300000000008655037797566933477355632930994033813476... * 10^-18
@@ -1569,7 +1561,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         // this does not cause any problem for the endpoints calculations; it can only
         // cause a problem when we need to perform integer check for the center.
         // Fortunately, with these inputs, that branch is never executed, so we are fine.
-        //auto const [zi, is_z_integer] = compute_mul((two_fc | 1) << beta, cache);
+        //const auto [zi, is_z_integer] = compute_mul((two_fc | 1) << beta, cache);
         const auto z_res = compute_mul((two_fc | 1) << beta, cache);
         const auto zi = z_res.result;
         const auto is_z_integer = z_res.is_integer;
@@ -1578,47 +1570,54 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Step 2: Try larger divisor; remove trailing zeros if necessary
         //////////////////////////////////////////////////////////////////////
 
-        constexpr auto big_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa + 1);
-        constexpr auto small_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa);
+        constexpr auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
+        constexpr auto small_divisor = compute_power(std::uint32_t(10), kappa);
 
         // Using an upper bound on zi, we might be able to optimize the division
         // better than the compiler; we are computing zi / big_divisor here.
         ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint,
-                                    (carrier_uint(1) << (significand_bits + 1)) * big_divisor -
-                                        1>(zi);
+            div::divide_by_pow10<kappa + 1, carrier_uint,(carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
+        
         auto r = std::uint32_t(zi - big_divisor * ret_value.significand);
 
-        if (r < deltai) {
+        if (r < deltai)
+        {
             // Exclude the right endpoint if necessary.
-            if (r == 0 && (is_z_integer & !interval_type.include_right_endpoint())) {
-                BOOST_IF_CONSTEXPR (BinaryToDecimalRoundingPolicy::tag ==
-                                policy_impl::binary_to_decimal_rounding::tag_t::do_not_care) {
+            if (r == 0 && (is_z_integer & !interval_type.include_right_endpoint()))
+            {
+                BOOST_IF_CONSTEXPR (BinaryToDecimalRoundingPolicy::tag == policy_impl::binary_to_decimal_rounding::tag_t::do_not_care)
+                {
                     ret_value.significand *= 10;
                     ret_value.exponent = minus_k + kappa;
                     --ret_value.significand;
                     TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
+
                     return ret_value;
                 }
-                else {
+                else
+                {
                     --ret_value.significand;
                     r = big_divisor;
+
                     goto small_divisor_case_label;
                 }
             }
         }
-        else if (r > deltai) {
+        else if (r > deltai) 
+        {
             goto small_divisor_case_label;
         }
-        else {
+        else 
+        {
             // r == deltai; compare fractional parts.
-            // auto const [xi_parity, x_is_integer] =
+            // const auto [xi_parity, x_is_integer] =
             //    compute_mul_parity(two_fc - 1, cache, beta);
             const auto x_res = compute_mul_parity(two_fc - 1, cache, beta);
             const auto xi_parity = x_res.parity;
             const auto x_is_integer = x_res.is_integer;
 
-            if (!(xi_parity | (x_is_integer & interval_type.include_left_endpoint()))) {
+            if (!(xi_parity | (x_is_integer & interval_type.include_left_endpoint())))
+            {
                 goto small_divisor_case_label;
             }
         }
@@ -1638,97 +1637,103 @@ struct impl : private FloatTraits, private FloatTraits::format
         ret_value.significand *= 10;
         ret_value.exponent = minus_k + kappa;
 
-        BOOST_IF_CONSTEXPR (BinaryToDecimalRoundingPolicy::tag ==
-                        policy_impl::binary_to_decimal_rounding::tag_t::do_not_care) {
+        BOOST_IF_CONSTEXPR (BinaryToDecimalRoundingPolicy::tag == policy_impl::binary_to_decimal_rounding::tag_t::do_not_care) 
+        {
             // Normally, we want to compute
             // ret_value.significand += r / small_divisor
             // and return, but we need to take care of the case that the resulting
             // value is exactly the right endpoint, while that is not included in the
             // interval.
-            if (!interval_type.include_right_endpoint()) {
+            if (!interval_type.include_right_endpoint()) 
+            {
                 // Is r divisible by 10^kappa?
-                if (is_z_integer && div::check_divisibility_and_divide_by_pow10<kappa>(r)) {
+                if (is_z_integer && div::check_divisibility_and_divide_by_pow10<kappa>(r)) 
+                {
                     // This should be in the interval.
                     ret_value.significand += r - 1;
                 }
-                else {
+                else 
+                {
                     ret_value.significand += r;
                 }
             }
-            else {
+            else 
+            {
                 ret_value.significand += div::small_division_by_pow10<kappa>(r);
             }
         }
-        else {
+        else 
+        {
             auto dist = r - (deltai / 2) + (small_divisor / 2);
-            bool const approx_y_parity = ((dist ^ (small_divisor / 2)) & 1) != 0;
+            const bool approx_y_parity = ((dist ^ (small_divisor / 2)) & 1) != 0;
 
             // Is dist divisible by 10^kappa?
-            bool const divisible_by_small_divisor =
-                div::check_divisibility_and_divide_by_pow10<kappa>(dist);
+            const bool divisible_by_small_divisor = div::check_divisibility_and_divide_by_pow10<kappa>(dist);
 
             // Add dist / 10^kappa to the significand.
             ret_value.significand += dist;
 
-            if (divisible_by_small_divisor) {
+            if (divisible_by_small_divisor) 
+            {
                 // Check z^(f) >= epsilon^(f).
                 // We have either yi == zi - epsiloni or yi == (zi - epsiloni) - 1,
                 // where yi == zi - epsiloni if and only if z^(f) >= epsilon^(f).
                 // Since there are only 2 possibilities, we only need to care about the
                 // parity. Also, zi and r should have the same parity since the divisor is
                 // an even number.
-                //auto const [yi_parity, is_y_integer] =
+                //const auto [yi_parity, is_y_integer] =
                 //    compute_mul_parity(two_fc, cache, beta);
                 const auto y_res = compute_mul_parity(two_fc, cache, beta);
                 const auto yi_parity = y_res.parity;
                 const auto is_y_integer = y_res.is_integer;
 
-                if (yi_parity != approx_y_parity) {
+                if (yi_parity != approx_y_parity) 
+                {
                     --ret_value.significand;
                 }
-                else {
+                else 
+                {
                     // If z^(f) >= epsilon^(f), we might have a tie
                     // when z^(f) == epsilon^(f), or equivalently, when y is an integer.
                     // For tie-to-up case, we can just choose the upper one.
-                    if (BinaryToDecimalRoundingPolicy::prefer_round_down(ret_value) &
-                        is_y_integer) {
+                    if (BinaryToDecimalRoundingPolicy::prefer_round_down(ret_value) & is_y_integer)
+                    {
                         --ret_value.significand;
                     }
                 }
             }
         }
+
         return ret_value;
     }
 
-    template <class ReturnType, class IntervalType, class TrailingZeroPolicy,
-                class BinaryToDecimalRoundingPolicy, class CachePolicy,
-                class... AdditionalArgs>
-    BOOST_CHARCONV_SAFEBUFFERS static ReturnType
-    compute_nearest_shorter(int const exponent,
-                            AdditionalArgs... additional_args) noexcept {
+    template <typename ReturnType, typename IntervalType, typename TrailingZeroPolicy,
+              typename BinaryToDecimalRoundingPolicy, typename CachePolicy, typename... AdditionalArgs>
+    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_nearest_shorter(const int exponent, AdditionalArgs... additional_args) noexcept
+    {
         ReturnType ret_value;
         IntervalType interval_type{additional_args...};
 
         // Compute k and beta.
-        int const minus_k = boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(exponent);
-        int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
+        const int minus_k = log::floor_log10_pow2_minus_log10_4_over_3(exponent);
+        const int beta = exponent + log::floor_log2_pow10(-minus_k);
 
         // Compute xi and zi.
-        auto const cache = CachePolicy::template get_cache<format>(-minus_k);
+        const auto cache = CachePolicy::template get_cache<format>(-minus_k);
 
         auto xi = compute_left_endpoint_for_shorter_interval_case(cache, beta);
         auto zi = compute_right_endpoint_for_shorter_interval_case(cache, beta);
 
         // If we don't accept the right endpoint and
         // if the right endpoint is an integer, decrease it.
-        if (!interval_type.include_right_endpoint() &&
-            is_right_endpoint_integer_shorter_interval(exponent)) {
+        if (!interval_type.include_right_endpoint() && is_right_endpoint_integer_shorter_interval(exponent)) 
+        {
             --zi;
         }
         // If we don't accept the left endpoint or
         // if the left endpoint is not an integer, increase it.
-        if (!interval_type.include_left_endpoint() ||
-            !is_left_endpoint_integer_shorter_interval(exponent)) {
+        if (!interval_type.include_left_endpoint() || !is_left_endpoint_integer_shorter_interval(exponent))
+        {
             ++xi;
         }
 
@@ -1736,7 +1741,8 @@ struct impl : private FloatTraits, private FloatTraits::format
         ret_value.significand = zi / 10;
 
         // If succeed, remove trailing zeros if necessary and return.
-        if (ret_value.significand * 10 >= xi) {
+        if (ret_value.significand * 10 >= xi) 
+        {
             ret_value.exponent = minus_k + 1;
             TrailingZeroPolicy::template on_trailing_zeros<impl>(ret_value);
             return ret_value;
@@ -1750,18 +1756,21 @@ struct impl : private FloatTraits, private FloatTraits::format
         // When tie occurs, choose one of them according to the rule.
         if (BinaryToDecimalRoundingPolicy::prefer_round_down(ret_value) &&
             exponent >= shorter_interval_tie_lower_threshold &&
-            exponent <= shorter_interval_tie_upper_threshold) {
+            exponent <= shorter_interval_tie_upper_threshold)
+        {
             --ret_value.significand;
         }
-        else if (ret_value.significand < xi) {
+        else if (ret_value.significand < xi) 
+        {
             ++ret_value.significand;
         }
+
         return ret_value;
     }
 
     template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
-    BOOST_CHARCONV_SAFEBUFFERS static ReturnType
-    compute_left_closed_directed(carrier_uint const two_fc, int exponent) noexcept {
+    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_left_closed_directed(carrier_uint const two_fc, int exponent) noexcept
+    {
         //////////////////////////////////////////////////////////////////////
         // Step 1: Schubfach multiplier calculation
         //////////////////////////////////////////////////////////////////////
@@ -1769,13 +1778,13 @@ struct impl : private FloatTraits, private FloatTraits::format
         ReturnType ret_value;
 
         // Compute k and beta.
-        int const minus_k = boost::charconv::detail::log::floor_log10_pow2(exponent) - kappa;
-        auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-        int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
+        const int minus_k = log::floor_log10_pow2(exponent) - kappa;
+        const auto cache = CachePolicy::template get_cache<format>(-minus_k);
+        const int beta = exponent + log::floor_log2_pow10(-minus_k);
 
         // Compute xi and deltai.
         // 10^kappa <= deltai < 10^(kappa + 1)
-        auto const deltai = compute_delta(cache, beta);
+        const auto deltai = compute_delta(cache, beta);
         //auto [xi, is_x_integer] = compute_mul(two_fc << beta, cache);
         const auto x_res = compute_mul(two_fc << beta, cache);
         auto xi = x_res.result;
@@ -1787,13 +1796,16 @@ struct impl : private FloatTraits, private FloatTraits::format
         // and 29711844 * 2^-81
         // = 1.2288530660000000001731007559513386695471126586198806762695... * 10^-17
         // for binary32.
-        BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-            if (exponent <= -80) {
+        BOOST_IF_CONSTEXPR (std::is_same<format, ieee754_binary32>::value)
+        {
+            if (exponent <= -80) 
+            {
                 is_x_integer = false;
             }
         }
 
-        if (!is_x_integer) {
+        if (!is_x_integer)
+        {
             ++xi;
         }
 
@@ -1801,35 +1813,38 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Step 2: Try larger divisor; remove trailing zeros if necessary
         //////////////////////////////////////////////////////////////////////
 
-        constexpr auto big_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa + 1);
+        constexpr auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
 
         // Using an upper bound on xi, we might be able to optimize the division
         // better than the compiler; we are computing xi / big_divisor here.
-        ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint,
-                                    (carrier_uint(1) << (significand_bits + 1)) * big_divisor -
-                                        1>(xi);
+        ret_value.significand = 
+            div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(xi);
+
         auto r = std::uint32_t(xi - big_divisor * ret_value.significand);
 
-        if (r != 0) {
+        if (r != 0)
+        {
             ++ret_value.significand;
             r = big_divisor - r;
         }
 
-        if (r > deltai) {
+        if (r > deltai) 
+        {
             goto small_divisor_case_label;
         }
-        else if (r == deltai) {
+        else if (r == deltai) 
+        {
             // Compare the fractional parts.
             // This branch is never taken for the exceptional cases
             // 2f_c = 29711482, e = -81
             // (6.1442649164096937243516663440523473127541365101933479309082... * 10^-18)
             // and 2f_c = 29711482, e = -80
             // (1.2288529832819387448703332688104694625508273020386695861816... * 10^-17).
-            //auto const [zi_parity, is_z_integer] =
+            //const auto [zi_parity, is_z_integer] =
             //    compute_mul_parity(two_fc + 2, cache, beta);
             const auto z_res = compute_mul_parity(two_fc + 2, cache, beta);
-            if (z_res.parity || z_res.is_integer) {
+            if (z_res.parity || z_res.is_integer) 
+            {
                 goto small_divisor_case_label;
             }
         }
@@ -1852,10 +1867,9 @@ struct impl : private FloatTraits, private FloatTraits::format
         return ret_value;
     }
 
-    template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
-    BOOST_CHARCONV_SAFEBUFFERS static ReturnType
-    compute_right_closed_directed(carrier_uint const two_fc, int const exponent,
-                                    bool shorter_interval) noexcept {
+    template <typename ReturnType, typename TrailingZeroPolicy, typename CachePolicy>
+    BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_right_closed_directed(carrier_uint const two_fc, const int exponent, bool shorter_interval) noexcept
+    {
         //////////////////////////////////////////////////////////////////////
         // Step 1: Schubfach multiplier calculation
         //////////////////////////////////////////////////////////////////////
@@ -1863,15 +1877,13 @@ struct impl : private FloatTraits, private FloatTraits::format
         ReturnType ret_value;
 
         // Compute k and beta.
-        int const minus_k =
-            boost::charconv::detail::log::floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
-        auto const cache = CachePolicy::template get_cache<format>(-minus_k);
-        int const beta = exponent + boost::charconv::detail::log::floor_log2_pow10(-minus_k);
+        const int minus_k = log::floor_log10_pow2(exponent - (shorter_interval ? 1 : 0)) - kappa;
+        const auto cache = CachePolicy::template get_cache<format>(-minus_k);
+        const int beta = exponent + log::floor_log2_pow10(-minus_k);
 
         // Compute zi and deltai.
         // 10^kappa <= deltai < 10^(kappa + 1)
-        auto const deltai =
-            shorter_interval ? compute_delta(cache, beta - 1) : compute_delta(cache, beta);
+        const auto deltai = shorter_interval ? compute_delta(cache, beta - 1) : compute_delta(cache, beta);
         carrier_uint const zi = compute_mul(two_fc << beta, cache).result;
 
 
@@ -1879,23 +1891,23 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Step 2: Try larger divisor; remove trailing zeros if necessary
         //////////////////////////////////////////////////////////////////////
 
-        constexpr auto big_divisor = boost::charconv::detail::compute_power(std::uint32_t(10), kappa + 1);
+        constexpr auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
 
         // Using an upper bound on zi, we might be able to optimize the division better than
         // the compiler; we are computing zi / big_divisor here.
         ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint,
-                                    (carrier_uint(1) << (significand_bits + 1)) * big_divisor -
-                                        1>(zi);
-        auto const r = std::uint32_t(zi - big_divisor * ret_value.significand);
+            div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
+        const auto r = std::uint32_t(zi - big_divisor * ret_value.significand);
 
-        if (r > deltai) {
+        if (r > deltai) 
+        {
             goto small_divisor_case_label;
         }
-        else if (r == deltai) {
+        else if (r == deltai) 
+        {
             // Compare the fractional parts.
-            if (!compute_mul_parity(two_fc - (shorter_interval ? 1 : 2), cache, beta)
-                        .parity) {
+            if (!compute_mul_parity(two_fc - (shorter_interval ? 1 : 2), cache, beta).parity) 
+            {
                 goto small_divisor_case_label;
             }
         }
@@ -1915,69 +1927,82 @@ struct impl : private FloatTraits, private FloatTraits::format
         ret_value.significand += div::small_division_by_pow10<kappa>(r);
         ret_value.exponent = minus_k + kappa;
         TrailingZeroPolicy::template no_trailing_zeros<impl>(ret_value);
+
         return ret_value;
     }
 
     // Remove trailing zeros from n and return the number of zeros removed.
-    BOOST_FORCEINLINE static int remove_trailing_zeros(carrier_uint& n) noexcept {
+    BOOST_FORCEINLINE static int remove_trailing_zeros(carrier_uint& n) noexcept
+    {
         assert(n != 0);
 
-        BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-            constexpr auto mod_inv_5 = std::uint32_t(0xcccc'cccd);
+        BOOST_IF_CONSTEXPR (std::is_same<format, ieee754_binary32>::value) 
+        {
+            constexpr auto mod_inv_5 = UINT32_C(0xcccccccd);
             constexpr auto mod_inv_25 = mod_inv_5 * mod_inv_5;
 
             int s = 0;
-            while (true) {
+            while (true)
+            {
                 auto q = boost::core::rotr(n * mod_inv_25, 2);
-                if (q <= std::numeric_limits<std::uint32_t>::max() / 100) {
+                if (q <= std::numeric_limits<std::uint32_t>::max() / 100)
+                {
                     n = q;
                     s += 2;
                 }
-                else {
+                else
+                {
                     break;
                 }
             }
             auto q = boost::core::rotr(n * mod_inv_5, 1);
-            if (q <= std::numeric_limits<std::uint32_t>::max() / 10) {
+            if (q <= std::numeric_limits<std::uint32_t>::max() / 10) 
+            {
                 n = q;
                 s |= 1;
             }
 
             return s;
         }
-        else {
-            static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double type");
+        else 
+        {
+            static_assert(std::is_same<format, ieee754_binary64>::value, "Must be a double type");
 
             // Divide by 10^8 and reduce to 32-bits if divisible.
             // Since ret_value.significand <= (2^53 * 1000 - 1) / 1000 < 10^16,
             // n is at most of 16 digits.
 
             // This magic number is ceil(2^90 / 10^8).
-            constexpr auto magic_number = std::uint64_t(12379400392853802749ull);
-            auto nm = boost::charconv::detail::umul128(n, magic_number);
+            constexpr auto magic_number = UINT64_C(12379400392853802749);
+            auto nm = umul128(n, magic_number);
 
             // Is n is divisible by 10^8?
             if ((nm.high & ((std::uint64_t(1) << (90 - 64)) - 1)) == 0 &&
                 nm.low < magic_number) {
                 // If yes, work with the quotient.
-                auto n32 = std::uint32_t(nm.high >> (90 - 64));
+                auto n32 = static_cast<std::uint32_t>(nm.high >> (90 - 64));
 
-                constexpr auto mod_inv_5 = std::uint32_t(0xcccc'cccd);
+                constexpr auto mod_inv_5 = UINT32_C(0xcccccccd);
                 constexpr auto mod_inv_25 = mod_inv_5 * mod_inv_5;
 
                 int s = 8;
-                while (true) {
+                while (true)
+                {
                     auto q = boost::core::rotr(n32 * mod_inv_25, 2);
-                    if (q <= std::numeric_limits<std::uint32_t>::max() / 100) {
+                    if (q <= std::numeric_limits<std::uint32_t>::max() / 100) 
+                    {
                         n32 = q;
                         s += 2;
                     }
-                    else {
+                    else 
+                    {
                         break;
                     }
                 }
+
                 auto q = boost::core::rotr(n32 * mod_inv_5, 1);
-                if (q <= std::numeric_limits<std::uint32_t>::max() / 10) {
+                if (q <= std::numeric_limits<std::uint32_t>::max() / 10) 
+                {
                     n32 = q;
                     s |= 1;
                 }
@@ -1987,22 +2012,27 @@ struct impl : private FloatTraits, private FloatTraits::format
             }
 
             // If n is not divisible by 10^8, work with n itself.
-            constexpr auto mod_inv_5 = std::uint64_t(0xcccc'cccc'cccc'cccd);
+            constexpr auto mod_inv_5 = UINT64_C(0xcccccccccccccccd);
             constexpr auto mod_inv_25 = mod_inv_5 * mod_inv_5;
 
             int s = 0;
-            while (true) {
+            while (true)
+            {
                 auto q = boost::core::rotr(n * mod_inv_25, 2);
-                if (q <= std::numeric_limits<std::uint64_t>::max() / 100) {
+                if (q <= std::numeric_limits<std::uint64_t>::max() / 100)
+                {
                     n = q;
                     s += 2;
                 }
-                else {
+                else 
+                {
                     break;
                 }
             }
+
             auto q = boost::core::rotr(n * mod_inv_5, 1);
-            if (q <= std::numeric_limits<std::uint64_t>::max() / 10) {
+            if (q <= std::numeric_limits<std::uint64_t>::max() / 10) 
+            {
                 n = q;
                 s |= 1;
             }
@@ -2011,83 +2041,83 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary32>::value, bool>::type = true>
     static compute_mul_result compute_mul(carrier_uint u, cache_entry_type const& cache) noexcept 
     {
-        auto r = boost::charconv::detail::umul96_upper64(u, cache);
+        auto r = umul96_upper64(u, cache);
         return {carrier_uint(r >> 32), carrier_uint(r) == 0};
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary64>::value, bool>::type = true>
     static compute_mul_result compute_mul(carrier_uint u, cache_entry_type const& cache) noexcept
     {
-        auto r = boost::charconv::detail::umul192_upper128(u, cache);
+        auto r = umul192_upper128(u, cache);
         return {r.high, r.low == 0};
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary32>::value, bool>::type = true>
     static constexpr std::uint32_t compute_delta(cache_entry_type const& cache,
                                                     int beta) noexcept
     {
         return std::uint32_t(cache >> (cache_bits - 1 - beta));
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary64>::value, bool>::type = true>
     static constexpr std::uint32_t compute_delta(cache_entry_type const& cache,
                                                     int beta) noexcept 
     {
         return std::uint32_t(cache.high >> (carrier_bits - 1 - beta));
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary32>::value, bool>::type = true>
     static compute_mul_parity_result compute_mul_parity(carrier_uint two_f,
                                                         cache_entry_type const& cache,
                                                         int beta) noexcept 
     {
-        auto r = boost::charconv::detail::umul96_lower64(two_f, cache);
+        auto r = umul96_lower64(two_f, cache);
         return {((r >> (64 - beta)) & 1) != 0, std::uint32_t(r >> (32 - beta)) == 0};
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary64>::value, bool>::type = true>
     static compute_mul_parity_result compute_mul_parity(carrier_uint two_f,
                                                         cache_entry_type const& cache,
                                                         int beta) noexcept 
     {
-        auto r = boost::charconv::detail::umul192_lower128(two_f, cache);
+        auto r = umul192_lower128(two_f, cache);
         return {((r.high >> (64 - beta)) & 1) != 0, ((r.high << beta) | (r.low >> (64 - beta))) == 0};
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary32>::value, bool>::type = true>
     static constexpr carrier_uint compute_left_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
     {
         return carrier_uint((cache - (cache >> (significand_bits + 2))) >> (cache_bits - significand_bits - 1 - beta));
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary64>::value, bool>::type = true>
     static constexpr carrier_uint compute_left_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
     {
         return (cache.high - (cache.high >> (significand_bits + 2))) >> (carrier_bits - significand_bits - 1 - beta);
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary32>::value, bool>::type = true>
     static constexpr carrier_uint compute_right_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
     {
         return carrier_uint((cache + (cache >> (significand_bits + 1))) >> (cache_bits - significand_bits - 1 - beta));
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary64>::value, bool>::type = true>
     static constexpr carrier_uint compute_right_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
     {
         return (cache.high + (cache.high >> (significand_bits + 1))) >> (carrier_bits - significand_bits - 1 - beta);
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary32>::value, bool>::type = true>
     static constexpr carrier_uint compute_round_up_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
     {
         return (carrier_uint(cache >> (cache_bits - significand_bits - 2 - beta)) + 1) / 2;
     }
 
-    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+    template <typename local_format = format, typename std::enable_if<std::is_same<local_format, ieee754_binary64>::value, bool>::type = true>
     static constexpr carrier_uint compute_round_up_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
     {
         return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
@@ -2333,8 +2363,8 @@ struct impl : private FloatTraits, private FloatTraits::format
                         // Hence, shorter_interval_case will return 2.225'073'858'507'201'4 *
                         // 10^-308. This is indeed of the shortest length, and it is the unique one
                         // closest to the true value among valid representations of the same length.
-                        static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary32>::value ||
-                                      std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Format must be IEEE754 binary 32 or 64");
+                        static_assert(std::is_same<format, ieee754_binary32>::value ||
+                                      std::is_same<format, ieee754_binary64>::value, "Format must be IEEE754 binary 32 or 64");
 
                         if (two_fc == 0) {
                             return decltype(interval_type_provider)::template invoke_shorter_interval_case<return_type>(
@@ -2419,9 +2449,9 @@ struct impl : private FloatTraits, private FloatTraits::format
 
     template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
     BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept {
-        auto const br = dragonbox_float_bits<Float, FloatTraits>(x);
-        auto const exponent_bits = br.extract_exponent_bits();
-        auto const s = br.remove_exponent_bits(exponent_bits);
+        const auto br = dragonbox_float_bits<Float, FloatTraits>(x);
+        const auto exponent_bits = br.extract_exponent_bits();
+        const auto s = br.remove_exponent_bits(exponent_bits);
         assert(br.is_finite());
 
         return to_decimal<Float, FloatTraits>(s, exponent_bits, policies...);
@@ -2435,8 +2465,8 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Avoid needless ABI overhead incurred by tag dispatch.
         template <class PolicyHolder, class Float, class FloatTraits>
         char* to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* buffer) noexcept {
-            auto const exponent_bits = br.extract_exponent_bits();
-            auto const s = br.remove_exponent_bits(exponent_bits);
+            const auto exponent_bits = br.extract_exponent_bits();
+            const auto s = br.remove_exponent_bits(exponent_bits);
 
             if (br.is_finite(exponent_bits)) {
                 if (s.is_negative()) {
@@ -2501,7 +2531,7 @@ struct impl : private FloatTraits, private FloatTraits::format
     // Maximum required buffer size (excluding null-terminator)
     template <class FloatFormat>
     BOOST_INLINE_VARIABLE constexpr std::size_t max_output_string_length =
-        std::is_same<FloatFormat, boost::charconv::detail::ieee754_binary32>::value
+        std::is_same<FloatFormat, ieee754_binary32>::value
             ?
             // sign(1) + significand(9) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(2)
             (1 + 9 + 1 + 1 + 1 + 2)
@@ -2623,7 +2653,7 @@ struct impl : private FloatTraits, private FloatTraits::format
                 // 281474978 = ceil(2^48 / 100'0000) + 1
                 auto prod = s32 * std::uint64_t(281474978);
                 prod >>= 16;
-                auto const head_digits = std::uint32_t(prod >> 32);
+                const auto head_digits = std::uint32_t(prod >> 32);
                 // If s32 is of 8 digits, increase the exponent by 7.
                 // Otherwise, increase it by 6.
                 exponent += (6 + unsigned(head_digits >= 10));
@@ -2681,7 +2711,7 @@ struct impl : private FloatTraits, private FloatTraits::format
                 // 5 or 6 digits.
                 // 429497 = ceil(2^32 / 1'0000)
                 auto prod = s32 * std::uint64_t(429497);
-                auto const head_digits = std::uint32_t(prod >> 32);
+                const auto head_digits = std::uint32_t(prod >> 32);
 
                 // If s32 is of 6 digits, increase the exponent by 5.
                 // Otherwise, increase it by 4.
@@ -2724,7 +2754,7 @@ struct impl : private FloatTraits, private FloatTraits::format
                 // 3 or 4 digits.
                 // 42949673 = ceil(2^32 / 100)
                 auto prod = s32 * std::uint64_t(42949673);
-                auto const head_digits = std::uint32_t(prod >> 32);
+                const auto head_digits = std::uint32_t(prod >> 32);
 
                 // If s32 is of 4 digits, increase the exponent by 3.
                 // Otherwise, increase it by 2.
@@ -2860,7 +2890,7 @@ struct impl : private FloatTraits, private FloatTraits::format
                         // 281474978 = ceil(2^48 / 100'0000) + 1
                         auto prod = first_block * std::uint64_t(281474978);
                         prod >>= 16;
-                        auto const head_digits = std::uint32_t(prod >> 32);
+                        const auto head_digits = std::uint32_t(prod >> 32);
 
                         std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
                         buffer[2] = radix_100_table[head_digits * 2 + 1];
@@ -2882,7 +2912,7 @@ struct impl : private FloatTraits, private FloatTraits::format
                         // 5 or 6 digits.
                         // 429497 = ceil(2^32 / 1'0000)
                         auto prod = first_block * std::uint64_t(429497);
-                        auto const head_digits = std::uint32_t(prod >> 32);
+                        const auto head_digits = std::uint32_t(prod >> 32);
 
                         std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
                         buffer[2] = radix_100_table[head_digits * 2 + 1];
@@ -2902,7 +2932,7 @@ struct impl : private FloatTraits, private FloatTraits::format
                         // 3 or 4 digits.
                         // 42949673 = ceil(2^32 / 100)
                         auto prod = first_block * std::uint64_t(42949673);
-                        auto const head_digits = std::uint32_t(prod >> 32);
+                        const auto head_digits = std::uint32_t(prod >> 32);
 
                         std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
                         buffer[2] = radix_100_table[head_digits * 2 + 1];
