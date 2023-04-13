@@ -1304,31 +1304,20 @@ namespace boost { namespace charconv { namespace detail {
             static_assert(kappa >= 1, "Kappa must be >= 1");
             // static_assert(carrier_bits >= significand_bits + 2 + boost::charconv::detail::log::floor_log2_pow10(kappa + 1));
 
-            static constexpr int min_k = [] {
-                constexpr auto a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(
-                    int(max_exponent - significand_bits));
-                constexpr auto b =
-                    -boost::charconv::detail::log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
-                return a < b ? a : b;
-            }();
+            static constexpr int min_k_a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(int(max_exponent - significand_bits));
+            static constexpr int min_k_b = -boost::charconv::detail::log::floor_log10_pow2(int(max_exponent - significand_bits)) + kappa;
+            static constexpr int min_k = min_k_a < min_k_b ? min_k_a : min_k_b;
             // static_assert(min_k >= cache_holder<format>::min_k, "Min k is not in the cache");
 
-            static constexpr int max_k = [] {
-                // We do invoke shorter_interval_case for exponent == min_exponent case,
-                // so we should not add 1 here.
-                constexpr auto a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(
-                    int(min_exponent - significand_bits /*+ 1*/));
-                constexpr auto b =
-                    -boost::charconv::detail::log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
-                return a > b ? a : b;
-            }();
-            // static_assert(max_k <= cache_holder<format>::max_k, "Max k is not in the cache");
+            static constexpr int max_k_a = -boost::charconv::detail::log::floor_log10_pow2_minus_log10_4_over_3(int(min_exponent - significand_bits /*+ 1*/));
+            static constexpr int max_k_b = -boost::charconv::detail::log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
+            static constexpr int max_k = max_k_a > max_k_b ? max_k_a : max_k_b;
 
             using cache_entry_type = typename cache_holder<format>::cache_entry_type;
             static constexpr auto cache_bits = cache_holder<format>::cache_bits;
 
             static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
-            static constexpr int case_shorter_interval_left_endpoint_upper_threshold =
+            static BOOST_CXX14_CONSTEXPR int case_shorter_interval_left_endpoint_upper_threshold =
                 2 +
                 boost::charconv::detail::log::floor_log2(
                     boost::charconv::detail::compute_power
@@ -1336,7 +1325,7 @@ namespace boost { namespace charconv { namespace detail {
                     3);
 
             static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
-            static constexpr int case_shorter_interval_right_endpoint_upper_threshold =
+            static BOOST_CXX14_CONSTEXPR int case_shorter_interval_right_endpoint_upper_threshold =
                 2 +
                 boost::charconv::detail::log::floor_log2(
                     boost::charconv::detail::compute_power(10, boost::charconv::detail::count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) /
@@ -1347,11 +1336,14 @@ namespace boost { namespace charconv { namespace detail {
             static constexpr int shorter_interval_tie_upper_threshold =
                 -boost::charconv::detail::log::floor_log5_pow2(significand_bits + 2) - 2 - significand_bits;
 
-            struct compute_mul_result {
+            struct compute_mul_result 
+            {
                 carrier_uint result;
                 bool is_integer;
             };
-            struct compute_mul_parity_result {
+
+            struct compute_mul_parity_result 
+            {
                 bool parity;
                 bool is_integer;
             };
@@ -1830,96 +1822,96 @@ namespace boost { namespace charconv { namespace detail {
                 }
             }
 
-            static compute_mul_result compute_mul(carrier_uint u,
-                                                  cache_entry_type const& cache) noexcept {
-                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-                    auto r = boost::charconv::detail::umul96_upper64(u, cache);
-                    return {carrier_uint(r >> 32), carrier_uint(r) == 0};
-                }
-                else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
-                    auto r = boost::charconv::detail::umul192_upper128(u, cache);
-                    return {r.high, r.low == 0};
-                }
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+            static compute_mul_result compute_mul(carrier_uint u, cache_entry_type const& cache) noexcept 
+            {
+                auto r = boost::charconv::detail::umul96_upper64(u, cache);
+                return {carrier_uint(r >> 32), carrier_uint(r) == 0};
             }
 
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+            static compute_mul_result compute_mul(carrier_uint u, cache_entry_type const& cache) noexcept
+            {
+                auto r = boost::charconv::detail::umul192_upper128(u, cache);
+                return {r.high, r.low == 0};
+            }
+
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
             static constexpr std::uint32_t compute_delta(cache_entry_type const& cache,
-                                                         int beta) noexcept {
-                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-                    return std::uint32_t(cache >> (cache_bits - 1 - beta));
-                }
-                else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
-                    return std::uint32_t(cache.high >> (carrier_bits - 1 - beta));
-                }
+                                                         int beta) noexcept
+            {
+                return std::uint32_t(cache >> (cache_bits - 1 - beta));
             }
 
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+            static constexpr std::uint32_t compute_delta(cache_entry_type const& cache,
+                                                         int beta) noexcept 
+            {
+                return std::uint32_t(cache.high >> (carrier_bits - 1 - beta));
+            }
+
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
             static compute_mul_parity_result compute_mul_parity(carrier_uint two_f,
                                                                 cache_entry_type const& cache,
-                                                                int beta) noexcept {
-                assert(beta >= 1);
-                assert(beta < 64);
-
-                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-                    auto r = boost::charconv::detail::umul96_lower64(two_f, cache);
-                    return {((r >> (64 - beta)) & 1) != 0, std::uint32_t(r >> (32 - beta)) == 0};
-                }
-                else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
-                    auto r = boost::charconv::detail::umul192_lower128(two_f, cache);
-                    return {((r.high >> (64 - beta)) & 1) != 0,
-                            ((r.high << beta) | (r.low >> (64 - beta))) == 0};
-                }
+                                                                int beta) noexcept 
+            {
+                auto r = boost::charconv::detail::umul96_lower64(two_f, cache);
+                return {((r >> (64 - beta)) & 1) != 0, std::uint32_t(r >> (32 - beta)) == 0};
             }
 
-            static constexpr carrier_uint
-            compute_left_endpoint_for_shorter_interval_case(cache_entry_type const& cache,
-                                                            int beta) noexcept {
-                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-                    return carrier_uint((cache - (cache >> (significand_bits + 2))) >>
-                                        (cache_bits - significand_bits - 1 - beta));
-                }
-                else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
-                    return (cache.high - (cache.high >> (significand_bits + 2))) >>
-                           (carrier_bits - significand_bits - 1 - beta);
-                }
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+            static compute_mul_parity_result compute_mul_parity(carrier_uint two_f,
+                                                                cache_entry_type const& cache,
+                                                                int beta) noexcept 
+            {
+                auto r = boost::charconv::detail::umul192_lower128(two_f, cache);
+                return {((r.high >> (64 - beta)) & 1) != 0, ((r.high << beta) | (r.low >> (64 - beta))) == 0};
             }
 
-            static constexpr carrier_uint
-            compute_right_endpoint_for_shorter_interval_case(cache_entry_type const& cache,
-                                                             int beta) noexcept {
-                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-                    return carrier_uint((cache + (cache >> (significand_bits + 1))) >>
-                                        (cache_bits - significand_bits - 1 - beta));
-                }
-                else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
-                    return (cache.high + (cache.high >> (significand_bits + 1))) >>
-                           (carrier_bits - significand_bits - 1 - beta);
-                }
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+            static constexpr carrier_uint compute_left_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
+            {
+                return carrier_uint((cache - (cache >> (significand_bits + 2))) >> (cache_bits - significand_bits - 1 - beta));
             }
 
-            static constexpr carrier_uint
-            compute_round_up_for_shorter_interval_case(cache_entry_type const& cache,
-                                                       int beta) noexcept {
-                BOOST_IF_CONSTEXPR (std::is_same<format, boost::charconv::detail::ieee754_binary32>::value) {
-                    return (carrier_uint(cache >> (cache_bits - significand_bits - 2 - beta)) + 1) /
-                           2;
-                }
-                else {
-                    static_assert(std::is_same<format, boost::charconv::detail::ieee754_binary64>::value, "Must be a double");
-                    return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
-                }
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+            static constexpr carrier_uint compute_left_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
+            {
+                return (cache.high - (cache.high >> (significand_bits + 2))) >> (carrier_bits - significand_bits - 1 - beta);
             }
 
-            static constexpr bool
-            is_right_endpoint_integer_shorter_interval(int exponent) noexcept {
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+            static constexpr carrier_uint compute_right_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
+            {
+                return carrier_uint((cache + (cache >> (significand_bits + 1))) >> (cache_bits - significand_bits - 1 - beta));
+            }
+
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+            static constexpr carrier_uint compute_right_endpoint_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
+            {
+                return (cache.high + (cache.high >> (significand_bits + 1))) >> (carrier_bits - significand_bits - 1 - beta);
+            }
+
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary32>::value, bool>::type = true>
+            static constexpr carrier_uint compute_round_up_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
+            {
+                return (carrier_uint(cache >> (cache_bits - significand_bits - 2 - beta)) + 1) / 2;
+            }
+
+            template <typename local_format = format, typename std::enable_if<std::is_same<local_format, boost::charconv::detail::ieee754_binary64>::value, bool>::type = true>
+            static constexpr carrier_uint compute_round_up_for_shorter_interval_case(cache_entry_type const& cache, int beta) noexcept
+            {
+                return ((cache.high >> (carrier_bits - significand_bits - 2 - beta)) + 1) / 2;
+            }
+
+            static constexpr bool is_right_endpoint_integer_shorter_interval(int exponent) noexcept
+            {
                 return exponent >= case_shorter_interval_right_endpoint_lower_threshold &&
                        exponent <= case_shorter_interval_right_endpoint_upper_threshold;
             }
 
-            static constexpr bool is_left_endpoint_integer_shorter_interval(int exponent) noexcept {
+            static constexpr bool is_left_endpoint_integer_shorter_interval(int exponent) noexcept 
+            {
                 return exponent >= case_shorter_interval_left_endpoint_lower_threshold &&
                        exponent <= case_shorter_interval_left_endpoint_upper_threshold;
             }
