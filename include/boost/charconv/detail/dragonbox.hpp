@@ -431,6 +431,15 @@ namespace boost { namespace charconv { namespace detail {
                 0xb35dbf821ae4f38c, 0xe0352f62a19e306f};
         };
 
+        #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
+
+        constexpr int cache_holder<boost::charconv::detail::ieee754_binary32>::cache_bits;
+        constexpr int cache_holder<boost::charconv::detail::ieee754_binary32>::min_k;
+        constexpr int cache_holder<boost::charconv::detail::ieee754_binary32>::max_k;
+        constexpr typename cache_holder<boost::charconv::detail::ieee754_binary32>::cache_entry_type cache_holder<boost::charconv::detail::ieee754_binary32>::cache[];
+
+        #endif
+
         template <>
         struct cache_holder<boost::charconv::detail::ieee754_binary64> {
             using cache_entry_type = boost::charconv::detail::uint128;
@@ -749,6 +758,15 @@ namespace boost { namespace charconv { namespace detail {
                 {0x9e19db92b4e31ba9, 0x6c07a2c26a8346d2}, {0xc5a05277621be293, 0xc7098b7305241886},
                 {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
         };
+
+        #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
+
+        constexpr int cache_holder<boost::charconv::detail::ieee754_binary64>::cache_bits;
+        constexpr int cache_holder<boost::charconv::detail::ieee754_binary64>::min_k;
+        constexpr int cache_holder<boost::charconv::detail::ieee754_binary64>::max_k;
+        constexpr typename cache_holder<boost::charconv::detail::ieee754_binary64>::cache_entry_type cache_holder<boost::charconv::detail::ieee754_binary64>::cache[];
+
+        #endif
 
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -1589,8 +1607,8 @@ namespace boost { namespace charconv { namespace detail {
                 auto const deltai = compute_delta(cache, beta);
                 //auto [xi, is_x_integer] = compute_mul(two_fc << beta, cache);
                 const auto x_res = compute_mul(two_fc << beta, cache);
-                const auto xi = x_res.result;
-                const auto is_x_integer = x_res.is_integer;
+                auto xi = x_res.result;
+                auto is_x_integer = x_res.is_integer;
 
                 // Deal with the unique exceptional cases
                 // 29711844 * 2^-82
@@ -1640,7 +1658,7 @@ namespace boost { namespace charconv { namespace detail {
                     //auto const [zi_parity, is_z_integer] =
                     //    compute_mul_parity(two_fc + 2, cache, beta);
                     const auto z_res = compute_mul_parity(two_fc + 2, cache, beta);
-                    if (z_res.zi_parity || z_res.is_z_integer) {
+                    if (z_res.parity || z_res.is_integer) {
                         goto small_divisor_case_label;
                     }
                 }
@@ -1949,27 +1967,34 @@ namespace boost { namespace charconv { namespace detail {
                 using base = Base;
 
                 template <class FoundPolicyInfo>
-                static constexpr FoundPolicyInfo get_policy_impl(FoundPolicyInfo) {
+                static constexpr FoundPolicyInfo get_policy_impl(FoundPolicyInfo) 
+                {
                     return {};
                 }
-                template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies>
-                static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy,
-                                                      RemainingPolicies... remainings) {
-                    BOOST_IF_CONSTEXPR (std::is_base_of<Base, FirstPolicy>::value) {
-                        BOOST_IF_CONSTEXPR (FoundPolicyInfo::found_info == policy_found_info::not_found) {
-                            return get_policy_impl(
+
+                template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies, 
+                          typename std::enable_if<std::is_base_of<Base, FirstPolicy>::value && (FoundPolicyInfo::found_info == policy_found_info::not_found), bool>::type = true>
+                static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept
+                {
+                    return get_policy_impl(
                                 found_policy_pair<FirstPolicy, policy_found_info::unique>{},
                                 remainings...);
-                        }
-                        else {
-                            return get_policy_impl(
+                }
+
+                template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies, 
+                          typename std::enable_if<std::is_base_of<Base, FirstPolicy>::value && !(FoundPolicyInfo::found_info == policy_found_info::not_found), bool>::type = true>
+                static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept
+                {
+                    return get_policy_impl(
                                 found_policy_pair<FirstPolicy, policy_found_info::repeated>{},
                                 remainings...);
-                        }
-                    }
-                    else {
-                        return get_policy_impl(FoundPolicyInfo{}, remainings...);
-                    }
+                }
+
+                template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies, 
+                          typename std::enable_if<!std::is_base_of<Base, FirstPolicy>::value, bool>::type = true>
+                static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept
+                {
+                    return get_policy_impl(FoundPolicyInfo{}, remainings...);
                 }
 
                 template <class... Policies>
@@ -2175,7 +2200,8 @@ namespace boost { namespace charconv { namespace detail {
                                                                           additional_args...);
                         });
                 }
-                else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) {
+                else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) 
+                {
                     // Is the input a normal number?
                     if (exponent != 0) {
                         exponent += format::exponent_bias - format::significand_bits;
@@ -2190,8 +2216,10 @@ namespace boost { namespace charconv { namespace detail {
                         return_type, typename policy_holder::trailing_zero_policy,
                         typename policy_holder::cache_policy>(two_fc, exponent);
                 }
-                else {
-                    static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed, "Tag should be right_closed_direction");
+                else 
+                {
+                    // Assertion does not work unless if constexpr is defined
+                    // static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed, "Tag should be right_closed_direction");
 
                     bool shorter_interval = false;
 
