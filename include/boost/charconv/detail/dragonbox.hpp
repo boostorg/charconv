@@ -838,7 +838,7 @@ namespace sign {
         static constexpr bool return_has_sign = false;
 
         template <typename SignedSignificandBits, typename ReturnType>
-        static constexpr void handle_sign(SignedSignificandBits, ReturnType&) noexcept {}
+        static BOOST_CXX14_CONSTEXPR void handle_sign(SignedSignificandBits, ReturnType&) noexcept {}
     };
 
     struct return_sign : base 
@@ -847,7 +847,7 @@ namespace sign {
         static constexpr bool return_has_sign = true;
 
         template <typename SignedSignificandBits, typename ReturnType>
-        static constexpr void handle_sign(SignedSignificandBits s, ReturnType& r) noexcept
+        static BOOST_CXX14_CONSTEXPR void handle_sign(SignedSignificandBits s, ReturnType& r) noexcept
         {
             r.is_negative = s.is_negative();
         }
@@ -864,10 +864,10 @@ namespace trailing_zero {
         static constexpr bool report_trailing_zeros = false;
 
         template <typename Impl, typename ReturnType>
-        static constexpr void on_trailing_zeros(ReturnType&) noexcept {}
+        static BOOST_CXX14_CONSTEXPR void on_trailing_zeros(ReturnType&) noexcept {}
 
         template <typename Impl, typename ReturnType>
-        static constexpr void no_trailing_zeros(ReturnType&) noexcept {}
+        static BOOST_CXX14_CONSTEXPR void no_trailing_zeros(ReturnType&) noexcept {}
     };
 
     struct remove : base
@@ -882,7 +882,7 @@ namespace trailing_zero {
         }
 
         template <typename Impl, typename ReturnType>
-        static constexpr void no_trailing_zeros(ReturnType&) noexcept {}
+        static BOOST_CXX14_CONSTEXPR void no_trailing_zeros(ReturnType&) noexcept {}
     };
 
     struct report : base 
@@ -891,13 +891,13 @@ namespace trailing_zero {
         static constexpr bool report_trailing_zeros = true;
 
         template <typename Impl, typename ReturnType>
-        static constexpr void on_trailing_zeros(ReturnType& r) noexcept 
+        static BOOST_CXX14_CONSTEXPR void on_trailing_zeros(ReturnType& r) noexcept 
         {
             r.may_have_trailing_zeros = true;
         }
 
         template <typename Impl, typename ReturnType>
-        static constexpr void no_trailing_zeros(ReturnType& r) noexcept 
+        static BOOST_CXX14_CONSTEXPR void no_trailing_zeros(ReturnType& r) noexcept 
         {
             r.may_have_trailing_zeros = false;
         }
@@ -1506,11 +1506,11 @@ struct impl : private FloatTraits, private FloatTraits::format
     static constexpr auto cache_bits = cache_holder<format>::cache_bits;
 
     static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
-    static BOOST_CXX14_CONSTEXPR int case_shorter_interval_left_endpoint_upper_threshold =
+    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_left_endpoint_upper_threshold =
         2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1) / 3);
 
     static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
-    static BOOST_CXX14_CONSTEXPR int case_shorter_interval_right_endpoint_upper_threshold =
+    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_right_endpoint_upper_threshold =
         2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) / 3);
 
     static constexpr int shorter_interval_tie_lower_threshold =
@@ -2137,505 +2137,711 @@ struct impl : private FloatTraits, private FloatTraits::format
 };
 
 
-        ////////////////////////////////////////////////////////////////////////////////////////
-        // Policy holder.
-        ////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+// Policy holder.
+////////////////////////////////////////////////////////////////////////////////////////
 
-        namespace policy_impl {
-            // The library will specify a list of accepted kinds of policies and their defaults, and
-            // the user will pass a list of policies. The aim of helper classes/functions here is to
-            // do the following:
-            //   1. Check if the policy parameters given by the user are all valid; that means,
-            //      each of them should be of the kinds specified by the library.
-            //      If that's not the case, then the compilation fails.
-            //   2. Check if multiple policy parameters for the same kind is specified by the user.
-            //      If that's the case, then the compilation fails.
-            //   3. Build a class deriving from all policies the user have given, and also from
-            //      the default policies if the user did not specify one for some kinds.
-            // A policy belongs to a certain kind if it is deriving from a base class.
+namespace policy_impl {
+    // The library will specify a list of accepted kinds of policies and their defaults, and
+    // the user will pass a list of policies. The aim of helper classes/functions here is to
+    // do the following:
+    //   1. Check if the policy parameters given by the user are all valid; that means,
+    //      each of them should be of the kinds specified by the library.
+    //      If that's not the case, then the compilation fails.
+    //   2. Check if multiple policy parameters for the same kind is specified by the user.
+    //      If that's the case, then the compilation fails.
+    //   3. Build a class deriving from all policies the user have given, and also from
+    //      the default policies if the user did not specify one for some kinds.
+    // A policy belongs to a certain kind if it is deriving from a base class.
 
-            // For a given kind, find a policy belonging to that kind.
-            // Check if there are more than one such policies.
-            enum class policy_found_info { not_found, unique, repeated };
-            template <class Policy, policy_found_info info>
-            struct found_policy_pair {
-                using policy = Policy;
-                static constexpr auto found_info = info;
-            };
+    // For a given kind, find a policy belonging to that kind.
+    // Check if there are more than one such policies.
+    enum class policy_found_info
+    { 
+        not_found, 
+        unique, 
+        repeated 
+    };
 
-            template <class Base, class DefaultPolicy>
-            struct base_default_pair {
-                using base = Base;
+    template <typename Policy, policy_found_info info>
+    struct found_policy_pair 
+    {
+        using policy = Policy;
+        static constexpr auto found_info = info;
+    };
 
-                template <class FoundPolicyInfo>
-                static constexpr FoundPolicyInfo get_policy_impl(FoundPolicyInfo) 
-                {
-                    return {};
-                }
+    template <typename Base, typename DefaultPolicy>
+    struct base_default_pair 
+    {
+        using base = Base;
 
-                template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies, 
-                          typename std::enable_if<std::is_base_of<Base, FirstPolicy>::value && (FoundPolicyInfo::found_info == policy_found_info::not_found), bool>::type = true>
-                static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept
-                {
-                    return get_policy_impl(
-                                found_policy_pair<FirstPolicy, policy_found_info::unique>{},
-                                remainings...);
-                }
-
-                template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies, 
-                          typename std::enable_if<std::is_base_of<Base, FirstPolicy>::value && !(FoundPolicyInfo::found_info == policy_found_info::not_found), bool>::type = true>
-                static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept
-                {
-                    return get_policy_impl(
-                                found_policy_pair<FirstPolicy, policy_found_info::repeated>{},
-                                remainings...);
-                }
-
-                template <class FoundPolicyInfo, class FirstPolicy, class... RemainingPolicies, 
-                          typename std::enable_if<!std::is_base_of<Base, FirstPolicy>::value, bool>::type = true>
-                static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept
-                {
-                    return get_policy_impl(FoundPolicyInfo{}, remainings...);
-                }
-
-                template <class... Policies>
-                static constexpr auto get_policy(Policies... policies) {
-                    return get_policy_impl(
-                        found_policy_pair<DefaultPolicy, policy_found_info::not_found>{},
-                        policies...);
-                }
-            };
-            template <class... BaseDefaultPairs>
-            struct base_default_pair_list {};
-
-            // Check if a given policy belongs to one of the kinds specified by the library.
-            template <class Policy>
-            constexpr bool check_policy_validity(Policy, base_default_pair_list<>) {
-                return false;
-            }
-            template <class Policy, class FirstBaseDefaultPair, class... RemainingBaseDefaultPairs>
-            constexpr bool check_policy_validity(
-                Policy,
-                base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>) {
-                return std::is_base_of<typename FirstBaseDefaultPair::base, Policy>::value ||
-                       check_policy_validity(
-                           Policy{}, base_default_pair_list<RemainingBaseDefaultPairs...>{});
-            }
-
-            template <class BaseDefaultPairList>
-            constexpr bool check_policy_list_validity(BaseDefaultPairList) {
-                return true;
-            }
-
-            template <class BaseDefaultPairList, class FirstPolicy, class... RemainingPolicies>
-            constexpr bool check_policy_list_validity(BaseDefaultPairList, FirstPolicy,
-                                                      RemainingPolicies... remaining_policies) {
-                return check_policy_validity(FirstPolicy{}, BaseDefaultPairList{}) &&
-                       check_policy_list_validity(BaseDefaultPairList{}, remaining_policies...);
-            }
-
-            // Build policy_holder.
-            template <bool repeated_, class... FoundPolicyPairs>
-            struct found_policy_pair_list {
-                static constexpr bool repeated = repeated_;
-            };
-
-            template <class... Policies>
-            struct policy_holder : Policies... {};
-
-            template <bool repeated, class... FoundPolicyPairs, class... Policies>
-            constexpr auto
-            make_policy_holder_impl(base_default_pair_list<>,
-                                    found_policy_pair_list<repeated, FoundPolicyPairs...>,
-                                    Policies...) {
-                return found_policy_pair_list<repeated, FoundPolicyPairs...>{};
-            }
-
-            template <class FirstBaseDefaultPair, class... RemainingBaseDefaultPairs, bool repeated,
-                      class... FoundPolicyPairs, class... Policies>
-            constexpr auto make_policy_holder_impl(
-                base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>,
-                found_policy_pair_list<repeated, FoundPolicyPairs...>, Policies... policies) {
-                using new_found_policy_pair =
-                    decltype(FirstBaseDefaultPair::get_policy(policies...));
-
-                return make_policy_holder_impl(
-                    base_default_pair_list<RemainingBaseDefaultPairs...>{},
-                    found_policy_pair_list < repeated ||
-                        new_found_policy_pair::found_info == policy_found_info::repeated,
-                    new_found_policy_pair, FoundPolicyPairs... > {}, policies...);
-            }
-
-            template <bool repeated, class... RawPolicies>
-            constexpr auto convert_to_policy_holder(found_policy_pair_list<repeated>,
-                                                    RawPolicies...) {
-                return policy_holder<RawPolicies...>{};
-            }
-
-            template <bool repeated, class FirstFoundPolicyPair, class... RemainingFoundPolicyPairs,
-                      class... RawPolicies>
-            constexpr auto
-            convert_to_policy_holder(found_policy_pair_list<repeated, FirstFoundPolicyPair,
-                                                            RemainingFoundPolicyPairs...>,
-                                     RawPolicies... policies) {
-                return convert_to_policy_holder(
-                    found_policy_pair_list<repeated, RemainingFoundPolicyPairs...>{},
-                    typename FirstFoundPolicyPair::policy{}, policies...);
-            }
-
-            template <class BaseDefaultPairList, class... Policies>
-            constexpr auto make_policy_holder(BaseDefaultPairList, Policies... policies) {
-                static_assert(check_policy_list_validity(BaseDefaultPairList{}, Policies{}...),
-                              "jkj::dragonbox: an invalid policy is specified");
-
-                using policy_pair_list = decltype(make_policy_holder_impl(
-                    BaseDefaultPairList{}, found_policy_pair_list<false>{}, policies...));
-
-                static_assert(!policy_pair_list::repeated,
-                              "jkj::dragonbox: each policy should be specified at most once");
-
-                return convert_to_policy_holder(policy_pair_list{});
-            }
+        template <class FoundPolicyInfo>
+        static constexpr FoundPolicyInfo get_policy_impl(FoundPolicyInfo) 
+        {
+            return {};
         }
 
+        template <typename FoundPolicyInfo, typename FirstPolicy, typename... RemainingPolicies, 
+                  typename std::enable_if<std::is_base_of<Base, FirstPolicy>::value && (FoundPolicyInfo::found_info == policy_found_info::not_found), bool>::type = true>
+        static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept -> found_policy_pair<FirstPolicy, policy_found_info::unique>
+        {
+            return get_policy_impl(found_policy_pair<FirstPolicy, policy_found_info::unique>{}, remainings...);
+        }
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    // The interface function.
-    ////////////////////////////////////////////////////////////////////////////////////////
+        template <typename FoundPolicyInfo, typename FirstPolicy, typename... RemainingPolicies, 
+                  typename std::enable_if<std::is_base_of<Base, FirstPolicy>::value && !(FoundPolicyInfo::found_info == policy_found_info::not_found), bool>::type = true>
+        static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept -> found_policy_pair<FirstPolicy, policy_found_info::repeated>
+        {
+            return get_policy_impl(found_policy_pair<FirstPolicy, policy_found_info::repeated>{}, remainings...);
+        }
 
-    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
-    BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
-    to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signed_significand_bits,
-               unsigned int exponent_bits, Policies... policies) noexcept {
-        // Build policy holder type.
-        using namespace policy_impl;
-        using policy_holder = decltype(make_policy_holder(
-            base_default_pair_list<base_default_pair<sign::base, sign::return_sign>,
-                                   base_default_pair<trailing_zero::base, trailing_zero::remove>,
-                                   base_default_pair<decimal_to_binary_rounding::base,
-                                                     decimal_to_binary_rounding::nearest_to_even>,
-                                   base_default_pair<binary_to_decimal_rounding::base,
-                                                     binary_to_decimal_rounding::to_even>,
-                                   base_default_pair<cache::base, cache::full>>{},
-            policies...));
+        template <typename FoundPolicyInfo, typename FirstPolicy, typename... RemainingPolicies, 
+                  typename std::enable_if<!std::is_base_of<Base, FirstPolicy>::value, bool>::type = true>
+        static constexpr auto get_policy_impl(FoundPolicyInfo, FirstPolicy, RemainingPolicies... remainings) noexcept -> found_policy_pair<FirstPolicy, FoundPolicyInfo::found_info>
+        {
+            return get_policy_impl(FoundPolicyInfo{}, remainings...);
+        }
 
-        using return_type =
-            decimal_fp<typename FloatTraits::carrier_uint, policy_holder::return_has_sign,
-                       policy_holder::report_trailing_zeros>;
+        template <typename... Policies>
+        static constexpr auto get_policy(Policies... policies) -> found_policy_pair<DefaultPolicy, policy_found_info::not_found>
+        {
+            return get_policy_impl(found_policy_pair<DefaultPolicy, policy_found_info::not_found>{}, policies...);
+        }
+    };
 
-        return_type ret = policy_holder::template delegate<return_type>(
-            dragonbox_signed_significand_bits,
-            [exponent_bits, dragonbox_signed_significand_bits](auto interval_type_provider) {
-                using format = typename FloatTraits::format;
-                constexpr auto tag = decltype(interval_type_provider)::tag;
+    template <typename... BaseDefaultPairs>
+    struct base_default_pair_list {};
 
-                auto two_fc = dragonbox_signed_significand_bits.remove_sign_bit_and_shift();
-                auto exponent = int(exponent_bits);
-
-                BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::to_nearest) {
-                    // Is the input a normal number?
-                    if (exponent != 0) {
-                        exponent += format::exponent_bias - format::significand_bits;
-
-                        // Shorter interval case; proceed like Schubfach.
-                        // One might think this condition is wrong, since when exponent_bits == 1
-                        // and two_fc == 0, the interval is actually regular. However, it turns out
-                        // that this seemingly wrong condition is actually fine, because the end
-                        // result is anyway the same.
-                        //
-                        // [binary32]
-                        // (fc-1/2) * 2^e = 1.175'494'28... * 10^-38
-                        // (fc-1/4) * 2^e = 1.175'494'31... * 10^-38
-                        //    fc    * 2^e = 1.175'494'35... * 10^-38
-                        // (fc+1/2) * 2^e = 1.175'494'42... * 10^-38
-                        //
-                        // Hence, shorter_interval_case will return 1.175'494'4 * 10^-38.
-                        // 1.175'494'3 * 10^-38 is also a correct shortest representation that will
-                        // be rejected if we assume shorter interval, but 1.175'494'4 * 10^-38 is
-                        // closer to the true value so it doesn't matter.
-                        //
-                        // [binary64]
-                        // (fc-1/2) * 2^e = 2.225'073'858'507'201'13... * 10^-308
-                        // (fc-1/4) * 2^e = 2.225'073'858'507'201'25... * 10^-308
-                        //    fc    * 2^e = 2.225'073'858'507'201'38... * 10^-308
-                        // (fc+1/2) * 2^e = 2.225'073'858'507'201'63... * 10^-308
-                        //
-                        // Hence, shorter_interval_case will return 2.225'073'858'507'201'4 *
-                        // 10^-308. This is indeed of the shortest length, and it is the unique one
-                        // closest to the true value among valid representations of the same length.
-                        static_assert(std::is_same<format, ieee754_binary32>::value ||
-                                      std::is_same<format, ieee754_binary64>::value, "Format must be IEEE754 binary 32 or 64");
-
-                        if (two_fc == 0) {
-                            return decltype(interval_type_provider)::template invoke_shorter_interval_case<return_type>(
-                                dragonbox_signed_significand_bits, [exponent](auto... additional_args) {
-                                    return detail::impl<Float, FloatTraits>::
-                                        template compute_nearest_shorter<
-                                            return_type,
-                                            typename decltype(interval_type_provider)::
-                                                shorter_interval_type,
-                                            typename policy_holder::trailing_zero_policy,
-                                            typename policy_holder::
-                                                binary_to_decimal_rounding_policy,
-                                            typename policy_holder::cache_policy>(
-                                            exponent, additional_args...);
-                                });
-                        }
-
-                        two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
-                    }
-                    // Is the input a subnormal number?
-                    else {
-                        exponent = format::min_exponent - format::significand_bits;
-                    }
-
-                    return decltype(interval_type_provider)::template invoke_normal_interval_case<return_type>(
-                        dragonbox_signed_significand_bits, [two_fc, exponent](auto... additional_args) {
-                            return detail::impl<Float, FloatTraits>::
-                                template compute_nearest_normal<
-                                    return_type,
-                                    typename decltype(interval_type_provider)::normal_interval_type,
-                                    typename policy_holder::trailing_zero_policy,
-                                    typename policy_holder::binary_to_decimal_rounding_policy,
-                                    typename policy_holder::cache_policy>(two_fc, exponent,
-                                                                          additional_args...);
-                        });
-                }
-                else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) 
-                {
-                    // Is the input a normal number?
-                    if (exponent != 0) {
-                        exponent += format::exponent_bias - format::significand_bits;
-                        two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
-                    }
-                    // Is the input a subnormal number?
-                    else {
-                        exponent = format::min_exponent - format::significand_bits;
-                    }
-
-                    return detail::impl<Float>::template compute_left_closed_directed<
-                        return_type, typename policy_holder::trailing_zero_policy,
-                        typename policy_holder::cache_policy>(two_fc, exponent);
-                }
-                else 
-                {
-                    // Assertion does not work unless if constexpr is defined
-                    // static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed, "Tag should be right_closed_direction");
-
-                    bool shorter_interval = false;
-
-                    // Is the input a normal number?
-                    if (exponent != 0) {
-                        if (two_fc == 0 && exponent != 1) {
-                            shorter_interval = true;
-                        }
-                        exponent += format::exponent_bias - format::significand_bits;
-                        two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
-                    }
-                    // Is the input a subnormal number?
-                    else {
-                        exponent = format::min_exponent - format::significand_bits;
-                    }
-
-                    return detail::impl<Float>::template compute_right_closed_directed<
-                        return_type, typename policy_holder::trailing_zero_policy,
-                        typename policy_holder::cache_policy>(two_fc, exponent, shorter_interval);
-                }
-            });
-
-        policy_holder::handle_sign(dragonbox_signed_significand_bits, ret);
-        return ret;
+    // Check if a given policy belongs to one of the kinds specified by the library.
+    template <typename Policy>
+    constexpr bool check_policy_validity(Policy, base_default_pair_list<>)
+    {
+        return false;
     }
 
-    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
-    BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept {
-        const auto br = dragonbox_float_bits<Float, FloatTraits>(x);
+    template <typename Policy, typename FirstBaseDefaultPair, typename... RemainingBaseDefaultPairs>
+    constexpr bool check_policy_validity(Policy, base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>) 
+    {
+        return std::is_base_of<typename FirstBaseDefaultPair::base, Policy>::value || 
+               check_policy_validity(Policy{}, base_default_pair_list<RemainingBaseDefaultPairs...>{});
+    }
+
+    template <typename BaseDefaultPairList>
+    constexpr bool check_policy_list_validity(BaseDefaultPairList)
+    {
+        return true;
+    }
+
+    template <typename BaseDefaultPairList, typename FirstPolicy, typename... RemainingPolicies>
+    constexpr bool check_policy_list_validity(BaseDefaultPairList, FirstPolicy, RemainingPolicies... remaining_policies) 
+    {
+        return check_policy_validity(FirstPolicy{}, BaseDefaultPairList{}) &&
+               check_policy_list_validity(BaseDefaultPairList{}, remaining_policies...);
+    }
+
+    // Build policy_holder.
+    template <bool repeated_, typename... FoundPolicyPairs>
+    struct found_policy_pair_list 
+    {
+        static constexpr bool repeated = repeated_;
+    };
+
+    template <typename... Policies>
+    struct policy_holder : Policies... {};
+
+    template <bool repeated, typename... FoundPolicyPairs, typename... Policies>
+    constexpr auto make_policy_holder_impl(base_default_pair_list<>, found_policy_pair_list<repeated, FoundPolicyPairs...>, Policies...) 
+        -> found_policy_pair_list<repeated, FoundPolicyPairs...>
+    {
+        return found_policy_pair_list<repeated, FoundPolicyPairs...>{};
+    }
+
+    template <typename FirstBaseDefaultPair, typename... RemainingBaseDefaultPairs, bool repeated, 
+              typename... FoundPolicyPairs, typename... Policies>
+    constexpr auto make_policy_holder_impl(base_default_pair_list<FirstBaseDefaultPair, RemainingBaseDefaultPairs...>,
+                                           found_policy_pair_list<repeated, FoundPolicyPairs...>, Policies... policies)
+    {
+        using new_found_policy_pair = decltype(FirstBaseDefaultPair::get_policy(policies...));
+
+        return make_policy_holder_impl(base_default_pair_list<RemainingBaseDefaultPairs...>{}, 
+                                       found_policy_pair_list < repeated || new_found_policy_pair::found_info == policy_found_info::repeated,
+                                       new_found_policy_pair, FoundPolicyPairs... > {}, policies...);
+    }
+
+    template <bool repeated, typename... RawPolicies>
+    constexpr auto convert_to_policy_holder(found_policy_pair_list<repeated>, RawPolicies...) -> policy_holder<RawPolicies...>
+    {
+        return policy_holder<RawPolicies...>{};
+    }
+
+    template <bool repeated, typename FirstFoundPolicyPair, typename... RemainingFoundPolicyPairs, typename... RawPolicies>
+    constexpr auto convert_to_policy_holder(found_policy_pair_list<repeated, FirstFoundPolicyPair, RemainingFoundPolicyPairs...>, 
+                                            RawPolicies... policies)
+    {
+        return convert_to_policy_holder(found_policy_pair_list<repeated, RemainingFoundPolicyPairs...>{}, typename FirstFoundPolicyPair::policy{}, policies...);
+    }
+
+    template <typename BaseDefaultPairList, typename... Policies>
+    constexpr auto make_policy_holder(BaseDefaultPairList, Policies... policies)
+    {
+        static_assert(check_policy_list_validity(BaseDefaultPairList{}, Policies{}...),
+                        "jkj::dragonbox: an invalid policy is specified");
+
+        using policy_pair_list = decltype(make_policy_holder_impl(
+            BaseDefaultPairList{}, found_policy_pair_list<false>{}, policies...));
+
+        static_assert(!policy_pair_list::repeated,
+                        "jkj::dragonbox: each policy should be specified at most once");
+
+        return convert_to_policy_holder(policy_pair_list{});
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////
+// The interface function.
+////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
+BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
+to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signed_significand_bits,
+            unsigned int exponent_bits, Policies... policies) noexcept -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
+{
+    // Build policy holder type.
+    using namespace policy_impl;
+    using policy_holder = decltype(make_policy_holder(
+        base_default_pair_list<base_default_pair<sign::base, sign::return_sign>,
+                                base_default_pair<trailing_zero::base, trailing_zero::remove>,
+                                base_default_pair<decimal_to_binary_rounding::base,
+                                                    decimal_to_binary_rounding::nearest_to_even>,
+                                base_default_pair<binary_to_decimal_rounding::base,
+                                                    binary_to_decimal_rounding::to_even>,
+                                base_default_pair<cache::base, cache::full>>{},
+        policies...));
+
+    using return_type = decimal_fp<typename FloatTraits::carrier_uint, policy_holder::return_has_sign, policy_holder::report_trailing_zeros>;
+
+    return_type ret = policy_holder::template delegate<return_type>(dragonbox_signed_significand_bits,
+        [exponent_bits, dragonbox_signed_significand_bits](auto interval_type_provider) {
+            using format = typename FloatTraits::format;
+            constexpr auto tag = decltype(interval_type_provider)::tag;
+
+            auto two_fc = dragonbox_signed_significand_bits.remove_sign_bit_and_shift();
+            auto exponent = int(exponent_bits);
+
+            BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::to_nearest) {
+                // Is the input a normal number?
+                if (exponent != 0) {
+                    exponent += format::exponent_bias - format::significand_bits;
+
+                    // Shorter interval case; proceed like Schubfach.
+                    // One might think this condition is wrong, since when exponent_bits == 1
+                    // and two_fc == 0, the interval is actually regular. However, it turns out
+                    // that this seemingly wrong condition is actually fine, because the end
+                    // result is anyway the same.
+                    //
+                    // [binary32]
+                    // (fc-1/2) * 2^e = 1.175'494'28... * 10^-38
+                    // (fc-1/4) * 2^e = 1.175'494'31... * 10^-38
+                    //    fc    * 2^e = 1.175'494'35... * 10^-38
+                    // (fc+1/2) * 2^e = 1.175'494'42... * 10^-38
+                    //
+                    // Hence, shorter_interval_case will return 1.175'494'4 * 10^-38.
+                    // 1.175'494'3 * 10^-38 is also a correct shortest representation that will
+                    // be rejected if we assume shorter interval, but 1.175'494'4 * 10^-38 is
+                    // closer to the true value so it doesn't matter.
+                    //
+                    // [binary64]
+                    // (fc-1/2) * 2^e = 2.225'073'858'507'201'13... * 10^-308
+                    // (fc-1/4) * 2^e = 2.225'073'858'507'201'25... * 10^-308
+                    //    fc    * 2^e = 2.225'073'858'507'201'38... * 10^-308
+                    // (fc+1/2) * 2^e = 2.225'073'858'507'201'63... * 10^-308
+                    //
+                    // Hence, shorter_interval_case will return 2.225'073'858'507'201'4 *
+                    // 10^-308. This is indeed of the shortest length, and it is the unique one
+                    // closest to the true value among valid representations of the same length.
+                    static_assert(std::is_same<format, ieee754_binary32>::value ||
+                                    std::is_same<format, ieee754_binary64>::value, "Format must be IEEE754 binary 32 or 64");
+
+                    if (two_fc == 0) {
+                        return decltype(interval_type_provider)::template invoke_shorter_interval_case<return_type>(
+                            dragonbox_signed_significand_bits, [exponent](auto... additional_args) {
+                                return detail::impl<Float, FloatTraits>::
+                                    template compute_nearest_shorter<
+                                        return_type,
+                                        typename decltype(interval_type_provider)::
+                                            shorter_interval_type,
+                                        typename policy_holder::trailing_zero_policy,
+                                        typename policy_holder::
+                                            binary_to_decimal_rounding_policy,
+                                        typename policy_holder::cache_policy>(
+                                        exponent, additional_args...);
+                            });
+                    }
+
+                    two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
+                }
+                // Is the input a subnormal number?
+                else {
+                    exponent = format::min_exponent - format::significand_bits;
+                }
+
+                return decltype(interval_type_provider)::template invoke_normal_interval_case<return_type>(
+                    dragonbox_signed_significand_bits, [two_fc, exponent](auto... additional_args) {
+                        return detail::impl<Float, FloatTraits>::
+                            template compute_nearest_normal<
+                                return_type,
+                                typename decltype(interval_type_provider)::normal_interval_type,
+                                typename policy_holder::trailing_zero_policy,
+                                typename policy_holder::binary_to_decimal_rounding_policy,
+                                typename policy_holder::cache_policy>(two_fc, exponent,
+                                                                        additional_args...);
+                    });
+            }
+            else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) 
+            {
+                // Is the input a normal number?
+                if (exponent != 0) {
+                    exponent += format::exponent_bias - format::significand_bits;
+                    two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
+                }
+                // Is the input a subnormal number?
+                else {
+                    exponent = format::min_exponent - format::significand_bits;
+                }
+
+                return detail::impl<Float>::template compute_left_closed_directed<
+                    return_type, typename policy_holder::trailing_zero_policy,
+                    typename policy_holder::cache_policy>(two_fc, exponent);
+            }
+            else 
+            {
+                // Assertion does not work unless if constexpr is defined
+                // static_assert(tag == decimal_to_binary_rounding::tag_t::right_closed_directed, "Tag should be right_closed_direction");
+
+                bool shorter_interval = false;
+
+                // Is the input a normal number?
+                if (exponent != 0) {
+                    if (two_fc == 0 && exponent != 1) {
+                        shorter_interval = true;
+                    }
+                    exponent += format::exponent_bias - format::significand_bits;
+                    two_fc |= (decltype(two_fc)(1) << (format::significand_bits + 1));
+                }
+                // Is the input a subnormal number?
+                else {
+                    exponent = format::min_exponent - format::significand_bits;
+                }
+
+                return detail::impl<Float>::template compute_right_closed_directed<
+                    return_type, typename policy_holder::trailing_zero_policy,
+                    typename policy_holder::cache_policy>(two_fc, exponent, shorter_interval);
+            }
+        });
+
+    policy_holder::handle_sign(dragonbox_signed_significand_bits, ret);
+    return ret;
+}
+
+template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
+BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
+{
+    const auto br = dragonbox_float_bits<Float, FloatTraits>(x);
+    const auto exponent_bits = br.extract_exponent_bits();
+    const auto s = br.remove_exponent_bits(exponent_bits);
+    assert(br.is_finite());
+
+    return to_decimal<Float, FloatTraits>(s, exponent_bits, policies...);
+}
+
+namespace to_chars_detail {
+    template <class Float, class FloatTraits>
+    extern char* to_chars(typename FloatTraits::carrier_uint significand, int exponent, char* buffer) noexcept;
+
+    // Avoid needless ABI overhead incurred by tag dispatch.
+    template <class PolicyHolder, class Float, class FloatTraits>
+    char* to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* buffer) noexcept {
         const auto exponent_bits = br.extract_exponent_bits();
         const auto s = br.remove_exponent_bits(exponent_bits);
-        assert(br.is_finite());
 
-        return to_decimal<Float, FloatTraits>(s, exponent_bits, policies...);
-    }
-
-    namespace to_chars_detail {
-        template <class Float, class FloatTraits>
-        extern char* to_chars(typename FloatTraits::carrier_uint significand, int exponent,
-                              char* buffer) noexcept;
-
-        // Avoid needless ABI overhead incurred by tag dispatch.
-        template <class PolicyHolder, class Float, class FloatTraits>
-        char* to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* buffer) noexcept {
-            const auto exponent_bits = br.extract_exponent_bits();
-            const auto s = br.remove_exponent_bits(exponent_bits);
-
-            if (br.is_finite(exponent_bits)) {
+        if (br.is_finite(exponent_bits)) {
+            if (s.is_negative()) {
+                *buffer = '-';
+                ++buffer;
+            }
+            if (br.is_nonzero()) {
+                auto result = to_decimal<Float, FloatTraits>(
+                    s, exponent_bits, policy::sign::ignore, policy::trailing_zero::ignore,
+                    typename PolicyHolder::decimal_to_binary_rounding_policy{},
+                    typename PolicyHolder::binary_to_decimal_rounding_policy{},
+                    typename PolicyHolder::cache_policy{});
+                return to_chars_detail::to_chars<Float, FloatTraits>(result.significand,
+                                                                        result.exponent, buffer);
+            }
+            else {
+                std::memcpy(buffer, "0E0", 3);
+                return buffer + 3;
+            }
+        }
+        else {
+            if (s.has_all_zero_significand_bits()) {
                 if (s.is_negative()) {
                     *buffer = '-';
                     ++buffer;
                 }
-                if (br.is_nonzero()) {
-                    auto result = to_decimal<Float, FloatTraits>(
-                        s, exponent_bits, policy::sign::ignore, policy::trailing_zero::ignore,
-                        typename PolicyHolder::decimal_to_binary_rounding_policy{},
-                        typename PolicyHolder::binary_to_decimal_rounding_policy{},
-                        typename PolicyHolder::cache_policy{});
-                    return to_chars_detail::to_chars<Float, FloatTraits>(result.significand,
-                                                                         result.exponent, buffer);
-                }
-                else {
-                    std::memcpy(buffer, "0E0", 3);
-                    return buffer + 3;
-                }
+                std::memcpy(buffer, "Infinity", 8);
+                return buffer + 8;
             }
             else {
-                if (s.has_all_zero_significand_bits()) {
-                    if (s.is_negative()) {
-                        *buffer = '-';
-                        ++buffer;
+                std::memcpy(buffer, "NaN", 3);
+                return buffer + 3;
+            }
+        }
+    }
+}
+
+// Returns the next-to-end position
+template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
+char* to_chars_n(Float x, char* buffer, Policies... policies) noexcept {
+    using namespace policy_impl;
+    using policy_holder = decltype(make_policy_holder(
+        base_default_pair_list<base_default_pair<decimal_to_binary_rounding::base,
+                                                    decimal_to_binary_rounding::nearest_to_even>,
+                                base_default_pair<binary_to_decimal_rounding::base,
+                                                    binary_to_decimal_rounding::to_even>,
+                                base_default_pair<cache::base, cache::full>>{},
+        policies...));
+
+    return to_chars_detail::to_chars_n_impl<policy_holder>(dragonbox_float_bits<Float, FloatTraits>(x),
+                                                            buffer);
+}
+
+// Null-terminate and bypass the return value of fp_to_chars_n
+template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
+char* to_chars(Float x, char* buffer, Policies... policies) noexcept {
+    auto ptr = to_chars_n<Float, FloatTraits>(x, buffer, policies...);
+    *ptr = '\0';
+    return ptr;
+}
+
+namespace to_chars_detail {
+    // These "//"'s are to prevent clang-format to ruin this nice alignment.
+    // Thanks to reddit user u/mcmcc:
+    // https://www.reddit.com/r/cpp/comments/so3wx9/dragonbox_110_is_released_a_fast_floattostring/hw8z26r/?context=3
+    static constexpr char radix_100_table[] = {
+        '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', //
+        '0', '5', '0', '6', '0', '7', '0', '8', '0', '9', //
+        '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', //
+        '1', '5', '1', '6', '1', '7', '1', '8', '1', '9', //
+        '2', '0', '2', '1', '2', '2', '2', '3', '2', '4', //
+        '2', '5', '2', '6', '2', '7', '2', '8', '2', '9', //
+        '3', '0', '3', '1', '3', '2', '3', '3', '3', '4', //
+        '3', '5', '3', '6', '3', '7', '3', '8', '3', '9', //
+        '4', '0', '4', '1', '4', '2', '4', '3', '4', '4', //
+        '4', '5', '4', '6', '4', '7', '4', '8', '4', '9', //
+        '5', '0', '5', '1', '5', '2', '5', '3', '5', '4', //
+        '5', '5', '5', '6', '5', '7', '5', '8', '5', '9', //
+        '6', '0', '6', '1', '6', '2', '6', '3', '6', '4', //
+        '6', '5', '6', '6', '6', '7', '6', '8', '6', '9', //
+        '7', '0', '7', '1', '7', '2', '7', '3', '7', '4', //
+        '7', '5', '7', '6', '7', '7', '7', '8', '7', '9', //
+        '8', '0', '8', '1', '8', '2', '8', '3', '8', '4', //
+        '8', '5', '8', '6', '8', '7', '8', '8', '8', '9', //
+        '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', //
+        '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'  //
+    };
+    static constexpr char radix_100_head_table[] = {
+        '0', '.', '1', '.', '2', '.', '3', '.', '4', '.', //
+        '5', '.', '6', '.', '7', '.', '8', '.', '9', '.', //
+        '1', '.', '1', '.', '1', '.', '1', '.', '1', '.', //
+        '1', '.', '1', '.', '1', '.', '1', '.', '1', '.', //
+        '2', '.', '2', '.', '2', '.', '2', '.', '2', '.', //
+        '2', '.', '2', '.', '2', '.', '2', '.', '2', '.', //
+        '3', '.', '3', '.', '3', '.', '3', '.', '3', '.', //
+        '3', '.', '3', '.', '3', '.', '3', '.', '3', '.', //
+        '4', '.', '4', '.', '4', '.', '4', '.', '4', '.', //
+        '4', '.', '4', '.', '4', '.', '4', '.', '4', '.', //
+        '5', '.', '5', '.', '5', '.', '5', '.', '5', '.', //
+        '5', '.', '5', '.', '5', '.', '5', '.', '5', '.', //
+        '6', '.', '6', '.', '6', '.', '6', '.', '6', '.', //
+        '6', '.', '6', '.', '6', '.', '6', '.', '6', '.', //
+        '7', '.', '7', '.', '7', '.', '7', '.', '7', '.', //
+        '7', '.', '7', '.', '7', '.', '7', '.', '7', '.', //
+        '8', '.', '8', '.', '8', '.', '8', '.', '8', '.', //
+        '8', '.', '8', '.', '8', '.', '8', '.', '8', '.', //
+        '9', '.', '9', '.', '9', '.', '9', '.', '9', '.', //
+        '9', '.', '9', '.', '9', '.', '9', '.', '9', '.'  //
+    };
+
+    static void print_1_digit(std::uint32_t n, char* buffer) noexcept {
+        BOOST_IF_CONSTEXPR ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
+                        '5' == '0' + 5 && '6' == '0' + 6 && '7' == '0' + 7 && '8' == '0' + 8 &&
+                        '9' == '0' + 9) {
+            BOOST_IF_CONSTEXPR (('0' & 0xf) == 0) {
+                *buffer = char('0' | n);
+            }
+            else {
+                *buffer = char('0' + n);
+            }
+        }
+        else {
+            std::memcpy(buffer, radix_100_table + n * 2 + 1, 1);
+        }
+    }
+
+    static void print_2_digits(std::uint32_t n, char* buffer) noexcept {
+        std::memcpy(buffer, radix_100_table + n * 2, 2);
+    }
+
+    // These digit generation routines are inspired by James Anhalt's itoa algorithm:
+    // https://github.com/jeaiii/itoa
+    // The main idea is for given n, find y such that floor(10^k * y / 2^32) = n holds,
+    // where k is an appropriate integer depending on the length of n.
+    // For example, if n = 1234567, we set k = 6. In this case, we have
+    // floor(y / 2^32) = 1,
+    // floor(10^2 * ((10^0 * y) mod 2^32) / 2^32) = 23,
+    // floor(10^2 * ((10^2 * y) mod 2^32) / 2^32) = 45, and
+    // floor(10^2 * ((10^4 * y) mod 2^32) / 2^32) = 67.
+    // See https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/ for more explanation.
+
+    BOOST_FORCEINLINE static void print_9_digits(std::uint32_t s32, int& exponent,
+                                                char*& buffer) noexcept {
+        // -- IEEE-754 binary32
+        // Since we do not cut trailing zeros in advance, s32 must be of 6~9 digits
+        // unless the original input was subnormal.
+        // In particular, when it is of 9 digits it shouldn't have any trailing zeros.
+        // -- IEEE-754 binary64
+        // In this case, s32 must be of 7~9 digits unless the input is subnormal,
+        // and it shouldn't have any trailing zeros if it is of 9 digits.
+        if (s32 >= 100000000) {
+            // 9 digits.
+            // 1441151882 = ceil(2^57 / 1'0000'0000) + 1
+            auto prod = s32 * std::uint64_t(1441151882);
+            prod >>= 25;
+            std::memcpy(buffer, radix_100_head_table + std::uint32_t(prod >> 32) * 2, 2);
+
+            prod = std::uint32_t(prod) * std::uint64_t(100);
+            print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
+            prod = std::uint32_t(prod) * std::uint64_t(100);
+            print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
+            prod = std::uint32_t(prod) * std::uint64_t(100);
+            print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
+            prod = std::uint32_t(prod) * std::uint64_t(100);
+            print_2_digits(std::uint32_t(prod >> 32), buffer + 8);
+
+            exponent += 8;
+            buffer += 10;
+        }
+        else if (s32 >= 1000000) {
+            // 7 or 8 digits.
+            // 281474978 = ceil(2^48 / 100'0000) + 1
+            auto prod = s32 * std::uint64_t(281474978);
+            prod >>= 16;
+            const auto head_digits = std::uint32_t(prod >> 32);
+            // If s32 is of 8 digits, increase the exponent by 7.
+            // Otherwise, increase it by 6.
+            exponent += (6 + unsigned(head_digits >= 10));
+
+            // Write the first digit and the decimal point.
+            std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
+            // This third character may be overwritten later but we don't care.
+            buffer[2] = radix_100_table[head_digits * 2 + 1];
+
+            // Remaining 6 digits are all zero?
+            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1000000)) {
+                // The number of characters actually need to be written is:
+                //   1, if only the first digit is nonzero, which means that either s32 is of 7
+                //   digits or it is of 8 digits but the second digit is zero, or
+                //   3, otherwise.
+                // Note that buffer[2] is never '0' if s32 is of 7 digits, because the input is
+                // never zero.
+                buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
+            }
+            else {
+                // At least one of the remaining 6 digits are nonzero.
+                // After this adjustment, now the first destination becomes buffer + 2.
+                buffer += unsigned(head_digits >= 10);
+
+                // Obtain the next two digits.
+                prod = std::uint32_t(prod) * std::uint64_t(100);
+                print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
+
+                // Remaining 4 digits are all zero?
+                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) {
+                    buffer += (3 + unsigned(buffer[3] > '0'));
+                }
+                else {
+                    // At least one of the remaining 4 digits are nonzero.
+
+                    // Obtain the next two digits.
+                    prod = std::uint32_t(prod) * std::uint64_t(100);
+                    print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
+
+                    // Remaining 2 digits are all zero?
+                    if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+                        buffer += (5 + unsigned(buffer[5] > '0'));
                     }
-                    std::memcpy(buffer, "Infinity", 8);
-                    return buffer + 8;
-                }
-                else {
-                    std::memcpy(buffer, "NaN", 3);
-                    return buffer + 3;
+                    else {
+                        // Obtain the last two digits.
+                        prod = std::uint32_t(prod) * std::uint64_t(100);
+                        print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
+
+                        buffer += (7 + unsigned(buffer[7] > '0'));
+                    }
                 }
             }
         }
-    }
+        else if (s32 >= 10000) {
+            // 5 or 6 digits.
+            // 429497 = ceil(2^32 / 1'0000)
+            auto prod = s32 * std::uint64_t(429497);
+            const auto head_digits = std::uint32_t(prod >> 32);
 
-    // Returns the next-to-end position
-    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
-    char* to_chars_n(Float x, char* buffer, Policies... policies) noexcept {
-        using namespace policy_impl;
-        using policy_holder = decltype(make_policy_holder(
-            base_default_pair_list<base_default_pair<decimal_to_binary_rounding::base,
-                                                     decimal_to_binary_rounding::nearest_to_even>,
-                                   base_default_pair<binary_to_decimal_rounding::base,
-                                                     binary_to_decimal_rounding::to_even>,
-                                   base_default_pair<cache::base, cache::full>>{},
-            policies...));
+            // If s32 is of 6 digits, increase the exponent by 5.
+            // Otherwise, increase it by 4.
+            exponent += (4 + unsigned(head_digits >= 10));
 
-        return to_chars_detail::to_chars_n_impl<policy_holder>(dragonbox_float_bits<Float, FloatTraits>(x),
-                                                               buffer);
-    }
+            // Write the first digit and the decimal point.
+            std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
+            // This third character may be overwritten later but we don't care.
+            buffer[2] = radix_100_table[head_digits * 2 + 1];
 
-    // Null-terminate and bypass the return value of fp_to_chars_n
-    template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
-    char* to_chars(Float x, char* buffer, Policies... policies) noexcept {
-        auto ptr = to_chars_n<Float, FloatTraits>(x, buffer, policies...);
-        *ptr = '\0';
-        return ptr;
-    }
-
-    // Maximum required buffer size (excluding null-terminator)
-    template <class FloatFormat>
-    BOOST_INLINE_VARIABLE constexpr std::size_t max_output_string_length =
-        std::is_same<FloatFormat, ieee754_binary32>::value
-            ?
-            // sign(1) + significand(9) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(2)
-            (1 + 9 + 1 + 1 + 1 + 2)
-            :
-            // format == ieee754_format::binary64
-            // sign(1) + significand(17) + decimal_point(1) + exp_marker(1) + exp_sign(1) + exp(3)
-            (1 + 17 + 1 + 1 + 1 + 3);
-
-    namespace to_chars_detail {
-        // These "//"'s are to prevent clang-format to ruin this nice alignment.
-        // Thanks to reddit user u/mcmcc:
-        // https://www.reddit.com/r/cpp/comments/so3wx9/dragonbox_110_is_released_a_fast_floattostring/hw8z26r/?context=3
-        static constexpr char radix_100_table[] = {
-            '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', //
-            '0', '5', '0', '6', '0', '7', '0', '8', '0', '9', //
-            '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', //
-            '1', '5', '1', '6', '1', '7', '1', '8', '1', '9', //
-            '2', '0', '2', '1', '2', '2', '2', '3', '2', '4', //
-            '2', '5', '2', '6', '2', '7', '2', '8', '2', '9', //
-            '3', '0', '3', '1', '3', '2', '3', '3', '3', '4', //
-            '3', '5', '3', '6', '3', '7', '3', '8', '3', '9', //
-            '4', '0', '4', '1', '4', '2', '4', '3', '4', '4', //
-            '4', '5', '4', '6', '4', '7', '4', '8', '4', '9', //
-            '5', '0', '5', '1', '5', '2', '5', '3', '5', '4', //
-            '5', '5', '5', '6', '5', '7', '5', '8', '5', '9', //
-            '6', '0', '6', '1', '6', '2', '6', '3', '6', '4', //
-            '6', '5', '6', '6', '6', '7', '6', '8', '6', '9', //
-            '7', '0', '7', '1', '7', '2', '7', '3', '7', '4', //
-            '7', '5', '7', '6', '7', '7', '7', '8', '7', '9', //
-            '8', '0', '8', '1', '8', '2', '8', '3', '8', '4', //
-            '8', '5', '8', '6', '8', '7', '8', '8', '8', '9', //
-            '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', //
-            '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'  //
-        };
-        static constexpr char radix_100_head_table[] = {
-            '0', '.', '1', '.', '2', '.', '3', '.', '4', '.', //
-            '5', '.', '6', '.', '7', '.', '8', '.', '9', '.', //
-            '1', '.', '1', '.', '1', '.', '1', '.', '1', '.', //
-            '1', '.', '1', '.', '1', '.', '1', '.', '1', '.', //
-            '2', '.', '2', '.', '2', '.', '2', '.', '2', '.', //
-            '2', '.', '2', '.', '2', '.', '2', '.', '2', '.', //
-            '3', '.', '3', '.', '3', '.', '3', '.', '3', '.', //
-            '3', '.', '3', '.', '3', '.', '3', '.', '3', '.', //
-            '4', '.', '4', '.', '4', '.', '4', '.', '4', '.', //
-            '4', '.', '4', '.', '4', '.', '4', '.', '4', '.', //
-            '5', '.', '5', '.', '5', '.', '5', '.', '5', '.', //
-            '5', '.', '5', '.', '5', '.', '5', '.', '5', '.', //
-            '6', '.', '6', '.', '6', '.', '6', '.', '6', '.', //
-            '6', '.', '6', '.', '6', '.', '6', '.', '6', '.', //
-            '7', '.', '7', '.', '7', '.', '7', '.', '7', '.', //
-            '7', '.', '7', '.', '7', '.', '7', '.', '7', '.', //
-            '8', '.', '8', '.', '8', '.', '8', '.', '8', '.', //
-            '8', '.', '8', '.', '8', '.', '8', '.', '8', '.', //
-            '9', '.', '9', '.', '9', '.', '9', '.', '9', '.', //
-            '9', '.', '9', '.', '9', '.', '9', '.', '9', '.'  //
-        };
-
-        static void print_1_digit(std::uint32_t n, char* buffer) noexcept {
-            BOOST_IF_CONSTEXPR ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
-                          '5' == '0' + 5 && '6' == '0' + 6 && '7' == '0' + 7 && '8' == '0' + 8 &&
-                          '9' == '0' + 9) {
-                BOOST_IF_CONSTEXPR (('0' & 0xf) == 0) {
-                    *buffer = char('0' | n);
-                }
-                else {
-                    *buffer = char('0' + n);
-                }
+            // Remaining 4 digits are all zero?
+            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) {
+                // The number of characters actually written is 1 or 3, similarly to the case of
+                // 7 or 8 digits.
+                buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
             }
             else {
-                std::memcpy(buffer, radix_100_table + n * 2 + 1, 1);
+                // At least one of the remaining 4 digits are nonzero.
+                // After this adjustment, now the first destination becomes buffer + 2.
+                buffer += unsigned(head_digits >= 10);
+
+                // Obtain the next two digits.
+                prod = std::uint32_t(prod) * std::uint64_t(100);
+                print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
+
+                // Remaining 2 digits are all zero?
+                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+                    buffer += (3 + unsigned(buffer[3] > '0'));
+                }
+                else {
+                    // Obtain the last two digits.
+                    prod = std::uint32_t(prod) * std::uint64_t(100);
+                    print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
+
+                    buffer += (5 + unsigned(buffer[5] > '0'));
+                }
             }
         }
+        else if (s32 >= 100) {
+            // 3 or 4 digits.
+            // 42949673 = ceil(2^32 / 100)
+            auto prod = s32 * std::uint64_t(42949673);
+            const auto head_digits = std::uint32_t(prod >> 32);
 
-        static void print_2_digits(std::uint32_t n, char* buffer) noexcept {
-            std::memcpy(buffer, radix_100_table + n * 2, 2);
+            // If s32 is of 4 digits, increase the exponent by 3.
+            // Otherwise, increase it by 2.
+            exponent += (2 + int(head_digits >= 10));
+
+            // Write the first digit and the decimal point.
+            std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
+            // This third character may be overwritten later but we don't care.
+            buffer[2] = radix_100_table[head_digits * 2 + 1];
+
+            // Remaining 2 digits are all zero?
+            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+                // The number of characters actually written is 1 or 3, similarly to the case of
+                // 7 or 8 digits.
+                buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
+            }
+            else {
+                // At least one of the remaining 2 digits are nonzero.
+                // After this adjustment, now the first destination becomes buffer + 2.
+                buffer += unsigned(head_digits >= 10);
+
+                // Obtain the last two digits.
+                prod = std::uint32_t(prod) * std::uint64_t(100);
+                print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
+
+                buffer += (3 + unsigned(buffer[3] > '0'));
+            }
+        }
+        else {
+            // 1 or 2 digits.
+            // If s32 is of 2 digits, increase the exponent by 1.
+            exponent += int(s32 >= 10);
+
+            // Write the first digit and the decimal point.
+            std::memcpy(buffer, radix_100_head_table + s32 * 2, 2);
+            // This third character may be overwritten later but we don't care.
+            buffer[2] = radix_100_table[s32 * 2 + 1];
+
+            // The number of characters actually written is 1 or 3, similarly to the case of
+            // 7 or 8 digits.
+            buffer += (1 + (unsigned(s32 >= 10) & unsigned(buffer[2] > '0')) * 2);
+        }
+    }
+
+    template <>
+    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent,
+                                                        char* buffer) noexcept {
+        // Print significand.
+        print_9_digits(s32, exponent, buffer);
+
+        // Print exponent and return
+        if (exponent < 0) {
+            std::memcpy(buffer, "E-", 2);
+            buffer += 2;
+            exponent = -exponent;
+        }
+        else {
+            buffer[0] = 'E';
+            buffer += 1;
         }
 
-        // These digit generation routines are inspired by James Anhalt's itoa algorithm:
-        // https://github.com/jeaiii/itoa
-        // The main idea is for given n, find y such that floor(10^k * y / 2^32) = n holds,
-        // where k is an appropriate integer depending on the length of n.
-        // For example, if n = 1234567, we set k = 6. In this case, we have
-        // floor(y / 2^32) = 1,
-        // floor(10^2 * ((10^0 * y) mod 2^32) / 2^32) = 23,
-        // floor(10^2 * ((10^2 * y) mod 2^32) / 2^32) = 45, and
-        // floor(10^2 * ((10^4 * y) mod 2^32) / 2^32) = 67.
-        // See https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/ for more explanation.
+        if (exponent >= 10) {
+            print_2_digits(std::uint32_t(exponent), buffer);
+            buffer += 2;
+        }
+        else {
+            print_1_digit(std::uint32_t(exponent), buffer);
+            buffer += 1;
+        }
 
-        BOOST_FORCEINLINE static void print_9_digits(std::uint32_t s32, int& exponent,
-                                                   char*& buffer) noexcept {
-            // -- IEEE-754 binary32
-            // Since we do not cut trailing zeros in advance, s32 must be of 6~9 digits
-            // unless the original input was subnormal.
-            // In particular, when it is of 9 digits it shouldn't have any trailing zeros.
-            // -- IEEE-754 binary64
-            // In this case, s32 must be of 7~9 digits unless the input is subnormal,
-            // and it shouldn't have any trailing zeros if it is of 9 digits.
-            if (s32 >= 1'0000'0000) {
-                // 9 digits.
+        return buffer;
+    }
+
+    template <>
+    char* to_chars<double, dragonbox_float_traits<double>>(std::uint64_t const significand,
+                                                            int exponent, char* buffer) noexcept {
+        // Print significand by decomposing it into a 9-digit block and a 8-digit block.
+        std::uint32_t first_block, second_block;
+        bool no_second_block;
+
+        if (significand >= 100000000) {
+            first_block = std::uint32_t(significand / 100000000);
+            second_block = std::uint32_t(significand) - first_block * 100000000;
+            exponent += 8;
+            no_second_block = (second_block == 0);
+        }
+        else {
+            first_block = std::uint32_t(significand);
+            no_second_block = true;
+        }
+
+        if (no_second_block) {
+            print_9_digits(first_block, exponent, buffer);
+        }
+        else {
+            // We proceed similarly to print_9_digits(), but since we do not need to remove
+            // trailing zeros, the procedure is a bit simpler.
+            if (first_block >= 100000000) {
+                // The input is of 17 digits, thus there should be no trailing zero at all.
+                // The first block is of 9 digits.
                 // 1441151882 = ceil(2^57 / 1'0000'0000) + 1
-                auto prod = s32 * std::uint64_t(1441151882);
+                auto prod = first_block * std::uint64_t(1441151882);
                 prod >>= 25;
                 std::memcpy(buffer, radix_100_head_table + std::uint32_t(prod >> 32) * 2, 2);
-
                 prod = std::uint32_t(prod) * std::uint64_t(100);
                 print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
                 prod = std::uint32_t(prod) * std::uint64_t(100);
@@ -2645,395 +2851,172 @@ struct impl : private FloatTraits, private FloatTraits::format
                 prod = std::uint32_t(prod) * std::uint64_t(100);
                 print_2_digits(std::uint32_t(prod >> 32), buffer + 8);
 
-                exponent += 8;
-                buffer += 10;
-            }
-            else if (s32 >= 100'0000) {
-                // 7 or 8 digits.
+                // The second block is of 8 digits.
                 // 281474978 = ceil(2^48 / 100'0000) + 1
-                auto prod = s32 * std::uint64_t(281474978);
+                prod = second_block * std::uint64_t(281474978);
                 prod >>= 16;
-                const auto head_digits = std::uint32_t(prod >> 32);
-                // If s32 is of 8 digits, increase the exponent by 7.
-                // Otherwise, increase it by 6.
-                exponent += (6 + unsigned(head_digits >= 10));
+                prod += 1;
+                print_2_digits(std::uint32_t(prod >> 32), buffer + 10);
+                prod = std::uint32_t(prod) * std::uint64_t(100);
+                print_2_digits(std::uint32_t(prod >> 32), buffer + 12);
+                prod = std::uint32_t(prod) * std::uint64_t(100);
+                print_2_digits(std::uint32_t(prod >> 32), buffer + 14);
+                prod = std::uint32_t(prod) * std::uint64_t(100);
+                print_2_digits(std::uint32_t(prod >> 32), buffer + 16);
 
-                // Write the first digit and the decimal point.
-                std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                // This third character may be overwritten later but we don't care.
-                buffer[2] = radix_100_table[head_digits * 2 + 1];
-
-                // Remaining 6 digits are all zero?
-                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100'0000)) {
-                    // The number of characters actually need to be written is:
-                    //   1, if only the first digit is nonzero, which means that either s32 is of 7
-                    //   digits or it is of 8 digits but the second digit is zero, or
-                    //   3, otherwise.
-                    // Note that buffer[2] is never '0' if s32 is of 7 digits, because the input is
-                    // never zero.
-                    buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
-                }
-                else {
-                    // At least one of the remaining 6 digits are nonzero.
-                    // After this adjustment, now the first destination becomes buffer + 2.
-                    buffer += unsigned(head_digits >= 10);
-
-                    // Obtain the next two digits.
-                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
-
-                    // Remaining 4 digits are all zero?
-                    if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1'0000)) {
-                        buffer += (3 + unsigned(buffer[3] > '0'));
-                    }
-                    else {
-                        // At least one of the remaining 4 digits are nonzero.
-
-                        // Obtain the next two digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
-
-                        // Remaining 2 digits are all zero?
-                        if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
-                            buffer += (5 + unsigned(buffer[5] > '0'));
-                        }
-                        else {
-                            // Obtain the last two digits.
-                            prod = std::uint32_t(prod) * std::uint64_t(100);
-                            print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
-
-                            buffer += (7 + unsigned(buffer[7] > '0'));
-                        }
-                    }
-                }
-            }
-            else if (s32 >= 1'0000) {
-                // 5 or 6 digits.
-                // 429497 = ceil(2^32 / 1'0000)
-                auto prod = s32 * std::uint64_t(429497);
-                const auto head_digits = std::uint32_t(prod >> 32);
-
-                // If s32 is of 6 digits, increase the exponent by 5.
-                // Otherwise, increase it by 4.
-                exponent += (4 + unsigned(head_digits >= 10));
-
-                // Write the first digit and the decimal point.
-                std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                // This third character may be overwritten later but we don't care.
-                buffer[2] = radix_100_table[head_digits * 2 + 1];
-
-                // Remaining 4 digits are all zero?
-                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1'0000)) {
-                    // The number of characters actually written is 1 or 3, similarly to the case of
-                    // 7 or 8 digits.
-                    buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
-                }
-                else {
-                    // At least one of the remaining 4 digits are nonzero.
-                    // After this adjustment, now the first destination becomes buffer + 2.
-                    buffer += unsigned(head_digits >= 10);
-
-                    // Obtain the next two digits.
-                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
-
-                    // Remaining 2 digits are all zero?
-                    if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
-                        buffer += (3 + unsigned(buffer[3] > '0'));
-                    }
-                    else {
-                        // Obtain the last two digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
-
-                        buffer += (5 + unsigned(buffer[5] > '0'));
-                    }
-                }
-            }
-            else if (s32 >= 100) {
-                // 3 or 4 digits.
-                // 42949673 = ceil(2^32 / 100)
-                auto prod = s32 * std::uint64_t(42949673);
-                const auto head_digits = std::uint32_t(prod >> 32);
-
-                // If s32 is of 4 digits, increase the exponent by 3.
-                // Otherwise, increase it by 2.
-                exponent += (2 + int(head_digits >= 10));
-
-                // Write the first digit and the decimal point.
-                std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                // This third character may be overwritten later but we don't care.
-                buffer[2] = radix_100_table[head_digits * 2 + 1];
-
-                // Remaining 2 digits are all zero?
-                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
-                    // The number of characters actually written is 1 or 3, similarly to the case of
-                    // 7 or 8 digits.
-                    buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
-                }
-                else {
-                    // At least one of the remaining 2 digits are nonzero.
-                    // After this adjustment, now the first destination becomes buffer + 2.
-                    buffer += unsigned(head_digits >= 10);
-
-                    // Obtain the last two digits.
-                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
-
-                    buffer += (3 + unsigned(buffer[3] > '0'));
-                }
-            }
-            else {
-                // 1 or 2 digits.
-                // If s32 is of 2 digits, increase the exponent by 1.
-                exponent += int(s32 >= 10);
-
-                // Write the first digit and the decimal point.
-                std::memcpy(buffer, radix_100_head_table + s32 * 2, 2);
-                // This third character may be overwritten later but we don't care.
-                buffer[2] = radix_100_table[s32 * 2 + 1];
-
-                // The number of characters actually written is 1 or 3, similarly to the case of
-                // 7 or 8 digits.
-                buffer += (1 + (unsigned(s32 >= 10) & unsigned(buffer[2] > '0')) * 2);
-            }
-        }
-
-        template <>
-        char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent,
-                                                           char* buffer) noexcept {
-            // Print significand.
-            print_9_digits(s32, exponent, buffer);
-
-            // Print exponent and return
-            if (exponent < 0) {
-                std::memcpy(buffer, "E-", 2);
-                buffer += 2;
-                exponent = -exponent;
-            }
-            else {
-                buffer[0] = 'E';
-                buffer += 1;
-            }
-
-            if (exponent >= 10) {
-                print_2_digits(std::uint32_t(exponent), buffer);
-                buffer += 2;
-            }
-            else {
-                print_1_digit(std::uint32_t(exponent), buffer);
-                buffer += 1;
-            }
-
-            return buffer;
-        }
-
-        template <>
-        char* to_chars<double, dragonbox_float_traits<double>>(std::uint64_t const significand,
-                                                             int exponent, char* buffer) noexcept {
-            // Print significand by decomposing it into a 9-digit block and a 8-digit block.
-            std::uint32_t first_block, second_block;
-            bool no_second_block;
-
-            if (significand >= 1'0000'0000) {
-                first_block = std::uint32_t(significand / 1'0000'0000);
-                second_block = std::uint32_t(significand) - first_block * 1'0000'0000;
                 exponent += 8;
-                no_second_block = (second_block == 0);
+                buffer += 18;
             }
             else {
-                first_block = std::uint32_t(significand);
-                no_second_block = true;
-            }
+                if (first_block >= 1000000) {
+                    // 7 or 8 digits.
+                    // 281474978 = ceil(2^48 / 100'0000) + 1
+                    auto prod = first_block * std::uint64_t(281474978);
+                    prod >>= 16;
+                    const auto head_digits = std::uint32_t(prod >> 32);
 
-            if (no_second_block) {
-                print_9_digits(first_block, exponent, buffer);
-            }
-            else {
-                // We proceed similarly to print_9_digits(), but since we do not need to remove
-                // trailing zeros, the procedure is a bit simpler.
-                if (first_block >= 1'0000'0000) {
-                    // The input is of 17 digits, thus there should be no trailing zero at all.
-                    // The first block is of 9 digits.
-                    // 1441151882 = ceil(2^57 / 1'0000'0000) + 1
-                    auto prod = first_block * std::uint64_t(1441151882);
-                    prod >>= 25;
-                    std::memcpy(buffer, radix_100_head_table + std::uint32_t(prod >> 32) * 2, 2);
+                    std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
+                    buffer[2] = radix_100_table[head_digits * 2 + 1];
+
+                    exponent += (6 + unsigned(head_digits >= 10));
+                    buffer += unsigned(head_digits >= 10);
+
+                    // Print remaining 6 digits.
                     prod = std::uint32_t(prod) * std::uint64_t(100);
                     print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
                     prod = std::uint32_t(prod) * std::uint64_t(100);
                     print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
                     prod = std::uint32_t(prod) * std::uint64_t(100);
                     print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
-                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 8);
 
-                    // The second block is of 8 digits.
-                    // 281474978 = ceil(2^48 / 100'0000) + 1
-                    prod = second_block * std::uint64_t(281474978);
-                    prod >>= 16;
-                    prod += 1;
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 10);
-                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 12);
-                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 14);
-                    prod = std::uint32_t(prod) * std::uint64_t(100);
-                    print_2_digits(std::uint32_t(prod >> 32), buffer + 16);
+                    buffer += 8;
+                }
+                else if (first_block >= 10000) {
+                    // 5 or 6 digits.
+                    // 429497 = ceil(2^32 / 1'0000)
+                    auto prod = first_block * std::uint64_t(429497);
+                    const auto head_digits = std::uint32_t(prod >> 32);
 
-                    exponent += 8;
-                    buffer += 18;
+                    std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
+                    buffer[2] = radix_100_table[head_digits * 2 + 1];
+
+                    exponent += (4 + unsigned(head_digits >= 10));
+                    buffer += unsigned(head_digits >= 10);
+
+                    // Print remaining 4 digits.
+                    prod = std::uint32_t(prod) * std::uint64_t(100);
+                    print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
+                    prod = std::uint32_t(prod) * std::uint64_t(100);
+                    print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
+
+                    buffer += 6;
+                }
+                else if (first_block >= 100) {
+                    // 3 or 4 digits.
+                    // 42949673 = ceil(2^32 / 100)
+                    auto prod = first_block * std::uint64_t(42949673);
+                    const auto head_digits = std::uint32_t(prod >> 32);
+
+                    std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
+                    buffer[2] = radix_100_table[head_digits * 2 + 1];
+
+                    exponent += (2 + unsigned(head_digits >= 10));
+                    buffer += unsigned(head_digits >= 10);
+
+                    // Print remaining 2 digits.
+                    prod = std::uint32_t(prod) * std::uint64_t(100);
+                    print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
+
+                    buffer += 4;
                 }
                 else {
-                    if (first_block >= 100'0000) {
-                        // 7 or 8 digits.
-                        // 281474978 = ceil(2^48 / 100'0000) + 1
-                        auto prod = first_block * std::uint64_t(281474978);
-                        prod >>= 16;
-                        const auto head_digits = std::uint32_t(prod >> 32);
+                    // 1 or 2 digits.
+                    std::memcpy(buffer, radix_100_head_table + first_block * 2, 2);
+                    buffer[2] = radix_100_table[first_block * 2 + 1];
 
-                        std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                        buffer[2] = radix_100_table[head_digits * 2 + 1];
+                    exponent += unsigned(first_block >= 10);
+                    buffer += (2 + unsigned(first_block >= 10));
+                }
 
-                        exponent += (6 + unsigned(head_digits >= 10));
-                        buffer += unsigned(head_digits >= 10);
+                // Next, print the second block.
+                // The second block is of 8 digits, but we may have trailing zeros.
+                // 281474978 = ceil(2^48 / 100'0000) + 1
+                auto prod = second_block * std::uint64_t(281474978);
+                prod >>= 16;
+                prod += 1;
+                print_2_digits(std::uint32_t(prod >> 32), buffer);
 
-                        // Print remaining 6 digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
+                // Remaining 6 digits are all zero?
+                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1000000)) {
+                    buffer += (1 + unsigned(buffer[1] > '0'));
+                }
+                else {
+                    // Obtain the next two digits.
+                    prod = std::uint32_t(prod) * std::uint64_t(100);
+                    print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
 
-                        buffer += 8;
-                    }
-                    else if (first_block >= 1'0000) {
-                        // 5 or 6 digits.
-                        // 429497 = ceil(2^32 / 1'0000)
-                        auto prod = first_block * std::uint64_t(429497);
-                        const auto head_digits = std::uint32_t(prod >> 32);
-
-                        std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                        buffer[2] = radix_100_table[head_digits * 2 + 1];
-
-                        exponent += (4 + unsigned(head_digits >= 10));
-                        buffer += unsigned(head_digits >= 10);
-
-                        // Print remaining 4 digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
-
-                        buffer += 6;
-                    }
-                    else if (first_block >= 100) {
-                        // 3 or 4 digits.
-                        // 42949673 = ceil(2^32 / 100)
-                        auto prod = first_block * std::uint64_t(42949673);
-                        const auto head_digits = std::uint32_t(prod >> 32);
-
-                        std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                        buffer[2] = radix_100_table[head_digits * 2 + 1];
-
-                        exponent += (2 + unsigned(head_digits >= 10));
-                        buffer += unsigned(head_digits >= 10);
-
-                        // Print remaining 2 digits.
-                        prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
-
-                        buffer += 4;
-                    }
-                    else {
-                        // 1 or 2 digits.
-                        std::memcpy(buffer, radix_100_head_table + first_block * 2, 2);
-                        buffer[2] = radix_100_table[first_block * 2 + 1];
-
-                        exponent += unsigned(first_block >= 10);
-                        buffer += (2 + unsigned(first_block >= 10));
-                    }
-
-                    // Next, print the second block.
-                    // The second block is of 8 digits, but we may have trailing zeros.
-                    // 281474978 = ceil(2^48 / 100'0000) + 1
-                    auto prod = second_block * std::uint64_t(281474978);
-                    prod >>= 16;
-                    prod += 1;
-                    print_2_digits(std::uint32_t(prod >> 32), buffer);
-
-                    // Remaining 6 digits are all zero?
-                    if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100'0000)) {
-                        buffer += (1 + unsigned(buffer[1] > '0'));
+                    // Remaining 4 digits are all zero?
+                    if (std::uint32_t(prod) <=
+                        std::uint32_t((std::uint64_t(1) << 32) / 10000)) {
+                        buffer += (3 + unsigned(buffer[3] > '0'));
                     }
                     else {
                         // Obtain the next two digits.
                         prod = std::uint32_t(prod) * std::uint64_t(100);
-                        print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
+                        print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
 
-                        // Remaining 4 digits are all zero?
+                        // Remaining 2 digits are all zero?
                         if (std::uint32_t(prod) <=
-                            std::uint32_t((std::uint64_t(1) << 32) / 1'0000)) {
-                            buffer += (3 + unsigned(buffer[3] > '0'));
+                            std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+                            buffer += (5 + unsigned(buffer[5] > '0'));
                         }
                         else {
-                            // Obtain the next two digits.
+                            // Obtain the last two digits.
                             prod = std::uint32_t(prod) * std::uint64_t(100);
-                            print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
-
-                            // Remaining 2 digits are all zero?
-                            if (std::uint32_t(prod) <=
-                                std::uint32_t((std::uint64_t(1) << 32) / 100)) {
-                                buffer += (5 + unsigned(buffer[5] > '0'));
-                            }
-                            else {
-                                // Obtain the last two digits.
-                                prod = std::uint32_t(prod) * std::uint64_t(100);
-                                print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
-                                buffer += (7 + unsigned(buffer[7] > '0'));
-                            }
+                            print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
+                            buffer += (7 + unsigned(buffer[7] > '0'));
                         }
                     }
                 }
             }
-            if (exponent < 0) {
-                std::memcpy(buffer, "e-", 2);
-                buffer += 2;
-                exponent = -exponent;
-            }
-            else if (exponent == 0)
-            {
-                return buffer;
-            }
-            else {
-                std::memcpy(buffer, "e+", 2);
-                buffer += 2;
-            }
-
-            if (exponent >= 100) {
-                // d1 = exponent / 10; d2 = exponent % 10;
-                // 6554 = ceil(2^16 / 10)
-                auto prod = std::uint32_t(exponent) * std::uint32_t(6554);
-                auto d1 = prod >> 16;
-                prod = std::uint16_t(prod) * std::uint32_t(5); // * 10
-                auto d2 = prod >> 15;                          // >> 16
-                print_2_digits(d1, buffer);
-                print_1_digit(d2, buffer + 2);
-                buffer += 3;
-            }
-            else if (exponent >= 10) {
-                print_2_digits(std::uint32_t(exponent), buffer);
-                buffer += 2;
-            }
-            else {
-                print_1_digit(std::uint32_t(exponent), buffer);
-                buffer += 1;
-            }
-
+        }
+        if (exponent < 0) {
+            std::memcpy(buffer, "e-", 2);
+            buffer += 2;
+            exponent = -exponent;
+        }
+        else if (exponent == 0)
+        {
             return buffer;
         }
+        else {
+            std::memcpy(buffer, "e+", 2);
+            buffer += 2;
+        }
+
+        if (exponent >= 100) {
+            // d1 = exponent / 10; d2 = exponent % 10;
+            // 6554 = ceil(2^16 / 10)
+            auto prod = std::uint32_t(exponent) * std::uint32_t(6554);
+            auto d1 = prod >> 16;
+            prod = std::uint16_t(prod) * std::uint32_t(5); // * 10
+            auto d2 = prod >> 15;                          // >> 16
+            print_2_digits(d1, buffer);
+            print_1_digit(d2, buffer + 2);
+            buffer += 3;
+        }
+        else if (exponent >= 10) {
+            print_2_digits(std::uint32_t(exponent), buffer);
+            buffer += 2;
+        }
+        else {
+            print_1_digit(std::uint32_t(exponent), buffer);
+            buffer += 1;
+        }
+
+        return buffer;
     }
+}
 }}} // Namespaces
 
 #endif
