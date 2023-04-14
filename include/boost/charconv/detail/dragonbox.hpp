@@ -2249,6 +2249,8 @@ namespace policy_impl {
     template <typename... Policies>
     struct policy_holder : Policies... {};
 
+    #ifndef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+
     template <bool repeated, typename... FoundPolicyPairs, typename... Policies>
     constexpr auto make_policy_holder_impl(base_default_pair_list<>, found_policy_pair_list<repeated, FoundPolicyPairs...>, Policies...) 
         -> found_policy_pair_list<repeated, FoundPolicyPairs...>
@@ -2295,6 +2297,7 @@ namespace policy_impl {
 
         return convert_to_policy_holder(policy_pair_list{});
     }
+    #endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 // The interface function.
@@ -2303,10 +2306,17 @@ namespace policy_impl {
 template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
 BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
 to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signed_significand_bits,
-            unsigned int exponent_bits, Policies... policies) noexcept -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
+            unsigned int exponent_bits, BOOST_ATTRIBUTE_UNUSED Policies... policies) noexcept -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
 {
     // Build policy holder type.
     using namespace policy_impl;
+    
+    #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+    // For C++11 we hardcode the policy holder
+    using policy_holder = policy_holder<decimal_to_binary_rounding::nearest_to_even, binary_to_decimal_rounding::to_even, cache::full, sign::return_sign, trailing_zero::remove>;
+    
+    #else
+    
     using policy_holder = decltype(make_policy_holder(
         base_default_pair_list<base_default_pair<sign::base, sign::return_sign>,
                                 base_default_pair<trailing_zero::base, trailing_zero::remove>,
@@ -2316,11 +2326,13 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
                                                     binary_to_decimal_rounding::to_even>,
                                 base_default_pair<cache::base, cache::full>>{},
         policies...));
+    
+    #endif
 
     using return_type = decimal_fp<typename FloatTraits::carrier_uint, policy_holder::return_has_sign, policy_holder::report_trailing_zeros>;
 
     return_type ret = policy_holder::template delegate<return_type>(dragonbox_signed_significand_bits,
-        [exponent_bits, dragonbox_signed_significand_bits](auto interval_type_provider) {
+        [exponent_bits, dragonbox_signed_significand_bits](policy_impl::decimal_to_binary_rounding::nearest_to_even interval_type_provider) {
             using format = typename FloatTraits::format;
             constexpr auto tag = decltype(interval_type_provider)::tag;
 
