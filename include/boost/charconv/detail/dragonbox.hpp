@@ -14,21 +14,23 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
+//
+// Copyright 2023 Matt Borland
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
+#ifndef BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
+#define BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
 
-#ifndef JKJ_HEADER_DRAGONBOX
-#define JKJ_HEADER_DRAGONBOX
-
-#include <cassert>
+#include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/dragonbox_common.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/core/bit.hpp>
+#include <type_traits>
+#include <limits>
 #include <cstdint>
 #include <cstring>
-#include <limits>
-#include <type_traits>
-#include <boost/core/bit.hpp>
-#include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/charconv/detail/dragonbox_common.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -2496,7 +2498,7 @@ BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies..
     const auto br = dragonbox_float_bits<Float, FloatTraits>(x);
     const auto exponent_bits = br.extract_exponent_bits();
     const auto s = br.remove_exponent_bits(exponent_bits);
-    assert(br.is_finite());
+    BOOST_CHARCONV_ASSERT(br.is_finite());
 
     return to_decimal<Float, FloatTraits>(s, exponent_bits, policies...);
 }
@@ -3077,6 +3079,7 @@ namespace to_chars_detail {
         return buffer;
     }
 }
+
 }}} // Namespaces
 
-#endif
+#endif // BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
