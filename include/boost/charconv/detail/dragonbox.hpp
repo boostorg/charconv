@@ -363,7 +363,7 @@ struct dragonbox_signed_significand_bits
 
         // Compute floor(n / 10^N) for small N.
         // Precondition: n <= n_max
-        template <unsigned N, class UInt, UInt n_max>
+        template <unsigned N, typename UInt, UInt n_max>
         BOOST_CXX14_CONSTEXPR UInt divide_by_pow10(UInt n) noexcept 
         {
 
@@ -384,7 +384,27 @@ struct dragonbox_signed_significand_bits
             }
             else 
             {
-                constexpr auto divisor = compute_power(static_cast<UInt>(10), N);
+                BOOST_CXX14_CONSTEXPR auto divisor = compute_power(static_cast<UInt>(10), N);
+                return n / divisor;
+            }
+        }
+
+        template <typename UInt>
+        BOOST_CXX14_CONSTEXPR UInt divide_by_pow10(unsigned N, UInt n_max, UInt n) noexcept
+        {
+            if (std::is_same<UInt, std::uint32_t>::value && N == 2) 
+            {
+                return std::uint32_t(umul64(n, UINT32_C(1374389535)) >> 37);
+            }
+            // Specialize for 64-bit division by 1000.
+            // Ensure that the correctness condition is met.
+            else if (std::is_same<UInt, std::uint64_t>::value && N == 3 && n_max <= UINT64_C(15534100272597517998))
+            {
+                return umul128_upper64(n, UINT64_C(2361183241434822607)) >> 7;
+            }
+            else 
+            {
+                auto divisor = compute_power(static_cast<UInt>(10), N);
                 return n / divisor;
             }
         }
@@ -1570,13 +1590,16 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Step 2: Try larger divisor; remove trailing zeros if necessary
         //////////////////////////////////////////////////////////////////////
 
-        constexpr auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
-        constexpr auto small_divisor = compute_power(std::uint32_t(10), kappa);
+        BOOST_CXX14_CONSTEXPR auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
+        BOOST_CXX14_CONSTEXPR auto small_divisor = compute_power(std::uint32_t(10), kappa);
 
         // Using an upper bound on zi, we might be able to optimize the division
         // better than the compiler; we are computing zi / big_divisor here.
-        ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint,(carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
+        #ifdef BOOST_NO_CXX14_CONSTEXPR
+        ret_value.significand = div::divide_by_pow10<carrier_uint>(kappa + 1, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1, zi);
+        #else
+        ret_value.significand = div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
+        #endif
         
         auto r = std::uint32_t(zi - big_divisor * ret_value.significand);
 
@@ -1813,12 +1836,16 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Step 2: Try larger divisor; remove trailing zeros if necessary
         //////////////////////////////////////////////////////////////////////
 
-        constexpr auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
+        BOOST_CXX14_CONSTEXPR auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
 
         // Using an upper bound on xi, we might be able to optimize the division
         // better than the compiler; we are computing xi / big_divisor here.
-        ret_value.significand = 
-            div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(xi);
+
+        #ifdef BOOST_NO_CXX14_CONSTEXPR
+        ret_value.significand = div::divide_by_pow10<carrier_uint>(kappa + 1, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1, xi);
+        #else
+        ret_value.significand = div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(xi);
+        #endif
 
         auto r = std::uint32_t(xi - big_divisor * ret_value.significand);
 
@@ -1895,8 +1922,12 @@ struct impl : private FloatTraits, private FloatTraits::format
 
         // Using an upper bound on zi, we might be able to optimize the division better than
         // the compiler; we are computing zi / big_divisor here.
-        ret_value.significand =
-            div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
+        #ifdef BOOST_NO_CXX14_CONSTEXPR
+        ret_value.significand = div::divide_by_pow10<carrier_uint>(kappa + 1, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1, zi);
+        #else
+        ret_value.significand = div::divide_by_pow10<kappa + 1, carrier_uint, (carrier_uint(1) << (significand_bits + 1)) * big_divisor - 1>(zi);
+        #endif
+
         const auto r = std::uint32_t(zi - big_divisor * ret_value.significand);
 
         if (r > deltai) 
@@ -2306,7 +2337,10 @@ namespace policy_impl {
 template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
 BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
 to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signed_significand_bits,
-            unsigned int exponent_bits, BOOST_ATTRIBUTE_UNUSED Policies... policies) noexcept -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
+            unsigned int exponent_bits, BOOST_ATTRIBUTE_UNUSED Policies... policies) noexcept 
+            #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+            -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
+            #endif
 {
     // Build policy holder type.
     using namespace policy_impl;
@@ -2453,8 +2487,11 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
     return ret;
 }
 
-template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
-BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
+template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
+BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept
+    #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+    -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
+    #endif
 {
     const auto br = dragonbox_float_bits<Float, FloatTraits>(x);
     const auto exponent_bits = br.extract_exponent_bits();
@@ -2511,24 +2548,36 @@ namespace to_chars_detail {
 }
 
 // Returns the next-to-end position
-template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
-char* to_chars_n(Float x, char* buffer, Policies... policies) noexcept {
+template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
+char* to_chars_n(Float x, char* buffer, BOOST_ATTRIBUTE_UNUSED Policies... policies) noexcept
+{
     using namespace policy_impl;
+
+    #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+    // For C++11 we hardcode the policy holder
+    using policy_holder = policy_holder<decimal_to_binary_rounding::nearest_to_even, binary_to_decimal_rounding::to_even, cache::full, sign::return_sign, trailing_zero::remove>;
+    
+    #else
+    
     using policy_holder = decltype(make_policy_holder(
-        base_default_pair_list<base_default_pair<decimal_to_binary_rounding::base,
+        base_default_pair_list<base_default_pair<sign::base, sign::return_sign>,
+                                base_default_pair<trailing_zero::base, trailing_zero::remove>,
+                                base_default_pair<decimal_to_binary_rounding::base,
                                                     decimal_to_binary_rounding::nearest_to_even>,
                                 base_default_pair<binary_to_decimal_rounding::base,
                                                     binary_to_decimal_rounding::to_even>,
                                 base_default_pair<cache::base, cache::full>>{},
         policies...));
+    
+    #endif
 
-    return to_chars_detail::to_chars_n_impl<policy_holder>(dragonbox_float_bits<Float, FloatTraits>(x),
-                                                            buffer);
+    return to_chars_detail::to_chars_n_impl<policy_holder>(dragonbox_float_bits<Float, FloatTraits>(x), buffer);
 }
 
 // Null-terminate and bypass the return value of fp_to_chars_n
-template <class Float, class FloatTraits = dragonbox_float_traits<Float>, class... Policies>
-char* to_chars(Float x, char* buffer, Policies... policies) noexcept {
+template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
+char* to_chars(Float x, char* buffer, Policies... policies) noexcept 
+{
     auto ptr = to_chars_n<Float, FloatTraits>(x, buffer, policies...);
     *ptr = '\0';
     return ptr;
