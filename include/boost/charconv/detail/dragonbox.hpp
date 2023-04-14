@@ -1506,12 +1506,12 @@ struct impl : private FloatTraits, private FloatTraits::format
     static constexpr auto cache_bits = cache_holder<format>::cache_bits;
 
     static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
-    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_left_endpoint_upper_threshold =
-        2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1) / 3);
+    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_left_endpoint_upper_threshold = 3;
+        //2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 2)) - 1) + 1) / 3);
 
     static constexpr int case_shorter_interval_right_endpoint_lower_threshold = 0;
-    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_right_endpoint_upper_threshold =
-        2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) / 3);
+    static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_right_endpoint_upper_threshold = 3;
+        //2 + log::floor_log2(compute_power(10, count_factors<5>((carrier_uint(1) << (significand_bits + 1)) + 1) + 1) / 3);
 
     static constexpr int shorter_interval_tie_lower_threshold =
         -log::floor_log5_pow2_minus_log5_3(significand_bits + 4) - 2 - significand_bits;
@@ -1891,7 +1891,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Step 2: Try larger divisor; remove trailing zeros if necessary
         //////////////////////////////////////////////////////////////////////
 
-        constexpr auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
+        BOOST_CXX14_CONSTEXPR auto big_divisor = compute_power(std::uint32_t(10), kappa + 1);
 
         // Using an upper bound on zi, we might be able to optimize the division better than
         // the compiler; we are computing zi / big_divisor here.
@@ -2375,7 +2375,7 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
 
                     if (two_fc == 0) {
                         return decltype(interval_type_provider)::template invoke_shorter_interval_case<return_type>(
-                            dragonbox_signed_significand_bits, [exponent](auto... additional_args) {
+                            dragonbox_signed_significand_bits, [exponent]() {
                                 return detail::impl<Float, FloatTraits>::
                                     template compute_nearest_shorter<
                                         return_type,
@@ -2385,7 +2385,7 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
                                         typename policy_holder::
                                             binary_to_decimal_rounding_policy,
                                         typename policy_holder::cache_policy>(
-                                        exponent, additional_args...);
+                                        exponent);
                             });
                     }
 
@@ -2397,15 +2397,14 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
                 }
 
                 return decltype(interval_type_provider)::template invoke_normal_interval_case<return_type>(
-                    dragonbox_signed_significand_bits, [two_fc, exponent](auto... additional_args) {
+                    dragonbox_signed_significand_bits, [two_fc, exponent](bool additional_args) {
                         return detail::impl<Float, FloatTraits>::
                             template compute_nearest_normal<
                                 return_type,
                                 typename decltype(interval_type_provider)::normal_interval_type,
                                 typename policy_holder::trailing_zero_policy,
                                 typename policy_holder::binary_to_decimal_rounding_policy,
-                                typename policy_holder::cache_policy>(two_fc, exponent,
-                                                                        additional_args...);
+                                typename policy_holder::cache_policy>(two_fc, exponent, additional_args);
                     });
             }
             else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) 
