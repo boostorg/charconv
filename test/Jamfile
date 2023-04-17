@@ -35,3 +35,4 @@ run test_compute_float32.cpp ;
 run test_parser.cpp ;
 run from_chars_float.cpp ;
 run to_chars_float.cpp ;
+run test_boost_json_values.cpp ;
