@@ -2287,7 +2287,7 @@ namespace policy_impl {
     template <typename... Policies>
     struct policy_holder : Policies... {};
 
-    #ifndef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+    #ifndef BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
 
     template <bool repeated, typename... FoundPolicyPairs, typename... Policies>
     constexpr auto make_policy_holder_impl(base_default_pair_list<>, found_policy_pair_list<repeated, FoundPolicyPairs...>, Policies...) 
@@ -2351,14 +2351,14 @@ template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, 
 BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
 to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signed_significand_bits,
             unsigned int exponent_bits, BOOST_ATTRIBUTE_UNUSED Policies... policies) noexcept 
-            #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+            #ifdef BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
             -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
             #endif
 {
     // Build policy holder type.
     using namespace policy_impl;
     
-    #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+    #ifdef BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
     // For C++11 we hardcode the policy holder
     using policy_holder = policy_holder<decimal_to_binary_rounding::nearest_to_even, binary_to_decimal_rounding::to_even, cache::full, sign::return_sign, trailing_zero::remove>;
     
@@ -2506,7 +2506,7 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
 
 template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
 BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept
-    #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+    #ifdef BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
     -> decimal_fp<typename FloatTraits::carrier_uint, true, false>
     #endif
 {
@@ -2570,7 +2570,7 @@ char* to_chars_n(Float x, char* buffer, BOOST_ATTRIBUTE_UNUSED Policies... polic
 {
     using namespace policy_impl;
 
-    #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+    #ifdef BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
     // For C++11 we hardcode the policy holder
     using policy_holder = policy_holder<decimal_to_binary_rounding::nearest_to_even, binary_to_decimal_rounding::to_even, cache::full, sign::return_sign, trailing_zero::remove>;
     
