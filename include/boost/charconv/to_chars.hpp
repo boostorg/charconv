@@ -431,7 +431,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 #endif
 
 template <typename Integer>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int(char* first, char* last, Integer value, int base = 10) noexcept
 {
     using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
     if (base == 10)
@@ -603,7 +603,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         *first++ = '+';
     }
 
-    return to_chars(first, last, abs_unbiased_exponent);
+    return to_chars_int(first, last, abs_unbiased_exponent);
 }
 
 } // Namespace detail
@@ -612,47 +612,47 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, bool value, int base) noexcept = delete;
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, char value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, signed char value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned char value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, short value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned short value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, int value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned int value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, long long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned long long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
