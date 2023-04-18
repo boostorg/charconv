@@ -35,9 +35,24 @@ void printf_divergence()
     BOOST_TEST_CSTR_EQ(buffer3, "-3000000300000000.5");
 }
 
+template <typename T>
+void integer_general_format()
+{
+    char buffer1[256] {};
+    T v1 = 1217.2772861138403;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "1217.2772861138403");
+    T return_v1;
+    auto r1_return = boost::charconv::from_chars(buffer1, buffer1 + strlen(buffer1), return_v1);
+    BOOST_TEST_EQ(r1_return.ec, 0);
+    BOOST_TEST_EQ(return_v1, v1);
+}
+
 int main()
 {
     printf_divergence<double>();
+    integer_general_format<double>();
 
     return boost::report_errors();
 }
