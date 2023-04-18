@@ -98,7 +98,17 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
 {
     char buffer[ 256 ];
 
-    auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt );
+        
+    boost::charconv::to_chars_result r;
+    if (fmt != boost::charconv::chars_format::scientific)
+    {
+        r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt );
+    }
+    else
+    {
+        // Sprintf uses 9 / 17 digits of precision
+        r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt, std::numeric_limits<T>::max_digits10);
+    }
 
     BOOST_TEST_EQ( r.ec, 0 );
 
@@ -111,20 +121,18 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     }
     else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
-        max_value = static_cast<T>((std::numeric_limits<std::uint64_t>::max)());
+        max_value = 1e16;
     }
-
-    const T min_value = static_cast<T>(1.0) / max_value;
 
     if (fmt == boost::charconv::chars_format::general)
     {
         // See https://godbolt.org/z/dd33nM6ax
-        if (value < max_value && value > min_value)
+        if (value >= 1 && value < max_value)
         {
             std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type_fixed( value ), value );
         }
         else
-        {
+        {            
             std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type( value ), value );
         }
     }
@@ -148,7 +156,7 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     }
     else if (fmt == boost::charconv::chars_format::fixed)
     {
-        if (value < max_value && value > min_value)
+        if (value >= 1 && value < max_value)
         {
             std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type_fixed( value ), value );
         }
@@ -158,14 +166,31 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
         }
     }
 
-    if(!BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) ))
+    // Remove ranges where sprintf does not perform like it should under general formatting:
+    // See to_chars_float_STL_comp.cpp
+    //
+    //       Value: 3.78882532780079974e+18
+    //    To chars: 3.7888253278007997e+18
+    //    Snprintf: 3.78883e+18
+    // 
+    //       Value: 2.25907093342864926e-289
+    //    To chars: 2.2590709334286493e-289
+    //    Snprintf: 2.25907e-289
+    //
+    //       Value: 2.98808092305723294e+289
+    //    To chars: 2.988080923057233e+289
+    //    Snprintf: 2.98808e+289
+    if ( !(((value > 1e16 && value < 1e20) || (value < 1e-288 && value > 0) || (value > 1e288) ) && fmt == boost::charconv::chars_format::general))
     {
-        // Set precision for integer part + decimal digits
-        // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
-        std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
-                  << "   Value: " << value
-                  << "\nTo chars: " << std::string( buffer, r.ptr )
-                  << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+        if(!BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) ))
+        {
+            // Set precision for integer part + decimal digits
+            // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
+            std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
+                    << "   Value: " << value
+                    << "\nTo chars: " << std::string( buffer, r.ptr )
+                    << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+        }
     }
 }
 
@@ -265,10 +290,10 @@ template<class T> void test_sprintf_bv()
 
 template<class T> void test_sprintf_bv_fp()
 {
-    test_sprintf( std::numeric_limits<T>::min() );
-    test_sprintf( -std::numeric_limits<T>::min() );
-    test_sprintf( std::numeric_limits<T>::max() );
-    test_sprintf( +std::numeric_limits<T>::max() );
+    test_sprintf_float( std::numeric_limits<T>::min(), boost::charconv::chars_format::scientific );
+    test_sprintf_float( -std::numeric_limits<T>::min(), boost::charconv::chars_format::scientific );
+    test_sprintf_float( std::numeric_limits<T>::max(), boost::charconv::chars_format::scientific );
+    test_sprintf_float( +std::numeric_limits<T>::max(), boost::charconv::chars_format::scientific );
 }
 
 //
