@@ -121,7 +121,7 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     }
     else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
-        max_value = 1e16;
+        max_value = static_cast<T>(1e16);
     }
 
     if (fmt == boost::charconv::chars_format::general)

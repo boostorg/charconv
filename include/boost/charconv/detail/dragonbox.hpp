@@ -32,6 +32,11 @@
 #include <cstdint>
 #include <cstring>
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127) // Conditional expression is constant (e.g. BOOST_IF_CONSTEXPR statements)
+#endif
+
 namespace boost { namespace charconv { namespace detail {
 
 // A floating-point traits class defines ways to interpret a bit pattern of given size as an
@@ -376,7 +381,7 @@ struct dragonbox_signed_significand_bits
             // so we does this manually.
             BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint32_t>::value && N == 2) 
             {
-                return std::uint32_t(umul64(n, UINT32_C(1374389535)) >> 37);
+                return static_cast<std::uint32_t>(umul64(n, UINT32_C(1374389535)) >> 37);
             }
             // Specialize for 64-bit division by 1000.
             // Ensure that the correctness condition is met.
@@ -2877,7 +2882,8 @@ namespace to_chars_detail {
     char* to_chars<double, dragonbox_float_traits<double>>(std::uint64_t const significand,
                                                             int exponent, char* buffer) noexcept {
         // Print significand by decomposing it into a 9-digit block and a 8-digit block.
-        std::uint32_t first_block, second_block;
+        std::uint32_t first_block;
+        std::uint32_t second_block {};
         bool no_second_block;
 
         if (significand >= 100000000) {
@@ -3081,5 +3087,9 @@ namespace to_chars_detail {
 }
 
 }}} // Namespaces
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
