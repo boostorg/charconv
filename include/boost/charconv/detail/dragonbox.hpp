@@ -2341,6 +2341,12 @@ namespace policy_impl {
 // The interface function.
 ////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4100) // Unreferenced formal parameter (interval_type_provider)
+# pragma warning(disable: 4189) // Local variable is initializaed but unused (tag)
+#endif
+
 template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
 BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto
 to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signed_significand_bits,
@@ -2493,6 +2499,10 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
     policy_holder::handle_sign(dragonbox_signed_significand_bits, ret);
     return ret;
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
 BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies... policies) noexcept
