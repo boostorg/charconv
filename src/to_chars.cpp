@@ -65,7 +65,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
         {
             const auto abs_value = std::abs(value);
-            if (abs_value >= 1 && abs_value < 1e18) // 1 x 10^(max_digits10 + 1)
+            if (abs_value >= 1 && abs_value < 1e16)
             {
                 auto value_struct = boost::charconv::detail::to_decimal(value);
                 if (value_struct.is_negative)
