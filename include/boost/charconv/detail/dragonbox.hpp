@@ -381,7 +381,7 @@ struct dragonbox_signed_significand_bits
             // so we does this manually.
             BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint32_t>::value && N == 2) 
             {
-                return static_cast<std::uint32_t>(umul64(n, UINT32_C(1374389535)) >> 37);
+                return umul64(static_cast<std::uint32_t>(n), UINT32_C(1374389535)) >> 37;
             }
             // Specialize for 64-bit division by 1000.
             // Ensure that the correctness condition is met.
