@@ -1741,7 +1741,7 @@ struct impl : private FloatTraits, private FloatTraits::format
               typename BinaryToDecimalRoundingPolicy, typename CachePolicy, typename... AdditionalArgs>
     BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_nearest_shorter(const int exponent, AdditionalArgs... additional_args) noexcept
     {
-        ReturnType ret_value;
+        ReturnType ret_value = {};
         IntervalType interval_type{additional_args...};
 
         // Compute k and beta.
