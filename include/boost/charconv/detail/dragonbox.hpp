@@ -35,6 +35,7 @@
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4127) // Conditional expression is constant (e.g. BOOST_IF_CONSTEXPR statements)
+# pragma warning(disable: 4307) // Integral constant overflow (Only MSVC-14.1 issued this warning)
 #endif
 
 namespace boost { namespace charconv { namespace detail {
