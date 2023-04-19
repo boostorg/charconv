@@ -1738,6 +1738,11 @@ struct impl : private FloatTraits, private FloatTraits::format
         return ret_value;
     }
 
+    #if defined(__GNUC__) && (__GNUC__ < 5) && !defined(__clang__)
+    # pragma GCC diagnostic push
+    # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+    #endif
+
     template <typename ReturnType, typename IntervalType, typename TrailingZeroPolicy,
               typename BinaryToDecimalRoundingPolicy, typename CachePolicy, typename... AdditionalArgs>
     BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_nearest_shorter(const int exponent, AdditionalArgs... additional_args) noexcept
@@ -1798,6 +1803,10 @@ struct impl : private FloatTraits, private FloatTraits::format
 
         return ret_value;
     }
+
+    #if defined(__GNUC__) && (__GNUC__ < 5) && !defined(__clang__)
+    # pragma GCC diagnostic pop
+    #endif
 
     template <class ReturnType, class TrailingZeroPolicy, class CachePolicy>
     BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_left_closed_directed(carrier_uint const two_fc, int exponent) noexcept
