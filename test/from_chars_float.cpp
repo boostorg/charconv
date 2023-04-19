@@ -9,6 +9,7 @@
 #include <cstring>
 #include <cstdint>
 #include <cerrno>
+#include <cmath>
 #include <utility>
 
 template <typename T>
@@ -144,6 +145,52 @@ void odd_strings_test()
 
 }
 
+template <typename T>
+void zero_test()
+{
+    const char* buffer1 = "0e0";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_EQ(v1, static_cast<T>(0));
+    BOOST_TEST(!std::signbit(v1));
+
+    const char* buffer2 = "-0e0";
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_EQ(v2, static_cast<T>(-0));
+    BOOST_TEST(std::signbit(v2));
+
+    const char* buffer3 = "0.0";
+    T v3 = 0;
+    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    BOOST_TEST_EQ(r3.ec, 0);
+    BOOST_TEST_EQ(v3, static_cast<T>(0.0));
+    BOOST_TEST(!std::signbit(v3));
+
+    const char* buffer4 = "-0.0";
+    T v4 = 0;
+    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
+    BOOST_TEST_EQ(r4.ec, 0);
+    BOOST_TEST_EQ(v4, static_cast<T>(-0));
+    BOOST_TEST(std::signbit(v4));
+
+    const char* buffer5 = "0";
+    T v5 = 0;
+    auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
+    BOOST_TEST_EQ(r5.ec, 0);
+    BOOST_TEST_EQ(v5, static_cast<T>(0));
+    BOOST_TEST(!std::signbit(v5));
+
+    const char* buffer6 = "-0";
+    T v6 = 0;
+    auto r6 = boost::charconv::from_chars(buffer6, buffer6 + std::strlen(buffer6), v6);
+    BOOST_TEST_EQ(r6.ec, 0);
+    BOOST_TEST_EQ(v6, static_cast<T>(-0));
+    BOOST_TEST(std::signbit(v6));
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -170,6 +217,9 @@ int main()
     simple_scientific_test<long double>();
     simple_hex_scientific_test<long double>();
     #endif
+
+    zero_test<float>();
+    zero_test<double>();
 
     return boost::report_errors();
 }

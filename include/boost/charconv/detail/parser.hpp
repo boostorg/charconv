@@ -51,12 +51,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         ++next;
     }
 
-    // Next we get the significand
-    constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10 - 1; // Base 10 or 16
-    char significand_buffer[significand_buffer_size] {};
-    std::size_t i = 0;
-    std::size_t dot_position = 0;
-    std::size_t extra_zeros = 0;
+    // If the number is 0 we can abort now
     char exp_char;
     char capital_exp_char;
     if (fmt != chars_format::hex)
@@ -69,6 +64,20 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         exp_char = 'p';
         capital_exp_char = 'P';
     }
+
+    if (next == last || *next == exp_char || *next == -capital_exp_char)
+    {
+        significand = 0;
+        exponent = 0;
+        return {next, 0};
+    }
+
+    // Next we get the significand
+    constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10 - 1; // Base 10 or 16
+    char significand_buffer[significand_buffer_size] {};
+    std::size_t i = 0;
+    std::size_t dot_position = 0;
+    std::size_t extra_zeros = 0;
 
     while (*next != '.' && *next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
     {
