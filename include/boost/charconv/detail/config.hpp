@@ -120,7 +120,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 
 // Clang < 4 return type deduction does not work with the policy implementation
 #ifndef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
-#  if defined(__clang__) && __clang_major__ < 4
+#  if (defined(__clang__) && __clang_major__ < 4) || (defined(_MSC_VER) && _MSC_VER == 1900)
 #    define BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
 #  endif
 #elif defined(BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION)
