@@ -1526,7 +1526,7 @@ struct impl : private FloatTraits, private FloatTraits::format
     static constexpr int max_k_b = -log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
     static constexpr int max_k = max_k_a > max_k_b ? max_k_a : max_k_b;
 
-    using cache_format = typename std::conditional<std::is_same<Float, ieee754_binary32>::value, 
+    using cache_format = typename std::conditional<std::is_same<format, ieee754_binary32>::value, 
                                                    cache_holder_ieee754_binary32, 
                                                    cache_holder_ieee754_binary64>::type;
     using cache_entry_type = typename cache_format::cache_entry_type;
