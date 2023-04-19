@@ -475,11 +475,7 @@ using signed_decimal_fp = decimal_fp<UInt, true, false>;
 // Computed cache entries.
 ////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename FloatFormat>
-struct cache_holder;
-
-template <>
-struct cache_holder<ieee754_binary32> 
+struct cache_holder_ieee754_binary32
 {
     using cache_entry_type = std::uint64_t;
     static constexpr int cache_bits = 64;
@@ -510,15 +506,14 @@ struct cache_holder<ieee754_binary32>
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
-constexpr int cache_holder<ieee754_binary32>::cache_bits;
-constexpr int cache_holder<ieee754_binary32>::min_k;
-constexpr int cache_holder<ieee754_binary32>::max_k;
-constexpr typename cache_holder<ieee754_binary32>::cache_entry_type cache_holder<ieee754_binary32>::cache[];
+constexpr int cache_holder_ieee754_binary32::cache_bits;
+constexpr int cache_holder_ieee754_binary32::min_k;
+constexpr int cache_holder_ieee754_binary32::max_k;
+constexpr typename cache_holder_ieee754_binary32::cache_entry_type cache_holder_ieee754_binary32::cache[];
 
 #endif
 
-template <>
-struct cache_holder<ieee754_binary64>
+struct cache_holder_ieee754_binary64
 {
     using cache_entry_type = uint128;
     static constexpr int cache_bits = 128;
@@ -839,10 +834,10 @@ struct cache_holder<ieee754_binary64>
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
-constexpr int cache_holder<ieee754_binary64>::cache_bits;
-constexpr int cache_holder<ieee754_binary64>::min_k;
-constexpr int cache_holder<ieee754_binary64>::max_k;
-constexpr typename cache_holder<ieee754_binary64>::cache_entry_type cache_holder<ieee754_binary64>::cache[];
+constexpr int cache_holder_ieee754_binary64::cache_bits;
+constexpr int cache_holder_ieee754_binary64::min_k;
+constexpr int cache_holder_ieee754_binary64::max_k;
+constexpr typename cache_holder_ieee754_binary64::cache_entry_type cache_holder_ieee754_binary64::cache[];
 
 #endif
 
@@ -1425,11 +1420,12 @@ namespace cache {
     {
         using cache_policy = full;
 
-        template <class FloatFormat>
-        static constexpr typename cache_holder<FloatFormat>::cache_entry_type get_cache(int k) noexcept 
+        template <typename FloatFormat, typename cache_format = typename std::conditional<std::is_same<FloatFormat, ieee754_binary32>::value, 
+                                                                                          cache_holder_ieee754_binary32,
+                                                                                          cache_holder_ieee754_binary64>::type>
+        static constexpr typename cache_format::cache_entry_type get_cache(int k) noexcept 
         {
-            // assert(k >= cache_holder<FloatFormat>::min_k && k <= cache_holder<FloatFormat>::max_k);
-            return cache_holder<FloatFormat>::cache[std::size_t(k - cache_holder<FloatFormat>::min_k)];
+            return cache_format::cache[std::size_t(k - cache_format::min_k)];
         }
     };
 }
@@ -1530,8 +1526,11 @@ struct impl : private FloatTraits, private FloatTraits::format
     static constexpr int max_k_b = -log::floor_log10_pow2(int(min_exponent - significand_bits)) + kappa;
     static constexpr int max_k = max_k_a > max_k_b ? max_k_a : max_k_b;
 
-    using cache_entry_type = typename cache_holder<format>::cache_entry_type;
-    static constexpr auto cache_bits = cache_holder<format>::cache_bits;
+    using cache_format = typename std::conditional<std::is_same<Float, ieee754_binary32>::value, 
+                                                   cache_holder_ieee754_binary32, 
+                                                   cache_holder_ieee754_binary64>::type;
+    using cache_entry_type = typename cache_format::cache_entry_type;
+    static constexpr auto cache_bits = cache_format::cache_bits;
 
     static constexpr int case_shorter_interval_left_endpoint_lower_threshold = 2;
     static BOOST_CXX14_CONSTEXPR const int case_shorter_interval_left_endpoint_upper_threshold = 3;
