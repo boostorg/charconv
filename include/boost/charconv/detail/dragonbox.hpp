@@ -382,13 +382,13 @@ struct dragonbox_signed_significand_bits
             // so we does this manually.
             BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint32_t>::value && N == 2) 
             {
-                return umul64(static_cast<std::uint32_t>(n), UINT32_C(1374389535)) >> 37;
+                return static_cast<UInt>(umul64(static_cast<std::uint32_t>(n), UINT32_C(1374389535)) >> 37);
             }
             // Specialize for 64-bit division by 1000.
             // Ensure that the correctness condition is met.
             else BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint64_t>::value && N == 3 && n_max <= UINT64_C(15534100272597517998))
             {
-                return umul128_upper64(n, UINT64_C(2361183241434822607)) >> 7;
+                return static_cast<UInt>(umul128_upper64(n, UINT64_C(2361183241434822607)) >> 7);
             }
             else 
             {
@@ -400,13 +400,13 @@ struct dragonbox_signed_significand_bits
         template <typename UInt>
         BOOST_CXX14_CONSTEXPR UInt divide_by_pow10(unsigned N, UInt n_max, UInt n) noexcept
         {
-            if (std::is_same<UInt, std::uint32_t>::value && N == 2) 
+            BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint32_t>::value && N == 2) 
             {
-                return static_cast<UInt>(umul64(n, UINT32_C(1374389535)) >> 37);
+                return static_cast<UInt>(umul64(static_cast<std::uint32_t>(n), static_cast<std::uint32_t>(1374389535)) >> UINT32_C(37));
             }
             // Specialize for 64-bit division by 1000.
             // Ensure that the correctness condition is met.
-            else if (std::is_same<UInt, std::uint64_t>::value && N == 3 && n_max <= UINT64_C(15534100272597517998))
+            else BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint64_t>::value && N == 3 && n_max <= UINT64_C(15534100272597517998))
             {
                 return static_cast<UInt>(umul128_upper64(n, UINT64_C(2361183241434822607)) >> 7);
             }
