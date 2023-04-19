@@ -504,7 +504,7 @@ struct cache_holder_ieee754_binary32
         0xb35dbf821ae4f38c, 0xe0352f62a19e306f};
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
 constexpr int cache_holder_ieee754_binary32::cache_bits;
 constexpr int cache_holder_ieee754_binary32::min_k;
@@ -832,7 +832,7 @@ struct cache_holder_ieee754_binary64
         {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
 constexpr int cache_holder_ieee754_binary64::cache_bits;
 constexpr int cache_holder_ieee754_binary64::min_k;
