@@ -4,7 +4,10 @@
 
 #include <boost/config.hpp>
 
-#if !defined(BOOST_NO_CXX17_HDR_CHARCONV) && (!defined(__clang_major__) || (defined(__clang_major__) && __clang_major__ > 7))
+// https://en.cppreference.com/w/cpp/compiler_support/17
+#if (defined(__GNUC__) && __GNUC__ >= 11) || \
+    ((defined(__clang__) && __clang_major__ >= 14 && !defined(__APPLE__)) || (defined(__clang__) && defined(__APPLE__) && __clang_major__ >= 16)) || \
+    (defined(_MSC_VER) && _MSC_VER >= 1924)
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
@@ -84,7 +87,26 @@ void non_finite_test()
     test_spot(std::numeric_limits<T>::infinity());
     test_spot(-std::numeric_limits<T>::infinity());
     test_spot(std::numeric_limits<T>::quiet_NaN());
+
+    #if (defined(__clang__) && __clang_major__ >= 16) || defined(_MSC_VER)
+    //
+    // Newer clang and MSVC both give the following:
+    //
+    // -qNaN =  -nan(ind)
+    //
     test_spot(-std::numeric_limits<T>::quiet_NaN());
+    #endif
+
+    #if (defined(__clang__) && __clang_major__ >= 16)
+    //
+    // Newer clang also gives the following:
+    //
+    //  sNaN =  nan(snan)
+    // -sNaN = -nan(snan)
+    //
+    test_spot(std::numeric_limits<T>::signaling_NaN());
+    test_spot(-std::numeric_limits<T>::signaling_NaN());
+    #endif
 }
 
 int main()

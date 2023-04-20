@@ -74,9 +74,7 @@ void non_finite_values()
     T v4 = -std::numeric_limits<T>::quiet_NaN();
     auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v4);
     BOOST_TEST_EQ(r4.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer4, "-nan");
-
-    #ifdef BOOST_CHARCONV_SUPPORT_SNAN
+    BOOST_TEST_CSTR_EQ(buffer4, "-nan(ind)");
 
     char buffer5[256] {};
     T v5 = std::numeric_limits<T>::signaling_NaN();
@@ -89,22 +87,6 @@ void non_finite_values()
     auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v6);
     BOOST_TEST_EQ(r6.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer6, "-nan(snan)");
-
-    #else 
-
-    char buffer5[256] {};
-    T v5 = std::numeric_limits<T>::signaling_NaN();
-    auto r5 = boost::charconv::to_chars(buffer5, buffer5 + sizeof(buffer5), v5);
-    BOOST_TEST_EQ(r5.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer5, "nan");
-
-    char buffer6[256] {};
-    T v6 = -std::numeric_limits<T>::signaling_NaN();
-    auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v6);
-    BOOST_TEST_EQ(r6.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer6, "-nan");
-
-    #endif
 }
 
 int main()

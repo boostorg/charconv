@@ -2586,7 +2586,6 @@ namespace to_chars_detail {
             }
             else 
             {
-                #ifdef BOOST_CHARCONV_SUPPORT_SNAN
                 // Doubles:
                 // qNaN = 2251799813685248
                 // sNaN = 1125899906842624
@@ -2622,21 +2621,22 @@ namespace to_chars_detail {
 
                 if (nan_type == 1)
                 {
-                    std::memcpy(buffer, "nan", 3);
-                    return buffer + 3;
+                    if (!s.is_negative())
+                    {
+                        std::memcpy(buffer, "nan", 3);
+                        return buffer + 3;
+                    }
+                    else
+                    {
+                        std::memcpy(buffer, "nan(ind)", 8);
+                        return buffer + 8;
+                    }
                 }
                 else
                 {
                     std::memcpy(buffer, "nan(snan)", 9);
                     return buffer + 9;
                 }
-
-                #else
-
-                std::memcpy(buffer, "nan", 3);
-                return buffer + 3;
-
-                #endif
             }
         }
     }
