@@ -2552,7 +2552,7 @@ namespace to_chars_detail {
                                                                         result.exponent, buffer);
             }
             else {
-                std::memcpy(buffer, "0E0", 3);
+                std::memcpy(buffer, "0e0", 3);
                 return buffer + 3;
             }
         }
@@ -2876,13 +2876,13 @@ namespace to_chars_detail {
 
         // Print exponent and return
         if (exponent < 0) {
-            std::memcpy(buffer, "E-", 2);
+            std::memcpy(buffer, "e-", 2);
             buffer += 2;
             exponent = -exponent;
         }
         else {
-            buffer[0] = 'E';
-            buffer += 1;
+            std::memcpy(buffer, "e+", 2);
+            buffer += 2;
         }
 
         if (exponent >= 10) {
