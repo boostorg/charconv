@@ -1,0 +1,108 @@
+// Copyright 2023 Matt Borland
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
+#include <boost/config.hpp>
+
+#if !defined(BOOST_NO_CXX17_HDR_CHARCONV) && (!defined(__clang_major__) || (defined(__clang_major__) && __clang_major__ > 7))
+
+#include <boost/charconv.hpp>
+#include <boost/core/lightweight_test.hpp>
+#include <charconv>
+#include <type_traits>
+#include <limits>
+#include <random>
+#include <string>
+#include <iomanip>
+#include <iostream>
+#include <cstring>
+#include <cstdint>
+#include <cerrno>
+
+template <typename T>
+void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    std::chars_format stl_fmt;
+    switch (fmt)
+    {
+    case boost::charconv::chars_format::general:
+        stl_fmt = std::chars_format::general;
+        break;
+    case boost::charconv::chars_format::fixed:
+        stl_fmt = std::chars_format::fixed;
+        break;
+    case boost::charconv::chars_format::scientific:
+        stl_fmt = std::chars_format::scientific;
+        break;
+    case boost::charconv::chars_format::hex:
+        stl_fmt = std::chars_format::hex;
+        break;
+    default:
+        BOOST_UNREACHABLE_RETURN(fmt);
+        break;
+    }
+
+    char buffer_boost[256];
+    char buffer_stl[256];
+
+    const auto r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt);
+    const auto r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt);
+
+    BOOST_TEST_EQ(r_boost.ec, 0); 
+
+    const std::ptrdiff_t diff_boost = r_boost.ptr - buffer_boost;
+    const std::ptrdiff_t diff_stl = r_stl.ptr - buffer_stl;
+    BOOST_TEST_EQ(diff_boost, diff_stl);
+
+    const auto boost_str = std::string(buffer_boost, r_boost.ptr);
+    const auto stl_str = std::string(buffer_stl, r_stl.ptr);
+
+    if (!BOOST_TEST_EQ(boost_str, stl_str))
+    {
+        std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
+                    << "Value: " << val
+                    << "\nBoost: " << boost_str
+                    << "\n  STL: " << stl_str << std::endl;
+    }
+}
+
+template <typename T>
+void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{   
+    std::mt19937_64 gen(42);
+    std::uniform_real_distribution<T> dist(0, std::numeric_limits<T>::max());
+
+    for (std::size_t i = 0; i < 100'000; ++i)
+    {
+        test_spot(dist(gen), fmt);
+    }
+}
+
+template <typename T>
+void non_finite_test()
+{
+    test_spot(std::numeric_limits<T>::infinity());
+    test_spot(-std::numeric_limits<T>::infinity());
+    test_spot(std::numeric_limits<T>::quiet_NaN());
+    test_spot(-std::numeric_limits<T>::quiet_NaN());
+}
+
+int main()
+{   
+    random_test<float>();
+    random_test<double>();
+    
+    non_finite_test<float>();
+    non_finite_test<double>();
+
+    return boost::report_errors();
+}
+
+#else
+
+int main()
+{
+    return 0;
+}
+
+#endif
