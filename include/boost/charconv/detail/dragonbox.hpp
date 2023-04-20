@@ -2066,7 +2066,7 @@ struct impl : private FloatTraits, private FloatTraits::format
             int s = 0;
             while (true)
             {
-                auto q = boost::core::rotr(n * mod_inv_25, 2);
+                auto q = static_cast<carrier_uint>(boost::core::rotr(n * mod_inv_25, 2));
                 if (q <= std::numeric_limits<std::uint64_t>::max() / 100)
                 {
                     n = q;
@@ -2078,7 +2078,7 @@ struct impl : private FloatTraits, private FloatTraits::format
                 }
             }
 
-            auto q = boost::core::rotr(n * mod_inv_5, 1);
+            auto q = static_cast<carrier_uint>(boost::core::rotr(n * mod_inv_5, 1));
             if (q <= std::numeric_limits<std::uint64_t>::max() / 10) 
             {
                 n = q;
