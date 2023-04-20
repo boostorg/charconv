@@ -1,4 +1,5 @@
 // Copyright 2022, 2023 Peter Dimov
+// Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -180,17 +181,36 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     //       Value: 2.98808092305723294e+289
     //    To chars: 2.988080923057233e+289
     //    Snprintf: 2.98808e+289
-    if ( !(((value > 1e16 && value < 1e20) || (value < 1e-288 && value > 0) || (value > 1e288) ) && fmt == boost::charconv::chars_format::general))
+    
+    BOOST_IF_CONSTEXPR(std::is_same<T, double>::value)
     {
-        if(!BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) ))
+        if ( !(((value > 1e16 && value < 1e20) || (value < 1e-288 && value > 0) || (value > 1e288) ) && fmt == boost::charconv::chars_format::general))
         {
-            // Set precision for integer part + decimal digits
-            // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
-            std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
-                    << "   Value: " << value
-                    << "\nTo chars: " << std::string( buffer, r.ptr )
-                    << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+            if(!BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) ))
+            {
+                // Set precision for integer part + decimal digits
+                // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
+                std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
+                        << "   Value: " << value
+                        << "\nTo chars: " << std::string( buffer, r.ptr )
+                        << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+            }
         }
+    }
+    else
+    {
+        if ( !(((value > 1e15 && value < 1e23) || (value < 1e-18 && value > 0) ) && fmt == boost::charconv::chars_format::general))
+        {
+            if(!BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) ))
+            {
+                // Set precision for integer part + decimal digits
+                // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
+                std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
+                        << "   Value: " << value
+                        << "\nTo chars: " << std::string( buffer, r.ptr )
+                        << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+            }
+        }        
     }
 }
 
