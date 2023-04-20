@@ -398,7 +398,7 @@ struct dragonbox_signed_significand_bits
         }
 
         template <typename UInt>
-        BOOST_CXX14_CONSTEXPR UInt divide_by_pow10(unsigned N, UInt n_max, UInt n) noexcept
+        BOOST_CXX14_CONSTEXPR UInt divide_by_pow10(unsigned N, BOOST_ATTRIBUTE_UNUSED UInt n_max, UInt n) noexcept
         {
             BOOST_IF_CONSTEXPR (std::is_same<UInt, std::uint32_t>::value && N == 2) 
             {
