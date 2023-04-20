@@ -397,6 +397,11 @@ struct dragonbox_signed_significand_bits
             }
         }
 
+        #ifdef BOOST_MSVC
+        # pragma warning(push)
+        # pragma warning(disable: 4100) // MSVC 14.0 does not have BOOST_ATTRIBUTE_UNUSED so we disable the warning
+        #endif
+
         template <typename UInt>
         BOOST_CXX14_CONSTEXPR UInt divide_by_pow10(unsigned N, BOOST_ATTRIBUTE_UNUSED UInt n_max, UInt n) noexcept
         {
@@ -416,6 +421,10 @@ struct dragonbox_signed_significand_bits
                 return n / divisor;
             }
         }
+
+        #ifdef BOOST_MSVC
+        # pragma warning(pop)
+        #endif
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////
