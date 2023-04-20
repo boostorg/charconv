@@ -2573,20 +2573,70 @@ namespace to_chars_detail {
         }
         else 
         {
+            if (s.is_negative()) 
+            {
+                *buffer = '-';
+                ++buffer;
+            }
+
             if (s.has_all_zero_significand_bits())
             {
-                if (s.is_negative()) 
-                {
-                    *buffer = '-';
-                    ++buffer;
-                }
                 std::memcpy(buffer, "inf", 3);
                 return buffer + 3;
             }
             else 
             {
+                #ifdef BOOST_CHARCONV_SUPPORT_SNAN
+                // Doubles:
+                // qNaN = 2251799813685248
+                // sNaN = 1125899906842624
+                //
+                // Floats:
+                // qNaN = 4194304
+                // sNaN = 2097152
+                //
+                // use 1 for qNaN and 0 for sNaN
+                int nan_type;
+                BOOST_IF_CONSTEXPR (std::is_same<typename FloatTraits::format, ieee754_binary32>::value)
+                {
+                    if (br.extract_significand_bits() == UINT32_C(4194304))
+                    {
+                        nan_type = 1;
+                    }
+                    else
+                    {
+                        nan_type = 0;
+                    }
+                }
+                else
+                {
+                    if (br.extract_significand_bits() == UINT64_C(2251799813685248))
+                    {
+                        nan_type = 1;
+                    }
+                    else
+                    {
+                        nan_type = 0;
+                    }
+                }
+
+                if (nan_type == 1)
+                {
+                    std::memcpy(buffer, "nan", 3);
+                    return buffer + 3;
+                }
+                else
+                {
+                    std::memcpy(buffer, "nan(snan)", 9);
+                    return buffer + 9;
+                }
+
+                #else
+
                 std::memcpy(buffer, "nan", 3);
                 return buffer + 3;
+
+                #endif
             }
         }
     }
