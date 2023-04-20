@@ -2543,16 +2543,20 @@ namespace to_chars_detail {
 
     // Avoid needless ABI overhead incurred by tag dispatch.
     template <class PolicyHolder, class Float, class FloatTraits>
-    char* to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* buffer) noexcept {
+    char* to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* buffer) noexcept 
+    {
         const auto exponent_bits = br.extract_exponent_bits();
         const auto s = br.remove_exponent_bits(exponent_bits);
 
-        if (br.is_finite(exponent_bits)) {
-            if (s.is_negative()) {
+        if (br.is_finite(exponent_bits))
+        {
+            if (s.is_negative()) 
+            {
                 *buffer = '-';
                 ++buffer;
             }
-            if (br.is_nonzero()) {
+            if (br.is_nonzero()) 
+            {
                 auto result = to_decimal<Float, FloatTraits>(
                     s, exponent_bits, policy::sign::ignore, policy::trailing_zero::ignore,
                     typename PolicyHolder::decimal_to_binary_rounding_policy{},
@@ -2561,22 +2565,27 @@ namespace to_chars_detail {
                 return to_chars_detail::to_chars<Float, FloatTraits>(result.significand,
                                                                         result.exponent, buffer);
             }
-            else {
+            else 
+            {
                 std::memcpy(buffer, "0e0", 3);
                 return buffer + 3;
             }
         }
-        else {
-            if (s.has_all_zero_significand_bits()) {
-                if (s.is_negative()) {
+        else 
+        {
+            if (s.has_all_zero_significand_bits())
+            {
+                if (s.is_negative()) 
+                {
                     *buffer = '-';
                     ++buffer;
                 }
-                std::memcpy(buffer, "Infinity", 8);
-                return buffer + 8;
+                std::memcpy(buffer, "inf", 3);
+                return buffer + 3;
             }
-            else {
-                std::memcpy(buffer, "NaN", 3);
+            else 
+            {
+                std::memcpy(buffer, "nan", 3);
                 return buffer + 3;
             }
         }

@@ -56,19 +56,19 @@ void non_finite_values()
     T v1 = std::numeric_limits<T>::infinity();
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
     BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer1, "Infinity");
+    BOOST_TEST_CSTR_EQ(buffer1, "inf");
 
     char buffer2[256] {};
     T v2 = -std::numeric_limits<T>::infinity();
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2);
     BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer2, "-Infinity");
+    BOOST_TEST_CSTR_EQ(buffer2, "-inf");
 
     char buffer3[256] {};
     T v3 = std::numeric_limits<T>::quiet_NaN();
     auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3), v3);
     BOOST_TEST_EQ(r3.ec, 0);
-    BOOST_TEST_CSTR_EQ(buffer3, "NaN");
+    BOOST_TEST_CSTR_EQ(buffer3, "nan");
 }
 
 int main()
