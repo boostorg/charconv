@@ -2013,7 +2013,8 @@ struct impl : private FloatTraits, private FloatTraits::format
         }
         else 
         {
-            static_assert(std::is_same<format, ieee754_binary64>::value, "Must be a double type");
+            // Static assertion does not work unless if constexpr is supported
+            // static_assert(std::is_same<format, ieee754_binary64>::value, "Must be a double type");
 
             // Divide by 10^8 and reduce to 32-bits if divisible.
             // Since ret_value.significand <= (2^53 * 1000 - 1) / 1000 < 10^16,
