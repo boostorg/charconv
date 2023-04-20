@@ -1559,6 +1559,11 @@ struct impl : private FloatTraits, private FloatTraits::format
 
     //// The main algorithm assumes the input is a normal/subnormal finite number
 
+    #if defined(__GNUC__) && (__GNUC__ < 5) && !defined(__clang__)
+    # pragma GCC diagnostic push
+    # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+    #endif
+
     template <typename ReturnType, typename IntervalType, typename TrailingZeroPolicy,
               typename BinaryToDecimalRoundingPolicy, typename CachePolicy, typename... AdditionalArgs>
     BOOST_CHARCONV_SAFEBUFFERS static ReturnType compute_nearest_normal(carrier_uint const two_fc, const int exponent,
@@ -1568,7 +1573,7 @@ struct impl : private FloatTraits, private FloatTraits::format
         // Step 1: Schubfach multiplier calculation
         //////////////////////////////////////////////////////////////////////
 
-        ReturnType ret_value;
+        ReturnType ret_value = {};
         IntervalType interval_type{additional_args...};
 
         // Compute k and beta.
@@ -1736,11 +1741,6 @@ struct impl : private FloatTraits, private FloatTraits::format
 
         return ret_value;
     }
-
-    #if defined(__GNUC__) && (__GNUC__ < 5) && !defined(__clang__)
-    # pragma GCC diagnostic push
-    # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-    #endif
 
     template <typename ReturnType, typename IntervalType, typename TrailingZeroPolicy,
               typename BinaryToDecimalRoundingPolicy, typename CachePolicy, typename... AdditionalArgs>
