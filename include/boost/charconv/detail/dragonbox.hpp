@@ -484,7 +484,8 @@ using signed_decimal_fp = decimal_fp<UInt, true, false>;
 // Computed cache entries.
 ////////////////////////////////////////////////////////////////////////////////////////
 
-struct cache_holder_ieee754_binary32
+template <bool b>
+struct cache_holder_ieee754_binary32_impl
 {
     using cache_entry_type = std::uint64_t;
     static constexpr int cache_bits = 64;
@@ -515,14 +516,17 @@ struct cache_holder_ieee754_binary32
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
-constexpr int cache_holder_ieee754_binary32::cache_bits;
-constexpr int cache_holder_ieee754_binary32::min_k;
-constexpr int cache_holder_ieee754_binary32::max_k;
-constexpr typename cache_holder_ieee754_binary32::cache_entry_type cache_holder_ieee754_binary32::cache[];
+template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::cache_bits;
+template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::min_k;
+template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::max_k;
+template <bool b> constexpr typename cache_holder_ieee754_binary32_impl<b>::cache_entry_type cache_holder_ieee754_binary32_impl<b>::cache[];
 
 #endif
 
-struct cache_holder_ieee754_binary64
+using cache_holder_ieee754_binary32 = cache_holder_ieee754_binary32_impl<true>;
+
+template <bool b>
+struct cache_holder_ieee754_binary64_impl
 {
     using cache_entry_type = uint128;
     static constexpr int cache_bits = 128;
@@ -843,13 +847,14 @@ struct cache_holder_ieee754_binary64
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
 
-constexpr int cache_holder_ieee754_binary64::cache_bits;
-constexpr int cache_holder_ieee754_binary64::min_k;
-constexpr int cache_holder_ieee754_binary64::max_k;
-constexpr typename cache_holder_ieee754_binary64::cache_entry_type cache_holder_ieee754_binary64::cache[];
+template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::cache_bits;
+template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::min_k;
+template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::max_k;
+template <bool b> constexpr typename cache_holder_ieee754_binary64_impl<b>::cache_entry_type cache_holder_ieee754_binary64_impl<b>::cache[];
 
 #endif
 
+using cache_holder_ieee754_binary64 = cache_holder_ieee754_binary64_impl<true>;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Policies.
