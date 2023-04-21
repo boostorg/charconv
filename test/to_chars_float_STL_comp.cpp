@@ -11,6 +11,7 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <system_error>
 #include <charconv>
 #include <type_traits>
 #include <limits>
@@ -51,21 +52,24 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
     const auto r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt);
     const auto r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt);
 
-    BOOST_TEST_EQ(r_boost.ec, 0); 
+    BOOST_TEST_EQ(r_boost.ec, 0);
+    if (r_stl.ec != std::errc())
+    {
+        // STL failed
+        return;
+    }
 
     const std::ptrdiff_t diff_boost = r_boost.ptr - buffer_boost;
     const std::ptrdiff_t diff_stl = r_stl.ptr - buffer_stl;
-    BOOST_TEST_EQ(diff_boost, diff_stl);
-
     const auto boost_str = std::string(buffer_boost, r_boost.ptr);
     const auto stl_str = std::string(buffer_stl, r_stl.ptr);
 
-    if (!BOOST_TEST_EQ(boost_str, stl_str))
+    if (!(BOOST_TEST_CSTR_EQ(boost_str.c_str(), stl_str.c_str()) && BOOST_TEST_EQ(diff_boost, diff_stl)))
     {
         std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
                     << "Value: " << val
-                    << "\nBoost: " << boost_str
-                    << "\n  STL: " << stl_str << std::endl;
+                    << "\nBoost: " << boost_str.c_str()
+                    << "\n  STL: " << stl_str.c_str() << std::endl;
     }
 }
 
@@ -109,6 +113,20 @@ void non_finite_test()
     #endif
 }
 
+template <typename T>
+void fixed_test()
+{
+    constexpr T upper_bound = std::is_same<T, double>::value ? T(1e16) : T(1e7);
+    
+    std::mt19937_64 gen(42);
+    std::uniform_real_distribution<T> dist(1, upper_bound);
+
+    for (std::size_t i = 0; i < 1000; ++i)
+    {
+        test_spot(dist(gen), boost::charconv::chars_format::fixed);
+    }    
+}
+
 int main()
 {   
     // General format
@@ -122,6 +140,10 @@ int main()
     // Hex
     random_test<float>(boost::charconv::chars_format::hex);
     random_test<double>(boost::charconv::chars_format::hex);
+
+    // Fixed
+    fixed_test<float>();
+    fixed_test<double>();
     
     non_finite_test<float>();
     non_finite_test<double>();

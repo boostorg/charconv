@@ -14,6 +14,7 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/floff.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/dragonbox.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <type_traits>
@@ -604,6 +605,73 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     return to_chars_int(first, last, abs_unbiased_exponent);
+}
+
+template <typename Real>
+to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
+{
+    const std::ptrdiff_t buffer_size = last - first;
+    
+    // Unspecified precision so we always go with shortest representation
+    if (precision == -1)
+    {
+        if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
+        {
+            auto abs_value = std::abs(value);
+            constexpr auto max_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e8);
+            if (abs_value >= 1 && abs_value < max_value)
+            {
+                auto value_struct = boost::charconv::detail::to_decimal(value);
+                if (value_struct.is_negative)
+                {
+                    *first++ = '-';
+                }
+
+                auto r = to_chars_integer_impl(first, last, value_struct.significand);
+                if (r.ec != 0)
+                {
+                    return r;
+                }
+                
+                // Bounds check
+                if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
+                {
+                    std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
+                    std::memset(r.ptr + value_struct.exponent, '.', 1);
+                    ++r.ptr;
+                }
+
+                while (std::fmod(abs_value, 10) == 0)
+                {
+                    *r.ptr++ = '0';
+                    abs_value /= 10;
+                }
+
+                return { r.ptr, 0 };
+            }
+            else
+            {
+                auto* ptr = boost::charconv::detail::to_chars(value, first);
+                return { ptr, 0 };
+            }
+        }
+        else if (fmt == boost::charconv::chars_format::scientific)
+        {
+            auto* ptr = boost::charconv::detail::to_chars(value, first);
+            return { ptr, 0 };
+        }
+    }
+    else
+    {
+        if (fmt != boost::charconv::chars_format::hex)
+        {
+            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
+            return { ptr, 0 };
+        }
+    }
+
+    // Hex handles both cases already
+    return boost::charconv::detail::to_chars_hex(first, last, value, precision);
 }
 
 } // Namespace detail

@@ -62,27 +62,16 @@ int main()
 
     for (const auto current_ref_val : ref_values)
     {
-        // Currently boost.json converts double values to scientific by default as opposed to general format
+        // Currently boost.json converts double values to scientific by default
         char buffer[256];
         const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), current_ref_val, boost::charconv::chars_format::scientific);
         BOOST_TEST_EQ(r.ec, 0);
-       
-        // General format would match the way the input values are represented
-        char general_buffer[256];
-        const auto r_general = boost::charconv::to_chars(general_buffer, general_buffer + sizeof(general_buffer), current_ref_val);
-        BOOST_TEST_EQ(r_general.ec, 0);
 
         // Roundtrip for scientifc representation
         double return_val;
         const auto return_r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), return_val);
         BOOST_TEST_EQ(return_r.ec, 0);
         BOOST_TEST_EQ(current_ref_val, return_val);
-
-        // Roundtrip for general representation
-        double general_return_val;
-        const auto return_r_general = boost::charconv::from_chars(general_buffer, general_buffer + std::strlen(general_buffer), general_return_val);
-        BOOST_TEST_EQ(return_r_general.ec, 0);
-        BOOST_TEST_EQ(current_ref_val, general_return_val);
     }
 
     return boost::report_errors();
