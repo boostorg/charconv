@@ -111,8 +111,17 @@ void non_finite_test()
 
 int main()
 {   
+    // General format
     random_test<float>();
     random_test<double>();
+
+    // Scientific
+    random_test<float>(boost::charconv::chars_format::scientific);
+    random_test<double>(boost::charconv::chars_format::scientific);
+
+    // Hex
+    random_test<float>(boost::charconv::chars_format::hex);
+    random_test<double>(boost::charconv::chars_format::hex);
     
     non_finite_test<float>();
     non_finite_test<double>();
