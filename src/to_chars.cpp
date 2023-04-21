@@ -82,7 +82,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     {
         if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
         {
-            const auto abs_value = std::abs(value);
+            auto abs_value = std::abs(value);
             if (abs_value >= 1 && abs_value < 1e16)
             {
                 auto value_struct = boost::charconv::detail::to_decimal(value);
@@ -103,6 +103,13 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
                 {
                     std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
                     std::memset(r.ptr + value_struct.exponent, '.', 1);
+                    r.ptr -= value_struct.exponent;
+                }
+
+                while (std::fmod(abs_value, 10) == 0)
+                {
+                    *r.ptr++ = '0';
+                    abs_value /= 10;
                 }
 
                 return { r.ptr, 0 };
