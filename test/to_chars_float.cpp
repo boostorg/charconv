@@ -89,11 +89,24 @@ void non_finite_values()
     BOOST_TEST_CSTR_EQ(buffer6, "-nan(snan)");
 }
 
+template <typename T>
+void fixed_values()
+{
+    char buffer1[256] {};
+    T v1 = 61851632;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "61851632");
+}
+
 int main()
 {
     printf_divergence<double>();
     integer_general_format<double>();
     non_finite_values<double>();
+
+    fixed_values<float>();
+    fixed_values<double>();
 
     return boost::report_errors();
 }

@@ -116,7 +116,8 @@ void non_finite_test()
 template <typename T>
 void fixed_test()
 {
-    constexpr T upper_bound = std::is_same<T, double>::value ? T(1e16) : T(1e7);
+    constexpr T upper_bound = std::is_same<T, double>::value ? T(std::numeric_limits<std::uint64_t>::max()) : 
+                                                               T(std::numeric_limits<std::uint32_t>::max());
     
     std::mt19937_64 gen(42);
     std::uniform_real_distribution<T> dist(1, upper_bound);

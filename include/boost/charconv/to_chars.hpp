@@ -610,6 +610,8 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
 {
+    using Unsigned_Integer = typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, std::uint32_t>::type;
+    
     const std::ptrdiff_t buffer_size = last - first;
     
     // Unspecified precision so we always go with shortest representation
@@ -618,8 +620,10 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
         {
             auto abs_value = std::abs(value);
-            constexpr auto max_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e8);
-            if (abs_value >= 1 && abs_value < max_value)
+            constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
+            constexpr auto max_value = static_cast<Real>(std::numeric_limits<Unsigned_Integer>::max());
+
+            if (abs_value >= 1 && abs_value < max_fractional_value)
             {
                 auto value_struct = boost::charconv::detail::to_decimal(value);
                 if (value_struct.is_negative)
@@ -648,6 +652,14 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
                 }
 
                 return { r.ptr, 0 };
+            }
+            else if (abs_value >= max_fractional_value && abs_value <= max_value)
+            {
+                if (value < 0)
+                {
+                    *first++ = '-';
+                }
+                return to_chars_integer_impl(first, last, static_cast<std::uint64_t>(abs_value));
             }
             else
             {
