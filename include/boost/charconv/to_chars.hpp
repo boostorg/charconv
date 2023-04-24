@@ -462,9 +462,9 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
 {
-   // If the user did not specify a precision than we use the maximum representable amount
-   // and remove trailing zeros at the end
-   int real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
+    // If the user did not specify a precision than we use the maximum representable amount
+    // and remove trailing zeros at the end
+    int real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
     
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
@@ -545,6 +545,12 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         const Unsigned_Integer tail_bit = round_bit - 1;
         const Unsigned_Integer round = round_bit & (tail_bit | lsb_bit) & (static_cast<Unsigned_Integer>(1) << lost_bits);
         aligned_significand += round;
+    }
+
+    // Print the sign
+    if (value < 0)
+    {
+        *first++ = '-';
     }
 
     // Print the leading hexit and then mask away

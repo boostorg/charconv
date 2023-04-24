@@ -2544,7 +2544,7 @@ BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies..
 
 namespace to_chars_detail {
     template <class Float, class FloatTraits>
-    extern char* to_chars(typename FloatTraits::carrier_uint significand, int exponent, char* buffer) noexcept;
+    char* to_chars(typename FloatTraits::carrier_uint significand, int exponent, char* buffer) noexcept;
 
     // Avoid needless ABI overhead incurred by tag dispatch.
     template <class PolicyHolder, class Float, class FloatTraits>
