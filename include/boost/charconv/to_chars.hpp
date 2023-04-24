@@ -474,12 +474,15 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
     
     // Handle edge cases first
+    BOOST_ATTRIBUTE_UNUSED char* ptr;
     switch (std::fpclassify(value))
     {
         case FP_INFINITE:
-            return {last, EOVERFLOW};
+            BOOST_FALLTHROUGH;
         case FP_NAN:
-            return {last, EINVAL};
+            // The dragonbox impl will return the correct type of NaN
+            ptr = boost::charconv::detail::to_chars(value, first);
+            return { ptr, 0 };
         case FP_ZERO:
             std::memcpy(first, "0p+0", 4);
             return {first + 4, 0};

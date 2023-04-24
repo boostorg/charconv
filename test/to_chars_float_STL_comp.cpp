@@ -77,7 +77,7 @@ template <typename T>
 void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {   
     std::mt19937_64 gen(42);
-    std::uniform_real_distribution<T> dist(0, std::numeric_limits<T>::max());
+    std::uniform_real_distribution<T> dist(std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max());
 
     for (std::size_t i = 0; i < 100'000; ++i)
     {
@@ -86,11 +86,11 @@ void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_form
 }
 
 template <typename T>
-void non_finite_test()
+void non_finite_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
-    test_spot(std::numeric_limits<T>::infinity());
-    test_spot(-std::numeric_limits<T>::infinity());
-    test_spot(std::numeric_limits<T>::quiet_NaN());
+    test_spot(std::numeric_limits<T>::infinity(), fmt);
+    test_spot(-std::numeric_limits<T>::infinity(), fmt);
+    test_spot(std::numeric_limits<T>::quiet_NaN(), fmt);
 
     #if (defined(__clang__) && __clang_major__ >= 16) || defined(_MSC_VER)
     //
@@ -98,7 +98,7 @@ void non_finite_test()
     //
     // -qNaN =  -nan(ind)
     //
-    test_spot(-std::numeric_limits<T>::quiet_NaN());
+    test_spot(-std::numeric_limits<T>::quiet_NaN(), fmt);
     #endif
 
     #if (defined(__clang__) && __clang_major__ >= 16)
@@ -108,8 +108,8 @@ void non_finite_test()
     //  sNaN =  nan(snan)
     // -sNaN = -nan(snan)
     //
-    test_spot(std::numeric_limits<T>::signaling_NaN());
-    test_spot(-std::numeric_limits<T>::signaling_NaN());
+    test_spot(std::numeric_limits<T>::signaling_NaN(), fmt);
+    test_spot(-std::numeric_limits<T>::signaling_NaN(), fmt);
     #endif
 }
 
@@ -122,7 +122,7 @@ void fixed_test()
     std::mt19937_64 gen(42);
     std::uniform_real_distribution<T> dist(1, upper_bound);
 
-    for (std::size_t i = 0; i < 1000; ++i)
+    for (std::size_t i = 0; i < 100'000; ++i)
     {
         test_spot(dist(gen), boost::charconv::chars_format::fixed);
     }    
@@ -146,8 +146,13 @@ int main()
     fixed_test<float>();
     fixed_test<double>();
     
+    // Various non-finite values
     non_finite_test<float>();
     non_finite_test<double>();
+    non_finite_test<float>(boost::charconv::chars_format::scientific);
+    non_finite_test<double>(boost::charconv::chars_format::scientific);
+    non_finite_test<float>(boost::charconv::chars_format::hex);
+    non_finite_test<double>(boost::charconv::chars_format::hex);
 
     return boost::report_errors();
 }
