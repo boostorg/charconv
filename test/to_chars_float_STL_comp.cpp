@@ -77,7 +77,12 @@ template <typename T>
 void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {   
     std::mt19937_64 gen(42);
+
+    #ifndef BOOST_MSVC
     std::uniform_real_distribution<T> dist(std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max());
+    #else
+    std::uniform_real_distribution<T> dist(0, std::numeric_limits<T>::max());
+    #endif
 
     for (std::size_t i = 0; i < 100'000; ++i)
     {
