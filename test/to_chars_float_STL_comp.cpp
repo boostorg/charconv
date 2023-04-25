@@ -24,7 +24,7 @@
 #include <cerrno>
 
 template <typename T>
-void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
 {
     std::chars_format stl_fmt;
     switch (fmt)
@@ -49,8 +49,19 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
     char buffer_boost[256];
     char buffer_stl[256];
 
-    const auto r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt);
-    const auto r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt);
+    boost::charconv::to_chars_result r_boost;
+    std::to_chars_result r_stl;
+
+    if (precision == -1)
+    {
+        r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt);
+        r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt);
+    }
+    else
+    {
+        r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt, precision);
+        r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt, precision); 
+    }
 
     BOOST_TEST_EQ(r_boost.ec, 0);
     if (r_stl.ec != std::errc())
@@ -84,38 +95,44 @@ void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_form
     std::uniform_real_distribution<T> dist(0, std::numeric_limits<T>::max());
     #endif
 
-    for (std::size_t i = 0; i < 100'000; ++i)
+    for (int i = -1; i < std::numeric_limits<T>::digits10; ++i)
     {
-        test_spot(dist(gen), fmt);
+        for (std::size_t j = 0; j < 100'000; ++j)
+        {
+            test_spot(dist(gen), fmt, i);
+        }
     }
 }
 
 template <typename T>
 void non_finite_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
-    test_spot(std::numeric_limits<T>::infinity(), fmt);
-    test_spot(-std::numeric_limits<T>::infinity(), fmt);
-    test_spot(std::numeric_limits<T>::quiet_NaN(), fmt);
+    for (int i = -1; i <= 0; ++i)
+    {
+        test_spot(std::numeric_limits<T>::infinity(), fmt, i);
+        test_spot(-std::numeric_limits<T>::infinity(), fmt, i);
+        test_spot(std::numeric_limits<T>::quiet_NaN(), fmt, i);
 
-    #if (defined(__clang__) && __clang_major__ >= 16) || defined(_MSC_VER)
-    //
-    // Newer clang and MSVC both give the following:
-    //
-    // -qNaN =  -nan(ind)
-    //
-    test_spot(-std::numeric_limits<T>::quiet_NaN(), fmt);
-    #endif
+        #if (defined(__clang__) && __clang_major__ >= 16) || defined(_MSC_VER)
+        //
+        // Newer clang and MSVC both give the following:
+        //
+        // -qNaN =  -nan(ind)
+        //
+        test_spot(-std::numeric_limits<T>::quiet_NaN(), fmt, i);
+        #endif
 
-    #if (defined(__clang__) && __clang_major__ >= 16)
-    //
-    // Newer clang also gives the following:
-    //
-    //  sNaN =  nan(snan)
-    // -sNaN = -nan(snan)
-    //
-    test_spot(std::numeric_limits<T>::signaling_NaN(), fmt);
-    test_spot(-std::numeric_limits<T>::signaling_NaN(), fmt);
-    #endif
+        #if (defined(__clang__) && __clang_major__ >= 16)
+        //
+        // Newer clang also gives the following:
+        //
+        //  sNaN =  nan(snan)
+        // -sNaN = -nan(snan)
+        //
+        test_spot(std::numeric_limits<T>::signaling_NaN(), fmt, i);
+        test_spot(-std::numeric_limits<T>::signaling_NaN(), fmt, i);
+        #endif
+    }
 }
 
 template <typename T>
