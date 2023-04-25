@@ -50,41 +50,41 @@ void integer_general_format()
 }
 
 template <typename T>
-void non_finite_values()
+void non_finite_values(boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
 {
     char buffer1[256] {};
     T v1 = std::numeric_limits<T>::infinity();
-    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1, fmt, precision);
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer1, "inf");
 
     char buffer2[256] {};
     T v2 = -std::numeric_limits<T>::infinity();
-    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2);
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2, fmt, precision);
     BOOST_TEST_EQ(r2.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer2, "-inf");
 
     char buffer3[256] {};
     T v3 = std::numeric_limits<T>::quiet_NaN();
-    auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3), v3);
+    auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3), v3, fmt, precision);
     BOOST_TEST_EQ(r3.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer3, "nan");
 
     char buffer4[256] {};
     T v4 = -std::numeric_limits<T>::quiet_NaN();
-    auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v4);
+    auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v4, fmt, precision);
     BOOST_TEST_EQ(r4.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer4, "-nan(ind)");
 
     char buffer5[256] {};
     T v5 = std::numeric_limits<T>::signaling_NaN();
-    auto r5 = boost::charconv::to_chars(buffer5, buffer5 + sizeof(buffer5), v5);
+    auto r5 = boost::charconv::to_chars(buffer5, buffer5 + sizeof(buffer5), v5, fmt, precision);
     BOOST_TEST_EQ(r5.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer5, "nan(snan)");
 
     char buffer6[256] {};
     T v6 = -std::numeric_limits<T>::signaling_NaN();
-    auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v6);
+    auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v6, fmt, precision);
     BOOST_TEST_EQ(r6.ec, 0);
     BOOST_TEST_CSTR_EQ(buffer6, "-nan(snan)");
 }
@@ -104,6 +104,11 @@ int main()
     printf_divergence<double>();
     integer_general_format<double>();
     non_finite_values<double>();
+    non_finite_values<double>(boost::charconv::chars_format::general, 2);
+    non_finite_values<double>(boost::charconv::chars_format::scientific);
+    non_finite_values<double>(boost::charconv::chars_format::scientific, 2);
+    non_finite_values<double>(boost::charconv::chars_format::hex);
+    non_finite_values<double>(boost::charconv::chars_format::hex, 2);
 
     fixed_values<float>();
     fixed_values<double>();

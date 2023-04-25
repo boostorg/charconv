@@ -1313,21 +1313,41 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
     // Infinities or NaN
     if (e == ((UINT32_C(1) << ieee754_binary64::exponent_bits) - 1)) 
     {
+        if (is_negative) 
+        {
+            *buffer = '-';
+            ++buffer;
+        }
+
         if (significand == 0) 
         {
-            if (is_negative) 
-            {
-                *buffer = '-';
-                ++buffer;
-            }
-
-            std::memcpy(buffer, "Infinity", 8);
-            return buffer + 8;
+            std::memcpy(buffer, "inf", 3);
+            return buffer + 3;
         }
         else 
         {
-            std::memcpy(buffer, "NaN", 3);
-            return buffer + 3;
+            // Significand values for NaN by type
+            // qNaN = 4503599627370496
+            // sNaN = 2251799813685248
+            //
+            if (significand == UINT64_C(4503599627370496))
+            {
+                if (!is_negative)
+                {
+                    std::memcpy(buffer, "nan", 3);
+                    return buffer + 3;
+                }
+                else
+                {
+                    std::memcpy(buffer, "nan(ind)", 8);
+                    return buffer + 8;
+                }
+            }
+            else
+            {
+                std::memcpy(buffer, "nan(snan)", 9);
+                return buffer + 9;
+            }
         }
     }
     else
@@ -1352,15 +1372,15 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             {
                 if (precision == 0) 
                 {
-                    std::memcpy(buffer, "0e+00", 5);
-                    return buffer + 5;
+                    std::memcpy(buffer, "0e0", 3);
+                    return buffer + 3;
                 }
                 else 
                 {
                     std::memcpy(buffer, "0.", 2);
                     std::memset(buffer + 2, '0', precision);
-                    std::memcpy(buffer + 2 + precision, "e+00", 4);
-                    return buffer + precision + 6;
+                    std::memcpy(buffer + 2 + precision, "e0", 2);
+                    return buffer + precision + 4;
                 }
             }
             // Nonzero
