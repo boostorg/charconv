@@ -5,9 +5,17 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/to_chars.hpp>
+#include <cstring>
 #include <cstdio>
+#include <cstdint>
 
 namespace boost { namespace charconv { namespace detail { namespace to_chars_detail {
+
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127) // Conditional expression is constant (e.g. BOOST_IF_CONSTEXPR statements)
+#endif
+
     // These "//"'s are to prevent clang-format to ruin this nice alignment.
     // Thanks to reddit user u/mcmcc:
     // https://www.reddit.com/r/cpp/comments/so3wx9/dragonbox_110_is_released_a_fast_floattostring/hw8z26r/?context=3
@@ -56,23 +64,29 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         '9', '.', '9', '.', '9', '.', '9', '.', '9', '.'  //
     };
 
-    static void print_1_digit(std::uint32_t n, char* buffer) noexcept {
+    static void print_1_digit(std::uint32_t n, char* buffer) noexcept
+    {
         BOOST_IF_CONSTEXPR ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
-                        '5' == '0' + 5 && '6' == '0' + 6 && '7' == '0' + 7 && '8' == '0' + 8 &&
-                        '9' == '0' + 9) {
-            BOOST_IF_CONSTEXPR (('0' & 0xf) == 0) {
+                            '5' == '0' + 5 && '6' == '0' + 6 && '7' == '0' + 7 && '8' == '0' + 8 &&
+                            '9' == '0' + 9) 
+        {
+            BOOST_IF_CONSTEXPR (('0' & 0xf) == 0)
+            {
                 *buffer = char('0' | n);
             }
-            else {
+            else 
+            {
                 *buffer = char('0' + n);
             }
         }
-        else {
+        else
+        {
             std::memcpy(buffer, radix_100_table + n * 2 + 1, 1);
         }
     }
 
-    static void print_2_digits(std::uint32_t n, char* buffer) noexcept {
+    static void print_2_digits(std::uint32_t n, char* buffer) noexcept 
+    {
         std::memcpy(buffer, radix_100_table + n * 2, 2);
     }
 
@@ -88,7 +102,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     // See https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/ for more explanation.
 
     BOOST_FORCEINLINE static void print_9_digits(std::uint32_t s32, int& exponent,
-                                                char*& buffer) noexcept {
+                                                char*& buffer) noexcept 
+    {
         // -- IEEE-754 binary32
         // Since we do not cut trailing zeros in advance, s32 must be of 6~9 digits
         // unless the original input was subnormal.
@@ -96,7 +111,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         // -- IEEE-754 binary64
         // In this case, s32 must be of 7~9 digits unless the input is subnormal,
         // and it shouldn't have any trailing zeros if it is of 9 digits.
-        if (s32 >= 100000000) {
+        if (s32 >= 100000000)
+        {
             // 9 digits.
             // 1441151882 = ceil(2^57 / 1'0000'0000) + 1
             auto prod = s32 * std::uint64_t(1441151882);
@@ -115,7 +131,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             exponent += 8;
             buffer += 10;
         }
-        else if (s32 >= 1000000) {
+        else if (s32 >= 1000000) 
+        {
             // 7 or 8 digits.
             // 281474978 = ceil(2^48 / 100'0000) + 1
             auto prod = s32 * std::uint64_t(281474978);
@@ -131,7 +148,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             buffer[2] = radix_100_table[head_digits * 2 + 1];
 
             // Remaining 6 digits are all zero?
-            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1000000)) {
+            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1000000)) 
+            {
                 // The number of characters actually need to be written is:
                 //   1, if only the first digit is nonzero, which means that either s32 is of 7
                 //   digits or it is of 8 digits but the second digit is zero, or
@@ -140,7 +158,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 // never zero.
                 buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
             }
-            else {
+            else 
+            {
                 // At least one of the remaining 6 digits are nonzero.
                 // After this adjustment, now the first destination becomes buffer + 2.
                 buffer += unsigned(head_digits >= 10);
@@ -150,10 +169,12 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
 
                 // Remaining 4 digits are all zero?
-                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) {
+                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) 
+                {
                     buffer += (3 + unsigned(buffer[3] > '0'));
                 }
-                else {
+                else 
+                {
                     // At least one of the remaining 4 digits are nonzero.
 
                     // Obtain the next two digits.
@@ -161,10 +182,12 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
 
                     // Remaining 2 digits are all zero?
-                    if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+                    if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100))
+                    {
                         buffer += (5 + unsigned(buffer[5] > '0'));
                     }
-                    else {
+                    else 
+                    {
                         // Obtain the last two digits.
                         prod = std::uint32_t(prod) * std::uint64_t(100);
                         print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
@@ -174,7 +197,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 }
             }
         }
-        else if (s32 >= 10000) {
+        else if (s32 >= 10000)
+        {
             // 5 or 6 digits.
             // 429497 = ceil(2^32 / 1'0000)
             auto prod = s32 * std::uint64_t(429497);
@@ -190,12 +214,14 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             buffer[2] = radix_100_table[head_digits * 2 + 1];
 
             // Remaining 4 digits are all zero?
-            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) {
+            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) 
+            {
                 // The number of characters actually written is 1 or 3, similarly to the case of
                 // 7 or 8 digits.
                 buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
             }
-            else {
+            else 
+            {
                 // At least one of the remaining 4 digits are nonzero.
                 // After this adjustment, now the first destination becomes buffer + 2.
                 buffer += unsigned(head_digits >= 10);
@@ -205,10 +231,12 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
 
                 // Remaining 2 digits are all zero?
-                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100))
+                {
                     buffer += (3 + unsigned(buffer[3] > '0'));
                 }
-                else {
+                else
+                {
                     // Obtain the last two digits.
                     prod = std::uint32_t(prod) * std::uint64_t(100);
                     print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
@@ -217,7 +245,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 }
             }
         }
-        else if (s32 >= 100) {
+        else if (s32 >= 100)
+        {
             // 3 or 4 digits.
             // 42949673 = ceil(2^32 / 100)
             auto prod = s32 * std::uint64_t(42949673);
@@ -233,12 +262,14 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             buffer[2] = radix_100_table[head_digits * 2 + 1];
 
             // Remaining 2 digits are all zero?
-            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+            if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100))
+            {
                 // The number of characters actually written is 1 or 3, similarly to the case of
                 // 7 or 8 digits.
                 buffer += (1 + (unsigned(head_digits >= 10) & unsigned(buffer[2] > '0')) * 2);
             }
-            else {
+            else
+            {
                 // At least one of the remaining 2 digits are nonzero.
                 // After this adjustment, now the first destination becomes buffer + 2.
                 buffer += unsigned(head_digits >= 10);
@@ -250,7 +281,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 buffer += (3 + unsigned(buffer[3] > '0'));
             }
         }
-        else {
+        else
+        {
             // 1 or 2 digits.
             // If s32 is of 2 digits, increase the exponent by 1.
             exponent += int(s32 >= 10);
@@ -267,27 +299,31 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     }
 
     template <>
-    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent,
-                                                        char* buffer) noexcept {
+    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* buffer) noexcept
+    {
         // Print significand.
         print_9_digits(s32, exponent, buffer);
 
         // Print exponent and return
-        if (exponent < 0) {
+        if (exponent < 0)
+        {
             std::memcpy(buffer, "e-", 2);
             buffer += 2;
             exponent = -exponent;
         }
-        else {
+        else 
+        {
             std::memcpy(buffer, "e+", 2);
             buffer += 2;
         }
 
-        if (exponent >= 10) {
+        if (exponent >= 10)
+        {
             print_2_digits(std::uint32_t(exponent), buffer);
             buffer += 2;
         }
-        else {
+        else
+        {
             print_1_digit(std::uint32_t(exponent), buffer);
             buffer += 1;
         }
@@ -296,31 +332,35 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     }
 
     template <>
-    char* to_chars<double, dragonbox_float_traits<double>>(std::uint64_t const significand,
-                                                            int exponent, char* buffer) noexcept {
+    char* to_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* buffer) noexcept {
         // Print significand by decomposing it into a 9-digit block and a 8-digit block.
         std::uint32_t first_block;
         std::uint32_t second_block {};
         bool no_second_block;
 
-        if (significand >= 100000000) {
+        if (significand >= 100000000)
+        {
             first_block = std::uint32_t(significand / 100000000);
             second_block = std::uint32_t(significand) - first_block * 100000000;
             exponent += 8;
             no_second_block = (second_block == 0);
         }
-        else {
+        else
+        {
             first_block = std::uint32_t(significand);
             no_second_block = true;
         }
 
-        if (no_second_block) {
+        if (no_second_block)
+        {
             print_9_digits(first_block, exponent, buffer);
         }
-        else {
+        else
+        {
             // We proceed similarly to print_9_digits(), but since we do not need to remove
             // trailing zeros, the procedure is a bit simpler.
-            if (first_block >= 100000000) {
+            if (first_block >= 100000000)
+            {
                 // The input is of 17 digits, thus there should be no trailing zero at all.
                 // The first block is of 9 digits.
                 // 1441151882 = ceil(2^57 / 1'0000'0000) + 1
@@ -352,8 +392,10 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 exponent += 8;
                 buffer += 18;
             }
-            else {
-                if (first_block >= 1000000) {
+            else
+            {
+                if (first_block >= 1000000)
+                {
                     // 7 or 8 digits.
                     // 281474978 = ceil(2^48 / 100'0000) + 1
                     auto prod = first_block * std::uint64_t(281474978);
@@ -376,7 +418,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
                     buffer += 8;
                 }
-                else if (first_block >= 10000) {
+                else if (first_block >= 10000)
+                {
                     // 5 or 6 digits.
                     // 429497 = ceil(2^32 / 1'0000)
                     auto prod = first_block * std::uint64_t(429497);
@@ -396,7 +439,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
                     buffer += 6;
                 }
-                else if (first_block >= 100) {
+                else if (first_block >= 100)
+                {
                     // 3 or 4 digits.
                     // 42949673 = ceil(2^32 / 100)
                     auto prod = first_block * std::uint64_t(42949673);
@@ -414,7 +458,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
                     buffer += 4;
                 }
-                else {
+                else
+                {
                     // 1 or 2 digits.
                     std::memcpy(buffer, radix_100_head_table + first_block * 2, 2);
                     buffer[2] = radix_100_table[first_block * 2 + 1];
@@ -432,30 +477,34 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 print_2_digits(std::uint32_t(prod >> 32), buffer);
 
                 // Remaining 6 digits are all zero?
-                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1000000)) {
+                if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1000000))
+                {
                     buffer += (1 + unsigned(buffer[1] > '0'));
                 }
-                else {
+                else
+                {
                     // Obtain the next two digits.
                     prod = std::uint32_t(prod) * std::uint64_t(100);
                     print_2_digits(std::uint32_t(prod >> 32), buffer + 2);
 
                     // Remaining 4 digits are all zero?
-                    if (std::uint32_t(prod) <=
-                        std::uint32_t((std::uint64_t(1) << 32) / 10000)) {
+                    if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) 
+                    {
                         buffer += (3 + unsigned(buffer[3] > '0'));
                     }
-                    else {
+                    else
+                    {
                         // Obtain the next two digits.
                         prod = std::uint32_t(prod) * std::uint64_t(100);
                         print_2_digits(std::uint32_t(prod >> 32), buffer + 4);
 
                         // Remaining 2 digits are all zero?
-                        if (std::uint32_t(prod) <=
-                            std::uint32_t((std::uint64_t(1) << 32) / 100)) {
+                        if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100)) 
+                        {
                             buffer += (5 + unsigned(buffer[5] > '0'));
                         }
-                        else {
+                        else 
+                        {
                             // Obtain the last two digits.
                             prod = std::uint32_t(prod) * std::uint64_t(100);
                             print_2_digits(std::uint32_t(prod >> 32), buffer + 6);
@@ -465,7 +514,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 }
             }
         }
-        if (exponent < 0) {
+        if (exponent < 0)
+        {
             std::memcpy(buffer, "e-", 2);
             buffer += 2;
             exponent = -exponent;
@@ -474,12 +524,14 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         {
             return buffer;
         }
-        else {
+        else
+        {
             std::memcpy(buffer, "e+", 2);
             buffer += 2;
         }
 
-        if (exponent >= 100) {
+        if (exponent >= 100) 
+        {
             // d1 = exponent / 10; d2 = exponent % 10;
             // 6554 = ceil(2^16 / 10)
             auto prod = std::uint32_t(exponent) * std::uint32_t(6554);
@@ -490,17 +542,24 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             print_1_digit(d2, buffer + 2);
             buffer += 3;
         }
-        else if (exponent >= 10) {
+        else if (exponent >= 10)
+        {
             print_2_digits(std::uint32_t(exponent), buffer);
             buffer += 2;
         }
-        else {
+        else
+        {
             print_1_digit(std::uint32_t(exponent), buffer);
             buffer += 1;
         }
 
         return buffer;
     }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
+
 }}}} // Namespaces
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value, boost::charconv::chars_format fmt, int precision) noexcept
