@@ -1995,7 +1995,10 @@ struct impl : private FloatTraits, private FloatTraits::format
     // Remove trailing zeros from n and return the number of zeros removed.
     BOOST_FORCEINLINE static int remove_trailing_zeros(carrier_uint& n) noexcept
     {
-        assert(n != 0);
+        if (n == 0)
+        {
+            return 0;
+        }
 
         BOOST_IF_CONSTEXPR (std::is_same<format, ieee754_binary32>::value) 
         {

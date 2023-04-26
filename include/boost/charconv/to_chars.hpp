@@ -118,7 +118,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
-    if (!(first <= last))
+    if (first > last)
     {
         return {last, EINVAL};
     }
@@ -146,7 +146,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
     // don't have the issue of removing leading zeros from the least significant digits
     
-    // Yields: warning C4127: conditional expression is constant becuase first half of the expression is constant
+    // Yields: warning C4127: conditional expression is constant because first half of the expression is constant,
     // but we need to short circuit to avoid UB on the second half
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
         unsigned_value <= static_cast<Unsigned_Integer>((std::numeric_limits<std::uint32_t>::max)()))
@@ -247,7 +247,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
-    if (!(first <= last))
+    if (first > last)
     {
         return {last, EINVAL};
     }
@@ -484,6 +484,10 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
             ptr = boost::charconv::detail::to_chars(value, first);
             return { ptr, 0 };
         case FP_ZERO:
+            if (std::signbit(value))
+            {
+                *first++ = '-';
+            }
             std::memcpy(first, "0p+0", 4);
             return {first + 4, 0};
     }
@@ -517,12 +521,28 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     if (exponent == 0 && significand != 0)
     {
         // Subnormal value since we already handled zero
-        unbiased_exponent = 1 - type_layout::exponent_bias;
+        unbiased_exponent = 1 + type_layout::exponent_bias;
     }
     else
     {
         aligned_significand |= static_cast<Unsigned_Integer>(1) << hex_bits;
         unbiased_exponent = exponent + type_layout::exponent_bias;
+    }
+
+    // Bounds check the exponent
+    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
+    {
+        if (unbiased_exponent > 127)
+        {
+            unbiased_exponent -= 256;
+        }
+    }
+    else
+    {
+        if (unbiased_exponent > 1023)
+        {
+            unbiased_exponent -= 2048;
+        }
     }
 
     const std::uint32_t abs_unbiased_exponent = unbiased_exponent < 0 ? static_cast<std::uint32_t>(-unbiased_exponent) : 
@@ -554,7 +574,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Print the leading hexit and then mask away
-    const std::uint32_t leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
+    const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
     *first++ = static_cast<char>('0' + leading_nibble);
     aligned_significand &= hex_mask;
 
@@ -567,7 +587,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         while (true)
         {
             remaining_bits -= nibble_bits;
-            const std::uint32_t current_nibble = static_cast<std::uint32_t>(aligned_significand >> remaining_bits);
+            const auto current_nibble = static_cast<std::uint32_t>(aligned_significand >> remaining_bits);
             *first++ = digit_table[current_nibble];
 
             --real_precision;
@@ -591,7 +611,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         }
     }
 
-    // Remove any trailing zeros if the precsion was unspecified
+    // Remove any trailing zeros if the precision was unspecified
     if (precision == -1)
     {
         --first;
@@ -623,7 +643,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     
     const std::ptrdiff_t buffer_size = last - first;
     
-    // Unspecified precision so we always go with shortest representation
+    // Unspecified precision so we always go with the shortest representation
     if (precision == -1)
     {
         if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)

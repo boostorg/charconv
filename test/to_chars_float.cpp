@@ -99,6 +99,22 @@ void fixed_values()
     BOOST_TEST_CSTR_EQ(buffer1, "61851632");
 }
 
+template <typename T>
+void failing_ci_values()
+{
+    char buffer1[256] {};
+    T v1 = -1.08260383390082946e+307;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1, boost::charconv::chars_format::hex);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "-1.ed5658af91a0fp+1019");
+
+    char buffer2[256] {};
+    T v2 = -9.52743282403084637e+306;
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2, boost::charconv::chars_format::hex);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer2, "-1.b22914956c56fp+1019");
+}
+
 int main()
 {
     printf_divergence<double>();
@@ -112,6 +128,8 @@ int main()
 
     fixed_values<float>();
     fixed_values<double>();
+
+    failing_ci_values<double>();
 
     return boost::report_errors();
 }
