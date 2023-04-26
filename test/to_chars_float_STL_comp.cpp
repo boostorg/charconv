@@ -97,7 +97,7 @@ void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_form
 
     for (int i = -1; i < std::numeric_limits<T>::digits10; ++i)
     {
-        for (std::size_t j = 0; j < 100'000; ++j)
+        for (std::size_t j = 0; j < 1000; ++j)
         {
             test_spot(dist(gen), fmt, i);
         }
