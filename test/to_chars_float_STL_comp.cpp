@@ -151,6 +151,9 @@ void fixed_test()
     }    
 }
 
+// Clang 16 (most recent at time of writing) only has integral from_chars implemented
+#if (defined(__GNUC__) && __GNUC__ >= 11) || (defined(_MSC_VER) && _MSC_VER >= 1924)
+
 template <typename T>
 void test_roundtrip( T value )
 {
@@ -176,6 +179,8 @@ void test_roundtrip( T value )
         #endif
     }
 }
+
+#endif
 
 int main()
 {   
@@ -207,6 +212,7 @@ int main()
     non_finite_test<float>(boost::charconv::chars_format::hex);
     non_finite_test<double>(boost::charconv::chars_format::hex);
 
+    #if (defined(__GNUC__) && __GNUC__ >= 11) || (defined(_MSC_VER) && _MSC_VER >= 1924)
     // Selected additional values
     // These are tested on boost in roundtrip.cpp
     test_roundtrip<double>(1.10393929655481808e+308);
@@ -220,6 +226,7 @@ int main()
     test_roundtrip<float>(3.394053352e+38F);
     test_roundtrip<float>(5.549256619e+37F);
     test_roundtrip<float>(8.922125027e+34F);
+    #endif
 
     return boost::report_errors();
 }
