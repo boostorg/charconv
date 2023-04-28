@@ -151,6 +151,32 @@ void fixed_test()
     }    
 }
 
+template <typename T>
+void test_roundtrip( T value )
+{
+    char buffer[ 256 ];
+
+    const auto r = std::to_chars( buffer, buffer + sizeof( buffer ), value );
+
+    T v2 = 0;
+    std::from_chars( buffer, r.ptr, v2 );
+
+    if( BOOST_TEST_EQ( v2, value ) )
+    {
+    }
+    else
+    {
+        #ifdef BOOST_CHARCONV_DEBUG
+        std::cerr << std::setprecision(17)
+                  << "     Value: " << value
+                  << "\n  To chars: " << std::string( buffer, r.ptr )
+                  << "\nFrom chars: " << v2 << std::endl;
+        #else
+        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        #endif
+    }
+}
+
 int main()
 {   
     // General format
@@ -180,6 +206,20 @@ int main()
     non_finite_test<double>(boost::charconv::chars_format::scientific);
     non_finite_test<float>(boost::charconv::chars_format::hex);
     non_finite_test<double>(boost::charconv::chars_format::hex);
+
+    // Selected additional values
+    // These are tested on boost in roundtrip.cpp
+    test_roundtrip<double>(1.10393929655481808e+308);
+    test_roundtrip<double>(-1.47902377240341038e+308);
+    test_roundtrip<double>(-2.13177235460600904e+307);
+    test_roundtrip<double>(8.60473951619578187e+307);
+    test_roundtrip<double>(-2.97613696314797352e+306);
+
+    test_roundtrip<float>(3.197633022e+38F);
+    test_roundtrip<float>(2.73101834e+38F);
+    test_roundtrip<float>(3.394053352e+38F);
+    test_roundtrip<float>(5.549256619e+37F);
+    test_roundtrip<float>(8.922125027e+34F);
 
     return boost::report_errors();
 }

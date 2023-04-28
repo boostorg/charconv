@@ -384,11 +384,11 @@ int main()
     test_roundtrip<double>(8.60473951619578187e+307);
     test_roundtrip<double>(-2.97613696314797352e+306);
 
-    test_roundtrip<float>(3.197633022e+38);
-    test_roundtrip<float>(2.73101834e+38);
-    test_roundtrip<float>(3.394053352e+38);
-    test_roundtrip<float>(5.549256619e+37);
-    test_roundtrip<float>(8.922125027e+34);
+    test_roundtrip<float>(3.197633022e+38F);
+    test_roundtrip<float>(2.73101834e+38F);
+    test_roundtrip<float>(3.394053352e+38F);
+    test_roundtrip<float>(5.549256619e+37F);
+    test_roundtrip<float>(8.922125027e+34F);
 
 #endif // Broken platforms
 
