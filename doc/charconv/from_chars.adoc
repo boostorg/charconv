@@ -25,7 +25,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char
 BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, const char* last, bool& value, int base) = delete;
 
 template <typename Real>
-from_chars_result from_chars(const char* first, const char* last, Real& value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general) noexcept;
+from_chars_result from_chars(const char* first, const char* last, Real& value, chars_format fmt = chars_format::general) noexcept;
 ----
 
 == from_chars_result
@@ -47,15 +47,13 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, b
 * All built-in integral types are allowed except bool which is deleted
 * These functions have been tested to support `__int128` and `unsigned __int128`
 * from_chars for integral types is constexpr when compiled using `-std=c++14` or newer
-** One known exception is GCC 5 which does not support constexpr comparison of const char*.
-
-=== from_chars for floating point types
+** One known exception is GCC 5 which does not support constexpr comparison of `const char*`.
 
 == Examples
 
 === Basic usage
-[source, c++]
 ==== Integral
+[source, c++]
 ----
 const char* buffer = "42";
 int v = 0;
@@ -64,6 +62,7 @@ assert(r.ec == 0);
 assert(v == 42);
 ----
 ==== Floating Point
+[source, c++]
 ----
 const char* buffer = "1.2345"
 double v = 0;
@@ -73,8 +72,8 @@ assert(v == 1.2345);
 ----
 
 === Hexadecimal
-[source, c++]
 ==== Integral
+[source, c++]
 ----
 const char* buffer = "2a";
 unsigned v = 0;
@@ -83,6 +82,7 @@ assert(r.ec == 0);
 assert(v == 42);
 ----
 ==== Floating Point
+[source, c++]
 ----
 const char* buffer = "1.3a2bp-10";
 double v = 0;
@@ -99,6 +99,7 @@ unsigned v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == EINVAL);
 ----
+[source, c++]
 ----
 const char* buffer = "-1.573e-3";
 double v = 0;

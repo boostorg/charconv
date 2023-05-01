@@ -26,7 +26,7 @@ template <typename Integral>
 BOOST_CHARCONV_CONSTEXPR to_chars_result<bool>(char* first, char* last, Integral value, int base) noexcept = delete;
 
 template <typename Real>
-to_chars_result(char* first, char* last, Real value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision) noexcept;
+to_chars_result(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision) noexcept;
 ----
 
 == to_chars_result
