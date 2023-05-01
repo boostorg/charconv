@@ -61,8 +61,8 @@ See xref:chars_format.adoc[chars_format overview] for description.
 == Examples
 
 === Basic Usage
-[source, c++]
 ==== Integral
+[source, c++]
 ----
 char buffer[64] {};
 int v = 42;
@@ -71,6 +71,7 @@ assert(r.ec == 0);
 assert(!strcmp(buffer, "42")); // strcmp returns 0 on match
 ----
 ==== Floating Point
+[source, c++]
 ----
 char buffer[64] {};
 double v = 1e300;
@@ -80,8 +81,8 @@ assert(!strcmp(buffer, "1e+300"));
 ----
 
 === Hexadecimal
-[source, c++]
 ==== Integral
+[source, c++]
 ----
 char buffer[64] {};
 int v = 42;
@@ -90,6 +91,7 @@ assert(r.ec == 0);
 assert(!strcmp(buffer, "2a")); // strcmp returns 0 on match
 ----
 ==== Floating Point
+[source, c++]
 ----
 char buffer[64] {};
 double v = -1.08260383390082946e+307;
@@ -99,8 +101,8 @@ assert(!strcmp(buffer, "-1.ed5658af91a0fp+1019"));
 ----
 
 === ERANGE
-[source, c++]
 ==== Integral
+[source, c++]
 ----
 char buffer[3] {};
 int v = -1234;
@@ -108,6 +110,7 @@ to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 
 assert(r.ec == ERANGE);
 ----
 ==== Floating Point
+[source, c++]
 ----
 char buffer[3] {};
 double v = 1.2345;
