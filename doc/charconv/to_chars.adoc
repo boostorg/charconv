@@ -24,6 +24,9 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result(char* first, char* last, Integral value
 
 template <typename Integral>
 BOOST_CHARCONV_CONSTEXPR to_chars_result<bool>(char* first, char* last, Integral value, int base) noexcept = delete;
+
+template <typename Real>
+to_chars_result(char* first, char* last, Real value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision) noexcept;
 ----
 
 == to_chars_result
@@ -38,17 +41,27 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result<bool>(char* first, char* last, Integral
 == to_chars
 * first, last - pointers to the character buffer
 * value - the value to be paresed into the buffer
-* base - the integer base to use. Must be between 2 and 36 inclusive
-* from_chars for integral type is constexpr (BOOST_CHARCONV_CONSTEXPR is defined) when compiled using `-std=c++14` or newer and a compiler with `__builtin_ is_constant_evaluated`
+* base (integer only) - the integer base to use. Must be between 2 and 36 inclusive
+* fmt (float only) - the floating point format
+* precision (float only) - the number of decimal places required
 
-== to_chars for integral types
+=== to_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
-* These functions have been tested to support `__int128` and `unsigned __int128` when compiling with `-std=gnu++11` or newer
+* from_chars for integral type is constexpr (BOOST_CHARCONV_CONSTEXPR is defined) when compiled using `-std=c++14` or newer and a compiler with `__builtin_ is_constant_evaluated`
+* These functions have been tested to support `__int128` and `unsigned __int128`
+
+=== to_chars for floating point types
+* The following will be returned when handling different values of `NaN`
+** +qNaN returns "nan"
+** -qNaN returns "-nan(ind)"
+** +sNaN returns "nan(snan)"
+** -sNaN returns "-nan(snan)"
 
 == Examples
 
 === Basic Usage
 [source, c++]
+==== Integral
 ----
 char buffer[64] {};
 int v = 42;
@@ -56,9 +69,18 @@ to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 
 assert(r.ec == 0);
 assert(!strcmp(buffer, "42")); // strcmp returns 0 on match
 ----
+==== Floating Point
+----
+char buffer[64] {};
+double v = 1e300;
+to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
+assert(r.ex == 0);
+assert(!strcmp(buffer, "1e+300"));
+----
 
 === Hexadecimal
 [source, c++]
+==== Integral
 ----
 char buffer[64] {};
 int v = 42;
@@ -66,13 +88,30 @@ to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 
 assert(r.ec == 0);
 assert(!strcmp(buffer, "2a")); // strcmp returns 0 on match
 ----
+==== Floating Point
+----
+char buffer[64] {};
+double v = -1.08260383390082946e+307;
+to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, boost::charconv::chars_format::hex);
+assert(r.ex == 0);
+assert(!strcmp(buffer, "-1.ed5658af91a0fp+1019"));
+----
 
 === ERANGE
 [source, c++]
+==== Integral
 ----
 char buffer[3] {};
 int v = -1234;
 to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, 16);
 assert(r.ec == ERANGE);
 ----
+==== Floating Point
+----
+char buffer[3] {};
+double v = 1.2345;
+auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
+assert(r.ec == ERANGE);
+----
+
 In the event of ERANGE to_chars_result.ptr is first
