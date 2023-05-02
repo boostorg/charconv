@@ -481,7 +481,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
             BOOST_FALLTHROUGH;
         case FP_NAN:
             // The dragonbox impl will return the correct type of NaN
-            ptr = boost::charconv::detail::to_chars(value, first);
+            ptr = boost::charconv::detail::to_chars(value, first, chars_format::general);
             return { ptr, 0 };
         case FP_ZERO:
             if (std::signbit(value))
@@ -692,13 +692,13 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
             }
             else
             {
-                auto* ptr = boost::charconv::detail::to_chars(value, first);
+                auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
                 return { ptr, 0 };
             }
         }
         else if (fmt == boost::charconv::chars_format::scientific)
         {
-            auto* ptr = boost::charconv::detail::to_chars(value, first);
+            auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
             return { ptr, 0 };
         }
     }

@@ -299,7 +299,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     }
 
     template <>
-    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* buffer) noexcept
+    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* buffer, chars_format fmt) noexcept
     {
         // Print significand.
         print_9_digits(s32, exponent, buffer);
@@ -311,28 +311,30 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             buffer += 2;
             exponent = -exponent;
         }
+        else if (exponent == 0)
+        {
+            if (fmt == chars_format::scientific)
+            {
+                std::memcpy(buffer, "e+00", 4);
+                buffer += 4;
+            }
+
+            return buffer;
+        }
         else 
         {
             std::memcpy(buffer, "e+", 2);
             buffer += 2;
         }
 
-        if (exponent >= 10)
-        {
-            print_2_digits(std::uint32_t(exponent), buffer);
-            buffer += 2;
-        }
-        else
-        {
-            print_1_digit(std::uint32_t(exponent), buffer);
-            buffer += 1;
-        }
+        print_2_digits(std::uint32_t(exponent), buffer);
+        buffer += 2;
 
         return buffer;
     }
 
     template <>
-    char* to_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* buffer) noexcept {
+    char* to_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* buffer, chars_format fmt) noexcept {
         // Print significand by decomposing it into a 9-digit block and a 8-digit block.
         std::uint32_t first_block;
         std::uint32_t second_block {};
@@ -522,6 +524,12 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         }
         else if (exponent == 0)
         {
+            if (fmt == chars_format::scientific)
+            {
+                std::memcpy(buffer, "e+00", 4);
+                buffer += 4;
+            }
+
             return buffer;
         }
         else
