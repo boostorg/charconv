@@ -194,9 +194,21 @@ int main()
     spot_check(123456789012345.0, "1.23456789012345e+14", boost::charconv::chars_format::scientific);
     spot_check(1234567890123456.0, "1.234567890123456e+15", boost::charconv::chars_format::scientific);
 
+    // Regressions or numbers that take >64 bits to represent correctly
     spot_check(9007199254740991.0, "9.007199254740991e+15", boost::charconv::chars_format::scientific);
     spot_check(9007199254740992.0, "9.007199254740992e+15", boost::charconv::chars_format::scientific);
     spot_check(123456789012345683968.0, "1.2345678901234568e+20", boost::charconv::chars_format::scientific);
+    spot_check(1.9430376160308388E16, "1.9430376160308388e+16", boost::charconv::chars_format::scientific);
+    spot_check(-6.9741824662760956E19, "-6.9741824662760956e+19", boost::charconv::chars_format::scientific);
+    spot_check(4.3816050601147837E18, "4.3816050601147837e+18", boost::charconv::chars_format::scientific);
+    spot_check(1.8531501765868567E21, "1.8531501765868567e+21", boost::charconv::chars_format::scientific);
+    spot_check(-3.347727380279489E33, "-3.347727380279489e+33", boost::charconv::chars_format::scientific);
+    spot_check(9.409340012568248E18, "9.409340012568248e+18", boost::charconv::chars_format::scientific);
+    spot_check(4.708356024711512E18, "4.708356024711512e+18", boost::charconv::chars_format::scientific);
+    spot_check(9.0608011534336E15, "9.0608011534336e+15", boost::charconv::chars_format::scientific);
+    spot_check(2.989102097996E-312, "2.989102097996e-312", boost::charconv::chars_format::scientific);
+    spot_check(1.18575755E-316, "1.18575755e-316", boost::charconv::chars_format::scientific);
+    spot_check(4.940656E-318, "4.940656e-318", boost::charconv::chars_format::scientific);
 
     return boost::report_errors();
 }
