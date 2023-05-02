@@ -542,15 +542,10 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             print_1_digit(d2, buffer + 2);
             buffer += 3;
         }
-        else if (exponent >= 10)
-        {
-            print_2_digits(std::uint32_t(exponent), buffer);
-            buffer += 2;
-        }
         else
         {
-            print_1_digit(std::uint32_t(exponent), buffer);
-            buffer += 1;
+            print_2_digits(static_cast<std::uint32_t>(exponent), buffer);
+            buffer += 2;
         }
 
         return buffer;
