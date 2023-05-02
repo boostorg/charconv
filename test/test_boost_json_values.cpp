@@ -6,13 +6,10 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <type_traits>
-#include <limits>
 #include <vector>
 #include <cstring>
-#include <cstdint>
-#include <cerrno>
-#include <utility>
+#include <iostream>
+#include <iomanip>
 
 int main()
 {
@@ -67,11 +64,22 @@ int main()
         const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), current_ref_val, boost::charconv::chars_format::scientific);
         BOOST_TEST_EQ(r.ec, 0);
 
-        // Roundtrip for scientifc representation
+        // Round-trip for scientific representation
+        // TODO(mborland): from_chars fails when the scientific format exponent is e+00 with ec == 22
         double return_val;
         const auto return_r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), return_val);
         BOOST_TEST_EQ(return_r.ec, 0);
-        BOOST_TEST_EQ(current_ref_val, return_val);
+        if (!BOOST_TEST_EQ(current_ref_val, return_val))
+        {
+            #ifdef BOOST_CHARCONV_DEBUG
+            std::cerr << std::setprecision(17)
+                  << "     Value: " << current_ref_val
+                  << "\n  To chars: " << std::string( buffer, r.ptr )
+                  << "\nFrom chars: " << return_val << std::endl;
+            #else
+            std::cerr << "... test failure for value=" << current_ref_val << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+            #endif
+        }
     }
 
     return boost::report_errors();
