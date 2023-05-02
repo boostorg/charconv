@@ -1,3 +1,4 @@
+// Copyright 2018 Ulf Adams
 // Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,6 +11,7 @@
 #include <cstdint>
 #include <cerrno>
 #include <utility>
+#include <string>
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW
@@ -115,6 +117,15 @@ void failing_ci_values()
     BOOST_TEST_CSTR_EQ(buffer2, "-1.b22914956c56fp+1019");
 }
 
+template <typename T>
+void spot_check(T v, const std::string& str, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    char buffer[256] {};
+    const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), v, fmt);
+    BOOST_TEST_EQ(r.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer, str.c_str());
+}
+
 int main()
 {
     printf_divergence<double>();
@@ -130,6 +141,62 @@ int main()
     fixed_values<double>();
 
     failing_ci_values<double>();
+
+    // Values from ryu tests
+    spot_check(1.0, "1");
+    spot_check(1.2, "1.2");
+    spot_check(1.23, "1.23");
+    spot_check(1.234, "1.234");
+    spot_check(1.2345, "1.2345");
+    spot_check(1.23456, "1.23456");
+    spot_check(1.234567, "1.234567");
+    spot_check(1.2345678, "1.2345678");
+    spot_check(1.23456789, "1.23456789");
+    spot_check(1.234567890, "1.23456789");
+    spot_check(1.2345678901, "1.2345678901");
+    spot_check(1.23456789012, "1.23456789012");
+    spot_check(1.234567890123, "1.234567890123");
+    spot_check(1.2345678901234, "1.2345678901234");
+    spot_check(1.23456789012345, "1.23456789012345");
+    spot_check(1.234567890123456, "1.234567890123456");
+
+    spot_check(1.0, "1e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2, "1.2e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23, "1.23e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234, "1.234e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345, "1.2345e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456, "1.23456e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567, "1.234567e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345678, "1.2345678e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456789, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567890, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345678901, "1.2345678901e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456789012, "1.23456789012e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567890123, "1.234567890123e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345678901234, "1.2345678901234e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456789012345, "1.23456789012345e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567890123456, "1.234567890123456e+00", boost::charconv::chars_format::scientific);
+
+    spot_check(1.0, "1e+00", boost::charconv::chars_format::scientific);
+    spot_check(12.0, "1.2e+01", boost::charconv::chars_format::scientific);
+    spot_check(123.0, "1.23e+02", boost::charconv::chars_format::scientific);
+    spot_check(1234.0, "1.234e+03", boost::charconv::chars_format::scientific);
+    spot_check(12345.0, "1.2345e+04", boost::charconv::chars_format::scientific);
+    spot_check(123456.0, "1.23456e+05", boost::charconv::chars_format::scientific);
+    spot_check(1234567.0, "1.234567e+06", boost::charconv::chars_format::scientific);
+    spot_check(12345678.0, "1.2345678e+07", boost::charconv::chars_format::scientific);
+    spot_check(123456789.0, "1.23456789e+08", boost::charconv::chars_format::scientific);
+    spot_check(1234567890.0, "1.23456789e+09", boost::charconv::chars_format::scientific);
+    spot_check(12345678901.0, "1.2345678901e+10", boost::charconv::chars_format::scientific);
+    spot_check(123456789012.0, "1.23456789012e+11", boost::charconv::chars_format::scientific);
+    spot_check(1234567890123.0, "1.234567890123e+12", boost::charconv::chars_format::scientific);
+    spot_check(12345678901234.0, "1.2345678901234e+13", boost::charconv::chars_format::scientific);
+    spot_check(123456789012345.0, "1.23456789012345e+14", boost::charconv::chars_format::scientific);
+    spot_check(1234567890123456.0, "1.234567890123456e+15", boost::charconv::chars_format::scientific);
+
+    spot_check(9007199254740991.0, "9.007199254740991e+15", boost::charconv::chars_format::scientific);
+    spot_check(9007199254740992.0, "9.007199254740992e+15", boost::charconv::chars_format::scientific);
+    spot_check(123456789012345683968.0, "1.2345678901234568e+20", boost::charconv::chars_format::scientific);
 
     return boost::report_errors();
 }
