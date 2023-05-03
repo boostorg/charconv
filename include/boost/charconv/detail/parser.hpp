@@ -28,7 +28,6 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     auto next = first;
-    bool only_zeros = true;
 
     // First extract the sign
     if (*next == '-')
@@ -78,7 +77,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     char significand_buffer[significand_buffer_size] {};
     std::size_t i = 0;
     std::size_t dot_position = 0;
-    std::size_t extra_zeros = 0;
+    Integer extra_zeros = 0;
 
     while (*next != '.' && *next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
     {
@@ -146,11 +145,6 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             ++next;
             ++extra_zeros;
         }
-
-        if (fractional)
-        {
-            extra_zeros = 0;
-        }
     }
 
     if (next == last)
@@ -159,7 +153,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         {
             return {first, EINVAL};
         }
-        if (dot_position != 0)
+        if (dot_position != 0 || fractional)
         {
             exponent = static_cast<Integer>(dot_position) - i + extra_zeros;
         }
@@ -169,7 +163,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         std::size_t offset = i;
         
-        from_chars_result r;
+        from_chars_result r {};
         if (fmt == chars_format::hex)
         {
             r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
