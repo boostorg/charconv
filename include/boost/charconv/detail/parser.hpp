@@ -295,6 +295,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
     auto r = from_chars(exponent_buffer, exponent_buffer + std::strlen(exponent_buffer), exponent);
     exponent += leading_zero_powers;
+    if (exponent == 0)
+    {
+        significand = 1;
+        return {next, 0};
+    }
     switch (r.ec)
     {
         case EINVAL:

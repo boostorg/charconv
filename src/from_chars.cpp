@@ -65,8 +65,17 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     auto return_val = boost::charconv::detail::compute_float64(exponent, significand, sign, success);
     if (!success)
     {
-        value = 0.0;
-        r.ec = ERANGE;
+        if (significand == 1 && exponent == 0)
+        {
+            value = 1.0;
+            r.ptr = last;
+            r.ec = 0;
+        }
+        else
+        {
+            value = 0.0;
+            r.ec = ERANGE;
+        }
     }
     else
     {
