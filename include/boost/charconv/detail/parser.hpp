@@ -28,6 +28,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     auto next = first;
+    bool all_zeros = true;
 
     // First extract the sign
     if (*next == '-')
@@ -78,9 +79,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     std::size_t i = 0;
     std::size_t dot_position = 0;
     Integer extra_zeros = 0;
+    Integer leading_zero_powers = 0;
 
     while (*next != '.' && *next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
     {
+        all_zeros = false;
         significand_buffer[i] = *next;
         ++next;
         ++i;
@@ -128,6 +131,23 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // if fmt is chars_format::scientific the e is required
         // if fmt is chars_format::fixed and not scientific the e is disallowed
         // if fmt is chars_format::general (which is scientific and fixed) the e is optional
+
+        // If we have the value 0.00001 we can continue to chop zeros and adjust the exponent
+        // so that we get the useful parts of the fraction
+        if (all_zeros)
+        {
+            while (*next == '0' && next != last)
+            {
+                ++next;
+                --leading_zero_powers;
+            }
+
+            if (next == last)
+            {
+                return {last, 0};
+            }
+        }
+
         while (*next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
         {
             significand_buffer[i] = *next;
@@ -155,11 +175,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         if (dot_position != 0 || fractional)
         {
-            exponent = static_cast<Integer>(dot_position) - i + extra_zeros;
+            exponent = static_cast<Integer>(dot_position) - i + extra_zeros + leading_zero_powers;
         }
         else
         {
-            exponent = extra_zeros;
+            exponent = extra_zeros + leading_zero_powers;
         }
         std::size_t offset = i;
         
@@ -271,6 +291,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     auto r = from_chars(exponent_buffer, exponent_buffer + std::strlen(exponent_buffer), exponent);
+    exponent += leading_zero_powers;
     switch (r.ec)
     {
         case EINVAL:
