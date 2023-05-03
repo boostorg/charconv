@@ -22,12 +22,13 @@ namespace boost { namespace charconv { namespace detail {
 template <typename Unsigned_Integer, typename Integer>
 inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
-    if (!(first <= last))
+    if (first > last)
     {
         return {first, EINVAL};
     }
 
     auto next = first;
+    bool only_zeros = true;
 
     // First extract the sign
     if (*next == '-')
@@ -98,7 +99,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         exponent = 0;
         std::size_t offset = i;
 
-        from_chars_result r;
+        from_chars_result r {};
         if (fmt == chars_format::hex)
         {
             r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
@@ -214,7 +215,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             }
         }
 
-        from_chars_result r;
+        from_chars_result r {};
         if (fmt == chars_format::hex)
         {
             r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
@@ -285,7 +286,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         default:
             if (fractional)
             {
-                // Need to take the offset from 1.xxx becuase compute_floatXXX assumes the significand is an integer
+                // Need to take the offset from 1.xxx because compute_floatXXX assumes the significand is an integer
                 // so the exponent is off by the number of digits in the significand - 1
                 if (fmt == chars_format::hex)
                 {
