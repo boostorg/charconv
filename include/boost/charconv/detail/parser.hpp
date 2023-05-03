@@ -163,7 +163,10 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         while (*next != exp_char && *next != capital_exp_char && next != last)
         {
             ++next;
-            ++extra_zeros;
+            if (!fractional)
+            {
+                ++extra_zeros;
+            }
         }
     }
 
