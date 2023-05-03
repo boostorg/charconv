@@ -191,6 +191,16 @@ void zero_test()
     BOOST_TEST(std::signbit(v6));
 }
 
+template <typename T>
+void boost_json_test()
+{
+    const char* buffer1 = "-0.010";
+    T v1 = 0;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_EQ(v1, static_cast<T>(-0.01L));
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -220,6 +230,8 @@ int main()
 
     zero_test<float>();
     zero_test<double>();
+
+    boost_json_test<double>();
 
     return boost::report_errors();
 }
