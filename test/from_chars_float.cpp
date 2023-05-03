@@ -4,13 +4,23 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <type_traits>
-#include <limits>
+#include <iostream>
+#include <iomanip>
+#include <string>
 #include <cstring>
-#include <cstdint>
-#include <cerrno>
 #include <cmath>
-#include <utility>
+
+template <typename T>
+void spot_value(const std::string& buffer, T expected_value)
+{
+    T v = 0;
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v);
+    BOOST_TEST_EQ(r.ec, 0);
+    if (!BOOST_TEST_EQ(v, expected_value))
+    {
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+    }
+}
 
 template <typename T>
 void simple_integer_test()
@@ -199,6 +209,55 @@ void boost_json_test()
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
     BOOST_TEST_EQ(r1.ec, 0);
     BOOST_TEST_EQ(v1, static_cast<T>(-0.01L));
+
+    spot_value("-0.9", -0.9);
+    spot_value("-0.99", -0.99);
+    spot_value("-0.999", -0.999);
+    spot_value("-0.8125", -0.8125);
+    spot_value("-0.9999", -0.9999);
+    spot_value("-0.99999", -0.99999);
+    spot_value("-0.999999", -0.999999);
+    spot_value("-0.9999999", -0.9999999);
+    spot_value("-0.99999999", -0.99999999);
+    spot_value("-0.999999999", -0.999999999);
+    spot_value("-0.9999999999", -0.9999999999);
+    spot_value("-0.99999999999", -0.99999999999);
+    spot_value("-0.999999999999", -0.999999999999);
+    spot_value("-0.9999999999999", -0.9999999999999);
+    spot_value("-0.99999999999999", -0.99999999999999);
+    spot_value("-0.999999999999999", -0.999999999999999);
+    spot_value("-0.9999999999999999", -0.9999999999999999);
+    spot_value("-0.9007199254740991", -0.9007199254740991);
+    spot_value("0.9", 0.9);
+    spot_value("0.99", 0.99);
+    spot_value("0.999", 0.999);
+    spot_value("0.8125", 0.8125);
+    spot_value("0.9999", 0.9999);
+    spot_value("0.99999", 0.99999);
+    spot_value("0.999999", 0.999999);
+    spot_value("0.9999999", 0.9999999);
+    spot_value("0.99999999", 0.99999999);
+    spot_value("0.999999999", 0.999999999);
+    spot_value("0.9999999999", 0.9999999999);
+    spot_value("0.99999999999", 0.99999999999);
+    spot_value("0.999999999999", 0.999999999999);
+    spot_value("0.9999999999999", 0.9999999999999);
+    spot_value("0.99999999999999", 0.99999999999999);
+    spot_value("0.999999999999999", 0.999999999999999);
+    spot_value("0.9999999999999999", 0.9999999999999999);
+    spot_value("0.9007199254740991", 0.9007199254740991);
+    spot_value("0."
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000"
+               "00000000000000000000000000000000000000000000000000" // 500 zeroes
+               "1e600", 1e100);
 }
 
 int main()
