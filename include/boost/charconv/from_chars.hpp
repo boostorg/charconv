@@ -81,6 +81,11 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 // Floating Point
 //----------------------------------------------------------------------------------------------------------------------
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4244) // Implict converion when BOOST_IF_CONSTEXPR expands to if
+#endif
+
 namespace detail {
 
 template <typename T>
@@ -169,6 +174,10 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
 }
 
 } // Namespace detail
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 // Only 64 bit long double overloads are fully implemented
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)

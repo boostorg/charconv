@@ -5,6 +5,8 @@
 
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <string>
+#include <cstdlib>
 
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
