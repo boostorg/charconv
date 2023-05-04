@@ -9,6 +9,9 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
+#include <boost/charconv/detail/parser.hpp>
+#include <boost/charconv/detail/compute_float32.hpp>
+#include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 
@@ -73,7 +76,60 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 }
 #endif
 
-// floating point overloads
+//----------------------------------------------------------------------------------------------------------------------
+// Floating Point
+//----------------------------------------------------------------------------------------------------------------------
+
+namespace detail {
+
+template <typename T>
+from_chars_result from_chars_float_impl(const char* first, const char* last, T& value, chars_format fmt) noexcept
+{
+    bool sign {};
+    std::uint64_t significand {};
+    std::int64_t  exponent {};
+
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
+    if (r.ec != 0)
+    {
+        value = 0;
+        return r;
+    }
+
+    bool success {};
+    T return_val {};
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        return_val = compute_float32(exponent, significand, sign, success);
+    }
+    else
+    {
+        return_val = compute_float64(exponent, significand, sign, success);
+    }
+
+    if (!success)
+    {
+        if (significand == 1 && exponent == 0)
+        {
+            value = 1;
+            r.ptr = last;
+            r.ec = 0;
+        }
+        else
+        {
+            value = 0;
+            r.ec = ERANGE;
+        }
+    }
+    else
+    {
+        value = return_val;
+    }
+
+    return r;
+}
+
+} // Namespace detail
 
 // Only 64 bit long double overloads are fully implemented
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
