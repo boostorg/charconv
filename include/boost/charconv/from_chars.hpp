@@ -9,8 +9,12 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
+#include <boost/charconv/detail/parser.hpp>
+#include <boost/charconv/detail/compute_float32.hpp>
+#include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <cmath>
 
 namespace boost { namespace charconv {
 
@@ -73,7 +77,112 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 }
 #endif
 
-// floating point overloads
+//----------------------------------------------------------------------------------------------------------------------
+// Floating Point
+//----------------------------------------------------------------------------------------------------------------------
+
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4244) // Implict converion when BOOST_IF_CONSTEXPR expands to if
+#elif defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
+namespace detail {
+
+template <typename T>
+from_chars_result from_chars_strtod(const char* first, const char* last, T& value) noexcept
+{
+    // For strto(f/d)
+    // Floating point value corresponding to the contents of str on success.
+    // If the converted value falls out of range of corresponding return type, range error occurs and HUGE_VAL, HUGE_VALF or HUGE_VALL is returned.
+    // If no conversion can be performed, 0 is returned and *str_end is set to str.
+
+    value = 0;
+    char* str_end;
+    T return_value {};
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        return_value = std::strtof(first, &str_end);
+        if (return_value == HUGE_VALF)
+        {
+            return {last, ERANGE};
+        }
+    }
+    else
+    {
+        return_value = std::strtod(first, &str_end);
+        if (return_value == HUGE_VAL)
+        {
+            return {last, ERANGE};
+        }
+    }
+
+    // Since this is a fallback routine we are safe to check for 0
+    if (return_value == 0 && str_end == last)
+    {
+        return {first, EINVAL};
+    }
+
+    value = return_value;
+    return {str_end, 0};
+}
+
+template <typename T>
+from_chars_result from_chars_float_impl(const char* first, const char* last, T& value, chars_format fmt) noexcept
+{
+    bool sign {};
+    std::uint64_t significand {};
+    std::int64_t  exponent {};
+
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
+    if (r.ec != 0)
+    {
+        value = 0;
+        return r;
+    }
+
+    bool success {};
+    T return_val {};
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        return_val = compute_float32(exponent, significand, sign, success);
+    }
+    else
+    {
+        return_val = compute_float64(exponent, significand, sign, success);
+    }
+
+    if (!success)
+    {
+        if (significand == 1 && exponent == 0)
+        {
+            value = 1;
+            r.ptr = last;
+            r.ec = 0;
+        }
+        else
+        {
+            // Fallback to strtod to try again
+            r = from_chars_strtod(first, last, value);
+        }
+    }
+    else
+    {
+        value = return_val;
+    }
+
+    return r;
+}
+
+} // Namespace detail
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#elif defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 // Only 64 bit long double overloads are fully implemented
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
