@@ -50,9 +50,9 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma warning(disable: 4146) // unary minus operator applied to unsigned type, result still unsigned
 # pragma warning(disable: 4189) // 'is_negative': local variable is initialized but not referenced
 
-#elif defined(__clang__) && defined(__APPLE__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wconstant-conversion"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wconstant-conversion"
 
 #elif defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic push
