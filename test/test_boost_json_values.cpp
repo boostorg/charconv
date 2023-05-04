@@ -59,14 +59,11 @@ int main()
 
     for (const auto current_ref_val : ref_values)
     {
-        // Currently boost.json converts double values to scientific by default
-        char buffer[256];
-        const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), current_ref_val, boost::charconv::chars_format::scientific);
+        char buffer[256] {};
+        const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), current_ref_val);
         BOOST_TEST_EQ(r.ec, 0);
-
-        // Round-trip for scientific representation
-        // TODO(mborland): from_chars fails when the scientific format exponent is e+00 with ec == 22
-        double return_val;
+        
+        double return_val {};
         const auto return_r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), return_val);
         BOOST_TEST_EQ(return_r.ec, 0);
         if (!BOOST_TEST_EQ(current_ref_val, return_val))
