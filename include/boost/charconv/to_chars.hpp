@@ -682,7 +682,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
 
                 return { r.ptr, 0 };
             }
-            else if (abs_value >= max_fractional_value && abs_value <= max_value)
+            else if (abs_value >= max_fractional_value && abs_value < max_value)
             {
                 if (value < 0)
                 {
