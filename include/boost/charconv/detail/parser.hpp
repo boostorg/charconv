@@ -160,12 +160,17 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     {
         // We can not process any more significant figures into the significand so skip to the end
         // or the exponent part and capture the additional orders of magnitude for the exponent
+        bool found_dot = false;
         while (*next != exp_char && *next != capital_exp_char && next != last)
         {
             ++next;
-            if (!fractional)
+            if (!fractional && !found_dot)
             {
                 ++extra_zeros;
+            }
+            if (*next == '.')
+            {
+                found_dot = true;
             }
         }
     }
