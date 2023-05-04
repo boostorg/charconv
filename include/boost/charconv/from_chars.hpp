@@ -84,6 +84,9 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4244) // Implict converion when BOOST_IF_CONSTEXPR expands to if
+#elif defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 namespace detail {
@@ -104,7 +107,7 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
         return_value = std::strtof(first, &str_end);
         if (return_value == HUGE_VALF)
         {
-            return {last, EOVERFLOW};
+            return {last, ERANGE};
         }
     }
     else
@@ -177,6 +180,8 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
+#elif defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
 #endif
 
 // Only 64 bit long double overloads are fully implemented

@@ -17,6 +17,11 @@
 #include <cstdint>
 #include <cstring>
 
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 namespace boost { namespace charconv { namespace detail {
 
 template <typename Unsigned_Integer, typename Integer>
@@ -339,5 +344,9 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 }
 
 }}} // Namespaces
+
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_PARSER_HPP
