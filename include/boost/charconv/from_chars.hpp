@@ -14,6 +14,7 @@
 #include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <cmath>
 
 namespace boost { namespace charconv {
 
@@ -83,6 +84,44 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 namespace detail {
 
 template <typename T>
+from_chars_result from_chars_strtod(const char* first, const char* last, T& value) noexcept
+{
+    // For strto(f/d)
+    // Floating point value corresponding to the contents of str on success.
+    // If the converted value falls out of range of corresponding return type, range error occurs and HUGE_VAL, HUGE_VALF or HUGE_VALL is returned.
+    // If no conversion can be performed, 0 is returned and *str_end is set to str.
+
+    value = 0;
+    char* str_end;
+    T return_value {};
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        return_value = std::strtof(first, &str_end);
+        if (return_value == HUGE_VALF)
+        {
+            return {last, EOVERFLOW};
+        }
+    }
+    else
+    {
+        return_value = std::strtod(first, &str_end);
+        if (return_value == HUGE_VAL)
+        {
+            return {last, ERANGE};
+        }
+    }
+
+    // Since this is a fallback routine we are safe to check for 0
+    if (return_value == 0 && str_end == last)
+    {
+        return {first, EINVAL};
+    }
+
+    value = return_value;
+    return {str_end, 0};
+}
+
+template <typename T>
 from_chars_result from_chars_float_impl(const char* first, const char* last, T& value, chars_format fmt) noexcept
 {
     bool sign {};
@@ -117,8 +156,8 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
         }
         else
         {
-            value = 0;
-            r.ec = ERANGE;
+            // Fallback to strtod to try again
+            r = from_chars_strtod(first, last, value);
         }
     }
     else
