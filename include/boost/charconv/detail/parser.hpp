@@ -298,7 +298,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         return {next, ERANGE};
     }
 
-    auto r = from_chars(exponent_buffer, exponent_buffer + std::strlen(exponent_buffer), exponent);
+    auto r = from_chars(exponent_buffer, exponent_buffer + i, exponent);
     exponent += leading_zero_powers;
     if (exponent == 0)
     {
