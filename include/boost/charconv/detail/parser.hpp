@@ -299,12 +299,16 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     auto r = from_chars(exponent_buffer, exponent_buffer + i, exponent);
-    exponent += leading_zero_powers;
+
+    // Anything to the zeroth power is 1
     if (exponent == 0)
     {
         significand = 1;
         return {next, 0};
     }
+
+    exponent += leading_zero_powers;
+
     switch (r.ec)
     {
         case EINVAL:
