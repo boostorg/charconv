@@ -303,14 +303,22 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         return {next, ERANGE};
     }
 
-    auto r = from_chars(exponent_buffer, exponent_buffer + i, exponent);
-
-    // Anything to the zeroth power is 1
-    if (exponent == 0)
+    // If the exponent was e+00 or e-00
+    if (i == 0 || (i == 1 && exponent_buffer[0] == '-'))
     {
-        significand = 1;
+        if (fractional)
+        {
+            exponent = static_cast<Integer>(dot_position) - significand_digits;
+        }
+        else
+        {
+            exponent = 0;
+        }
+
         return {next, 0};
     }
+
+    const auto r = from_chars(exponent_buffer, exponent_buffer + i, exponent);
 
     exponent += leading_zero_powers;
 

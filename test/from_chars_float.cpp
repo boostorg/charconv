@@ -1012,5 +1012,14 @@ int main()
     spot_check(1.7e-01, "1.7e-01", boost::charconv::chars_format::scientific);
     spot_check(1.7e-00, "1.7e-00", boost::charconv::chars_format::scientific);
 
+    // 0 exponent in general format
+    spot_check(1.7e-00, "1.7e-00", boost::charconv::chars_format::general);
+    spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::general);
+    spot_check(17e-00, "17e+00", boost::charconv::chars_format::general);
+    spot_check(17.0e-00, "17.0e+00", boost::charconv::chars_format::general);
+    spot_check(170e-00, "170e+00", boost::charconv::chars_format::general);
+    spot_check(170.0e-00, "170.0e+00", boost::charconv::chars_format::general);
+    spot_check(170.0000e-00, "170.0000e+00", boost::charconv::chars_format::general);
+
     return boost::report_errors();
 }
