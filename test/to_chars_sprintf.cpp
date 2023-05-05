@@ -81,6 +81,23 @@ char const* fmt_from_type_fixed( double )
     return "%.0f";
 }
 
+#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
+char const* fmt_from_type( long double )
+{
+    return "%g";
+}
+
+char const* fmt_from_type_scientific( long double )
+{
+    return "%.17e";
+}
+
+char const* fmt_from_type_fixed( long double )
+{
+    return "%.0f";
+}
+#endif
+
 template<class T> void test_sprintf( T value )
 {
     char buffer[ 256 ];
@@ -120,7 +137,11 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     {
         max_value = static_cast<T>((std::numeric_limits<std::uint32_t>::max)());
     }
-    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
+    else BOOST_IF_CONSTEXPR(std::is_same<T, double>::value
+                            #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
+                            || std::is_same<T, long double>::value
+                            #endif
+                           )
     {
         max_value = static_cast<T>(1e16);
     }
@@ -182,7 +203,11 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     //    To chars: 2.988080923057233e+289
     //    Snprintf: 2.98808e+289
     
-    BOOST_IF_CONSTEXPR(std::is_same<T, double>::value)
+    BOOST_IF_CONSTEXPR(std::is_same<T, double>::value
+                       #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
+                       || std::is_same<T, long double>::value
+                       #endif
+                       )
     {
         if ( !(((value > 1e16 && value < 1e20) || (value < 1e-288 && value > 0) || (value > 1e288) ) && fmt == boost::charconv::chars_format::general))
         {
@@ -436,6 +461,49 @@ int main()
 
         test_sprintf_bv_fp<double>();
     }
+
+    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
+    // long double
+
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            long double w0 = rng() * 1.0; // 0 .. 2^64
+            test_sprintf_float( w0, boost::charconv::chars_format::general );
+            test_sprintf_float( w0, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
+            test_sprintf_float( w0, boost::charconv::chars_format::hex );
+            #endif
+
+            long double w1 = rng() * q; // 0.0 .. 1.0
+            test_sprintf_float( w1, boost::charconv::chars_format::general );
+            test_sprintf_float( w1, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
+            test_sprintf_float( w1, boost::charconv::chars_format::hex );
+            #endif
+
+            long double w2 = DBL_MAX / rng(); // large values
+            test_sprintf_float( w2, boost::charconv::chars_format::general );
+            test_sprintf_float( w2, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
+            test_sprintf_float( w2, boost::charconv::chars_format::hex );
+            #endif
+
+            long double w3 = DBL_MIN * rng(); // small values
+            test_sprintf_float( w3, boost::charconv::chars_format::general );
+            test_sprintf_float( w3, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
+            test_sprintf_float( w3, boost::charconv::chars_format::hex );
+            #endif
+        }
+
+        test_sprintf_bv_fp<long double>();
+    }
+    #endif // BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
 
     return boost::report_errors();
 }

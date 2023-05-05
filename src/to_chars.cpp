@@ -556,18 +556,28 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
 }}}} // Namespaces
 
-boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value, boost::charconv::chars_format fmt, int precision) noexcept
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
 {
     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
 }
 
-boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value, boost::charconv::chars_format fmt, int precision) noexcept
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
 {
     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
 }
 
+#ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
+}
+#else
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value ) noexcept
 {
     std::snprintf( first, last - first, "%.*Lg", std::numeric_limits<long double>::max_digits10, value );
     return { first + std::strlen(first), 0 };
 }
+#endif
