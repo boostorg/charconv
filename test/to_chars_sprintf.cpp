@@ -112,6 +112,11 @@ template<class T> void test_sprintf( T value )
     BOOST_TEST_EQ( std::string( buffer, r.ptr ), std::string( buffer2 ) );
 }
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127) // Conditional expression is constant (e.g. BOOST_IF_CONSTEXPR statements)
+#endif
+
 template<class T> void test_sprintf_float( T value, boost::charconv::chars_format fmt )
 {
     char buffer[ 256 ];
@@ -238,6 +243,10 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
         }        
     }
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 // integral types, random values
 
