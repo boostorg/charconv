@@ -187,10 +187,14 @@ int main()
     // General format
     random_test<float>();
     random_test<double>();
+    test_spot<double>(0.0);
+    test_spot<double>(-0.0);
 
     // Scientific
     random_test<float>(boost::charconv::chars_format::scientific);
     random_test<double>(boost::charconv::chars_format::scientific);
+    test_spot<double>(0.0, boost::charconv::chars_format::scientific);
+    test_spot<double>(-0.0, boost::charconv::chars_format::scientific);
 
     // Hex
     random_test<float>(boost::charconv::chars_format::hex);
@@ -199,10 +203,14 @@ int main()
     test_spot<double>(-9.52743282403084637e-306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e+305, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e-305, boost::charconv::chars_format::hex);
+    test_spot<double>(0.0, boost::charconv::chars_format::hex);
+    test_spot<double>(-0.0, boost::charconv::chars_format::hex);
 
     // Fixed
     fixed_test<float>();
     fixed_test<double>();
+    test_spot<double>(0.0, boost::charconv::chars_format::fixed);
+    test_spot<double>(-0.0, boost::charconv::chars_format::fixed);
     
     // Various non-finite values
     non_finite_test<float>();

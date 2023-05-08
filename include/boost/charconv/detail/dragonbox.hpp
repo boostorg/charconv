@@ -2588,8 +2588,14 @@ namespace to_chars_detail {
             }
             else 
             {
-                std::memcpy(buffer, "0e0", 3);
-                return buffer + 3;
+                if (fmt != chars_format::scientific)
+                {
+                    std::memcpy(buffer, "0", 1);
+                    return buffer + 1;
+                }
+
+                std::memcpy(buffer, "0e+00", 5);
+                return buffer + 5;
             }
         }
         else 
