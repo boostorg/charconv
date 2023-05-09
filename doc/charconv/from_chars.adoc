@@ -45,9 +45,14 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, c
 
 === from_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
-* These functions have been tested to support `__int128` and `unsigned __int128`
+* These functions have been tested to support `\__int128` and `unsigned __int128`
 * from_chars for integral types is constexpr when compiled using `-std=c++14` or newer
 ** One known exception is GCC 5 which does not support constexpr comparison of `const char*`.
+
+=== to_chars for floating point types
+* long doubles support with Linux on x86 (80 or 128 bit) require GCC >= 5 with `-std=gnu\++11` or GCC >= 10 with `-std=c++11`.
+Clang requires >= 9.
+* long doubles are supported on x86 with all MSVC, and 64-bit platforms (e.g. ARM).
 
 == Examples
 
