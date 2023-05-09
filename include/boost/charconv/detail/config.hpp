@@ -7,7 +7,6 @@
 
 #include <boost/config.hpp>
 
-// TODO: BOOST_ASSERT is currently unused. 
 // Once library is complete remove this block, and Boost.Assert from the CML if still unused.
 #ifndef BOOST_CHARCONV_STANDALONE
 #  include <boost/assert.hpp>
@@ -107,15 +106,6 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  define BOOST_CHARCONV_IF_CONSTEXPR if 
 #else
 #  define BOOST_CHARCONV_IF_CONSTEXPR BOOST_IF_CONSTEXPR 
-#endif
-
-// Suppress additional buffer overrun check.
-// I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
-// attacks. No, they aren't.
-#if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
-    #define BOOST_CHARCONV_SAFEBUFFERS __declspec(safebuffers)
-#else
-    #define BOOST_CHARCONV_SAFEBUFFERS
 #endif
 
 // Clang < 4 return type deduction does not work with the policy implementation
