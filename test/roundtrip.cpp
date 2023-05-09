@@ -355,7 +355,7 @@ int main()
     }
 
     // long double
-
+#if (BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)) || ((BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128) && !defined(BOOST_CHARCONV_NO_LONG_DOUBLE_SUPPORT))
     {
         long double const ql = std::pow( 1.0L, -64 );
 
@@ -376,7 +376,7 @@ int main()
 
         test_roundtrip_bv<long double>();
     }
-
+#endif
     // Selected additional values
     //
     test_roundtrip<double>(1.10393929655481808e+308);

@@ -42,7 +42,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 
-#elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128)
+#elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128) && !defined(BOOST_CHARCONV_NO_LONG_DOUBLE_SUPPORT)
 // Works for both 80 and 128 bit long doubles becuase they both allow for normal standard library functions
 // https://en.wikipedia.org/wiki/Extended_precision#x86_extended_precision_format
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
@@ -62,14 +62,18 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     long double return_val;
     if (exponent >= 4892 || exponent <= -4932)
     {
-        std::string tmp(first, last);
+        char* ptr = nullptr;
         if (fmt == boost::charconv::chars_format::hex)
         {
+            std::string tmp(first, last);
             tmp.insert(0, "0x");
+            return_val = std::strtold(tmp.c_str(), &ptr);
+        }
+        else
+        {
+            return_val = std::strtold(first, &ptr);
         }
 
-        char* ptr = 0;
-        return_val = std::strtold(tmp.c_str(), &ptr);
         r.ec = errno;
         r.ptr = ptr;
         if (r.ec == 0)
@@ -91,29 +95,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     {
         value = return_val;
     }
-
-    return r;
-}
-
-#else
-
-// Fallback
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
-{
-    from_chars_result r = {};
-
-    std::string tmp(first, last); // zero termination
-    char* ptr = 0;
-
-    if (fmt == boost::charconv::chars_format::hex)
-    {
-        tmp.insert(0, "0x");
-    }
-
-    value = std::strtold( tmp.c_str(), &ptr );
-
-    r.ptr = ptr;
-    r.ec = errno;
 
     return r;
 }

@@ -179,7 +179,9 @@ int main()
 
     test_floating_point<float>();
     test_floating_point<double>();
+#if (BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)) || ((BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128) && !defined(BOOST_CHARCONV_NO_LONG_DOUBLE_SUPPORT))
     test_floating_point<long double>();
+#endif
 
 #endif // Broken Platforms
 
