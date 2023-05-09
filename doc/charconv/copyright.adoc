@@ -5,7 +5,7 @@ https://www.boost.org/LICENSE_1_0.txt
 ////
 
 [#copyright]
-# Copyright and License
+= Copyright and License
 :idprefix:
 
 This documentation is copyright 2022-2023 Peter Dimov and Matt Borland and is distributed under

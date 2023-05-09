@@ -7,7 +7,6 @@
 
 #include <boost/config.hpp>
 
-// TODO: BOOST_ASSERT is currently unused. 
 // Once library is complete remove this block, and Boost.Assert from the CML if still unused.
 #ifndef BOOST_CHARCONV_STANDALONE
 #  include <boost/assert.hpp>
@@ -39,6 +38,13 @@
 #  define BOOST_CHARCONV_GCC5_CONSTEXPR BOOST_CHARCONV_CXX14_CONSTEXPR
 #endif
 
+// C++17 allowed for constexpr lambdas
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 201603L
+#  define BOOST_CHARCONV_CXX17_CONSTEXPR constexpr
+#else
+#  define BOOST_CHARCONV_CXX17_CONSTEXPR inline
+#endif
+
 // Determine endianness
 #if defined(_WIN32)
 
@@ -57,7 +63,7 @@
 #endif // Determine endianness
 
 // Inclue intrinsics if available
-#if defined(_MSC_VER)
+#if defined(BOOST_MSVC)
 #  include <intrin.h>
 #  if defined(_WIN64)
 #    define BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS
@@ -77,5 +83,38 @@
 static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BYTE) &&
              !(BOOST_CHARCONV_ENDIAN_BIG_BYTE && BOOST_CHARCONV_ENDIAN_LITTLE_BYTE),
 "Inconsistent endianness detected. Please file an issue at https://github.com/cppalliance/charconv with your architecture");
+
+// Suppress additional buffer overrun check.
+// I have no idea why MSVC thinks some functions here are vulnerable to the buffer overrun
+// attacks. No, they aren't.
+#if defined(__GNUC__) || defined(__clang__)
+    #define BOOST_CHARCONV_SAFEBUFFERS
+#elif defined(_MSC_VER)
+    #define BOOST_CHARCONV_SAFEBUFFERS __declspec(safebuffers)
+#else
+    #define BOOST_CHARCONV_SAFEBUFFERS
+#endif
+
+#if defined(__has_builtin)
+    #define BOOST_CHARCONV_HAS_BUILTIN(x) __has_builtin(x)
+#else
+    #define BOOST_CHARCONV_HAS_BUILTIN(x) false
+#endif
+
+// Workaround for errors in MSVC 14.3 with gotos in if constexpr blocks
+#if BOOST_MSVC == 1933 || BOOST_MSVC == 1934
+#  define BOOST_CHARCONV_IF_CONSTEXPR if 
+#else
+#  define BOOST_CHARCONV_IF_CONSTEXPR BOOST_IF_CONSTEXPR 
+#endif
+
+// Clang < 4 return type deduction does not work with the policy implementation
+#ifndef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
+#  if (defined(__clang__) && __clang_major__ < 4) || (defined(_MSC_VER) && _MSC_VER == 1900)
+#    define BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
+#  endif
+#elif defined(BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION)
+#  define BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP

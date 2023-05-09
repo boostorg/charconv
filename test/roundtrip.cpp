@@ -60,6 +60,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <iostream>
+#include <iomanip>
 #include <limits>
 #include <cstdint>
 #include <cfloat>
@@ -226,7 +227,14 @@ template<class T> void test_roundtrip( T value )
     }
     else
     {
+        #ifdef BOOST_CHARCONV_DEBUG
+        std::cerr << std::setprecision(17)
+                  << "     Value: " << value
+                  << "\n  To chars: " << std::string( buffer, r.ptr )
+                  << "\nFrom chars: " << v2 << std::endl;
+        #else
         std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        #endif
     }
 }
 
@@ -367,6 +375,20 @@ int main()
 
         test_roundtrip_bv<long double>();
     }
+
+    // Selected additional values
+    //
+    test_roundtrip<double>(1.10393929655481808e+308);
+    test_roundtrip<double>(-1.47902377240341038e+308);
+    test_roundtrip<double>(-2.13177235460600904e+307);
+    test_roundtrip<double>(8.60473951619578187e+307);
+    test_roundtrip<double>(-2.97613696314797352e+306);
+
+    test_roundtrip<float>(3.197633022e+38F);
+    test_roundtrip<float>(2.73101834e+38F);
+    test_roundtrip<float>(3.394053352e+38F);
+    test_roundtrip<float>(5.549256619e+37F);
+    test_roundtrip<float>(8.922125027e+34F);
 
 #endif // Broken platforms
 

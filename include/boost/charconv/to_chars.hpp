@@ -12,7 +12,11 @@
 #include <boost/charconv/detail/integer_conversion.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/floff.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/dragonbox.hpp>
 #include <boost/charconv/config.hpp>
+#include <boost/charconv/chars_format.hpp>
 #include <type_traits>
 #include <array>
 #include <limits>
@@ -22,6 +26,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <climits>
+#include <cmath>
 
 namespace boost { namespace charconv {
 
@@ -113,7 +118,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
-    if (!(first <= last))
+    if (first > last)
     {
         return {last, EINVAL};
     }
@@ -141,7 +146,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
     // don't have the issue of removing leading zeros from the least significant digits
     
-    // Yields: warning C4127: conditional expression is constant becuase first half of the expression is constant
+    // Yields: warning C4127: conditional expression is constant because first half of the expression is constant,
     // but we need to short circuit to avoid UB on the second half
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
         unsigned_value <= static_cast<Unsigned_Integer>((std::numeric_limits<std::uint32_t>::max)()))
@@ -242,7 +247,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     
-    if (!(first <= last))
+    if (first > last)
     {
         return {last, EINVAL};
     }
@@ -427,15 +432,15 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 #endif
 
 template <typename Integer>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integer value, int base = 10) noexcept
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int(char* first, char* last, Integer value, int base = 10) noexcept
 {
     using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
     if (base == 10)
     {
-        return detail::to_chars_integer_impl(first, last, value);
+        return to_chars_integer_impl(first, last, value);
     }
 
-    return detail::to_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
+    return to_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
@@ -451,53 +456,312 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 }
 #endif
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Floating Point Detail
+// ---------------------------------------------------------------------------------------------------------------------
+template <typename Real>
+to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
+{
+    // If the user did not specify a precision than we use the maximum representable amount
+    // and remove trailing zeros at the end
+    int real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
+    
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, EOVERFLOW};
+    }
+    
+    // Handle edge cases first
+    BOOST_ATTRIBUTE_UNUSED char* ptr;
+    switch (std::fpclassify(value))
+    {
+        case FP_INFINITE:
+            BOOST_FALLTHROUGH;
+        case FP_NAN:
+            // The dragonbox impl will return the correct type of NaN
+            ptr = boost::charconv::detail::to_chars(value, first, chars_format::general);
+            return { ptr, 0 };
+        case FP_ZERO:
+            if (std::signbit(value))
+            {
+                *first++ = '-';
+            }
+            std::memcpy(first, "0p+0", 4);
+            return {first + 4, 0};
+    }
+
+    // Extract the significand and the exponent
+    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t, std::uint64_t>::type;
+    using type_layout = typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32, ieee754_binary64>::type;
+
+    Unsigned_Integer uint_value;
+    std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
+    const Unsigned_Integer significand = uint_value & type_layout::denorm_mask;
+    const auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits);
+
+    // Align the significand to the hexit boundaries (i.e. divisible by 4)
+    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 : 13;
+    constexpr auto nibble_bits = CHAR_BIT / 2;
+    constexpr auto hex_bits = hex_precision * nibble_bits;
+    constexpr Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
+    Unsigned_Integer aligned_significand;
+    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
+    {
+        aligned_significand = significand << 1;
+    }
+    else
+    {
+        aligned_significand = significand;
+    }
+
+    // Adjust the exponent based on the bias as described in IEEE 754
+    std::int32_t unbiased_exponent;
+    if (exponent == 0 && significand != 0)
+    {
+        // Subnormal value since we already handled zero
+        unbiased_exponent = 1 + type_layout::exponent_bias;
+    }
+    else
+    {
+        aligned_significand |= static_cast<Unsigned_Integer>(1) << hex_bits;
+        unbiased_exponent = exponent + type_layout::exponent_bias;
+    }
+
+    // Bounds check the exponent
+    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
+    {
+        if (unbiased_exponent > 127)
+        {
+            unbiased_exponent -= 256;
+        }
+    }
+    else
+    {
+        if (unbiased_exponent > 1023)
+        {
+            unbiased_exponent -= 2048;
+        }
+    }
+
+    const std::uint32_t abs_unbiased_exponent = unbiased_exponent < 0 ? static_cast<std::uint32_t>(-unbiased_exponent) : 
+                                                                        static_cast<std::uint32_t>(unbiased_exponent);
+    
+    // Bounds check
+    // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
+    const std::ptrdiff_t total_length = (value < 0) + 2 + real_precision + 2 + num_digits(abs_unbiased_exponent);
+    if (total_length > buffer_size)
+    {
+        return {last, EOVERFLOW};
+    }
+
+    // Round if required
+    if (real_precision < hex_precision)
+    {
+        const int lost_bits = (hex_precision - real_precision) * nibble_bits;
+        const Unsigned_Integer lsb_bit = aligned_significand;
+        const Unsigned_Integer round_bit = aligned_significand << 1;
+        const Unsigned_Integer tail_bit = round_bit - 1;
+        const Unsigned_Integer round = round_bit & (tail_bit | lsb_bit) & (static_cast<Unsigned_Integer>(1) << lost_bits);
+        aligned_significand += round;
+    }
+
+    // Print the sign
+    if (value < 0)
+    {
+        *first++ = '-';
+    }
+
+    // Print the leading hexit and then mask away
+    const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
+    *first++ = static_cast<char>('0' + leading_nibble);
+    aligned_significand &= hex_mask;
+
+    // Print the fractional part
+    if (real_precision > 0)
+    {
+        *first++ = '.';
+        std::int32_t remaining_bits = hex_bits;
+
+        while (true)
+        {
+            remaining_bits -= nibble_bits;
+            const auto current_nibble = static_cast<std::uint32_t>(aligned_significand >> remaining_bits);
+            *first++ = digit_table[current_nibble];
+
+            --real_precision;
+            if (real_precision == 0)
+            {
+                break;
+            }
+            else if (remaining_bits == 0)
+            {
+                // Do not print trailing zeros with unspecified precision
+                if (precision != -1)
+                {
+                    std::memset(first, '0', static_cast<std::size_t>(real_precision));
+                    first += real_precision;
+                }
+                break;
+            }
+
+            // Mask away the hexit we just printed
+            aligned_significand &= (static_cast<Unsigned_Integer>(1) << remaining_bits) - 1;
+        }
+    }
+
+    // Remove any trailing zeros if the precision was unspecified
+    if (precision == -1)
+    {
+        --first;
+        while (*first == '0')
+        {
+            --first;
+        }
+        ++first;
+    }
+
+    // Print the exponent
+    *first++ = 'p';
+    if (unbiased_exponent < 0)
+    {
+        *first++ = '-';
+    }
+    else
+    {
+        *first++ = '+';
+    }
+
+    return to_chars_int(first, last, abs_unbiased_exponent);
+}
+
+template <typename Real>
+to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
+{
+    using Unsigned_Integer = typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, std::uint32_t>::type;
+    
+    const std::ptrdiff_t buffer_size = last - first;
+    
+    // Unspecified precision so we always go with the shortest representation
+    if (precision == -1)
+    {
+        if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
+        {
+            auto abs_value = std::abs(value);
+            constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
+            constexpr auto max_value = static_cast<Real>(std::numeric_limits<Unsigned_Integer>::max());
+
+            if (abs_value >= 1 && abs_value < max_fractional_value)
+            {
+                auto value_struct = boost::charconv::detail::to_decimal(value);
+                if (value_struct.is_negative)
+                {
+                    *first++ = '-';
+                }
+
+                auto r = to_chars_integer_impl(first, last, value_struct.significand);
+                if (r.ec != 0)
+                {
+                    return r;
+                }
+                
+                // Bounds check
+                if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
+                {
+                    std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
+                    std::memset(r.ptr + value_struct.exponent, '.', 1);
+                    ++r.ptr;
+                }
+
+                while (std::fmod(abs_value, 10) == 0)
+                {
+                    *r.ptr++ = '0';
+                    abs_value /= 10;
+                }
+
+                return { r.ptr, 0 };
+            }
+            else if (abs_value >= max_fractional_value && abs_value < max_value)
+            {
+                if (value < 0)
+                {
+                    *first++ = '-';
+                }
+                return to_chars_integer_impl(first, last, static_cast<std::uint64_t>(abs_value));
+            }
+            else
+            {
+                auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
+                return { ptr, 0 };
+            }
+        }
+        else if (fmt == boost::charconv::chars_format::scientific)
+        {
+            auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
+            return { ptr, 0 };
+        }
+    }
+    else
+    {
+        if (fmt != boost::charconv::chars_format::hex)
+        {
+            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
+            return { ptr, 0 };
+        }
+    }
+
+    // Hex handles both cases already
+    return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+}
+
 } // Namespace detail
 
 // integer overloads
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, bool value, int base) noexcept = delete;
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, char value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, signed char value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned char value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, short value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned short value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, int value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned int value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, long long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, unsigned long long value, int base = 10) noexcept
 {
-    return detail::to_chars(first, last, value, base);
+    return detail::to_chars_int(first, last, value, base);
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
@@ -512,9 +776,21 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost
 #endif
 // floating point overloads
 
-BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, float value ) noexcept;
-BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, double value ) noexcept;
-BOOST_CHARCONV_DECL to_chars_result to_chars( char* first, char* last, long double value ) noexcept;
+#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
+#  define BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
+#endif
+
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value,
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value, 
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+
+#ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+#else
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value ) noexcept;
+#endif
 
 } // namespace charconv
 } // namespace boost

@@ -17,6 +17,7 @@ Peter Dimov and Matt Borland
 :leveloffset: +1
 
 include::charconv/overview.adoc[]
+include::charconv/chars_format.adoc[]
 include::charconv/from_chars.adoc[]
 include::charconv/to_chars.adoc[]
 include::charconv/reference.adoc[]

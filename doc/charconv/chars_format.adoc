@@ -1,0 +1,35 @@
+////
+Copyright 2023 Matt Borland
+Distributed under the Boost Software License, Version 1.0.
+https://www.boost.org/LICENSE_1_0.txt
+////
+
+= chars_format
+:idprefix: chars_format_
+
+== chars_format overview
+[source, c++]
+----
+enum class chars_format : unsigned
+{
+    scientific = 1 << 0,
+    fixed = 1 << 1,
+    hex = 1 << 2,
+    general = fixed | scientific
+};
+----
+`boost::charconv::chars_format` is used to specify the format of floating point types with `from_chars` and `to_chars`.
+
+=== Scientific Format
+Scientific format will be of the form `1.3e+03`.
+The integer part will be between 0 and 9 inclusive. The fraction and exponent will always appear.
+The exponent will always have a minimum of 2 digits.
+
+=== Fixed Format
+Fixed format will be of the form `2.30` or `3090`. An exponent will not appear with this format. If the precision of `to_chars` exceeds that of the type (e.g. std::numeric_limits<double>::chars10), 0s will be appended to the end.
+
+=== Hex Format
+Hex format will be of the form `+1.0e2p+5`. The integer part will always be 0 or 1. The exponent will be with a p instead of an e like in base 10 formats.
+
+=== General
+General format will be the shortest representation of a number in either fixed or general format (e.g. `1234` instead of `1.234e+03`.

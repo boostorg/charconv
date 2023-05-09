@@ -22,6 +22,9 @@ struct from_chars_result;
 template <typename Integral>
 BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integral& value, int base = 10) noexcept;
 
+template <typename Real>
+from_chars_result from_chars(const char* first, const char* last, Real& value, chars_format fmt = chars_format::general) noexcept;
+
 // ...
 
 } // namespace charconv
@@ -64,11 +67,26 @@ Effects:;; Attempts to interpret the characters in `[first, last)` as a numeric 
   bases above 10, the digit characters are `Aa` to `Zz`, as appropriate for `base`.
 
 Returns:;; The `ec` member of the return value is `0` on success, `EINVAL` if
-  `[first, last)` can't be intepreted as an integer of base `base`, and `ERANGE`
+  `[first, last)` can't be interpreted as an integer of base `base`, and `ERANGE`
   if `[first, last)` when interpreted as an integer of base `base` can't be represented
   as a value of type `Integral`. The `ptr` member of the return value points to the first
   character in `[first, last)` that is not part of the matched value, or is `last` when
   all characters matched.
+
+[source, c++]
+----
+template <typename Real>
+from_chars_result from_chars(const char* first, const char* last, Real& value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision) noexcept;
+----
+
+Requires:;; `fmt` has the value of one of the enumerators of chars_format
+
+Effects:;; value is converted to a string in the style of printf in the "C" locale with the given precision. If a precision is not provided the shortest representation will be given.
+
+Returns:;; The `ec` member of the return value is `0` on success.
+`EINVAL` is returned if the value can't be interpreted with the given format `fmt`.
+`ERANGE` is returned when the value can't be represented in the target floating point type.
+The `ptr` member of the return value points to the first character in `[first, last)` that is not part of the matched value, or is `last` when all characters are matched.
 
 == <boost/charconv/to_chars.hpp>
 
@@ -81,7 +99,10 @@ namespace charconv {
 struct to_chars_result;
 
 template <typename Integral>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars( char* first, char* last, Integral value, int base = 10 ) noexcept;
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integral value, int base = 10) noexcept;
+
+template <typename Real>
+to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision) noexcept;
 
 // ...
 
@@ -128,6 +149,22 @@ Returns:;; The `ec` member of the return value is `0` on success, and `EOVERFLOW
   `[first, last)` does not contain enough space to hold the string representation of
   `value`. The `ptr` member of the return value points to the character in `[first, last]`
   that is one past the storted characters, or is `last` when `ec` is `EOVERFLOW`.
+
+[source, c++]
+----
+template <typename Real>
+to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision) noexcept;
+----
+
+Requires:;; fmt has the value of one of the enumerators of chars_format
+
+Effects:;; value is converted to a string in the style of printf in the "C" locale with the given precision.
+If no precision is provided the value character string will be the shortest representation of `value`
+
+Returns:;; The `ec` member of the return value is `0` on success, and `EOVERFLOW` if
+`[first, last)` does not contain enough space to hold the string representation of
+`value`. The `ptr` member of the return value points to the character in `[first, last]`
+that is one past the storted characters, or is `last` when `ec` is `EOVERFLOW`.
 
 == <boost/charconv/limits.hpp>
 

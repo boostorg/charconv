@@ -98,7 +98,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     int leading_zeros = boost::core::countl_zero(i);
     i <<= static_cast<std::uint64_t>(leading_zeros);
 
-    value128 product = full_multiplication(i, factor_significand);
+    uint128 product = umul128(i, factor_significand);
     std::uint64_t low = product.low;
     std::uint64_t high = product.high;
 
@@ -119,7 +119,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     if (BOOST_UNLIKELY((high & 0x1FF) == 0x1FF) && (low + i < low))
     {
         const std::uint64_t factor_significand_low = significand_128[power - smallest_power];
-        product = full_multiplication(i, factor_significand_low);
+        product = umul128(i, factor_significand_low);
         const std::uint64_t product_low = product.low;
         const std::uint64_t product_middle2 = product.high;
         const std::uint64_t product_middle1 = low;
