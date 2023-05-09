@@ -17,6 +17,11 @@
 #include <cstdint>
 #include <cstring>
 
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 namespace boost { namespace charconv { namespace detail {
 
 #ifdef BOOST_CHARCONV_HAS_INT128
@@ -38,12 +43,13 @@ inline from_chars_result from_chars_dispatch(const char* first, const char* last
 template <typename Unsigned_Integer, typename Integer>
 inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
-    if (!(first <= last))
+    if (first > last)
     {
         return {first, EINVAL};
     }
 
     auto next = first;
+    bool all_zeros = true;
 
     // First extract the sign
     if (*next == '-')
@@ -67,12 +73,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         ++next;
     }
 
-    // Next we get the significand
-    constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10 - 1; // Base 10 or 16
-    char significand_buffer[significand_buffer_size] {};
-    std::size_t i = 0;
-    std::size_t dot_position = 0;
-    std::size_t extra_zeros = 0;
+    // If the number is 0 we can abort now
     char exp_char;
     char capital_exp_char;
     if (fmt != chars_format::hex)
@@ -86,8 +87,24 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         capital_exp_char = 'P';
     }
 
+    if (next == last || *next == exp_char || *next == -capital_exp_char)
+    {
+        significand = 0;
+        exponent = 0;
+        return {next, 0};
+    }
+
+    // Next we get the significand
+    constexpr std::size_t significand_buffer_size = limits<Unsigned_Integer>::max_chars10 - 1; // Base 10 or 16
+    char significand_buffer[significand_buffer_size] {};
+    std::size_t i = 0;
+    std::size_t dot_position = 0;
+    Integer extra_zeros = 0;
+    Integer leading_zero_powers = 0;
+
     while (*next != '.' && *next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
     {
+        all_zeros = false;
         significand_buffer[i] = *next;
         ++next;
         ++i;
@@ -105,7 +122,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         exponent = 0;
         std::size_t offset = i;
 
-        from_chars_result r;
+        from_chars_result r {};
         if (fmt == chars_format::hex)
         {
             r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, 16);
@@ -135,6 +152,23 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // if fmt is chars_format::scientific the e is required
         // if fmt is chars_format::fixed and not scientific the e is disallowed
         // if fmt is chars_format::general (which is scientific and fixed) the e is optional
+
+        // If we have the value 0.00001 we can continue to chop zeros and adjust the exponent
+        // so that we get the useful parts of the fraction
+        if (all_zeros)
+        {
+            while (*next == '0' && next != last)
+            {
+                ++next;
+                --leading_zero_powers;
+            }
+
+            if (next == last)
+            {
+                return {last, 0};
+            }
+        }
+
         while (*next != exp_char && *next != capital_exp_char && next != last && i < significand_buffer_size)
         {
             significand_buffer[i] = *next;
@@ -147,15 +181,18 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     {
         // We can not process any more significant figures into the significand so skip to the end
         // or the exponent part and capture the additional orders of magnitude for the exponent
+        bool found_dot = false;
         while (*next != exp_char && *next != capital_exp_char && next != last)
         {
             ++next;
-            ++extra_zeros;
-        }
-
-        if (fractional)
-        {
-            extra_zeros = 0;
+            if (!fractional && !found_dot)
+            {
+                ++extra_zeros;
+            }
+            if (*next == '.')
+            {
+                found_dot = true;
+            }
         }
     }
 
@@ -165,17 +202,17 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         {
             return {first, EINVAL};
         }
-        if (dot_position != 0)
+        if (dot_position != 0 || fractional)
         {
-            exponent = static_cast<Integer>(dot_position) - i + extra_zeros;
+            exponent = static_cast<Integer>(dot_position) - i + extra_zeros + leading_zero_powers;
         }
         else
         {
-            exponent = extra_zeros;
+            exponent = extra_zeros + leading_zero_powers;
         }
         std::size_t offset = i;
         
-        from_chars_result r;
+        from_chars_result r {};
         if (fmt == chars_format::hex)
         {
             r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, 16);
@@ -221,7 +258,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             }
         }
 
-        from_chars_result r;
+        from_chars_result r {};
         if (fmt == chars_format::hex)
         {
             r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, 16);
@@ -282,7 +319,25 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         return {next, ERANGE};
     }
 
-    auto r = from_chars(exponent_buffer, exponent_buffer + std::strlen(exponent_buffer), exponent);
+    // If the exponent was e+00 or e-00
+    if (i == 0 || (i == 1 && exponent_buffer[0] == '-'))
+    {
+        if (fractional)
+        {
+            exponent = static_cast<Integer>(dot_position) - significand_digits;
+        }
+        else
+        {
+            exponent = 0;
+        }
+
+        return {next, 0};
+    }
+
+    const auto r = from_chars(exponent_buffer, exponent_buffer + i, exponent);
+
+    exponent += leading_zero_powers;
+
     switch (r.ec)
     {
         case EINVAL:
@@ -292,7 +347,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         default:
             if (fractional)
             {
-                // Need to take the offset from 1.xxx becuase compute_floatXXX assumes the significand is an integer
+                // Need to take the offset from 1.xxx because compute_floatXXX assumes the significand is an integer
                 // so the exponent is off by the number of digits in the significand - 1
                 if (fmt == chars_format::hex)
                 {
@@ -313,5 +368,9 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 }
 
 }}} // Namespaces
+
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_PARSER_HPP

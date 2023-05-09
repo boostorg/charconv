@@ -1,391 +1,214 @@
+// Copyright 2018 Ulf Adams
 // Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <cstdlib>
+#include <type_traits>
+#include <limits>
 #include <cstring>
-#include <cmath>
+#include <cstdint>
+#include <cerrno>
+#include <utility>
+#include <string>
 
+// These numbers diverge from what the formatting is using printf
+// See: https://godbolt.org/z/zd34KcWMW
 template <typename T>
-void spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+void printf_divergence()
 {
-    T v = 0;
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
-    BOOST_TEST_EQ(r.ec, 0);
-    if (!BOOST_TEST_EQ(v, expected_value))
-    {
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
-    }
-}
-
-template <typename T>
-inline void spot_check(T expected_value, const std::string& buffer, boost::charconv::chars_format fmt)
-{
-    spot_value(buffer, expected_value, fmt);
-}
-
-void fc (const std::string& s)
-{
-    char* str_end;
-    const double expected_value = std::strtod(s.c_str(), &str_end);
-    spot_value(s, expected_value);
-}
-
-template <typename T>
-void simple_integer_test()
-{
-    const char* buffer1 = "12";
-    T v1 = 0;
-    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    char buffer1[256] {};
+    T v1 = 3.4;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
     BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_EQ(v1, static_cast<T>(12));
+    BOOST_TEST_CSTR_EQ(buffer1, "3.4");
 
-    const char* buffer2 = "1200";
-    T v2 = 0;
-    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    char buffer2[256] {};
+    T v2 = 3000.40;
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2);
     BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_EQ(v2, static_cast<T>(1200));
-}
+    BOOST_TEST_CSTR_EQ(buffer2, "3000.4");
 
-template <typename T>
-void simple_hex_integer_test()
-{
-    const char* buffer1 = "-2a";
-    T v1 = 0;
-    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, boost::charconv::chars_format::hex);
-    BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_EQ(v1, static_cast<T>(-42));
-}
-
-template <typename T>
-void simple_scientific_test()
-{
-    const char* buffer1 = "1e1";
-    T v1 = 0;
-    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
-    BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_EQ(v1, static_cast<T>(1e1L));
-
-    const char* buffer2 = "123456789e10";
-    T v2 = 0;
-    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
-    BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_EQ(v2, static_cast<T>(123456789e10L));
-
-    const char* buffer3 = "1.23456789e+10";
-    T v3 = 0;
-    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    char buffer3[256] {};
+    T v3 = -3000000300000000.5;
+    auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3), v3);
     BOOST_TEST_EQ(r3.ec, 0);
-    BOOST_TEST_EQ(v3, static_cast<T>(1.23456789e+10L));
-
-    const char* buffer4 = "1234.56789e+10";
-    T v4 = 0;
-    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
-    BOOST_TEST_EQ(r4.ec, 0);
-    BOOST_TEST_EQ(v4, static_cast<T>(1234.56789e+10L));
+    BOOST_TEST_CSTR_EQ(buffer3, "-3000000300000000.5");
 }
 
 template <typename T>
-void simple_hex_scientific_test()
+void integer_general_format()
 {
-    const char* buffer1 = "1.3a2bp-10";
-    T v1 = 0;
-    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, boost::charconv::chars_format::hex);
+    char buffer1[256] {};
+    T v1 = 1217.2772861138403;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
     BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_EQ(v1, static_cast<T>(80427e-14L));
-
-    const char* buffer2 = "1.234p-10";
-    T v2 = 0;
-    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2, boost::charconv::chars_format::hex);
-    BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_EQ(v2, static_cast<T>(4660e-13L));
+    BOOST_TEST_CSTR_EQ(buffer1, "1217.2772861138403");
+    T return_v1;
+    auto r1_return = boost::charconv::from_chars(buffer1, buffer1 + strlen(buffer1), return_v1);
+    BOOST_TEST_EQ(r1_return.ec, 0);
+    BOOST_TEST_EQ(return_v1, v1);
 }
 
 template <typename T>
-void dot_position_test()
+void non_finite_values(boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
 {
-    const char* buffer1 = "11.11111111";
-    T v1 = 0;
-    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    char buffer1[256] {};
+    T v1 = std::numeric_limits<T>::infinity();
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1, fmt, precision);
     BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_EQ(v1, static_cast<T>(11.11111111L));
+    BOOST_TEST_CSTR_EQ(buffer1, "inf");
 
-    const char* buffer2 = "1111.111111";
-    T v2 = 0;
-    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    char buffer2[256] {};
+    T v2 = -std::numeric_limits<T>::infinity();
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2, fmt, precision);
     BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_EQ(v2, static_cast<T>(1111.111111L));
+    BOOST_TEST_CSTR_EQ(buffer2, "-inf");
 
-    const char* buffer3 = "111111.1111";
-    T v3 = 0;
-    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    char buffer3[256] {};
+    T v3 = std::numeric_limits<T>::quiet_NaN();
+    auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3), v3, fmt, precision);
     BOOST_TEST_EQ(r3.ec, 0);
-    BOOST_TEST_EQ(v3, static_cast<T>(111111.1111L));
+    BOOST_TEST_CSTR_EQ(buffer3, "nan");
 
-    const char* buffer4 = "1111111111.";
-    T v4 = 0;
-    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
+    char buffer4[256] {};
+    T v4 = -std::numeric_limits<T>::quiet_NaN();
+    auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v4, fmt, precision);
     BOOST_TEST_EQ(r4.ec, 0);
-    BOOST_TEST_EQ(v4, static_cast<T>(1111111111.L));
-}
+    BOOST_TEST_CSTR_EQ(buffer4, "-nan(ind)");
 
-template <typename T>
-void odd_strings_test()
-{
-    const char* buffer1 = "00000000000000000000000000000000000000000005";
-    T v1 = 0;
-    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
-    BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_EQ(v1, static_cast<T>(5));
-
-    const char* buffer2 = "123456789123456789123456789";
-    T v2 = 0;
-    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
-    BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_EQ(v2, static_cast<T>(1.23456789123456789123456789e26L));
-
-    const char* buffer3 = "100000000000000000000000e5";
-    T v3 = 0;
-    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
-    BOOST_TEST_EQ(r3.ec, 0);
-    BOOST_TEST_EQ(v3, static_cast<T>(100000000000000000000000e5L));
-
-    const char* buffer4 = "1.23456789123456789123456789123456789123456789e-5";
-    T v4 = 0;
-    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
-    BOOST_TEST_EQ(r4.ec, 0);
-    BOOST_TEST_EQ(v4, static_cast<T>(1.23456789123456789123456789123456789123456789e-5L));
-
-    const char* buffer5 = "1.23456789123456789123456789123456789123456789e-00000000000000000005";
-    T v5 = 0;
-    auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
+    char buffer5[256] {};
+    T v5 = std::numeric_limits<T>::signaling_NaN();
+    auto r5 = boost::charconv::to_chars(buffer5, buffer5 + sizeof(buffer5), v5, fmt, precision);
     BOOST_TEST_EQ(r5.ec, 0);
-    BOOST_TEST_EQ(v5, static_cast<T>(1.23456789123456789123456789123456789123456789e-5L));
+    BOOST_TEST_CSTR_EQ(buffer5, "nan(snan)");
 
-}
-
-template <typename T>
-void zero_test()
-{
-    const char* buffer1 = "0e0";
-    T v1 = 0;
-    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
-    BOOST_TEST_EQ(r1.ec, 0);
-    BOOST_TEST_EQ(v1, static_cast<T>(0));
-    BOOST_TEST(!std::signbit(v1));
-
-    const char* buffer2 = "-0e0";
-    T v2 = 0;
-    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
-    BOOST_TEST_EQ(r2.ec, 0);
-    BOOST_TEST_EQ(v2, static_cast<T>(-0));
-    BOOST_TEST(std::signbit(v2));
-
-    const char* buffer3 = "0.0";
-    T v3 = 0;
-    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
-    BOOST_TEST_EQ(r3.ec, 0);
-    BOOST_TEST_EQ(v3, static_cast<T>(0.0));
-    BOOST_TEST(!std::signbit(v3));
-
-    const char* buffer4 = "-0.0";
-    T v4 = 0;
-    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
-    BOOST_TEST_EQ(r4.ec, 0);
-    BOOST_TEST_EQ(v4, static_cast<T>(-0));
-    BOOST_TEST(std::signbit(v4));
-
-    const char* buffer5 = "0";
-    T v5 = 0;
-    auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
-    BOOST_TEST_EQ(r5.ec, 0);
-    BOOST_TEST_EQ(v5, static_cast<T>(0));
-    BOOST_TEST(!std::signbit(v5));
-
-    const char* buffer6 = "-0";
-    T v6 = 0;
-    auto r6 = boost::charconv::from_chars(buffer6, buffer6 + std::strlen(buffer6), v6);
+    char buffer6[256] {};
+    T v6 = -std::numeric_limits<T>::signaling_NaN();
+    auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v6, fmt, precision);
     BOOST_TEST_EQ(r6.ec, 0);
-    BOOST_TEST_EQ(v6, static_cast<T>(-0));
-    BOOST_TEST(std::signbit(v6));
+    BOOST_TEST_CSTR_EQ(buffer6, "-nan(snan)");
 }
 
-// See: https://github.com/boostorg/json/blob/develop/test/double.cpp#L243
 template <typename T>
-void boost_json_test()
+void fixed_values()
 {
-    spot_value("-1.010", -1.01);
-    spot_value("-0.010", -0.01);
-    spot_value("-0.0", -0.0);
-    spot_value("-0e0", -0.0);
-    spot_value( "18.4",  18.4);
-    spot_value("-18.4", -18.4);
-    spot_value( "18446744073709551616",  1.8446744073709552e+19);
-    spot_value("-18446744073709551616", -1.8446744073709552e+19);
-    spot_value( "18446744073709551616.0",  1.8446744073709552e+19);
-    spot_value( "18446744073709551616.00009",  1.8446744073709552e+19);
-    spot_value( "1844674407370955161600000",  1.8446744073709552e+24);
-    spot_value("-1844674407370955161600000", -1.8446744073709552e+24);
-    spot_value( "1844674407370955161600000.0",  1.8446744073709552e+24);
-    spot_value( "1844674407370955161600000.00009",  1.8446744073709552e+24);
-    spot_value( "19700720435664.186294290058937593e13",  1.9700720435664185e+26);
+    char buffer1[256] {};
+    T v1 = 61851632;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "61851632");
+}
 
-    spot_value( "1.0", 1.0);
-    spot_value( "1.1", 1.1);
-    spot_value( "1.11", 1.11);
-    spot_value( "1.11111", 1.11111);
-    spot_value( "11.1111", 11.1111);
-    spot_value( "111.111", 111.111);
+template <typename T>
+void failing_ci_values()
+{
+    char buffer1[256] {};
+    T v1 = -1.08260383390082946e+307;
+    auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1), v1, boost::charconv::chars_format::hex);
+    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer1, "-1.ed5658af91a0fp+1019");
 
-    fc("-0.9999999999999999999999");
-    fc("-0.9999999999999999");
-    fc("-0.9007199254740991");
-    fc("-0.999999999999999");
-    fc("-0.99999999999999");
-    fc("-0.9999999999999");
-    fc("-0.999999999999");
-    fc("-0.99999999999");
-    fc("-0.9999999999");
-    fc("-0.999999999");
-    fc("-0.99999999");
-    fc("-0.9999999");
-    fc("-0.999999");
-    fc("-0.99999");
-    fc("-0.9999");
-    fc("-0.8125");
-    fc("-0.999");
-    fc("-0.99");
-    fc("-1.0");
-    fc("-0.9");
-    fc("-0.0");
-    fc("0.0");
-    fc("0.9");
-    fc("0.99");
-    fc("0.999");
-    fc("0.8125");
-    fc("0.9999");
-    fc("0.99999");
-    fc("0.999999");
-    fc("0.9999999");
-    fc("0.99999999");
-    fc("0.999999999");
-    fc("0.9999999999");
-    fc("0.99999999999");
-    fc("0.999999999999");
-    fc("0.9999999999999");
-    fc("0.99999999999999");
-    fc("0.999999999999999");
-    fc("0.9007199254740991");
-    fc("0.9999999999999999");
-    fc("0.9999999999999999999999");
-    fc("0.999999999999999999999999999");
+    char buffer2[256] {};
+    T v2 = -9.52743282403084637e+306;
+    auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2), v2, boost::charconv::chars_format::hex);
+    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer2, "-1.b22914956c56fp+1019");
+}
 
-    fc("-1e308");
-    fc("-1e-308");
-    fc("-9999e300");
-    fc("-999e100");
-    fc("-99e10");
-    fc("-9e1");
-    fc("9e1");
-    fc("99e10");
-    fc("999e100");
-    fc("9999e300");
-    fc("999999999999999999.0");
-    fc("999999999999999999999.0");
-    fc("999999999999999999999e5");
-    fc("999999999999999999999.0e5");
-
-    fc("0.00000000000000001");
-
-    fc("-1e-1");
-    fc("-1e0");
-    fc("-1e1");
-    fc("0e0");
-    fc("1e0");
-    fc("1e10");
-
-    fc("0."
-       "00000000000000000000000000000000000000000000000000" // 50 zeroes
-       "1e50");
-    fc("-0."
-       "00000000000000000000000000000000000000000000000000" // 50 zeroes
-       "1e50");
-
-    fc("0."
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000" // 500 zeroes
-       "1e600");
-    fc("-0."
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000" // 500 zeroes
-       "1e600");
-
-    fc("0e"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000"
-       "00000000000000000000000000000000000000000000000000" // 500 zeroes
-    );
+template <typename T>
+void spot_check(T v, const std::string& str, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    char buffer[256] {};
+    const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), v, fmt);
+    BOOST_TEST_EQ(r.ec, 0);
+    BOOST_TEST_CSTR_EQ(buffer, str.c_str());
 }
 
 int main()
 {
-    simple_integer_test<float>();
-    simple_integer_test<double>();
-    
-    simple_hex_integer_test<float>();
-    simple_hex_integer_test<double>();
+    printf_divergence<double>();
+    integer_general_format<double>();
+    non_finite_values<double>();
+    non_finite_values<double>(boost::charconv::chars_format::general, 2);
+    non_finite_values<double>(boost::charconv::chars_format::scientific);
+    non_finite_values<double>(boost::charconv::chars_format::scientific, 2);
+    non_finite_values<double>(boost::charconv::chars_format::hex);
+    non_finite_values<double>(boost::charconv::chars_format::hex, 2);
 
-    simple_scientific_test<float>();
-    simple_scientific_test<double>();
+    fixed_values<float>();
+    fixed_values<double>();
 
-    simple_hex_scientific_test<float>();
-    simple_hex_scientific_test<double>();
+    failing_ci_values<double>();
 
-    dot_position_test<float>();
-    dot_position_test<double>();
+    // Values from ryu tests
+    spot_check(1.0, "1");
+    spot_check(1.2, "1.2");
+    spot_check(1.23, "1.23");
+    spot_check(1.234, "1.234");
+    spot_check(1.2345, "1.2345");
+    spot_check(1.23456, "1.23456");
+    spot_check(1.234567, "1.234567");
+    spot_check(1.2345678, "1.2345678");
+    spot_check(1.23456789, "1.23456789");
+    spot_check(1.234567890, "1.23456789");
+    spot_check(1.2345678901, "1.2345678901");
+    spot_check(1.23456789012, "1.23456789012");
+    spot_check(1.234567890123, "1.234567890123");
+    spot_check(1.2345678901234, "1.2345678901234");
+    spot_check(1.23456789012345, "1.23456789012345");
+    spot_check(1.234567890123456, "1.234567890123456");
 
-    odd_strings_test<float>();
-    odd_strings_test<double>();
+    spot_check(1.0, "1e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2, "1.2e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23, "1.23e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234, "1.234e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345, "1.2345e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456, "1.23456e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567, "1.234567e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345678, "1.2345678e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456789, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567890, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345678901, "1.2345678901e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456789012, "1.23456789012e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567890123, "1.234567890123e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.2345678901234, "1.2345678901234e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.23456789012345, "1.23456789012345e+00", boost::charconv::chars_format::scientific);
+    spot_check(1.234567890123456, "1.234567890123456e+00", boost::charconv::chars_format::scientific);
 
-    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
-    simple_integer_test<long double>();
-    simple_hex_integer_test<long double>();
-    simple_scientific_test<long double>();
-    simple_hex_scientific_test<long double>();
-    #endif
+    spot_check(1.0, "1e+00", boost::charconv::chars_format::scientific);
+    spot_check(12.0, "1.2e+01", boost::charconv::chars_format::scientific);
+    spot_check(123.0, "1.23e+02", boost::charconv::chars_format::scientific);
+    spot_check(1234.0, "1.234e+03", boost::charconv::chars_format::scientific);
+    spot_check(12345.0, "1.2345e+04", boost::charconv::chars_format::scientific);
+    spot_check(123456.0, "1.23456e+05", boost::charconv::chars_format::scientific);
+    spot_check(1234567.0, "1.234567e+06", boost::charconv::chars_format::scientific);
+    spot_check(12345678.0, "1.2345678e+07", boost::charconv::chars_format::scientific);
+    spot_check(123456789.0, "1.23456789e+08", boost::charconv::chars_format::scientific);
+    spot_check(1234567890.0, "1.23456789e+09", boost::charconv::chars_format::scientific);
+    spot_check(12345678901.0, "1.2345678901e+10", boost::charconv::chars_format::scientific);
+    spot_check(123456789012.0, "1.23456789012e+11", boost::charconv::chars_format::scientific);
+    spot_check(1234567890123.0, "1.234567890123e+12", boost::charconv::chars_format::scientific);
+    spot_check(12345678901234.0, "1.2345678901234e+13", boost::charconv::chars_format::scientific);
+    spot_check(123456789012345.0, "1.23456789012345e+14", boost::charconv::chars_format::scientific);
+    spot_check(1234567890123456.0, "1.234567890123456e+15", boost::charconv::chars_format::scientific);
 
-    zero_test<float>();
-    zero_test<double>();
-
-    boost_json_test<double>();
+    // Regressions or numbers that take >64 bits to represent correctly
+    spot_check(9007199254740991.0, "9.007199254740991e+15", boost::charconv::chars_format::scientific);
+    spot_check(9007199254740992.0, "9.007199254740992e+15", boost::charconv::chars_format::scientific);
+    spot_check(123456789012345683968.0, "1.2345678901234568e+20", boost::charconv::chars_format::scientific);
+    spot_check(1.9430376160308388E16, "1.9430376160308388e+16", boost::charconv::chars_format::scientific);
+    spot_check(-6.9741824662760956E19, "-6.9741824662760956e+19", boost::charconv::chars_format::scientific);
+    spot_check(4.3816050601147837E18, "4.3816050601147837e+18", boost::charconv::chars_format::scientific);
+    spot_check(1.8531501765868567E21, "1.8531501765868567e+21", boost::charconv::chars_format::scientific);
+    spot_check(-3.347727380279489E33, "-3.347727380279489e+33", boost::charconv::chars_format::scientific);
+    spot_check(9.409340012568248E18, "9.409340012568248e+18", boost::charconv::chars_format::scientific);
+    spot_check(4.708356024711512E18, "4.708356024711512e+18", boost::charconv::chars_format::scientific);
+    spot_check(9.0608011534336E15, "9.0608011534336e+15", boost::charconv::chars_format::scientific);
+    spot_check(2.989102097996E-312, "2.989102097996e-312", boost::charconv::chars_format::scientific);
+    spot_check(1.18575755E-316, "1.18575755e-316", boost::charconv::chars_format::scientific);
+    spot_check(4.940656E-318, "4.940656e-318", boost::charconv::chars_format::scientific);
 
     // Every power
     spot_check(1.7e+308, "1.7e+308", boost::charconv::chars_format::scientific);
@@ -1010,16 +833,7 @@ int main()
     spot_check(1.7e-03, "1.7e-03", boost::charconv::chars_format::scientific);
     spot_check(1.7e-02, "1.7e-02", boost::charconv::chars_format::scientific);
     spot_check(1.7e-01, "1.7e-01", boost::charconv::chars_format::scientific);
-    spot_check(1.7e-00, "1.7e-00", boost::charconv::chars_format::scientific);
-
-    // 0 exponent in general format
-    spot_check(1.7e-00, "1.7e-00", boost::charconv::chars_format::general);
-    spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::general);
-    spot_check(17e-00, "17e+00", boost::charconv::chars_format::general);
-    spot_check(17.0e-00, "17.0e+00", boost::charconv::chars_format::general);
-    spot_check(170e-00, "170e+00", boost::charconv::chars_format::general);
-    spot_check(170.0e-00, "170.0e+00", boost::charconv::chars_format::general);
-    spot_check(170.0000e-00, "170.0000e+00", boost::charconv::chars_format::general);
+    spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::scientific);
 
     return boost::report_errors();
 }
