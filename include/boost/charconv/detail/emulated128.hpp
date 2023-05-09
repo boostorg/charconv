@@ -41,7 +41,7 @@ struct uint128
         __builtin_ia32_addcarryx_u64(carry, high, 0, &result);
         high = result;
         
-        #elif defined(_MSC_VER) && defined(_M_X64)
+        #elif defined(BOOST_MSVC) && defined(_M_X64)
         
         auto carry = _addcarry_u64(0, low, n, &low);
         _addcarry_u64(carry, high, 0, &high);

@@ -254,7 +254,7 @@ struct additional_static_data_holder_impl
     };
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (BOOST_MSVC != 1900)
 
 template <bool b> constexpr char additional_static_data_holder_impl<b>::radix_100_table[];
 template <bool b> constexpr std::uint32_t additional_static_data_holder_impl<b>::fractional_part_rounding_thresholds32[];
@@ -1007,7 +1007,7 @@ struct extended_cache_long_impl
         {27245, 29296}, {27294, 29344}, {27320, 29370}, {27324, 0}};
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(_MSC_VER) || _MSC_VER != 1900)
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (BOOST_MSVC != 1900)
 
 template <bool b> constexpr std::size_t extended_cache_long_impl<b>::max_cache_blocks;
 template <bool b> constexpr std::size_t extended_cache_long_impl<b>::cache_bits_unit;
