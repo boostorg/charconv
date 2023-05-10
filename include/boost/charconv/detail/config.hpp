@@ -185,8 +185,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  define BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
 #endif
 
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60846
-#if (defined(__clang__) && __clang_major__ < 9) || (defined(__GNUC__) && __GNUC__ < 10 && defined(__STRICT_ANSI__) && !defined(__clang__))
+#if (defined(__clang__) && __clang_major__ < 13) || (defined(__GNUC__) && __GNUC__ < 10 && defined(__STRICT_ANSI__) && !defined(__clang__))
 #  define BOOST_CHARCONV_NO_LONG_DOUBLE_SUPPORT
 #endif
 
