@@ -1,4 +1,5 @@
 // Copyright 2020-2023 Daniel Lemire
+// Copyright 2020-2023 Junekey Jeon
 // Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -19,6 +20,9 @@ namespace boost { namespace charconv { namespace detail {
 // emulating them with a pair of 64-bit integers actually produces a better code,
 // so we avoid using those built-ins. That said, they are still useful for
 // implementing 64-bit x 64-bit -> 128-bit multiplication.
+//
+// This is left as a struct with no constructors to allow for aggregate initialization
+// on GCC 4.x and Clang 3.x
 
 struct uint128 
 {
