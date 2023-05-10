@@ -11,7 +11,7 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <cstdint>
-#include <cassert>
+#include <cmath>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -25,7 +25,7 @@ struct uint128
     std::uint64_t high;
     std::uint64_t low;
 
-    uint128& operator+=(std::uint64_t n) & noexcept 
+    uint128& operator+=(std::uint64_t n) noexcept
     {
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
         
@@ -55,6 +55,23 @@ struct uint128
         #endif
         return *this;
     }
+
+    #ifdef BOOST_CHARCONV_HAS_INT128
+
+    uint128& operator=(boost::uint128_type n) noexcept
+    {
+        high = static_cast<std::uint64_t>(n >> 64);
+        low = static_cast<std::uint64_t>(n);
+
+        return *this;
+    }
+
+    explicit inline operator long double() const noexcept
+    {
+        return std::ldexp(static_cast<long double>(high), 64) + static_cast<long double>(low);
+    }
+
+    #endif
 };
 
 static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept 
