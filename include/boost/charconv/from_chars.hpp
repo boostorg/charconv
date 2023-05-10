@@ -187,10 +187,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
 
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, float& value, chars_format fmt = chars_format::general) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
-
-#if (BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)) || ((BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128) && !defined(BOOST_CHARCONV_NO_LONG_DOUBLE_SUPPORT))
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
-#endif
 
 } // namespace charconv
 } // namespace boost

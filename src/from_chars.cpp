@@ -33,6 +33,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 }
 
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
+
 // Since long double is just a double we use the double implementation and cast into value
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -42,8 +43,8 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 
-#elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128) && !defined(BOOST_CHARCONV_NO_LONG_DOUBLE_SUPPORT)
-// Works for both 80 and 128 bit long doubles becuase they both allow for normal standard library functions
+#elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128)
+// Works for both 80 and 128 bit long doubles because they both allow for normal standard library functions
 // https://en.wikipedia.org/wiki/Extended_precision#x86_extended_precision_format
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
