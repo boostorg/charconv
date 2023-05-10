@@ -7,6 +7,10 @@
 
 #include <boost/config.hpp>
 
+#if defined(BOOST_HAS_FLOAT128) || defined(BOOST_INTEL)
+#  include <cfloat>
+#endif
+
 // Once library is complete remove this block, and Boost.Assert from the CML if still unused.
 #ifndef BOOST_CHARCONV_STANDALONE
 #  include <boost/assert.hpp>
@@ -51,7 +55,6 @@ namespace boost { namespace charconv {
 
 // If we have either type of float128_t we can define the numerical limits
 #ifndef BOOST_CHARCONV_NO_FLOAT128
-#include <cfloat>
 namespace boost { namespace charconv { namespace quad_constants {
 static constexpr float128_type quad_min = static_cast<float128_type>(1) * static_cast<float128_type>(DBL_MIN) * 
                                           static_cast<float128_type>(DBL_MIN) * static_cast<float128_type>(DBL_MIN) * 
@@ -116,13 +119,13 @@ static constexpr float128_type quad_max = (static_cast<float128_type>(1) - 9.629
 // Determine endianness
 #if defined(_WIN32)
 
-#define BOOST_CHARCONV_ENDIAN_BIG_BYTE 0
-#define BOOST_CHARCONV_ENDIAN_LITTLE_BYTE 1
+#  define BOOST_CHARCONV_ENDIAN_BIG_BYTE 0
+#  define BOOST_CHARCONV_ENDIAN_LITTLE_BYTE 1
 
 #elif defined(__BYTE_ORDER__)
 
-#define BOOST_CHARCONV_ENDIAN_BIG_BYTE (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
-#define BOOST_CHARCONV_ENDIAN_LITTLE_BYTE (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#  define BOOST_CHARCONV_ENDIAN_BIG_BYTE (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#  define BOOST_CHARCONV_ENDIAN_LITTLE_BYTE (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 
 #else
 
@@ -130,7 +133,7 @@ static constexpr float128_type quad_max = (static_cast<float128_type>(1) - 9.629
 
 #endif // Determine endianness
 
-// Inclue intrinsics if available
+// Include intrinsics if available
 #if defined(BOOST_MSVC)
 #  include <intrin.h>
 #  if defined(_WIN64)
