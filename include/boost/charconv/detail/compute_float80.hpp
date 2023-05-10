@@ -26,7 +26,7 @@ inline long double compute_float80(std::int64_t power, boost::uint128_type i, bo
     // If there are issues with uint128_type conversion to long double we will take the intermediate step
     // of converting into our emulated u128
 
-    uint128 emulated_i {};
+    uint128 emulated_i {0, 0};
     emulated_i = i;
     return_val = static_cast<long double>(emulated_i) * std::pow(10.0L, static_cast<long double>(power));
 
