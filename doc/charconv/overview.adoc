@@ -25,9 +25,9 @@ auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r == 42);
 
 char buffer[64];
-int v = 12345;
+int v = 123456;
 auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
-assert(!strcmp(buffer, "123456")); // Strcmp returns 0 on match
+assert(!strncmp(buffer, "123456", 6)); // Strncmp returns 0 on match
 
 ----
 
