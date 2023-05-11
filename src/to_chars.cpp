@@ -581,3 +581,11 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
     return { first + std::strlen(first), 0 };
 }
 #endif
+
+#ifdef BOOST_HAS_FLOAT128
+boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, __float128 value ) noexcept
+{
+    quadmath_snprintf( first, last - first, "%.*Qg", std::numeric_limits<__float128>::max_digits10, value );
+    return { first + std::strlen(first), 0 };
+}
+#endif

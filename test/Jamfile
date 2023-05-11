@@ -16,23 +16,23 @@ project : requirements
   <toolset>clang:<warnings-as-errors>on
   <toolset>gcc:<warnings-as-errors>on ;
 
-run quick.cpp ;
-
-run from_chars.cpp ;
-run to_chars.cpp ;
-run roundtrip.cpp ;
-run from_chars_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
-run to_chars_integer_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
-run limits.cpp ;
-run to_chars_sprintf.cpp ;
-run test_num_digits.cpp ;
-run limits_link_1.cpp limits_link_2.cpp limits_link_3.cpp ;
-run test_128bit_native.cpp ;
-run test_128bit_emulation.cpp ;
-run test_compute_float64.cpp ; 
-run test_compute_float32.cpp ;
-run test_parser.cpp ;
-run from_chars_float.cpp ;
-run to_chars_float.cpp ;
-run test_boost_json_values.cpp ;
-run to_chars_float_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
+run quick.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run from_chars.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run to_chars.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run roundtrip.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run from_chars_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ] ;
+run to_chars_integer_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ] ;
+run limits.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run to_chars_sprintf.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run test_num_digits.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run limits_link_1.cpp limits_link_2.cpp limits_link_3.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run test_128bit_native.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run test_128bit_emulation.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run test_compute_float64.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run test_compute_float32.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run test_parser.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run from_chars_float.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run to_chars_float.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run test_boost_json_values.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ]  ;
+run to_chars_float_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ] ;
+run test_float128.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ] ;

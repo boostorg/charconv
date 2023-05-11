@@ -14,7 +14,6 @@
 #endif
 
 #include <boost/charconv/from_chars.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
 #include <string>
 #include <cstdlib>
 
@@ -101,3 +100,32 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 }
 
 #endif // long double implementations
+
+#ifdef BOOST_HAS_FLOAT128
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
+{
+    __float128 return_val;
+    char* ptr = nullptr;
+    from_chars_result r;
+    if (fmt == boost::charconv::chars_format::hex)
+    {
+        std::string tmp(first, last);
+        tmp.insert(0, "0x");
+        return_val = strtoflt128(tmp.c_str(), &ptr);
+    }
+    else
+    {
+        return_val = strtoflt128(first, &ptr);
+    }
+
+    r.ec = errno;
+    r.ptr = ptr;
+
+    if (r.ec == 0)
+    {
+        value = return_val;
+    }
+
+    return r;
+}
+#endif

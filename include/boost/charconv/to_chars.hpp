@@ -791,6 +791,10 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long doubl
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value ) noexcept;
 #endif
 
+#ifdef BOOST_HAS_FLOAT128
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, __float128 value ) noexcept;
+#endif
+
 } // namespace charconv
 } // namespace boost
 

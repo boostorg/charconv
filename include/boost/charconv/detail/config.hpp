@@ -47,6 +47,8 @@ namespace boost { namespace charconv {
     {
         _Quad __powq(_Quad, _Quad);
         #define powq __powq
+        _Quad __absq(_Quad);
+        #define fabsq __absq
     }
 }}
 #else
