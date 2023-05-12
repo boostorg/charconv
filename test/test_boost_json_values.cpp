@@ -363,5 +363,15 @@ int main()
        "00000000000000000000000000000000000000000000000000" // 500 zeroes
     );
 
+    // Reported in issue #29
+    // https://github.com/cppalliance/charconv/issues/29
+
+    fc("0E0");
+    fc("0E01");
+    fc("0.0e0");
+    fc("-0E0");
+    fc("-0E01");
+    fc("-0.0e0");
+
     return boost::report_errors();
 }
