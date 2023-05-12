@@ -9,6 +9,7 @@
 #include <string>
 #include <cstdlib>
 #include <cstring>
+#include <cerrno>
 #include <cmath>
 
 template <typename T>
@@ -167,6 +168,10 @@ void odd_strings_test()
     BOOST_TEST_EQ(r5.ec, 0);
     BOOST_TEST_EQ(v5, static_cast<T>(1.23456789123456789123456789123456789123456789e-5L));
 
+    const char* buffer6 = "E01";
+    T v6 = 0;
+    auto r6 = boost::charconv::from_chars(buffer6, buffer6 + std::strlen(buffer6), v6);
+    BOOST_TEST_EQ(r6.ec, EINVAL);
 }
 
 template <typename T>
