@@ -43,8 +43,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
     else if (*next == '+')
     {
-        sign = false;
-        ++next;
+        return {next, EINVAL};
     }
     else
     {
