@@ -137,9 +137,9 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
     std::int64_t  exponent {};
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != 0)
+    if (r.ec != 0 || significand == 0)
     {
-        value = 0;
+        value = sign ? static_cast<T>(-0.0L) : static_cast<T>(0.0L);
         return r;
     }
 
