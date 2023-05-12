@@ -217,6 +217,12 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
     else if (*next == exp_char || *next == capital_exp_char)
     {
+        // Would be a number without a significand e.g. e+03
+        if (next == first)
+        {
+            return {next, EINVAL};
+        }
+
         ++next;
         if (fmt == chars_format::fixed)
         {
