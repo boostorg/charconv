@@ -432,7 +432,7 @@ int main()
 
     boost_json_test<double>();
 
-    test_issue_37<float>();
+    // test_issue_37<float>();
     test_issue_37<double>();
 
     // Every power

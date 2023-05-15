@@ -176,8 +176,52 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
         }
         else
         {
-            // Fallback to strtod to try again
-            r = from_chars_strtod(first, last, value);
+            BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+            {
+                if (return_val == HUGE_VALF || return_val == -HUGE_VALF)
+                {
+                    value = return_val;
+                    r.ec = ERANGE;
+                }
+                else if (exponent < -46)
+                {
+                    value = sign ? -0.0F : 0.0;
+                    r.ec = ERANGE;
+                }
+                else
+                {
+                    r = from_chars_strtod(first, last, value);
+                }
+            }
+            else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
+            {
+                if (return_val == HUGE_VAL || return_val == -HUGE_VAL)
+                {
+                    value = return_val;
+                    r.ec = ERANGE;
+                }
+                else if (exponent < -325)
+                {
+                    value = sign ? -0.0 : 0.0;
+                    r.ec = ERANGE;
+                }
+                else
+                {
+                    r = from_chars_strtod(first, last, value);
+                }
+            }
+            else BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
+            {
+                if (return_val == HUGE_VALL || return_val == -HUGE_VALL)
+                {
+                    value = return_val;
+                    r.ec = ERANGE;
+                }
+                else
+                {
+                    r = from_chars_strtod(first, last, value);
+                }
+            }
         }
     }
     else

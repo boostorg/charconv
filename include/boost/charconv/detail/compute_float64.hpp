@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <cfloat>
 #include <cstring>
+#include <cmath>
 
 namespace boost { namespace charconv { namespace detail { 
 
@@ -81,16 +82,20 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     // Is this worth your time?
     // You need  22 < power *and* power <  22 + 16 *and* (i * 10^(x-22) < 2^53)
     // for this second fast path to work.
-    // If you you have 22 < power *and* power <  22 + 16, and then you
+    // If you have 22 < power *and* power <  22 + 16, and then you
     // optimistically compute "i * 10^(x-22)", there is still a chance that you
     // have wasted your time if i * 10^(x-22) >= 2^53. It makes the use cases of
     // this optimization maybe less common than we would like. Source:
     // http://www.exploringbinary.com/fast-path-decimal-to-floating-point-conversion/
     // also used in RapidJSON: https://rapidjson.org/strtod_8h_source.html
 
-    if (i == 0 || (power < smallest_power || power > largest_power))
+    if (i == 0 || power < smallest_power)
     {
         return negative ? -0.0 : 0.0;
+    }
+    else if (power > largest_power)
+    {
+        return negative ? -HUGE_VAL : HUGE_VAL;
     }
 
     const std::uint64_t factor_significand = significand_64[power - smallest_power];
