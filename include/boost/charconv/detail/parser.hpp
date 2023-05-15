@@ -325,7 +325,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         else
         {
-            exponent = 0;
+            exponent = extra_zeros;
         }
 
         return {next, 0};
