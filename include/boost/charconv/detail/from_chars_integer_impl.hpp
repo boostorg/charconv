@@ -95,7 +95,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
             }
             else if (*next == '+')
             {
-                ++next;
+                return {next, EINVAL};
             }
         }
 
@@ -120,16 +120,9 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     }
     else
     {
-        if (next != last)
+        if (next != last && (*next == '-' || *next == '+'))
         {
-            if (*next == '-')
-            {
-                return {first, EINVAL};
-            }
-            else if (*next == '+')
-            {
-                ++next;
-            }
+            return {first, EINVAL};
         }
         
         #ifdef BOOST_CHARCONV_HAS_INT128

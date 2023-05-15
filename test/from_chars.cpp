@@ -132,6 +132,12 @@ void invalid_argument_test()
     BOOST_TEST_EQ(r5.ec, EINVAL);
     auto r6 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5, 50);
     BOOST_TEST_EQ(r6.ec, EINVAL);
+
+    const char* buffer7 = "+12345";
+    T v7 = 3;
+    auto r7 = boost::charconv::from_chars(buffer7, buffer7 + std::strlen(buffer7), v7);
+    BOOST_TEST_EQ(r7.ec, EINVAL);
+    BOOST_TEST_EQ(v7, 3);
 }
 
 // No overflows, negative numbers, locales, etc.
