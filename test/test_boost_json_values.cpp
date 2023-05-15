@@ -149,6 +149,11 @@ void issue_599_test()
     }
 }
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4244) // Conversion from double to T with BOOST_IF_CONSTEXPR expansion pre-C++17
+#endif
+
 template <typename T>
 void check_accuracy(const char* nm, int max_ulp)
 {
@@ -195,6 +200,10 @@ void check_accuracy(const char* nm, int max_ulp)
                                                "  boost.json:   %.13a %.16g\n\n",
             nm, diff, x, x, y, y );
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 template <typename T>
 void test_within_ulp()
