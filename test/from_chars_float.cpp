@@ -25,6 +25,18 @@ void spot_value(const std::string& buffer, T expected_value, boost::charconv::ch
 }
 
 template <typename T>
+void overflow_spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    T v = 0;
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+
+    if (!(BOOST_TEST_EQ(v, expected_value), BOOST_TEST_EQ(r.ec, ERANGE)))
+    {
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+    }
+}
+
+template <typename T>
 inline void spot_check(T expected_value, const std::string& buffer, boost::charconv::chars_format fmt)
 {
     spot_value(buffer, expected_value, fmt);
@@ -366,6 +378,28 @@ void boost_json_test()
     );
 }
 
+template <typename T>
+void test_issue_37()
+{
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        overflow_spot_value("1e999", HUGE_VALF);
+        overflow_spot_value("-1e999", -HUGE_VALF);
+        overflow_spot_value("1.0e+999", HUGE_VALF);
+        overflow_spot_value("-1.0e+999", -HUGE_VALF);
+    }
+    BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
+    {
+        overflow_spot_value("1e9999", HUGE_VAL);
+        overflow_spot_value("-1e9999", -HUGE_VAL);
+        overflow_spot_value("1.0e+9999", HUGE_VAL);
+        overflow_spot_value("-1.0e+9999", -HUGE_VAL);
+    }
+
+    overflow_spot_value("1e-99999", static_cast<T>(0.0L));
+    overflow_spot_value("-1.0e-99999", static_cast<T>(-0.0L));
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -397,6 +431,9 @@ int main()
     zero_test<double>();
 
     boost_json_test<double>();
+
+    test_issue_37<float>();
+    test_issue_37<double>();
 
     // Every power
     spot_check(1.7e+308, "1.7e+308", boost::charconv::chars_format::scientific);
