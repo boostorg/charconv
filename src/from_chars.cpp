@@ -87,12 +87,9 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 // Since long double is just a double we use the double implementation and cast into value
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
-    double d {};
+    auto d = static_cast<double>(value);
     const auto r = boost::charconv::from_chars(first, last, d, fmt);
-    if (r.ec == 0)
-    {
-        value = static_cast<long double>(d);
-    }
+    value = static_cast<long double>(d);
 
     return r;
 }
