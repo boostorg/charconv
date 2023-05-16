@@ -10,7 +10,7 @@
 #include <cstring>
 #include <cmath>
 
-#ifdef BOOST_CHARCONV_TEST_FLOAT128
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
 
 template <typename T>
 void spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
