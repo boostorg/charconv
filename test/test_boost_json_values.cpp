@@ -473,6 +473,9 @@ int main()
     fc("16014537415383412664.8126122414435723949e0");
     test_within_ulp<double>();
     test_within_ulp<float>();
+    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
+    test_within_ulp<long double>();
+    #endif
 
     return boost::report_errors();
 }
