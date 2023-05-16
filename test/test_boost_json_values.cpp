@@ -180,12 +180,20 @@ void check_accuracy(const char* nm, int max_ulp)
             return;
         }
     }
-    BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
+    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
         if (x == HUGE_VAL && y == 0)
         {
             return;
         }
+    }
+    else
+    {
+        if (x == HUGE_VALL && y == 0)
+        {
+            return;
+        }
+
     }
 
     Unsigned_Integer bx;

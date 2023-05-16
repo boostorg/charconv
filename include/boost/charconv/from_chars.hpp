@@ -110,10 +110,18 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
             return {last, ERANGE};
         }
     }
-    else
+    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
         return_value = std::strtod(first, &str_end);
         if (return_value == HUGE_VAL)
+        {
+            return {last, ERANGE};
+        }
+    }
+    else
+    {
+        return_value = std::strtold(first, &str_end);
+        if (return_value == HUGE_VALL)
         {
             return {last, ERANGE};
         }
