@@ -1,8 +1,11 @@
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 // Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 //
 // See: https://github.com/boostorg/json/issues/599
+// See: https://github.com/boostorg/json/blob/develop/test/double.cpp
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
@@ -11,7 +14,10 @@
 #include <iomanip>
 #include <string>
 #include <limits>
+#include <random>
+#include <type_traits>
 #include <cstring>
+#include <cinttypes>
 
 template <typename T>
 void grind(const std::string& str, const T expected_value)
@@ -142,6 +148,99 @@ void issue_599_test()
         }
     }
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4244) // Conversion from double to T with BOOST_IF_CONSTEXPR expansion pre-C++17
+#endif
+
+template <typename T>
+void check_accuracy(const char* nm, int max_ulp)
+{
+    using Unsigned_Integer = typename std::conditional<std::is_same<T, float>::value, std::uint32_t, std::uint64_t>::type;
+
+    T x {};
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        x = std::strtof( nm, nullptr );
+    }
+    else
+    {
+        x = std::strtod( nm, nullptr );
+    }
+
+    T y {};
+    boost::charconv::from_chars(nm, nm + std::strlen(nm), y, boost::charconv::chars_format::scientific);
+
+    // TODO(mborland): This is tied to https://github.com/cppalliance/charconv/issues/37. Remove handling when complete.
+    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
+    {
+        if (x == HUGE_VALF && y == 0)
+        {
+            return;
+        }
+    }
+    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
+    {
+        if (x == HUGE_VAL && y == 0)
+        {
+            return;
+        }
+    }
+    else
+    {
+        if (x == HUGE_VALL && y == 0)
+        {
+            return;
+        }
+
+    }
+
+    Unsigned_Integer bx;
+    Unsigned_Integer by;
+    std::memcpy( &bx, &x, sizeof(x) );
+    std::memcpy( &by, &y, sizeof(y) );
+    const auto diff = static_cast<std::int64_t>(bx - by);
+    if (!BOOST_TEST(std::abs( diff ) <= max_ulp))
+        std::fprintf(stderr,
+                     "%s: difference %" PRId64 " ulp\n"
+                                               "  strtod:       %.13a %.16g\n"
+                                               "  boost.json:   %.13a %.16g\n\n",
+            nm, diff, x, x, y, y );
+}
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
+
+template <typename T>
+void test_within_ulp()
+{
+    std::mt19937_64 rng(42);
+    std::uniform_int_distribution<> dist( std::numeric_limits<T>::min_exponent10 - 1, std::numeric_limits<T>::max_exponent10 + 1);
+
+    check_accuracy<T>("10199214983525025199.13135016100190689227e-308", 2);
+
+    for( int i = 0; i < 1000000; ++i )
+    {
+        unsigned long long x1 = rng();
+        unsigned long long x2 = rng();
+        int x3 = dist( rng );
+
+        char buffer[ 128 ];
+        snprintf( buffer, sizeof(buffer), "%llu.%llue%d", x1, x2, x3 );
+
+        check_accuracy<T>(buffer, 1);
+    }
+
+    for( int i = -326; i <= +309; ++i )
+    {
+        char buffer[ 128 ];
+        snprintf( buffer, sizeof(buffer), "1e%d", i );
+
+        check_accuracy<T>(buffer, 0);
+    }
+};
 
 int main()
 {
@@ -362,6 +461,29 @@ int main()
        "00000000000000000000000000000000000000000000000000"
        "00000000000000000000000000000000000000000000000000" // 500 zeroes
     );
+
+    // Reported in issue #29
+    // https://github.com/cppalliance/charconv/issues/29
+
+    fc("0E0");
+    fc("0E01");
+    fc("0.0e0");
+    fc("-0E0");
+    fc("-0E01");
+    fc("-0.0e0");
+
+    // Reported in issue #39
+    // https://github.com/cppalliance/charconv/issues/39
+    fc("13037152512515243620.9123444678836069176e0");
+    fc("17697431460539906388.13521888826860801885e0");
+    fc("17947220026488055965.10643827068131766968e0");
+    fc("11270160277506678000.2887804927902173715e-2");
+    fc("16014537415383412664.8126122414435723949e0");
+    test_within_ulp<double>();
+    test_within_ulp<float>();
+    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
+    test_within_ulp<long double>();
+    #endif
 
     return boost::report_errors();
 }

@@ -111,10 +111,18 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
             return {last, ERANGE};
         }
     }
-    else
+    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
         return_value = std::strtod(first, &str_end);
         if (return_value == HUGE_VAL)
+        {
+            return {last, ERANGE};
+        }
+    }
+    else
+    {
+        return_value = std::strtold(first, &str_end);
+        if (return_value == HUGE_VALL)
         {
             return {last, ERANGE};
         }
@@ -140,7 +148,11 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != 0)
     {
-        value = 0;
+        return r;
+    }
+    else if (significand == 0)
+    {
+        value = sign ? static_cast<T>(-0.0L) : static_cast<T>(0.0L);
         return r;
     }
 

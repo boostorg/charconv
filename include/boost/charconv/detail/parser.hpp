@@ -59,8 +59,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
     else if (*next == '+')
     {
-        sign = false;
-        ++next;
+        return {next, EINVAL};
     }
     else
     {
@@ -233,6 +232,12 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
     else if (*next == exp_char || *next == capital_exp_char)
     {
+        // Would be a number without a significand e.g. e+03
+        if (next == first)
+        {
+            return {next, EINVAL};
+        }
+
         ++next;
         if (fmt == chars_format::fixed)
         {
@@ -259,25 +264,33 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
 
         from_chars_result r {};
-        if (fmt == chars_format::hex)
-        {
-            r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, 16);
-        }
-        else
-        {
-            r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand);
-        }
-        switch (r.ec)
-        {
-            case EINVAL:
-                return {first, EINVAL};
-            case ERANGE:
-                return {next, ERANGE};
-        }
 
-        if (round)
+        // If the significand is 0 from chars will return EINVAL because there is nothing in the buffer,
+        // but it is a valid value. We need to continue parsing to get the correct value of ptr even
+        // though we know we could bail now.
+        //
+        // See GitHub issue #29: https://github.com/cppalliance/charconv/issues/29
+        if (offset != 0)
         {
-            significand += 1;
+            if (fmt == chars_format::hex)
+            {
+            r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, 16);
+            } else
+            {
+            r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand);
+            }
+            switch (r.ec)
+            {
+                case EINVAL:
+                    return {first, EINVAL};
+                case ERANGE:
+                    return {next, ERANGE};
+            }
+
+            if (round)
+            {
+                significand += 1;
+            }
         }
     }
 
@@ -328,7 +341,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         else
         {
-            exponent = 0;
+            exponent = extra_zeros;
         }
 
         return {next, 0};
