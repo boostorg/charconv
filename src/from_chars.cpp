@@ -16,6 +16,7 @@
 #include <boost/charconv/from_chars.hpp>
 #include <string>
 #include <cstdlib>
+#include <cstring>
 
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -36,9 +37,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 // Since long double is just a double we use the double implementation and cast into value
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
-    auto d = static_cast<double>(value);
+    static_assert(sizeof(double) == sizeof(long double), "Incorrect bit length of long double identified.");
+
+    double d;
+    std::memcpy(&d, &value, sizeof(double));
     const auto r = boost::charconv::from_chars(first, last, d, fmt);
-    value = static_cast<long double>(d);
+    std::memcpy(&value, &d, sizeof(double));
 
     return r;
 }
