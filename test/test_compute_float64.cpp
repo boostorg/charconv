@@ -21,7 +21,7 @@ inline void simple_test()
     BOOST_TEST_EQ(compute_float64(308, 1, false, success), 1e308);
 
     // out of range
-    BOOST_TEST_EQ(compute_float64(310, 5, false, success), 0); 
+    BOOST_TEST_EQ(compute_float64(310, 5, false, success), HUGE_VAL);
     BOOST_TEST_EQ(compute_float64(-325, 5, false, success), 0);
 
     // Composite

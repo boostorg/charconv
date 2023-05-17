@@ -28,13 +28,20 @@ inline float compute_float32(std::int64_t power, std::uint64_t i, bool negative,
         // if (std::isinf(return_val))
         if (std::abs(return_val) > (std::numeric_limits<float>::max)())
         {
-            return_val = negative ? -0.0F : 0.0F;
+            return_val = negative ? -HUGE_VALF : HUGE_VALF;
             success = false;
         }
     }
     else
     {
-        return_val = negative ? -0.0F : 0.0F;
+        if (power > 38)
+        {
+            return_val = negative ? -HUGE_VALF : HUGE_VALF;
+        }
+        else
+        {
+            return_val = negative ? -0.0F : 0.0F;
+        }
     }
 
     return return_val;
