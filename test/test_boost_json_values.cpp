@@ -206,7 +206,7 @@ void check_accuracy(const char* nm, int max_ulp)
                      "%s: difference %" PRId64 " ulp\n"
                                                "  strtod:       %.13a %.16g\n"
                                                "  boost.json:   %.13a %.16g\n\n",
-            nm, diff, x, x, y, y );
+            nm, diff, static_cast<double>(x), static_cast<double>(x), static_cast<double>(y), static_cast<double>(y) );
 }
 
 #ifdef BOOST_MSVC

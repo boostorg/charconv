@@ -12,6 +12,7 @@
 #include <boost/charconv/detail/parser.hpp>
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/charconv/detail/compute_float64.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <cmath>
@@ -217,6 +218,16 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                     value = return_val;
                     r.ec = ERANGE;
                 }
+                #if BOOST_CHARCONV_LDBL_BITS == 64
+                else if (exponent < -325)
+                #else // 80 or 128 bit long doubles have same range
+                else if (exponent < -4965)
+                #endif
+                {
+                    value = sign ? -0.0L : 0.0L;
+                    r.ec = ERANGE;
+                }
+
                 else
                 {
                     r = from_chars_strtod(first, last, value);
