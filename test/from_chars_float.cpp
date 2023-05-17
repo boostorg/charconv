@@ -388,12 +388,19 @@ void test_issue_37()
         overflow_spot_value("1.0e+999", HUGE_VALF);
         overflow_spot_value("-1.0e+999", -HUGE_VALF);
     }
-    BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
+    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
         overflow_spot_value("1e9999", HUGE_VAL);
         overflow_spot_value("-1e9999", -HUGE_VAL);
         overflow_spot_value("1.0e+9999", HUGE_VAL);
         overflow_spot_value("-1.0e+9999", -HUGE_VAL);
+    }
+    else
+    {
+        overflow_spot_value("1e99999", HUGE_VALL);
+        overflow_spot_value("-1e99999",-HUGE_VALL);
+        overflow_spot_value("1.0e+99999", HUGE_VALL);
+        overflow_spot_value("-1.0e+99999", -HUGE_VALL);
     }
 
     overflow_spot_value("1e-99999", static_cast<T>(0.0L));
