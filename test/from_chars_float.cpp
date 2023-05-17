@@ -432,7 +432,7 @@ int main()
 
     boost_json_test<double>();
 
-    // test_issue_37<float>();
+    test_issue_37<float>();
     test_issue_37<double>();
     #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     test_issue_37<long double>();

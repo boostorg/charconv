@@ -4,7 +4,6 @@
 
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <random>
 #include <limits>
 #include <cstdint>
 #include <cmath>
@@ -21,7 +20,7 @@ inline void simple_test()
     BOOST_TEST_EQ(compute_float32(38, 1, false, success), 1e38F);
 
     // out of range
-    BOOST_TEST_EQ(compute_float32(310, 5, false, success), 0); 
+    BOOST_TEST_EQ(compute_float32(310, 5, false, success), HUGE_VALF);
     BOOST_TEST_EQ(compute_float32(-325, 5, false, success), 0);
 
     // Composite
@@ -29,7 +28,7 @@ inline void simple_test()
     BOOST_TEST_EQ(compute_float32(20, UINT64_C(444444444), false, success), 444444444e20F);
 }
 
-int main(void)
+int main()
 {
     simple_test();
 
