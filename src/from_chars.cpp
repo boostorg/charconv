@@ -59,8 +59,11 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != 0)
     {
-        value = 0.0L;
         return r;
+    }
+    else if (significand == 0)
+    {
+        value = sign ? -0.0L : 0.0L;
     }
 
     bool success {};

@@ -305,11 +305,6 @@ int main()
 #endif
     }
 
-#if !defined(__CYGWIN__) && !defined(__s390x__) && !((defined(__arm__) || defined(__aarch64__))  && !defined(__APPLE__)) && !(defined(__APPLE__) && (__clang_major__ == 12))
-
-    // the stub implementations fail under Cygwin, s390x, linux ARM, and Apple Clang w/Xcode 12.2;
-    // re-enable these when we have real ones
-
     // float
 
     double const q = std::pow( 1.0, -64 );
@@ -355,7 +350,6 @@ int main()
     }
 
     // long double
-#if (BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)) || ((BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128) && !defined(BOOST_CHARCONV_NO_LONG_DOUBLE_SUPPORT))
     {
         long double const ql = std::pow( 1.0L, -64 );
 
@@ -376,7 +370,7 @@ int main()
 
         test_roundtrip_bv<long double>();
     }
-#endif
+
     // Selected additional values
     //
     test_roundtrip<double>(1.10393929655481808e+308);
@@ -390,8 +384,6 @@ int main()
     test_roundtrip<float>(3.394053352e+38F);
     test_roundtrip<float>(5.549256619e+37F);
     test_roundtrip<float>(8.922125027e+34F);
-
-#endif // Broken platforms
 
     return boost::report_errors();
 }
