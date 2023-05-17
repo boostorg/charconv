@@ -27,10 +27,10 @@ void spot_value(const std::string& buffer, T expected_value, boost::charconv::ch
 template <typename T>
 void overflow_spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
-    T v = 0;
+    auto v = static_cast<T>(42.L);
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
 
-    if (!(BOOST_TEST_EQ(v, expected_value), BOOST_TEST_EQ(r.ec, ERANGE)))
+    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(r.ec, ERANGE)))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
     }
