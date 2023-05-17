@@ -35,4 +35,4 @@ run from_chars_float.cpp ;
 run to_chars_float.cpp ;
 run test_boost_json_values.cpp ;
 run to_chars_float_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
-run test_float128.cpp ;
+run test_float128.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <define>BOOST_CHARCONV_TEST_FLOAT128 <linkflags>"-lquadmath" ] ;
