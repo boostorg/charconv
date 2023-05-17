@@ -434,6 +434,9 @@ int main()
 
     // test_issue_37<float>();
     test_issue_37<double>();
+    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
+    test_issue_37<long double>();
+    #endif
 
     // Every power
     spot_check(1.7e+308, "1.7e+308", boost::charconv::chars_format::scientific);
