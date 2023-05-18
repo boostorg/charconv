@@ -13,7 +13,7 @@ https://www.boost.org/LICENSE_1_0.txt
 struct from_chars_result
 {
     const char* ptr;
-    int ec;
+    std::errc ec;
 
     friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
     friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
@@ -30,10 +30,10 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, c
 
 == from_chars_result
 * ptr - points to the first character not matching the pattern, or has the value of last if all characters are successfully parsed.
-* ec - the error code. Valid values for <cerrno> are:
-** 0 - successful parsing
-** EINVAL - invalid argument (e.g. parsing a negative number into an unsigned type)
-** ERANGE - result out of range (e.g. overflow)
+* ec - the error code. Valid values for are:
+** std::errc() - successful parsing
+** std::errc::invalid_argument - invalid argument (e.g. parsing a negative number into an unsigned type)
+** std::errc::result_out_of_range - result out of range (e.g. overflow)
 * operator== - compares the values of ptr and ec for equality
 * operator!- - compares the value of ptr and ec for inequality
 
@@ -50,7 +50,7 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, c
 ** One known exception is GCC 5 which does not support constexpr comparison of `const char*`.
 
 === from_chars for floating point types
-* On ERANGE we return ±0 for small values (e.g. 1.0e-99999) or ±HUGE_VAL for large values (e.g. 1.0e+99999) to match the handling of `std::strtod`.
+* On std::errc::result_out_of_range we return ±0 for small values (e.g. 1.0e-99999) or ±HUGE_VAL for large values (e.g. 1.0e+99999) to match the handling of `std::strtod`.
 This is a divergence from the standard which states we should return the `value` argument unmodified.
 
 == Examples
@@ -62,7 +62,7 @@ This is a divergence from the standard which states we should return the `value`
 const char* buffer = "42";
 int v = 0;
 from_chars_result r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
-assert(r.ec == 0);
+assert(r.ec == std::errc());
 assert(v == 42);
 ----
 ==== Floating Point
@@ -71,7 +71,7 @@ assert(v == 42);
 const char* buffer = "1.2345"
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
-assert(r.ec == 0);
+assert(r.ec == std::errc());
 assert(v == 1.2345);
 ----
 
@@ -82,7 +82,7 @@ assert(v == 1.2345);
 const char* buffer = "2a";
 unsigned v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, 16);
-assert(r.ec == 0);
+assert(r.ec == std::errc());
 assert(v == 42);
 ----
 ==== Floating Point
@@ -91,34 +91,34 @@ assert(v == 42);
 const char* buffer = "1.3a2bp-10";
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, boost::charconv::chars_format::hex);
-assert(r.ec == 0);
+assert(r.ec == std::errc());
 assert(v == 8.0427e-18);
 ----
 
-=== EINVAL
+=== std::errc::invalid_argument
 [source, c++]
 ----
 const char* buffer = "-123";
 unsigned v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
-assert(r.ec == EINVAL);
+assert(r.ec == std::errc::invalid_argument);
 ----
 [source, c++]
 ----
 const char* buffer = "-1.573e-3";
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, boost::charconv::chars_format::fixed);
-assert(r.ec == EINVAL);
+assert(r.ec == std::errc::invalid_argument);
 ----
-In the event of EINVAL v is not set by `from_chars`
+Note: In the event of std::errc::invalid_argument v is not modified by `from_chars`
 
-=== ERANGE
+=== std::errc::result_out_of_range
 [source, c++]
 ----
 const char* buffer = "1234";
 unsigned char v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
-assert(r.ec == ERANGE);
+assert(r.ec == std::errc::result_out_of_range);
 assert(v == 0)
 ----
-In the event of ERANGE v is not set by `from_chars`
+Note: In the event of std::errc::result_out_of_range v is not modified by `from_chars`

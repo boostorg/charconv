@@ -11,6 +11,7 @@
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/limits.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <system_error>
 #include <type_traits>
 #include <limits>
 #include <cerrno>
@@ -29,7 +30,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 {
     if (first > last)
     {
-        return {first, EINVAL};
+        return {first, std::errc::invalid_argument};
     }
 
     auto next = first;
@@ -43,7 +44,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
     else if (*next == '+')
     {
-        return {next, EINVAL};
+        return {next, std::errc::invalid_argument};
     }
     else
     {
@@ -74,7 +75,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     {
         significand = 0;
         exponent = 0;
-        return {next, 0};
+        return {next, std::errc()};
     }
 
     // Next we get the significand
@@ -99,7 +100,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // if fmt is chars_format::scientific the e is required
         if (fmt == chars_format::scientific)
         {
-            return {first, EINVAL};
+            return {first, std::errc::invalid_argument};
         }
         
         exponent = 0;
@@ -116,12 +117,12 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         switch (r.ec)
         {
-            case EINVAL:
-                return {first, EINVAL};
-            case ERANGE:
-                return {next, ERANGE};
+            case std::errc::invalid_argument:
+                return {first, std::errc::invalid_argument};
+            case std::errc::result_out_of_range:
+                return {next, std::errc::result_out_of_range};
             default:
-                return {next, 0};
+                return {next, std::errc()};
         }
     }
     else if (*next == '.')
@@ -148,7 +149,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
             if (next == last)
             {
-                return {last, 0};
+                return {last, std::errc()};
             }
         }
 
@@ -183,7 +184,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     {
         if (fmt == chars_format::scientific)
         {
-            return {first, EINVAL};
+            return {first, std::errc::invalid_argument};
         }
         if (dot_position != 0 || fractional)
         {
@@ -206,12 +207,12 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         switch (r.ec)
         {
-            case EINVAL:
-                return {first, EINVAL};
-            case ERANGE:
-                return {next, ERANGE};
+            case std::errc::invalid_argument:
+                return {first, std::errc::invalid_argument};
+            case std::errc::result_out_of_range:
+                return {next, std::errc::result_out_of_range};
             default:
-                return {next, 0};
+                return {next, std::errc()};
         }
     }
     else if (*next == exp_char || *next == capital_exp_char)
@@ -219,13 +220,13 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // Would be a number without a significand e.g. e+03
         if (next == first)
         {
-            return {next, EINVAL};
+            return {next, std::errc::invalid_argument};
         }
 
         ++next;
         if (fmt == chars_format::fixed)
         {
-            return {first, EINVAL};
+            return {first, std::errc::invalid_argument};
         }
 
         exponent = i - 1;
@@ -249,7 +250,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
         from_chars_result r {};
 
-        // If the significand is 0 from chars will return EINVAL because there is nothing in the buffer,
+        // If the significand is 0 from chars will return std::errc::invalid_argument because there is nothing in the buffer,
         // but it is a valid value. We need to continue parsing to get the correct value of ptr even
         // though we know we could bail now.
         //
@@ -263,12 +264,15 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             {
                 r = from_chars(significand_buffer, significand_buffer + offset, significand);
             }
+
             switch (r.ec)
             {
-                case EINVAL:
-                    return {first, EINVAL};
-                case ERANGE:
-                    return {next, ERANGE};
+                case std::errc::invalid_argument:
+                    return {first, std::errc::invalid_argument};
+                case std::errc::result_out_of_range:
+                    return {next, std::errc::result_out_of_range};
+                default:
+                    break;
             }
 
             if (round)
@@ -313,7 +317,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     // If the exponent can't fit in the buffer the number is not representable
     if (next != last && i == exponent_buffer_size)
     {
-        return {next, ERANGE};
+        return {next, std::errc::result_out_of_range};
     }
 
     // If the exponent was e+00 or e-00
@@ -328,7 +332,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             exponent = extra_zeros;
         }
 
-        return {next, 0};
+        return {next, std::errc()};
     }
 
     const auto r = from_chars(exponent_buffer, exponent_buffer + i, exponent);
@@ -337,10 +341,10 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
     switch (r.ec)
     {
-        case EINVAL:
-            return {first, EINVAL};
-        case ERANGE:
-            return {next, ERANGE};
+        case std::errc::invalid_argument:
+            return {first, std::errc::invalid_argument};
+        case std::errc::result_out_of_range:
+            return {next, std::errc::result_out_of_range};
         default:
             if (fractional)
             {
@@ -360,7 +364,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             {
                 exponent += extra_zeros;
             }
-            return {next, 0};
+            return {next, std::errc()};
     }
 }
 

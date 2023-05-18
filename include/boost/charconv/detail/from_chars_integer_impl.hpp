@@ -10,6 +10,7 @@
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
+#include <system_error>
 #include <type_traits>
 #include <limits>
 #include <cstdlib>
@@ -58,6 +59,10 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
 
+#elif defined(__GNUC__) && (__GNUC__ >= 9)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 #endif
 
 template <typename Integer, typename Unsigned_Integer>
@@ -70,7 +75,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     // Check pre-conditions
     if (!((first <= last) && (base >= 2 && base <= 36)))
     {
-        return {first, EINVAL};
+        return {first, std::errc::invalid_argument};
     }
 
     Unsigned_Integer unsigned_base = static_cast<Unsigned_Integer>(base);
@@ -95,7 +100,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
             }
             else if (*next == '+')
             {
-                return {next, EINVAL};
+                return {next, std::errc::invalid_argument};
             }
         }
 
@@ -122,7 +127,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     {
         if (next != last && (*next == '-' || *next == '+'))
         {
-            return {first, EINVAL};
+            return {first, std::errc::invalid_argument};
         }
         
         #ifdef BOOST_CHARCONV_HAS_INT128
@@ -156,7 +161,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     // If the only character was a sign abort now
     if (next == last)
     {
-        return {first, EINVAL};
+        return {first, std::errc::invalid_argument};
     }
 
     bool overflowed = false;
@@ -186,7 +191,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     // If we have overflowed then we do not return the result 
     if (overflowed)
     {
-        return {next, ERANGE};
+        return {next, std::errc::result_out_of_range};
     }
 
     value = static_cast<Integer>(result);
@@ -202,14 +207,14 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         }
     }
 
-    return {next, 0};
+    return {next, std::errc()};
 }
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
 #elif defined(__clang__) && defined(__APPLE__)
 # pragma clang diagnostic pop
-#elif defined(__GNUC__) && (__GNUC__ < 7)
+#elif defined(__GNUC__) && (__GNUC__ < 7 || __GNUC__ >= 9)
 # pragma GCC diagnostic pop
 #endif
 
