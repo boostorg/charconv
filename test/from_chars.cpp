@@ -5,6 +5,7 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <system_error>
 #include <type_traits>
 #include <limits>
 #include <cstring>
@@ -21,7 +22,7 @@ void test_128bit_int()
     test_value = test_value << 126;
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
-    BOOST_TEST(r1.ec == 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST(v1 == test_value);
     BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
 }
@@ -42,7 +43,7 @@ template <typename T>
 constexpr void constexpr_test()
 {
     constexpr auto results = constexpr_test_helper<T>();
-    static_assert(results.second.ec == 0, "No error");
+    static_assert(results.second.ec == std::errc(), "No error");
     static_assert(results.first == 42, "Value is 42");
 }
 
@@ -55,7 +56,7 @@ void base2_test()
     const char* buffer1 = "0101010";
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, 2);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_EQ(v1, 42);
 }
 
@@ -66,13 +67,13 @@ void base16_test()
     const char* buffer1 = "2a";
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, 16);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_EQ(v1, 42);
 
     const char* buffer2 = "0";
     T v2 = 1;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2, 16);
-    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_EQ(v2, 0);
 }
 
@@ -85,18 +86,18 @@ void overflow_test()
 
     BOOST_IF_CONSTEXPR((std::numeric_limits<T>::max)() < 1234)
     {
-        BOOST_TEST_EQ(r1.ec, ERANGE);
+        BOOST_TEST(r1.ec == std::errc::result_out_of_range);
     }
     else
     {
-        BOOST_TEST_EQ(r1.ec, 0) && BOOST_TEST_EQ(v1, 1234);
+        BOOST_TEST(r1.ec == std::errc()) && BOOST_TEST_EQ(v1, 1234);
     }
 
     const char* buffer2 = "123456789123456789123456789";
     T v2 = 0;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
     // In the event of overflow v2 is to be returned unmodified
-    BOOST_TEST_EQ(r2.ec, ERANGE) && BOOST_TEST_EQ(v2, 0);
+    BOOST_TEST(r2.ec == std::errc::result_out_of_range) && BOOST_TEST_EQ(v2, 0);
 }
 
 template <typename T>
@@ -105,38 +106,38 @@ void invalid_argument_test()
     const char* buffer1 = "";
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
-    BOOST_TEST_EQ(r1.ec, EINVAL);
+    BOOST_TEST(r1.ec == std::errc::invalid_argument);
 
     const char* buffer2 = "-";
     T v2 = 0;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
-    BOOST_TEST_EQ(r2.ec, EINVAL);
+    BOOST_TEST(r2.ec == std::errc::invalid_argument);
 
     const char* buffer3 = "+";
     T v3 = 0;
     auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
-    BOOST_TEST_EQ(r3.ec, EINVAL);
+    BOOST_TEST(r3.ec == std::errc::invalid_argument);
 
     BOOST_IF_CONSTEXPR(std::is_unsigned<T>::value)
     {
         const char* buffer4 = "-123";
         T v4 = 0;
         auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
-        BOOST_TEST_EQ(r4.ec, EINVAL);
+        BOOST_TEST(r4.ec == std::errc::invalid_argument);
     }
 
-    // Bases outside 2-36 inclusive return EINVAL
+    // Bases outside 2-36 inclusive return std::errc::invalid_argument
     const char* buffer5 = "23";
     T v5 = 0;
     auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5, 1);
-    BOOST_TEST_EQ(r5.ec, EINVAL);
+    BOOST_TEST(r5.ec == std::errc::invalid_argument);
     auto r6 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5, 50);
-    BOOST_TEST_EQ(r6.ec, EINVAL);
+    BOOST_TEST(r6.ec == std::errc::invalid_argument);
 
     const char* buffer7 = "+12345";
     T v7 = 3;
     auto r7 = boost::charconv::from_chars(buffer7, buffer7 + std::strlen(buffer7), v7);
-    BOOST_TEST_EQ(r7.ec, EINVAL);
+    BOOST_TEST(r7.ec == std::errc::invalid_argument);
     BOOST_TEST_EQ(v7, 3);
 }
 
@@ -149,17 +150,17 @@ void simple_test()
     T v = 0;
     auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 
-    BOOST_TEST_EQ( r.ec, 0 ) && BOOST_TEST_EQ(v, 34);
+    BOOST_TEST( r.ec == std::errc() ) && BOOST_TEST_EQ(v, 34);
     BOOST_TEST(r == r);
 
-    boost::charconv::from_chars_result r2 {r.ptr, 0};
+    boost::charconv::from_chars_result r2 {r.ptr, std::errc()};
     BOOST_TEST(r == r2);
 
     const char* buffer2 = "12";
     T v2 = 0;
     auto r3 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer), v2);
     BOOST_TEST(r != r3);
-    BOOST_TEST_EQ(r3.ec, 0) && BOOST_TEST_EQ(v2, 12);
+    BOOST_TEST(r3.ec == std::errc()) && BOOST_TEST_EQ(v2, 12);
 }
 
 int main()

@@ -5,6 +5,7 @@
 
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <system_error>
 #include <string>
 #include <cstdlib>
 
@@ -43,7 +44,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     std::int64_t  exponent {};
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != 0)
+    if (r.ec != std::errc())
     {
         value = 0.0L;
         return r;
@@ -54,7 +55,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     if (!success)
     {
         value = 0.0L;
-        r.ec = ERANGE;
+        r.ec = std::errc::result_out_of_range;
     }
     else
     {

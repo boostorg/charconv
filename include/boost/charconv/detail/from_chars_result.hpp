@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 
+#include <system_error>
+
 namespace boost { namespace charconv {
 
 // 22.13.3, Primitive numerical input conversion
@@ -17,7 +19,7 @@ struct from_chars_result
     // 0 = no error
     // EINVAL = invalid_argument
     // ERANGE = result_out_of_range
-    int ec;
+    std::errc ec;
 
     friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
     {

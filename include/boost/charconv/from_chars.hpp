@@ -15,6 +15,7 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <system_error>
 #include <cmath>
 
 namespace boost { namespace charconv {
@@ -108,7 +109,7 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
         return_value = std::strtof(first, &str_end);
         if (return_value == HUGE_VALF)
         {
-            return {last, ERANGE};
+            return {last, std::errc::result_out_of_range};
         }
     }
     else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
@@ -116,7 +117,7 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
         return_value = std::strtod(first, &str_end);
         if (return_value == HUGE_VAL)
         {
-            return {last, ERANGE};
+            return {last, std::errc::result_out_of_range};
         }
     }
     else
@@ -124,18 +125,18 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
         return_value = std::strtold(first, &str_end);
         if (return_value == HUGE_VALL)
         {
-            return {last, ERANGE};
+            return {last, std::errc::result_out_of_range};
         }
     }
 
     // Since this is a fallback routine we are safe to check for 0
     if (return_value == 0 && str_end == last)
     {
-        return {first, EINVAL};
+        return {first, std::errc::result_out_of_range};
     }
 
     value = return_value;
-    return {str_end, 0};
+    return {str_end, std::errc()};
 }
 
 template <typename T>
@@ -146,7 +147,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
     std::int64_t  exponent {};
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != 0)
+    if (r.ec != std::errc())
     {
         return r;
     }
@@ -173,7 +174,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
         {
             value = 1;
             r.ptr = last;
-            r.ec = 0;
+            r.ec = std::errc();
         }
         else
         {
