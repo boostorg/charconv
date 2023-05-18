@@ -26,7 +26,10 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
+#include <limits>
+#include <string>
 
+#include <boost/spirit/include/karma.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/charconv.hpp>
 
@@ -49,6 +52,28 @@ constexpr size_t K = 5; // how many times to repeat the test, for cleaner timing
 constexpr size_t BufSize = 2'000; // more than enough
 
 unsigned int global_dummy = 0;
+
+template <typename Floating>
+void test_boost_spirit_karma(const char* const str, const vector<Floating>& vec) {
+    namespace karma = boost::spirit::karma;
+    
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        for (const auto& elem : vec) {
+            char buffer[BufSize];
+            char* it = buffer;
+            
+            if constexpr (std::is_same_v<Floating, float>) {
+                karma::generate(it, karma::float_, elem);
+            } else {
+                karma::generate(it, karma::double_, elem);
+            }
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);    
+}
 
 template <typename Floating>
 void test_lexical_cast(const char* const str, const vector<Floating>& vec) {
@@ -176,7 +201,7 @@ void test_STL_to_chars(const char* const str, const vector<Floating>& vec, const
 template <RoundTrip RT, typename Floating, typename... Args>
 void test_boost_to_chars(const char* const str, const vector<Floating>& vec, const Args&... args) {
 
-    char buf[BufSize];
+    char buf[BufSize] {};
 
     const auto start = steady_clock::now();
     for (size_t k = 0; k < K; ++k) {
@@ -206,11 +231,12 @@ void test_boost_to_chars(const char* const str, const vector<Floating>& vec, con
             const auto from_result = boost::charconv::from_chars(buf, result.ptr, round_trip, boost_chars_format_from_RoundTrip(RT));
             if (from_result.ec != errc() || from_result.ptr != result.ptr || round_trip != elem)
             {
-                std::cerr << "Roundtrip failure with: " << elem
+                std::cerr << std::setprecision(std::numeric_limits<Floating>::digits10 + 1)
+                          << "Roundtrip failure with: " << elem
                           << "\n          to_chars val: " << buf
                           << "\n        from_chars val: " << round_trip
-                          << "\n        from_chars ptr: " << from_result.ptr
-                          << "\n          to_chars ptr: " << to_chars.ptr << std::endl;
+                          << "\n        from_chars ptr: " << static_cast<std::ptrdiff_t>(from_result.ptr - buf)
+                          << "\n          to_chars ptr: " << static_cast<std::ptrdiff_t>(result.ptr - buf) << std::endl;
             }
         }
     }
@@ -375,8 +401,11 @@ void test_all() {
         }
     }
 
-    test_lexical_cast("Boost float", vec_flt);
-    test_lexical_cast("Boost double", vec_dbl);
+    test_lexical_cast("Boost.lexical_cast float", vec_flt);
+    test_lexical_cast("Boost.lexical_cast double", vec_dbl);
+
+    test_boost_spirit_karma("Boost.spirit.karma float", vec_flt);
+    test_boost_spirit_karma("Boost.spirit.karma double", vec_dbl);
 
     test_sprintf<RoundTrip::Sci>("CRT float scientific 8", vec_flt, "%.8e");
     test_sprintf<RoundTrip::Sci>("CRT double scientific 16", vec_dbl, "%.16e");
