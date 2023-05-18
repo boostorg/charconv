@@ -5,7 +5,7 @@ https://www.boost.org/LICENSE_1_0.txt
 ////
 
 = CharConv: An Implementation of <charconv> in {cpp}11
-Peter Dimov and Matt Borland
+Matt Borland
 :toc: left
 :toclevels: 4
 :idprefix:
