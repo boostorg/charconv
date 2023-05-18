@@ -30,6 +30,8 @@ Fixed format will be of the form `2.30` or `3090`. An exponent will not appear w
 
 === Hex Format
 Hex format will be of the form `1.0ep+5`. The integer part will always be 0 or 1. The exponent will be with a p instead of an e like in base 10 formats, because e is a valid hex value.
+*Note: Every binary floating-point number has a unique representation as a hexfloat, but not every hexfloat has a unique representation as a binary floating-point number.*
+This is due to the fact that the number of bits in the significand of an IEEE754 binary32 and binary64 are not divisible by 4.
 
 ==== Hexfloat Use Cases
 For those unfamiliar with hexfloats, they are valuable in specific instances:
