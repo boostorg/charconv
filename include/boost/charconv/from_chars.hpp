@@ -183,12 +183,12 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 if (return_val == HUGE_VALF || return_val == -HUGE_VALF)
                 {
                     value = return_val;
-                    r.ec = ERANGE;
+                    r.ec = std::errc::result_out_of_range;
                 }
                 else if (exponent < -46)
                 {
                     value = sign ? -0.0F : 0.0;
-                    r.ec = ERANGE;
+                    r.ec = std::errc::result_out_of_range;
                 }
                 else
                 {
@@ -200,12 +200,12 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 if (return_val == HUGE_VAL || return_val == -HUGE_VAL)
                 {
                     value = return_val;
-                    r.ec = ERANGE;
+                    r.ec = std::errc::result_out_of_range;
                 }
                 else if (exponent < -325)
                 {
                     value = sign ? -0.0 : 0.0;
-                    r.ec = ERANGE;
+                    r.ec = std::errc::result_out_of_range;
                 }
                 else
                 {
@@ -217,7 +217,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 if (return_val == HUGE_VALL || return_val == -HUGE_VALL)
                 {
                     value = return_val;
-                    r.ec = ERANGE;
+                    r.ec = std::errc::result_out_of_range;
                 }
                 #if BOOST_CHARCONV_LDBL_BITS == 64
                 else if (exponent < -325)
@@ -226,7 +226,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 #endif
                 {
                     value = sign ? -0.0L : 0.0L;
-                    r.ec = ERANGE;
+                    r.ec = std::errc::result_out_of_range;
                 }
 
                 else

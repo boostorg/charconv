@@ -4,6 +4,7 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <system_error>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -30,7 +31,7 @@ void overflow_spot_value(const std::string& buffer, T expected_value, boost::cha
     auto v = static_cast<T>(42.L);
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
 
-    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(r.ec, ERANGE)))
+    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST(r.ec == std::errc::result_out_of_range)))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
     }
