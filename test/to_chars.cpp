@@ -5,6 +5,7 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <system_error>
 #include <type_traits>
 #include <limits>
 #include <string>
@@ -19,14 +20,14 @@ void test_128bit_int()
     char buffer1[64] {};
     T v1 = static_cast<T>(1234);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "1234");
 
     // Use 64-bit path
     char buffer2[64] {};
     T v2 = static_cast<T>(1234123412341234LL);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
-    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer2, "1234123412341234");
 
     // Use 128-bit path
@@ -35,12 +36,12 @@ void test_128bit_int()
     test_value = test_value << 126;
     T v3 = 0;
     auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
-    BOOST_TEST(r3.ec == 0);
+    BOOST_TEST(r3.ec == std::errc());
     BOOST_TEST(v3 == test_value);
 
     char buffer4[64] {};
     auto r4 = boost::charconv::to_chars(buffer4, buffer4 + sizeof(buffer4), v3);
-    BOOST_TEST_EQ(r4.ec, 0);
+    BOOST_TEST(r4.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer3, buffer4);
 
     // Failing from roundtrip test
@@ -50,35 +51,35 @@ void test_128bit_int()
         const char* buffer5 = "-103527168272318384816037687533325012784";
         T v5 = 0;
         auto r5 = boost::charconv::from_chars(buffer5, buffer5 + std::strlen(buffer5), v5);
-        BOOST_TEST(r5.ec == 0);
+        BOOST_TEST(r5.ec == std::errc());
         BOOST_TEST(v5 < 0);
 
         char buffer6[64] {};
         auto r6 = boost::charconv::to_chars(buffer6, buffer6 + sizeof(buffer6), v5);
-        BOOST_TEST_EQ(r6.ec, 0);
+        BOOST_TEST(r6.ec == std::errc());
         BOOST_TEST_CSTR_EQ(buffer5, buffer6);
 
         // And back again
         T v7 = 0;
         auto r7 = boost::charconv::from_chars(buffer6, buffer6 + std::strlen(buffer6), v7);
-        BOOST_TEST(r7.ec == 0);
+        BOOST_TEST(r7.ec == std::errc());
         BOOST_TEST(v5 == v7);;
 
         // Second failing test
         const char* buffer10 = "-170141183460469231731687303715884105728";
         T v10 = 0;
         auto r10 = boost::charconv::from_chars(buffer10, buffer10 + std::strlen(buffer10), v10);
-        BOOST_TEST(r10.ec == 0);
+        BOOST_TEST(r10.ec == std::errc());
         BOOST_TEST(v10 < 0);
 
         char buffer11[64] {};
         auto r11 = boost::charconv::to_chars(buffer11, buffer11 + sizeof(buffer11), v10);
-        BOOST_TEST_EQ(r11.ec, 0);
+        BOOST_TEST(r11.ec == std::errc());
         BOOST_TEST_CSTR_EQ(buffer10, buffer11);
 
         T v11 = 0;
         auto r12 = boost::charconv::from_chars(buffer11, buffer11 + std::strlen(buffer11), v11);
-        BOOST_TEST(r12.ec == 0);
+        BOOST_TEST(r12.ec == std::errc());
         BOOST_TEST(v10 == v11);
     }
 }
@@ -89,7 +90,7 @@ void specific_value_tests(T value)
 {
     char buffer[64] {};
     auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, value);
-    BOOST_TEST_EQ(r.ec, 0);
+    BOOST_TEST(r.ec == std::errc());
     std::string value_string = std::to_string(value);
     BOOST_TEST_CSTR_EQ(buffer, value_string.c_str());
 }
@@ -98,7 +99,7 @@ void off_by_one_tests(int value)
 {
     char buffer[64] {};
     auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, value);
-    BOOST_TEST_EQ(r.ec, 0);
+    BOOST_TEST(r.ec == std::errc());
     std::string value_string = std::to_string(value);
     BOOST_TEST_CSTR_EQ(buffer, value_string.c_str());
 }
@@ -109,7 +110,7 @@ void base_thirtytwo_tests()
     char buffer1[64] {};
     T v1 = static_cast<T>(42);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 32);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "1a");
 }
 
@@ -119,7 +120,7 @@ void base_sixteen_tests()
     char buffer1[64] {};
     T v1 = static_cast<T>(42);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 16);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "2a");
 }
 
@@ -129,7 +130,7 @@ void base_eight_tests()
     char buffer1[64] {};
     T v1 = static_cast<T>(42);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 8);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "52");
 }
 
@@ -139,7 +140,7 @@ void base_four_tests()
     char buffer1[64] {};
     T v1 = static_cast<T>(42);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 4);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "222");
 }
 
@@ -150,13 +151,13 @@ void base_30_tests()
     char buffer1[64] {};
     T v1 = static_cast<T>(1234);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 30);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "1b4");
 
     char buffer2[64] {};
     T v2 = static_cast<T>(-4321);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2, 30);
-    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer2, "-4o1");
 }
 
@@ -166,12 +167,12 @@ void overflow_tests()
     char buffer1[2] {};
     T v1 = static_cast<T>(250);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
-    BOOST_TEST_EQ(r1.ec, EOVERFLOW);
+    BOOST_TEST(r1.ec == std::errc::result_out_of_range);
 
     char buffer2[3] {};
     T v2 = static_cast<T>(12341234);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
-    BOOST_TEST_EQ(r2.ec, EOVERFLOW);
+    BOOST_TEST(r2.ec == std::errc::result_out_of_range);
 }
 
 template <typename T>
@@ -180,7 +181,7 @@ void base_two_tests()
     char buffer1[64] {};
     T v1 = static_cast<T>(42);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1, 2);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "101010");
 }
 
@@ -190,13 +191,13 @@ void sixty_four_bit_tests()
     char buffer1[64] {};
     T v1 = static_cast<T>(-1234);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "-1234");
 
     char buffer2[64] {};
     T v2 = static_cast<T>(1234123412341234LL);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
-    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer2, "1234123412341234");
 }
 
@@ -206,21 +207,21 @@ void sixty_four_bit_tests<std::uint64_t>()
     char buffer1[64] {};
     std::uint64_t v1 = (std::numeric_limits<std::uint64_t>::max)();
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "18446744073709551615");
 
     // Cutting this value in half would overflow a 32 bit unsigned for the back 10 digits
     char buffer2[64] {};
     std::uint64_t v2 = UINT64_C(9999999999999999999);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
-    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer2, "9999999999999999999");
 
     // Account for zeros in the back half of the split
     char buffer3[64] {};
     std::uint64_t v3 = UINT64_C(10000000000000000000);
     auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3) - 1, v3);
-    BOOST_TEST_EQ(r3.ec, 0);
+    BOOST_TEST(r3.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer3, "10000000000000000000");
 }
 
@@ -230,7 +231,7 @@ void negative_vals_test()
     char buffer1[10] {};
     T v = -4321;
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "-4321");
 }
 
@@ -240,7 +241,7 @@ void simple_test()
     char buffer1[64] {};
     T v = 34;
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v);
-    BOOST_TEST_EQ(r1.ec, 0);
+    BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "34");
 
     boost::charconv::to_chars_result r {r1.ptr, r1.ec};
@@ -250,16 +251,16 @@ void simple_test()
     T v2 = 12;
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
     BOOST_TEST(r1 != r2);
-    BOOST_TEST_EQ(r2.ec, 0);
+    BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer2, "12");
 
     // If the base is not 2-36 inclusive return invalid value
     char buffer3[64] {};
     T v3 = 12;
     auto r3 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3) - 1, v3, -2);
-    BOOST_TEST_EQ(r3.ec, EINVAL);
+    BOOST_TEST(r3.ec == std::errc::invalid_argument);
     auto r4 = boost::charconv::to_chars(buffer3, buffer3 + sizeof(buffer3) - 1, v3, 90);
-    BOOST_TEST_EQ(r4.ec, EINVAL);
+    BOOST_TEST(r4.ec == std::errc::invalid_argument);
 }
 
 int main()

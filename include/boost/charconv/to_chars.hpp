@@ -16,6 +16,7 @@
 #include <boost/charconv/detail/dragonbox.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <system_error>
 #include <type_traits>
 #include <array>
 #include <limits>
@@ -34,12 +35,7 @@ namespace boost { namespace charconv {
 struct to_chars_result
 {
     char* ptr;
-
-    // Values:
-    // 0 = no error
-    // EINVAL = invalid_argument
-    // ERANGE = result_out_of_range
-    int ec;
+    std::errc ec;
 
     constexpr friend bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept
     {
@@ -119,7 +115,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     
     if (first > last)
     {
-        return {last, EINVAL};
+        return {last, std::errc::invalid_argument};
     }
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
@@ -155,7 +151,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
         if (converted_value_digits > user_buffer_size)
         {
-            return {last, EOVERFLOW};
+            return {last, std::errc::result_out_of_range};
         }
 
         decompose32(converted_value, buffer);
@@ -175,7 +171,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
         if (converted_value_digits > user_buffer_size)
         {
-            return {last, EOVERFLOW};
+            return {last, std::errc::result_out_of_range};
         }
 
         if (is_negative)
@@ -228,7 +224,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         }
     }
     
-    return {first + converted_value_digits, 0};
+    return {first + converted_value_digits, std::errc()};
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
@@ -248,7 +244,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     
     if (first > last)
     {
-        return {last, EINVAL};
+        return {last, std::errc::invalid_argument};
     }
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
@@ -275,7 +271,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     if (converted_value_digits > user_buffer_size)
     {
-        return {last, EOVERFLOW};
+        return {last, std::errc::result_out_of_range};
     }
 
     if (is_negative)
@@ -314,7 +310,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         offset += 9;
     }
 
-    return {first + converted_value_digits, 0};
+    return {first + converted_value_digits, std::errc()};
 }
 #endif
 
@@ -327,13 +323,13 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
     if (!((first <= last) && (base >= 2 && base <= 36)))
     {
-        return {last, EINVAL};
+        return {last, std::errc::invalid_argument};
     }
 
     if (value == 0)
     {
         *first++ = '0';
-        return {first, 0};
+        return {first, std::errc()};
     }
 
     Unsigned_Integer unsigned_value {};    
@@ -418,12 +414,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     
     if (num_chars > output_length)
     {
-        return {last, EOVERFLOW};
+        return {last, std::errc::result_out_of_range};
     }
 
     boost::charconv::detail::memcpy(first, buffer + (buffer_size - num_chars), num_chars);
 
-    return {first + num_chars, 0};
+    return {first + num_chars, std::errc()};
 }
 
 #ifdef BOOST_MSVC
@@ -469,7 +465,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     const std::ptrdiff_t buffer_size = last - first;
     if (buffer_size < real_precision || first > last)
     {
-        return {last, EOVERFLOW};
+        return {last, std::errc::result_out_of_range};
     }
     
     // Handle edge cases first
@@ -481,14 +477,14 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         case FP_NAN:
             // The dragonbox impl will return the correct type of NaN
             ptr = boost::charconv::detail::to_chars(value, first, chars_format::general);
-            return { ptr, 0 };
+            return { ptr, std::errc() };
         case FP_ZERO:
             if (std::signbit(value))
             {
                 *first++ = '-';
             }
             std::memcpy(first, "0p+0", 4);
-            return {first + 4, 0};
+            return {first + 4, std::errc()};
     }
 
     // Extract the significand and the exponent
@@ -552,7 +548,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     const std::ptrdiff_t total_length = (value < 0) + 2 + real_precision + 2 + num_digits(abs_unbiased_exponent);
     if (total_length > buffer_size)
     {
-        return {last, EOVERFLOW};
+        return {last, std::errc::result_out_of_range};
     }
 
     // Round if required
@@ -660,7 +656,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
                 }
 
                 auto r = to_chars_integer_impl(first, last, value_struct.significand);
-                if (r.ec != 0)
+                if (r.ec != std::errc())
                 {
                     return r;
                 }
@@ -679,7 +675,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
                     abs_value /= 10;
                 }
 
-                return { r.ptr, 0 };
+                return { r.ptr, std::errc() };
             }
             else if (abs_value >= max_fractional_value && abs_value < max_value)
             {
@@ -692,13 +688,13 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
             else
             {
                 auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
-                return { ptr, 0 };
+                return { ptr, std::errc() };
             }
         }
         else if (fmt == boost::charconv::chars_format::scientific)
         {
             auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
-            return { ptr, 0 };
+            return { ptr, std::errc() };
         }
     }
     else
@@ -706,7 +702,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         if (fmt != boost::charconv::chars_format::hex)
         {
             auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
-            return { ptr, 0 };
+            return { ptr, std::errc() };
         }
     }
 

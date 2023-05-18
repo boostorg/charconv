@@ -63,7 +63,7 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
         r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt, precision); 
     }
 
-    BOOST_TEST_EQ(r_boost.ec, 0);
+    BOOST_TEST(r_boost.ec == std::errc());
     if (r_stl.ec != std::errc())
     {
         // STL failed
@@ -114,16 +114,16 @@ void non_finite_test(boost::charconv::chars_format fmt = boost::charconv::chars_
         test_spot(-std::numeric_limits<T>::infinity(), fmt, i);
         test_spot(std::numeric_limits<T>::quiet_NaN(), fmt, i);
 
-        #if (defined(__clang__) && __clang_major__ >= 16) || defined(_MSC_VER)
+        #if (defined(__clang__) && __clang_major__ >= 16 && defined(__APPLE__)) || defined(_MSC_VER)
         //
-        // Newer clang and MSVC both give the following:
+        // Newer apple clang and MSVC both give the following:
         //
         // -qNaN =  -nan(ind)
         //
         test_spot(-std::numeric_limits<T>::quiet_NaN(), fmt, i);
         #endif
 
-        #if (defined(__clang__) && __clang_major__ >= 16)
+        #if (defined(__clang__) && __clang_major__ >= 16 && defined(__APPLE__))
         //
         // Newer clang also gives the following:
         //

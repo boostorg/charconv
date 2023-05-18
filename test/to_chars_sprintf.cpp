@@ -6,6 +6,7 @@
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <system_error>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -104,7 +105,7 @@ template<class T> void test_sprintf( T value )
 
     auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
 
-    BOOST_TEST_EQ( r.ec, 0 );
+    BOOST_TEST( r.ec == std::errc() );
 
     char buffer2[ 256 ];
     std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type( value ), value );
@@ -133,7 +134,7 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
         r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt, std::numeric_limits<T>::max_digits10);
     }
 
-    BOOST_TEST_EQ( r.ec, 0 );
+    BOOST_TEST( r.ec == std::errc() );
 
     char buffer2[ 256 ];
 

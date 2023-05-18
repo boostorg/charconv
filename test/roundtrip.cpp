@@ -59,6 +59,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <system_error>
 #include <iostream>
 #include <iomanip>
 #include <limits>
@@ -78,12 +79,12 @@ template<class T> void test_roundtrip( T value, int base )
 
     auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, base );
 
-    BOOST_TEST_EQ( r.ec, 0 );
+    BOOST_TEST( r.ec == std::errc() );
 
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
-    if( BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_EQ( v2, value ) )
     {
     }
     else
@@ -217,12 +218,12 @@ template<class T> void test_roundtrip( T value )
 
     auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
 
-    BOOST_TEST_EQ( r.ec, 0 );
+    BOOST_TEST( r.ec == std::errc() );
 
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_EQ( v2, value ) )
     {
     }
     else

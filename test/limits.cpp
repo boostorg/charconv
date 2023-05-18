@@ -61,6 +61,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <system_error>
 #include <limits>
 
 void test_odr_use( int const* );
@@ -71,24 +72,24 @@ template<typename T> void test_integral( T value )
     {
         char buffer[ boost::charconv::limits<T>::max_chars10 ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
-        BOOST_TEST_EQ( r.ec, 0 );
+        BOOST_TEST(r.ec == std::errc());
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
     }
 
     // base 10
     {
         char buffer[ boost::charconv::limits<T>::max_chars10 ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, 10 );
-        BOOST_TEST_EQ( r.ec, 0 );
+        BOOST_TEST(r.ec == std::errc());
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, 10 );
 
-        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
     }
 
     // any base
@@ -96,12 +97,12 @@ template<typename T> void test_integral( T value )
     {
         char buffer[ boost::charconv::limits<T>::max_chars ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, base );
-        BOOST_TEST_EQ( r.ec, 0 );
+        BOOST_TEST(r.ec == std::errc());
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
-        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
     }
 }
 
@@ -123,24 +124,24 @@ template<typename T> void test_floating_point( T value )
     {
         char buffer[ boost::charconv::limits<T>::max_chars10 ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
-        BOOST_TEST_EQ( r.ec, 0 );
+        BOOST_TEST(r.ec == std::errc());
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
     }
 
     // no base, max_chars
     {
         char buffer[ boost::charconv::limits<T>::max_chars ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
-        BOOST_TEST_EQ( r.ec, 0 );
+        BOOST_TEST(r.ec == std::errc());
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        BOOST_TEST_EQ( r2.ec, 0 ) && BOOST_TEST_EQ( v2, value );
+        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
     }
 }
 

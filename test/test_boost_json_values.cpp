@@ -9,6 +9,7 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <system_error>
 #include <vector>
 #include <iostream>
 #include <iomanip>
@@ -25,7 +26,7 @@ void grind(const std::string& str, const T expected_value)
     // From string to expected value
     T v {};
     auto from_r = boost::charconv::from_chars(str.c_str(), str.c_str() + std::strlen(str.c_str()), v);
-    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(from_r.ec, 0)))
+    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST(from_r.ec == std::errc())))
     {
         std::cerr << "Expected value: " << expected_value << "\nFrom chars value: " << v << std::endl;
         return;
@@ -35,10 +36,10 @@ void grind(const std::string& str, const T expected_value)
     T roundtrip_v {};
     char buffer[256] {};
     auto to_r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), expected_value);
-    BOOST_TEST_EQ(to_r.ec, 0);
+    BOOST_TEST(to_r.ec == std::errc());
 
     auto roundtrip_r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), roundtrip_v);
-    if (!(BOOST_TEST_EQ(roundtrip_v, expected_value) && BOOST_TEST_EQ(roundtrip_r.ec, 0)))
+    if (!(BOOST_TEST_EQ(roundtrip_v, expected_value) && BOOST_TEST(roundtrip_r.ec == std::errc())))
     {
         std::cerr << "Expected value: " << expected_value << "\nRoundtrip value: " << roundtrip_v << std::endl;
         return;
@@ -65,7 +66,7 @@ void spot_value(const std::string& buffer, T expected_value)
 {
     T v = 0;
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v);
-    BOOST_TEST_EQ(r.ec, 0);
+    BOOST_TEST(r.ec == std::errc());
     if (!BOOST_TEST_EQ(v, expected_value))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
@@ -130,11 +131,11 @@ void issue_599_test()
     {
         char buffer[256] {};
         const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), current_ref_val);
-        BOOST_TEST_EQ(r.ec, 0);
+        BOOST_TEST(r.ec == std::errc());
 
         double return_val {};
         const auto return_r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), return_val);
-        BOOST_TEST_EQ(return_r.ec, 0);
+        BOOST_TEST(return_r.ec == std::errc());
         if (!BOOST_TEST_EQ(current_ref_val, return_val))
         {
             #ifdef BOOST_CHARCONV_DEBUG
