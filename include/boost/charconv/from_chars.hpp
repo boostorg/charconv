@@ -244,6 +244,8 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
     return r;
 }
 
+std::errc errno_to_errc(int errno_value) noexcept;
+
 } // Namespace detail
 
 #ifdef BOOST_MSVC
