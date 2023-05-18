@@ -121,7 +121,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     value = std::strtold( tmp.c_str(), &ptr );
 
     r.ptr = ptr;
-    r.ec = errno;
+    r.ec = detail::errno_to_errc(errno);
 
     return r;
 }

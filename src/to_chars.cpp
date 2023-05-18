@@ -578,6 +578,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value ) noexcept
 {
     std::snprintf( first, last - first, "%.*Lg", std::numeric_limits<long double>::max_digits10, value );
-    return { first + std::strlen(first), 0 };
+    return { first + std::strlen(first), std::errc() };
 }
 #endif
