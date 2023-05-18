@@ -73,6 +73,11 @@ static boost::detail::splitmix64 rng;
 
 // integral types, random values
 
+#if defined(__GNUC__) && (__GNUC__ == 12)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 template<class T> void test_roundtrip( T value, int base )
 {
     char buffer[ 256 ];
@@ -92,6 +97,10 @@ template<class T> void test_roundtrip( T value, int base )
         std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
     }
 }
+
+#if defined(__GNUC__) && (__GNUC__ == 12)
+# pragma GCC diagnostic pop
+#endif
 
 template<class T> void test_roundtrip_int8( int base )
 {

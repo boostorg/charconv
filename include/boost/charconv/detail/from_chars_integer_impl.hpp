@@ -59,6 +59,10 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
 
+#elif defined(__GNUC__) && (__GNUC__ >= 9)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 #endif
 
 template <typename Integer, typename Unsigned_Integer>
@@ -210,7 +214,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 # pragma warning(pop)
 #elif defined(__clang__) && defined(__APPLE__)
 # pragma clang diagnostic pop
-#elif defined(__GNUC__) && (__GNUC__ < 7)
+#elif defined(__GNUC__) && (__GNUC__ < 7 || __GNUC__ >= 9)
 # pragma GCC diagnostic pop
 #endif
 
