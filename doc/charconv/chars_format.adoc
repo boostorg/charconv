@@ -29,7 +29,18 @@ The exponent will always have a minimum of 2 digits.
 Fixed format will be of the form `2.30` or `3090`. An exponent will not appear with this format. If the precision of `to_chars` exceeds that of the type (e.g. std::numeric_limits<double>::chars10), 0s will be appended to the end.
 
 === Hex Format
-Hex format will be of the form `+1.0e2p+5`. The integer part will always be 0 or 1. The exponent will be with a p instead of an e like in base 10 formats.
+Hex format will be of the form `1.0ep+5`. The integer part will always be 0 or 1. The exponent will be with a p instead of an e like in base 10 formats, because e is a valid hex value.
+
+==== Hexfloat Use Cases
+For those unfamiliar with hexfloats, they are valuable in specific instances:
+
+* Precision control: Hexfloats can offer finer control over the precision of floating-point values.
+In hexadecimal notation, each digit represents four bits (one hexit), allowing you to directly manipulate the precision of the number by specifying a certain number of hexadecimal digits.
+This can be useful when you need to precisely control the level of accuracy required for your calculations.
+
+* Bit-level representation: Hexfloats provide a direct representation of the underlying bits of a floating-point number.
+Each hexadecimal digit corresponds to a specific group of bits, making it easier to visualize and understand the internal structure of the floating-point value.
+This can be helpful for debugging or analyzing floating-point arithmetic operations (e.g. Computing https://en.wikipedia.org/wiki/Unit_in_the_last_place[ULP] distances).
 
 === General
 General format will be the shortest representation of a number in either fixed or general format (e.g. `1234` instead of `1.234e+03`.
