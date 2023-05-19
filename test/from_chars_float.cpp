@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <limits>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
@@ -408,6 +409,23 @@ void test_issue_37()
     overflow_spot_value("-1.0e-99999", static_cast<T>(-0.0L));
 }
 
+template <typename T>
+void test_issue_45(T v, const std::string& full_buffer, const std::ptrdiff_t ptr, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    T from_v;
+    auto r = boost::charconv::from_chars(full_buffer.c_str(), full_buffer.c_str() + ptr, from_v, fmt);
+
+    // v may not be exactly representable, so we only test within an epsilon
+    if (!((std::abs(v - from_v) < std::numeric_limits<T>::epsilon()) && BOOST_TEST_EQ(ptr, std::ptrdiff_t(r.ptr - full_buffer.c_str()))))
+    {
+        std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
+                  << "\nFrom chars value: " << from_v
+                  << "\n  From chars ptr: " << std::ptrdiff_t(r.ptr - full_buffer.c_str())
+                  << "\n      Original V: " << v
+                  << "\n    Original ptr: " << ptr << std::endl;
+    }
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -445,6 +463,12 @@ int main()
     #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     test_issue_37<long double>();
     #endif
+
+    test_issue_45<double>(static_cast<double>(-4109895455460520), "-4109895455460520.513430", 19);
+    test_issue_45<double>(1.035695536657502e-308, "1.0356955366575023e-3087", 23);
+    test_issue_45<double>(static_cast<double>(-1985444280612224), "-1985444280612224.5e+258", 19);
+    test_issue_45<double>(2.196197480766336e-308, "2.196197480766336e-30889", 22);
+    test_issue_45<double>(static_cast<double>(278061055647718), "4278061055647717.5e-2288", 18);
 
     // Every power
     spot_check(1.7e+308, "1.7e+308", boost::charconv::chars_format::scientific);
