@@ -101,12 +101,15 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
     // If the converted value falls out of range of corresponding return type, range error occurs and HUGE_VAL, HUGE_VALF or HUGE_VALL is returned.
     // If no conversion can be performed, 0 is returned and *str_end is set to str.
 
+    char buffer[256] {};
+    std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
+
     value = 0;
     char* str_end;
     T return_value {};
     BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
     {
-        return_value = std::strtof(first, &str_end);
+        return_value = std::strtof(buffer, &str_end);
         if (return_value == HUGE_VALF)
         {
             return {last, std::errc::result_out_of_range};
@@ -114,7 +117,7 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
     }
     else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
-        return_value = std::strtod(first, &str_end);
+        return_value = std::strtod(buffer, &str_end);
         if (return_value == HUGE_VAL)
         {
             return {last, std::errc::result_out_of_range};
@@ -122,7 +125,7 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
     }
     else
     {
-        return_value = std::strtold(first, &str_end);
+        return_value = std::strtold(buffer, &str_end);
         if (return_value == HUGE_VALL)
         {
             return {last, std::errc::result_out_of_range};
@@ -136,7 +139,7 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
     }
 
     value = return_value;
-    return {str_end, std::errc()};
+    return {first + (str_end - buffer), std::errc()};
 }
 
 template <typename T>
