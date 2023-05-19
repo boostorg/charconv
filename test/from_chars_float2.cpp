@@ -2,8 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <boost/charconv.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/core/lightweight_test.hpp>
@@ -23,7 +21,7 @@ template<class T> void zero_extend_test()
         {
             unsigned long long v = static_cast<unsigned long long>( rng() );
 
-            std::sprintf( buffer, "%llu", v );
+            std::snprintf( buffer, sizeof( buffer ), "%llu", v );
 
             T ref;
 
@@ -37,7 +35,7 @@ template<class T> void zero_extend_test()
             {
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::sprintf( buffer, "%llu%se-%d", v, std::string( j, '0' ).c_str(), j );
+                    std::snprintf( buffer, sizeof( buffer ), "%llu%se-%d", v, std::string( j, '0' ).c_str(), j );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
@@ -54,7 +52,7 @@ template<class T> void zero_extend_test()
 
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::sprintf( buffer, "%llu0e-%s1", v, std::string( j, '0' ).c_str() );
+                    std::snprintf( buffer, sizeof( buffer ), "%llu0e-%s1", v, std::string( j, '0' ).c_str() );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
@@ -74,7 +72,7 @@ template<class T> void zero_extend_test()
         {
             unsigned long long v = static_cast<unsigned long long>( rng() );
 
-            std::sprintf( buffer, "0.%llu", v );
+            std::snprintf( buffer, sizeof( buffer ), "0.%llu", v );
 
             T ref;
 
@@ -88,7 +86,7 @@ template<class T> void zero_extend_test()
             {
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::sprintf( buffer, "0.%s%llue%d", std::string( j, '0' ).c_str(), v, j );
+                    std::snprintf( buffer, sizeof( buffer ), "0.%s%llue%d", std::string( j, '0' ).c_str(), v, j );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
