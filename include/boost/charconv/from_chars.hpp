@@ -159,6 +159,13 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
         value = sign ? static_cast<T>(-0.0L) : static_cast<T>(0.0L);
         return r;
     }
+    else if (exponent == -1)
+    {
+        // A full length significand e.g. -1985444280612224 with a power of -1 sometimes
+        // fails in compute_float64 but is trivial to calculate
+        // Found investigating GitHub issue #47
+        value = (sign ? -static_cast<T>(significand) : static_cast<T>(significand)) / 10;
+    }
 
     bool success {};
     T return_val {};
