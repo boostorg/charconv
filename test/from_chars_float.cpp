@@ -468,7 +468,7 @@ int main()
     test_issue_45<double>(1.035695536657502e-308, "1.0356955366575023e-3087", 23);
     test_issue_45<double>(static_cast<double>(-1985444280612224), "-1985444280612224.5e+258", 19);
     test_issue_45<double>(2.196197480766336e-308, "2.196197480766336e-30889", 22);
-    test_issue_45<double>(static_cast<double>(278061055647718), "4278061055647717.5e-2288", 18);
+    test_issue_45<double>(static_cast<double>(278061055647718), "278061055647717.5e-2288", 18);
 
     // Every power
     spot_check(1.7e+308, "1.7e+308", boost::charconv::chars_format::scientific);
