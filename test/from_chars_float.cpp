@@ -416,7 +416,7 @@ void test_issue_45(T v, const std::string& full_buffer, const std::ptrdiff_t ptr
     auto r = boost::charconv::from_chars(full_buffer.c_str(), full_buffer.c_str() + ptr, from_v, fmt);
 
     // v may not be exactly representable, so we only test within an epsilon
-    if (!((std::abs(v - from_v) < std::numeric_limits<T>::epsilon()) && BOOST_TEST_EQ(ptr, std::ptrdiff_t(r.ptr - full_buffer.c_str()))))
+    if (!(BOOST_TEST((std::abs(v - from_v) < std::numeric_limits<T>::epsilon())) && BOOST_TEST_EQ(ptr, std::ptrdiff_t(r.ptr - full_buffer.c_str()))))
     {
         std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
                   << "\nFrom chars value: " << from_v
@@ -487,11 +487,11 @@ int main()
     test_issue_37<long double>();
     #endif
 
-    test_issue_45<double>(static_cast<double>(-4109895455460520), "-4109895455460520.513430", 19);
+    test_issue_45<double>(static_cast<double>(-4109895455460520.5), "-4109895455460520.513430", 19);
     test_issue_45<double>(1.035695536657502e-308, "1.0356955366575023e-3087", 23);
-    test_issue_45<double>(static_cast<double>(-1985444280612224), "-1985444280612224.5e+258", 19);
+    test_issue_45<double>(static_cast<double>(-1985444280612224.5), "-1985444280612224.5e+258", 19);
     test_issue_45<double>(2.196197480766336e-308, "2.196197480766336e-30889", 22);
-    test_issue_45<double>(static_cast<double>(278061055647718), "278061055647717.5e-2288", 18);
+    test_issue_45<double>(static_cast<double>(278061055647717.5), "278061055647717.5e-2288", 17);
 
     // Value in range with 20 million digits. Malloc should max out at 16'711'568 bytes
     test_strtod_routines<double>(1.982645139827653964857196,
