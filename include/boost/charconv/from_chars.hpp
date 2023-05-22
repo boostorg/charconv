@@ -103,6 +103,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     // If no conversion can be performed, 0 is returned and *str_end is set to str.
 
     std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
+    buffer[last - first] = '\0';
 
     char* str_end;
     T return_value {};
@@ -146,7 +147,7 @@ inline from_chars_result from_chars_strtod(const char* first, const char* last, 
 {
     if (last - first < 1024)
     {
-        char buffer[1024] {};
+        char buffer[1024];
         return from_chars_strtod_impl(first, last, value, buffer);
     }
 
