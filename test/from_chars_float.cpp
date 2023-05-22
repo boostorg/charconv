@@ -493,6 +493,33 @@ int main()
     test_issue_45<double>(2.196197480766336e-308, "2.196197480766336e-30889", 22);
     test_issue_45<double>(static_cast<double>(278061055647717.5), "278061055647717.5e-2288", 17);
 
+    // Value from Lemire's comments
+    spot_check<double>(7.3177701707893310e+15, "7.3177701707893310e+15", boost::charconv::chars_format::scientific);
+
+    // Values from testbase report
+    spot_check<double>(9e-265, "9e-265", boost::charconv::chars_format::scientific);
+    spot_check<double>(85e-37, "85e-37", boost::charconv::chars_format::scientific);
+    spot_check<double>(623e+100, "623e+100", boost::charconv::chars_format::scientific);
+    spot_check<double>(3571e+263, "3571e+263", boost::charconv::chars_format::scientific);
+    spot_check<double>(81661e+153, "81661e+153", boost::charconv::chars_format::scientific);
+    spot_check<double>(920657e-23, "920657e-23", boost::charconv::chars_format::scientific);
+    spot_check<double>(4603285e-24, "4603285e-24", boost::charconv::chars_format::scientific);
+    spot_check<double>(87575437e-309, "87575437e-309", boost::charconv::chars_format::scientific);
+    spot_check<double>(245540327e+122, "245540327e+122", boost::charconv::chars_format::scientific);
+    spot_check<double>(6138508175e+120, "6138508175e+120", boost::charconv::chars_format::scientific);
+    spot_check<double>(83356057653e+193, "83356057653e+193", boost::charconv::chars_format::scientific);
+    spot_check<double>(619534293513e+124, "619534293513e+124", boost::charconv::chars_format::scientific);
+    spot_check<double>(2335141086879e+218, "2335141086879e+218", boost::charconv::chars_format::scientific);
+    spot_check<double>(36167929443327e-159, "36167929443327e-159", boost::charconv::chars_format::scientific);
+    spot_check<double>(609610927149051e-255, "609610927149051e-255", boost::charconv::chars_format::scientific);
+    spot_check<double>(3743626360493413e-165, "3743626360493413e-165", boost::charconv::chars_format::scientific);
+    spot_check<double>(94080055902682397e-242, "94080055902682397e-242", boost::charconv::chars_format::scientific);
+    spot_check<double>(899810892172646163e+283, "899810892172646163e+283", boost::charconv::chars_format::scientific);
+    spot_check<double>(7120190517612959703e+120, "7120190517612959703e+120", boost::charconv::chars_format::scientific);
+    spot_check<double>(20505426358836677347e-221, "20505426358836677347e-221", boost::charconv::chars_format::scientific);
+    spot_check<double>(836168422905420598437e-234, "836168422905420598437e-234", boost::charconv::chars_format::scientific);
+    spot_check<double>(4891559871276714924261e+222, "4891559871276714924261e+222", boost::charconv::chars_format::scientific);
+
     // Value in range with 20 million digits. Malloc should max out at 16'711'568 bytes
     test_strtod_routines<double>(1.982645139827653964857196,
                                 "1.98264513982765396485719650498261498564729856318926451982754398672495874691824659645"
