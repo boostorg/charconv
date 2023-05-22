@@ -16,6 +16,7 @@
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
+#include <cstdlib>
 #include <cmath>
 
 namespace boost { namespace charconv {
@@ -94,17 +95,15 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 namespace detail {
 
 template <typename T>
-from_chars_result from_chars_strtod(const char* first, const char* last, T& value) noexcept
+from_chars_result from_chars_strtod_impl(const char* first, const char* last, T& value, char* buffer) noexcept
 {
     // For strto(f/d)
     // Floating point value corresponding to the contents of str on success.
     // If the converted value falls out of range of corresponding return type, range error occurs and HUGE_VAL, HUGE_VALF or HUGE_VALL is returned.
     // If no conversion can be performed, 0 is returned and *str_end is set to str.
 
-    char buffer[256] {};
     std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
 
-    value = 0;
     char* str_end;
     T return_value {};
     BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
@@ -140,6 +139,30 @@ from_chars_result from_chars_strtod(const char* first, const char* last, T& valu
 
     value = return_value;
     return {first + (str_end - buffer), std::errc()};
+}
+
+template <typename T>
+inline from_chars_result from_chars_strtod(const char* first, const char* last, T& value) noexcept
+{
+    if (last - first < 1024)
+    {
+        char buffer[1024] {};
+        return from_chars_strtod_impl(first, last, value, buffer);
+    }
+
+    // If the string to be parsed does not fit into the 1024 byte static buffer than we have to allocate a buffer.
+    // malloc is used here because it does not throw on allocation failure.
+
+    char* buffer = static_cast<char*>(std::malloc(last - first + 1));
+    if (buffer == nullptr)
+    {
+        return {first, std::errc::not_enough_memory};
+    }
+
+    auto r = from_chars_strtod_impl(first, last, value, buffer);
+    std::free(buffer);
+
+    return r;
 }
 
 template <typename T>
