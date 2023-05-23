@@ -125,7 +125,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     {
         const std::uint64_t factor_significand_low = significand_128[power - smallest_power];
         product = umul128(i, factor_significand_low);
-        const std::uint64_t product_low = product.low;
+        //const std::uint64_t product_low = product.low;
         const std::uint64_t product_middle2 = product.high;
         const std::uint64_t product_middle1 = low;
         std::uint64_t product_high = high;
@@ -136,6 +136,9 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
             product_high++;
         }
 
+        // Commented out because possibly unneeded
+        // See: https://arxiv.org/pdf/2212.06644.pdf
+        /*
         // we want to check whether mantissa *i + i would affect our result
         // This does happen, e.g. with 7.3177701707893310e+15
         if (((product_middle + 1 == 0) && ((product_high & 0x1FF) == 0x1FF) && (product_low + i < product_low))) 
@@ -143,6 +146,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
             success = false;
             return 0;
         }
+        */
 
         low = product_middle;
         high = product_high;
