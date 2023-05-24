@@ -35,6 +35,16 @@ inline bool is_hex_char(char c) noexcept
     return is_integer_char(c) || (((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')));
 }
 
+inline bool is_delimiter(char c, chars_format fmt) noexcept
+{
+    if (fmt != chars_format::hex)
+    {
+        return !is_integer_char(c) && c != 'e' && c != 'E';
+    }
+
+    return !is_hex_char(c) && c != 'p' && c != 'P';
+}
+
 template <typename Unsigned_Integer, typename Integer>
 inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
@@ -191,7 +201,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
     }
 
-    if (next == last)
+    if (next == last || is_delimiter(*next, fmt))
     {
         if (fmt == chars_format::scientific)
         {
