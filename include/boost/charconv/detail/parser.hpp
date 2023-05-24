@@ -106,6 +106,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     Integer extra_zeros = 0;
     Integer leading_zero_powers = 0;
     const auto char_validation_func = (fmt != boost::charconv::chars_format::hex) ? is_integer_char : is_hex_char;
+    const int base = (fmt != boost::charconv::chars_format::hex) ? 10 : 16;
 
     while (char_validation_func(*next) && next != last && i < significand_buffer_size)
     {
@@ -127,15 +128,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         exponent = 0;
         std::size_t offset = i;
 
-        from_chars_result r {};
-        if (fmt == chars_format::hex)
-        {
-            r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
-        }
-        else
-        {
-            r = from_chars(significand_buffer, significand_buffer + offset, significand);
-        }
+        from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
         switch (r.ec)
         {
             case std::errc::invalid_argument:
@@ -217,15 +210,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         std::size_t offset = i;
         
-        from_chars_result r {};
-        if (fmt == chars_format::hex)
-        {
-            r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
-        }
-        else
-        {
-            r = from_chars(significand_buffer, significand_buffer + offset, significand);
-        }
+        from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
         switch (r.ec)
         {
             case std::errc::invalid_argument:
@@ -268,9 +253,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                 round = true;
             }
         }
-
-        from_chars_result r {};
-
+        
         // If the significand is 0 from chars will return std::errc::invalid_argument because there is nothing in the buffer,
         // but it is a valid value. We need to continue parsing to get the correct value of ptr even
         // though we know we could bail now.
@@ -278,14 +261,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // See GitHub issue #29: https://github.com/cppalliance/charconv/issues/29
         if (offset != 0)
         {
-            if (fmt == chars_format::hex)
-            {
-                r = from_chars(significand_buffer, significand_buffer + offset, significand, 16);
-            } else
-            {
-                r = from_chars(significand_buffer, significand_buffer + offset, significand);
-            }
-
+            from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
             switch (r.ec)
             {
                 case std::errc::invalid_argument:
