@@ -449,6 +449,24 @@ void test_strtod_routines(T val, const char* str)
     }
 }
 
+// Parser ignoring null terminator
+template <typename T>
+void test_issue_48(const T val, const char* str, const std::ptrdiff_t expected_pos, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    const char* last = str + std::strlen(str);
+    T from_val;
+    const auto r = boost::charconv::from_chars(str, last, from_val, fmt);
+
+    if (!(BOOST_TEST_EQ(from_val, val) && BOOST_TEST(r.ec == std::errc())))
+    {
+        std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
+                  << "\nFrom chars value: " << from_val
+                  << "\n      Original V: " << val
+                  << "\n  From chars ptr: " << (r.ptr - str)
+                  << "\n    Expected ptr: " << expected_pos << std::endl;
+    }
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -563,6 +581,21 @@ int main()
     spot_check(5.657373097294075947e-310, "5.657373097294075947e-310", boost::charconv::chars_format::scientific);
     spot_check(6.2680033580958509e-310, "6.2680033580958509e-310", boost::charconv::chars_format::scientific);
     spot_check(-8.94321267152868987e-310, "-8.94321267152868987e-310", boost::charconv::chars_format::scientific);
+
+    test_issue_48(-1.132185940257003e+207, "-1.132185940257003e+207\05.406741134053704e+77\0", 23);
+    // Various list delimiters
+    test_issue_48(-1.3982765396485712e+05, "-1.3982765396485712e+05,5.406741134053704e+77", 23);
+    test_issue_48(-1.3982765396485712e+05, "-1.3982765396485712e+05;5.406741134053704e+77", 23);
+    test_issue_48(-1.3982765396485712e+05, "-1.3982765396485712e+05\t5.406741134053704e+77", 23);
+    test_issue_48(-1.3982765396485712e+05, "-1.3982765396485712e+05\n5.406741134053704e+77", 23);
+    test_issue_48(-1.3982765396485712e+05, "-1.3982765396485712e+05 5.406741134053704e+77", 23);
+
+    // Delimited values without exponents
+    test_issue_48(-1.398276, "-1.398276,5.396485", 9);
+    test_issue_48(-1.398276, "-1.398276\05.396485", 9);
+    test_issue_48(-1.398276, "-1.398276;5.396485", 9);
+    test_issue_48(-1.398276, "-1.398276\t5.396485", 9);
+    test_issue_48(-1.398276, "-1.398276\n5.396485", 9);
 
     // Value in range with 20 million digits. Malloc should max out at 16'711'568 bytes
     test_strtod_routines<double>(1.982645139827653964857196,
