@@ -30,6 +30,10 @@
 #include <string>
 
 #include <boost/spirit/include/karma.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/phoenix/core.hpp>
+#include <boost/phoenix/operator.hpp>
+#include <boost/phoenix/stl.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/charconv.hpp>
 
@@ -418,6 +422,80 @@ void test_boost_from_chars(const char* const str, const vector<Floating>& origin
     verify(round_trip == original);
 }
 
+template <typename Floating, typename Iterator>
+bool parse_numbers(Iterator first, Iterator last, std::vector<Floating>& v)
+{
+    namespace qi = boost::spirit::qi;
+    namespace ascii = boost::spirit::ascii;
+    namespace phoenix = boost::phoenix;
+    using qi::double_;
+    using qi::float_;
+    using qi::phrase_parse;
+    using qi::_1;
+    using ascii::space;
+    using phoenix::push_back;
+
+    bool r = false;
+    
+    if constexpr (std::is_same_v<Floating, float>)
+    {
+        r = phrase_parse(first, last,
+
+            //  Begin grammar
+            (
+                float_[push_back(phoenix::ref(v), _1)]
+                    >> *('\0' >> float_[push_back(phoenix::ref(v), _1)])
+            )
+            ,
+            //  End grammar
+
+            space);
+    }
+    else
+    {
+        static_assert(std::is_same_v<Floating, double>);
+        
+        r = phrase_parse(first, last,
+
+            //  Begin grammar
+            (
+                double_[push_back(phoenix::ref(v), _1)]
+                    >> *('\0' >> double_[push_back(phoenix::ref(v), _1)])
+            )
+            ,
+            //  End grammar
+
+            space);
+    }
+
+    if (first != last) // fail if we did not get a full match
+    {
+        return false;
+    }
+
+    return r;
+}
+
+template <typename Floating>
+void test_boost_spirit_qi(const char* const str, const vector<Floating>& /*original*/, const vector<char>& strings) {
+
+    const char* const last = strings.data() + strings.size();
+
+    vector<Floating> round_trip(N);
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        const char* first = strings.data();
+        string test_str(first, static_cast<std::ptrdiff_t>(last - first));
+        parse_numbers(test_str.begin(), test_str.end(), round_trip);
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    // verify(round_trip == original);
+}
+
 template <RoundTrip RT, typename Floating>
 void test_boost_from_chars_parser(const char* const str, const vector<Floating>&, const vector<char>& strings) {
 
@@ -568,18 +646,21 @@ void test_all() {
     const vector<char> strings_hex_dbl = prepare_strings<RoundTrip::Hex>(vec_dbl);
 
     const vector<char> strings_u64 = prepare_strings<RoundTrip::u64>(vec_u64);
-/*
+
     test_strtox("std::strtof float scientific", vec_flt, strings_sci_flt);
     test_strtox("std::strtod double scientific", vec_dbl, strings_sci_dbl);
 
-    test_strtox("std::strtof float hex", vec_flt, strings_hex_flt);
-    test_strtox("std::strtod double hex", vec_dbl, strings_hex_dbl);
-*/
+    //test_strtox("std::strtof float hex", vec_flt, strings_hex_flt);
+    //test_strtox("std::strtod double hex", vec_dbl, strings_hex_dbl);
+
     test_from_chars<RoundTrip::Sci>("std::from_chars float scientific", vec_flt, strings_sci_flt);
     test_from_chars<RoundTrip::Sci>("std::from_chars double scientific", vec_dbl, strings_sci_dbl);
 
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars float scientific", vec_flt, strings_sci_flt);
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars double scientific", vec_dbl, strings_sci_dbl);
+
+    test_boost_spirit_qi<float>("Boost.Spirit.Qi float scientific", vec_flt, strings_sci_flt);
+    test_boost_spirit_qi<double>("Boost.Spirit.Qi double scientific", vec_dbl, strings_sci_dbl);
 
     test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser float scientific", vec_flt, strings_sci_flt);
     test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser double scientific", vec_dbl, strings_sci_dbl);
