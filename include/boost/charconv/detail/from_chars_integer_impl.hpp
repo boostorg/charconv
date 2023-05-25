@@ -43,7 +43,7 @@ static_assert(sizeof(uchar_values) == 256, "uchar_values should represent all 25
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
 constexpr unsigned char digit_from_char(char val) noexcept
 {
-    return uchar_values[static_cast<std::size_t>(val)];
+    return uchar_values[static_cast<unsigned char>(val)];
 }
 
 #ifdef BOOST_MSVC
