@@ -511,6 +511,77 @@ int main()
     test_issue_45<double>(2.196197480766336e-308, "2.196197480766336e-30889", 22);
     test_issue_45<double>(static_cast<double>(278061055647717.5), "278061055647717.5e-2288", 17);
 
+    // Value from Lemire's comments
+    spot_check<double>(7.3177701707893310e+15, "7.3177701707893310e+15", boost::charconv::chars_format::scientific);
+
+    // Values from testbase report: https://www.icir.org/vern/papers/testbase-report.pdf
+    // Table 1
+    spot_check<double>(9e-265, "9e-265", boost::charconv::chars_format::scientific);
+    spot_check<double>(85e-37, "85e-37", boost::charconv::chars_format::scientific);
+    spot_check<double>(623e+100, "623e+100", boost::charconv::chars_format::scientific);
+    spot_check<double>(3571e+263, "3571e+263", boost::charconv::chars_format::scientific);
+    spot_check<double>(81661e+153, "81661e+153", boost::charconv::chars_format::scientific);
+    spot_check<double>(920657e-23, "920657e-23", boost::charconv::chars_format::scientific);
+    spot_check<double>(4603285e-24, "4603285e-24", boost::charconv::chars_format::scientific);
+    spot_check<double>(87575437e-309, "87575437e-309", boost::charconv::chars_format::scientific);
+    spot_check<double>(245540327e+122, "245540327e+122", boost::charconv::chars_format::scientific);
+    spot_check<double>(6138508175e+120, "6138508175e+120", boost::charconv::chars_format::scientific);
+    spot_check<double>(83356057653e+193, "83356057653e+193", boost::charconv::chars_format::scientific);
+    spot_check<double>(619534293513e+124, "619534293513e+124", boost::charconv::chars_format::scientific);
+    spot_check<double>(2335141086879e+218, "2335141086879e+218", boost::charconv::chars_format::scientific);
+    spot_check<double>(36167929443327e-159, "36167929443327e-159", boost::charconv::chars_format::scientific);
+    spot_check<double>(609610927149051e-255, "609610927149051e-255", boost::charconv::chars_format::scientific);
+    spot_check<double>(3743626360493413e-165, "3743626360493413e-165", boost::charconv::chars_format::scientific);
+    spot_check<double>(94080055902682397e-242, "94080055902682397e-242", boost::charconv::chars_format::scientific);
+    spot_check<double>(899810892172646163e+283, "899810892172646163e+283", boost::charconv::chars_format::scientific);
+    spot_check<double>(7120190517612959703e+120, "7120190517612959703e+120", boost::charconv::chars_format::scientific);
+    spot_check<double>(20505426358836677347e-221, "20505426358836677347e-221", boost::charconv::chars_format::scientific);
+    spot_check<double>(836168422905420598437e-234, "836168422905420598437e-234", boost::charconv::chars_format::scientific);
+    spot_check<double>(4891559871276714924261e+222, "4891559871276714924261e+222", boost::charconv::chars_format::scientific);
+
+    // Table 2
+    spot_check<double>(9e-265, "9e-265", boost::charconv::chars_format::scientific);
+    spot_check<double>(85e-37, "85e-37", boost::charconv::chars_format::scientific);
+    spot_check<double>(623e+100, "623e+100", boost::charconv::chars_format::scientific);
+    spot_check<double>(3571e+263, "3571e+263", boost::charconv::chars_format::scientific);
+    spot_check<double>(81661e+153, "81661e+153", boost::charconv::chars_format::scientific);
+    spot_check<double>(920657e-023, "920657e-023", boost::charconv::chars_format::scientific);
+    spot_check<double>(4603285e-24, "4603285e-24", boost::charconv::chars_format::scientific);
+    spot_check<double>(87575437e-309, "87575437e-309", boost::charconv::chars_format::scientific);
+    spot_check<double>(245540327e122, "245540327e+122", boost::charconv::chars_format::scientific);
+    spot_check<double>(6138508175e+120, "6138508175e120", boost::charconv::chars_format::scientific);
+    spot_check<double>(83356057653e193, "83356057653e+193", boost::charconv::chars_format::scientific);
+    spot_check<double>(619534293513e124, "619534293513e+124", boost::charconv::chars_format::scientific);
+    spot_check<double>(2335141086879e218, "2335141086879e+218", boost::charconv::chars_format::scientific);
+    spot_check<double>(609610927149051e-255, "609610927149051e-255", boost::charconv::chars_format::scientific);
+    spot_check<double>(3743626360493413e-165, "3743626360493413e-165", boost::charconv::chars_format::scientific);
+    spot_check<double>(94080055902682397e-242, "94080055902682397e-242", boost::charconv::chars_format::scientific);
+    spot_check<double>(899810892172646163e+283, "899810892172646163e+283", boost::charconv::chars_format::scientific);
+    spot_check<double>(7120190517612959703e+120, "7120190517612959703e+120", boost::charconv::chars_format::scientific);
+    //spot_check<double>(25188282901709339043e-252, "25188282901709339043e-252", boost::charconv::chars_format::scientific);
+    //spot_check<double>(308984926168550152811e-052, "308984926168550152811e-052", boost::charconv::chars_format::scientific);
+    //spot_check<double>(6372891218502368041059e+064, "6372891218502368041059e+064", boost::charconv::chars_format::scientific);
+
+    // Page 22 - The worst 17-digit number
+    // Requires 119 bits of precision to calculate
+    spot_check<double>(78459735791271921e+049, "78459735791271921e+049", boost::charconv::chars_format::scientific);
+
+    // Values dumped from RapidJSON tests that require them to use big ints
+    spot_check<double>(222507385850720113605740979670913197593481954635164564e-361, "222507385850720113605740979670913197593481954635164564e-361", boost::charconv::chars_format::scientific);
+    spot_check<double>(1634460786126566e-216, "1634460786126566e-216", boost::charconv::chars_format::scientific);
+    spot_check<double>( 17976931348623158079372897140530341507993413271003782693617377898044496829276475094664901797758720709633028641669288791094655554785194040263065748867150582068190890200070838367627385484581771153176447573027006985557136695962284291481986083493647529271907416844436551070434271155969950809304288017790417449779.0,
+                        "1797693134862315807937289714053034150799341327100378269361737789804449682927647509466"
+                        "4901797758720709633028641669288791094655554785194040263065748867150582068190890200070"
+                        "8383676273854845817711531764475730270069855571366959622842914819860834936475292719074"
+                        "16844436551070434271155969950809304288017790417449779.0", boost::charconv::chars_format::general);
+
+    // Sub-normals
+    spot_check(4.41953449404251504e-310, "4.41953449404251504e-310", boost::charconv::chars_format::scientific);
+    spot_check(8.495975094332900732e-310, "8.495975094332900732e-310", boost::charconv::chars_format::scientific);
+    spot_check(5.657373097294075947e-310, "5.657373097294075947e-310", boost::charconv::chars_format::scientific);
+    spot_check(6.2680033580958509e-310, "6.2680033580958509e-310", boost::charconv::chars_format::scientific);
+    spot_check(-8.94321267152868987e-310, "-8.94321267152868987e-310", boost::charconv::chars_format::scientific);
+
     test_issue_48(-1.132185940257003e+207, "-1.132185940257003e+207\05.406741134053704e+77\0", 23);
     // Various list delimiters
     test_issue_48(-1.3982765396485712e+05, "-1.3982765396485712e+05,5.406741134053704e+77", 23);

@@ -260,6 +260,24 @@ template<class T> void test_roundtrip_bv()
 
 //
 
+template <typename T>
+void test_extreme_values()
+{
+    T current_pos = (std::numeric_limits<T>::max)();
+    for (int i = 0; i < 10000; ++i)
+    {
+        test_roundtrip<T>(current_pos);
+        current_pos = std::nexttoward(current_pos, T(0));
+    }
+
+    current_pos = (std::numeric_limits<T>::min)();
+    for (int i = 0; i < 10000; ++i)
+    {
+        test_roundtrip<T>(current_pos);
+        current_pos = std::nextafter(current_pos, T(1));
+    }
+}
+
 int main()
 {
     // integral types, random values
@@ -400,6 +418,8 @@ int main()
     test_roundtrip<float>(5.549256619e+37F);
     test_roundtrip<float>(8.922125027e+34F);
 
+    test_extreme_values<float>();
+    test_extreme_values<double>();
 #endif // Broken platforms
 
     return boost::report_errors();

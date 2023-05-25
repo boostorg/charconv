@@ -236,7 +236,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                     value = return_val;
                     r.ec = std::errc::result_out_of_range;
                 }
-                else if (exponent < -325)
+                else if (exponent < -342)
                 {
                     value = sign ? -0.0 : 0.0;
                     r.ec = std::errc::result_out_of_range;
@@ -254,7 +254,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                     r.ec = std::errc::result_out_of_range;
                 }
                 #if BOOST_CHARCONV_LDBL_BITS == 64
-                else if (exponent < -325)
+                else if (exponent < -342)
                 #else // 80 or 128 bit long doubles have same range
                 else if (exponent < -4965)
                 #endif
