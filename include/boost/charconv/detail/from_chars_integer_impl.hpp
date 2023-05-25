@@ -43,7 +43,7 @@ static_assert(sizeof(uchar_values) == 256, "uchar_values should represent all 25
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
 constexpr unsigned char digit_from_char(char val) noexcept
 {
-    return uchar_values[static_cast<std::size_t>(val)];
+    return uchar_values[static_cast<unsigned char>(val)];
 }
 
 #ifdef BOOST_MSVC
@@ -165,26 +165,49 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     }
 
     bool overflowed = false;
-    while (next != last)
+
+    std::ptrdiff_t nc = last - next;
+    constexpr std::ptrdiff_t nd = std::numeric_limits<Integer>::digits10;
+
     {
-        const unsigned char current_digit = digit_from_char(*next);
+        std::ptrdiff_t i = 0;
 
-        if (current_digit >= unsigned_base)
+        for( ; i < nd && i < nc; ++i )
         {
-            break;
-        }
+            // overflow is not possible in the first nd characters
 
-        if (result < overflow_value || (result == overflow_value && current_digit <= max_digit))
-        {
+            const unsigned char current_digit = digit_from_char(*next);
+
+            if (current_digit >= unsigned_base)
+            {
+                break;
+            }
+
             result = static_cast<Unsigned_Integer>(result * unsigned_base + current_digit);
-        }
-        else
-        {
-            // Required to keep updating the value of next, but the result is garbage
-            overflowed = true;
+            ++next;
         }
 
-        ++next;
+        for( ; i < nc; ++i )
+        {
+            const unsigned char current_digit = digit_from_char(*next);
+
+            if (current_digit >= unsigned_base)
+            {
+                break;
+            }
+
+            if (result < overflow_value || (result == overflow_value && current_digit <= max_digit))
+            {
+                result = static_cast<Unsigned_Integer>(result * unsigned_base + current_digit);
+            }
+            else
+            {
+                // Required to keep updating the value of next, but the result is garbage
+                overflowed = true;
+            }
+
+            ++next;
+        }
     }
 
     // Return the parsed value, adding the sign back if applicable
