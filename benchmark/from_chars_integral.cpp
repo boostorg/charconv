@@ -17,7 +17,7 @@
 constexpr unsigned N = 2'000'000;
 constexpr int K = 25;
 
-template<class T> static void init_input_data( std::vector<std::string>& data )
+template<class T> static BOOST_NOINLINE void init_input_data( std::vector<std::string>& data )
 {
     data.reserve( N );
 
@@ -37,7 +37,7 @@ template<class T> static void init_input_data( std::vector<std::string>& data )
 
 using namespace std::chrono_literals;
 
-template<class T> static void test_std_from_chars( std::vector<std::string> const& data )
+template<class T> static void BOOST_NOINLINE test_std_from_chars( std::vector<std::string> const& data )
 {
     auto t1 = std::chrono::steady_clock::now();
 
@@ -59,7 +59,7 @@ template<class T> static void test_std_from_chars( std::vector<std::string> cons
     std::cout << "            std::from_chars<" << boost::core::type_name<T>() << ">: " << std::setw( 5 ) << ( t2 - t1 ) / 1ms << " ms (s=" << s << ")\n";
 }
 
-template<class T> static void test_boost_from_chars( std::vector<std::string> const& data )
+template<class T> static void BOOST_NOINLINE test_boost_from_chars( std::vector<std::string> const& data )
 {
     auto t1 = std::chrono::steady_clock::now();
 

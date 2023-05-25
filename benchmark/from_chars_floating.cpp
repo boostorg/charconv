@@ -17,7 +17,7 @@
 constexpr unsigned N = 2'000'000;
 constexpr int K = 10;
 
-template<class T> static void init_input_data( std::vector<std::string>& data, bool general )
+template<class T> static BOOST_NOINLINE void init_input_data( std::vector<std::string>& data, bool general )
 {
     data.reserve( N );
 
@@ -40,7 +40,7 @@ template<class T> static void init_input_data( std::vector<std::string>& data, b
     }
 }
 
-template<class T> static void init_input_data_uint64( std::vector<std::string>& data )
+template<class T> static BOOST_NOINLINE void init_input_data_uint64( std::vector<std::string>& data )
 {
     data.reserve( N );
 
@@ -62,7 +62,7 @@ using namespace std::chrono_literals;
 
 template<class T> void test_strtox( std::vector<std::string> const& data, bool general, char const* label );
 
-template<> void test_strtox<float>( std::vector<std::string> const& data, bool, char const* label )
+template<> BOOST_NOINLINE void test_strtox<float>( std::vector<std::string> const& data, bool, char const* label )
 {
     auto t1 = std::chrono::steady_clock::now();
 
@@ -82,7 +82,7 @@ template<> void test_strtox<float>( std::vector<std::string> const& data, bool, 
     std::cout << "                std::strtox<float>, " << label << ": " << std::setw( 5 ) << ( t2 - t1 ) / 1ms << " ms (s=" << s << ")\n";
 }
 
-template<> void test_strtox<double>( std::vector<std::string> const& data, bool, char const* label )
+template<> BOOST_NOINLINE void test_strtox<double>( std::vector<std::string> const& data, bool, char const* label )
 {
     auto t1 = std::chrono::steady_clock::now();
 
@@ -102,7 +102,7 @@ template<> void test_strtox<double>( std::vector<std::string> const& data, bool,
     std::cout << "                std::strtox<double>, " << label << ": " << std::setw( 5 ) << ( t2 - t1 ) / 1ms << " ms (s=" << s << ")\n";
 }
 
-template<class T> static void test_std_from_chars( std::vector<std::string> const& data, bool general, char const* label )
+template<class T> static BOOST_NOINLINE void test_std_from_chars( std::vector<std::string> const& data, bool general, char const* label )
 {
     auto t1 = std::chrono::steady_clock::now();
 
@@ -124,7 +124,7 @@ template<class T> static void test_std_from_chars( std::vector<std::string> cons
     std::cout << "            std::from_chars<" << boost::core::type_name<T>() << ">, " << label << ": " << std::setw( 5 ) << ( t2 - t1 ) / 1ms << " ms (s=" << s << ")\n";
 }
 
-template<class T> static void test_boost_from_chars( std::vector<std::string> const& data, bool general, char const* label )
+template<class T> static BOOST_NOINLINE void test_boost_from_chars( std::vector<std::string> const& data, bool general, char const* label )
 {
     auto t1 = std::chrono::steady_clock::now();
 
