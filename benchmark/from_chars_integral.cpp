@@ -94,6 +94,9 @@ template<class T> static void test()
 
 int main()
 {
+    std::cout << BOOST_COMPILER << "\n";
+    std::cout << BOOST_STDLIB << "\n\n";
+
     test<signed char>();
     test<unsigned char>();
 
