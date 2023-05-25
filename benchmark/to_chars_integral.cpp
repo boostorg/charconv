@@ -71,6 +71,7 @@ template<class T> static BOOST_NOINLINE void test_snprintf( std::vector<T> const
         {
             auto r = std::snprintf( buffer, sizeof( buffer ), format, x );
             s += r;
+            s += static_cast<unsigned char>( buffer[0] );
         }
     }
 
@@ -93,6 +94,7 @@ template<class T> static BOOST_NOINLINE void test_std_to_chars( std::vector<T> c
         {
             auto r = std::to_chars( buffer, buffer + sizeof( buffer ), x );
             s += static_cast<std::size_t>( r.ptr - buffer );
+            s += static_cast<unsigned char>( buffer[0] );
         }
     }
 
@@ -115,6 +117,7 @@ template<class T> static BOOST_NOINLINE void test_boost_to_chars( std::vector<T>
         {
             auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), x );
             s += static_cast<std::size_t>( r.ptr - buffer );
+            s += static_cast<unsigned char>( buffer[0] );
         }
     }
 
