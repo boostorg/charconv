@@ -177,6 +177,9 @@ template<class T> static void test2()
 
 int main()
 {
+    std::cout << BOOST_COMPILER << "\n";
+    std::cout << BOOST_STDLIB << "\n\n";
+
     test<float>( false );
     test<double>( false );
 
