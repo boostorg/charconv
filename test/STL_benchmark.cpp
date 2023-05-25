@@ -347,6 +347,29 @@ void test_from_chars(const char* const str, const vector<Floating>& original, co
 
     verify(round_trip == original);
 }
+
+template <RoundTrip RT, typename Floating>
+void test_boost_from_chars(const char* const str, const vector<Floating>& original, const vector<char>& strings) {
+
+    const char* const last = strings.data() + strings.size();
+
+    vector<Floating> round_trip(N);
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        const char* first = strings.data();
+        for (size_t n = 0; n < N; ++n) {
+            const auto from_result = boost::charconv::from_chars(first, last, round_trip[n], boost_chars_format_from_RoundTrip(RT));
+            first                  = from_result.ptr + 1; // advance past null terminator
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    verify(round_trip == original);
+}
+
 #endif // AVOID_CHARCONV
 
 void test_all() {
@@ -358,9 +381,9 @@ void test_all() {
     const char* const toolset = "C1XX/C2 x86 + MSVC STL";
 #elif !defined(__clang__) && defined(_M_X64)
     const char* const toolset = "C1XX/C2 x64 + MSVC STL";
-#elif defined(__clang__) && defined(__APPLE__) && defined(__arm__)
+#elif defined(__clang__) && defined(__APPLE__) && defined(__arm64__)
     const char* const toolset = "Clang/LLVM Apple ARM + libc++";
-#elif !defined(__clang__) && defined(__APPLE__) && defined(__arm__)
+#elif !defined(__clang__) && defined(__APPLE__) && defined(__arm64__)
     const char* const toolset = "GCC Apple ARM + libstdc++";
 #else
     const char* const toolset = "Unknown Toolset";
@@ -407,47 +430,47 @@ void test_all() {
     test_boost_spirit_karma("Boost.spirit.karma float", vec_flt);
     test_boost_spirit_karma("Boost.spirit.karma double", vec_dbl);
 
-    test_sprintf<RoundTrip::Sci>("CRT float scientific 8", vec_flt, "%.8e");
-    test_sprintf<RoundTrip::Sci>("CRT double scientific 16", vec_dbl, "%.16e");
+    test_sprintf<RoundTrip::Sci>("std::sprintf float scientific 8", vec_flt, "%.8e");
+    test_sprintf<RoundTrip::Sci>("std::sprintf double scientific 16", vec_dbl, "%.16e");
 
-    test_sprintf<RoundTrip::Lossy>("CRT float fixed 6 (lossy)", vec_flt, "%f");
-    test_sprintf<RoundTrip::Lossy>("CRT double fixed 6 (lossy)", vec_dbl, "%f");
+    test_sprintf<RoundTrip::Lossy>("std::sprintf float fixed 6 (lossy)", vec_flt, "%f");
+    test_sprintf<RoundTrip::Lossy>("std::sprintf double fixed 6 (lossy)", vec_dbl, "%f");
 
-    test_sprintf<RoundTrip::Gen>("CRT float general 9", vec_flt, "%.9g");
-    test_sprintf<RoundTrip::Gen>("CRT double general 17", vec_dbl, "%.17g");
+    test_sprintf<RoundTrip::Gen>("std::sprintf float general 9", vec_flt, "%.9g");
+    test_sprintf<RoundTrip::Gen>("std::sprintf double general 17", vec_dbl, "%.17g");
 
-    test_sprintf<RoundTrip::Hex>("CRT float hex 6", vec_flt, "%.6a");
-    test_sprintf<RoundTrip::Hex>("CRT double hex 13", vec_dbl, "%.13a");
+    test_sprintf<RoundTrip::Hex>("std::sprintf float hex 6", vec_flt, "%.6a");
+    test_sprintf<RoundTrip::Hex>("std::sprintf double hex 13", vec_dbl, "%.13a");
 
     #ifndef AVOID_CHARCONV
-    test_STL_to_chars<RoundTrip::Gen>("STL float plain shortest", vec_flt);
-    test_STL_to_chars<RoundTrip::Gen>("STL double plain shortest", vec_dbl);
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars float plain shortest", vec_flt);
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars double plain shortest", vec_dbl);
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv float plain shortest", vec_flt);
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv double plain shortest", vec_dbl);
 
-    test_STL_to_chars<RoundTrip::Sci>("STL float scientific shortest", vec_flt, chars_format::scientific);
-    test_STL_to_chars<RoundTrip::Sci>("STL double scientific shortest", vec_dbl, chars_format::scientific);
+    test_STL_to_chars<RoundTrip::Sci>("std::to_chars float scientific shortest", vec_flt, chars_format::scientific);
+    test_STL_to_chars<RoundTrip::Sci>("std::to_chars double scientific shortest", vec_dbl, chars_format::scientific);
 
-    test_STL_to_chars<RoundTrip::Fix>("STL float fixed shortest", vec_flt, chars_format::fixed);
-    test_STL_to_chars<RoundTrip::Fix>("STL double fixed shortest", vec_dbl, chars_format::fixed);
+    test_STL_to_chars<RoundTrip::Fix>("std::to_chars float fixed shortest", vec_flt, chars_format::fixed);
+    test_STL_to_chars<RoundTrip::Fix>("std::to_chars double fixed shortest", vec_dbl, chars_format::fixed);
 
-    test_STL_to_chars<RoundTrip::Gen>("STL float general shortest", vec_flt, chars_format::general);
-    test_STL_to_chars<RoundTrip::Gen>("STL double general shortest", vec_dbl, chars_format::general);
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars float general shortest", vec_flt, chars_format::general);
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars double general shortest", vec_dbl, chars_format::general);
 
-    test_STL_to_chars<RoundTrip::Hex>("STL float hex shortest", vec_flt, chars_format::hex);
-    test_STL_to_chars<RoundTrip::Hex>("STL double hex shortest", vec_dbl, chars_format::hex);
+    test_STL_to_chars<RoundTrip::Hex>("std::to_chars float hex shortest", vec_flt, chars_format::hex);
+    test_STL_to_chars<RoundTrip::Hex>("std::to_chars double hex shortest", vec_dbl, chars_format::hex);
 
-    test_STL_to_chars<RoundTrip::Sci>("STL float scientific 8", vec_flt, chars_format::scientific, 8);
-    test_STL_to_chars<RoundTrip::Sci>("STL double scientific 16", vec_dbl, chars_format::scientific, 16);
+    test_STL_to_chars<RoundTrip::Sci>("std::to_chars float scientific 8", vec_flt, chars_format::scientific, 8);
+    test_STL_to_chars<RoundTrip::Sci>("std::to_chars double scientific 16", vec_dbl, chars_format::scientific, 16);
 
-    test_STL_to_chars<RoundTrip::Lossy>("STL float fixed 6 (lossy)", vec_flt, chars_format::fixed, 6);
-    test_STL_to_chars<RoundTrip::Lossy>("STL double fixed 6 (lossy)", vec_dbl, chars_format::fixed, 6);
+    test_STL_to_chars<RoundTrip::Lossy>("std::to_chars float fixed 6 (lossy)", vec_flt, chars_format::fixed, 6);
+    test_STL_to_chars<RoundTrip::Lossy>("std::to_chars double fixed 6 (lossy)", vec_dbl, chars_format::fixed, 6);
 
-    test_STL_to_chars<RoundTrip::Gen>("STL float general 9", vec_flt, chars_format::general, 9);
-    test_STL_to_chars<RoundTrip::Gen>("STL double general 17", vec_dbl, chars_format::general, 17);
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars float general 9", vec_flt, chars_format::general, 9);
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars double general 17", vec_dbl, chars_format::general, 17);
 
-    test_STL_to_chars<RoundTrip::Hex>("STL float hex 6", vec_flt, chars_format::hex, 6);
-    test_STL_to_chars<RoundTrip::Hex>("STL double hex 13", vec_dbl, chars_format::hex, 13);
+    test_STL_to_chars<RoundTrip::Hex>("std::to_chars float hex 6", vec_flt, chars_format::hex, 6);
+    test_STL_to_chars<RoundTrip::Hex>("std::to_chars double hex 13", vec_dbl, chars_format::hex, 13);
     #endif // AVOID_CHARCONV
 
     puts("----------");
@@ -458,18 +481,21 @@ void test_all() {
     const vector<char> strings_hex_flt = prepare_strings<RoundTrip::Hex>(vec_flt);
     const vector<char> strings_hex_dbl = prepare_strings<RoundTrip::Hex>(vec_dbl);
 
-    test_strtox("CRT strtof float scientific", vec_flt, strings_sci_flt);
-    test_strtox("CRT strtod double scientific", vec_dbl, strings_sci_dbl);
+    test_strtox("std::strtof float scientific", vec_flt, strings_sci_flt);
+    test_strtox("std::strtod double scientific", vec_dbl, strings_sci_dbl);
 
-    test_strtox("CRT strtof float hex", vec_flt, strings_hex_flt);
-    test_strtox("CRT strtod double hex", vec_dbl, strings_hex_dbl);
+    test_strtox("std::strtof float hex", vec_flt, strings_hex_flt);
+    test_strtox("std::strtod double hex", vec_dbl, strings_hex_dbl);
 
     #ifndef AVOID_CHARCONV
-    test_from_chars<RoundTrip::Sci>("STL from_chars float scientific", vec_flt, strings_sci_flt);
-    test_from_chars<RoundTrip::Sci>("STL from_chars double scientific", vec_dbl, strings_sci_dbl);
+    test_from_chars<RoundTrip::Sci>("std::from_chars float scientific", vec_flt, strings_sci_flt);
+    test_from_chars<RoundTrip::Sci>("std::from_chars double scientific", vec_dbl, strings_sci_dbl);
 
-    test_from_chars<RoundTrip::Hex>("STL from_chars float hex", vec_flt, erase_0x(strings_hex_flt));
-    test_from_chars<RoundTrip::Hex>("STL from_chars double hex", vec_dbl, erase_0x(strings_hex_dbl));
+    test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars float scientific", vec_flt, strings_sci_flt);
+    test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars double scientific", vec_dbl, strings_sci_dbl);
+
+    test_from_chars<RoundTrip::Hex>("std::from_chars float hex", vec_flt, erase_0x(strings_hex_flt));
+    test_from_chars<RoundTrip::Hex>("std::from_chars double hex", vec_dbl, erase_0x(strings_hex_dbl));
     #endif // AVOID_CHARCONV
 
     printf("global_dummy: %u\n", global_dummy);
