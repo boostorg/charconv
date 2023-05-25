@@ -163,6 +163,30 @@ void simple_test()
     BOOST_TEST(r3.ec == std::errc()) && BOOST_TEST_EQ(v2, 12);
 }
 
+template <typename T>
+void extended_ascii_codes()
+{
+    const char* buffer = "30±5"; // plus/minus is 177
+    T v = 0;
+    auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
+    BOOST_TEST(r.ec == std::errc()) && BOOST_TEST_EQ(v, 30);
+
+    const char* buffer2 = "123°"; // Degrees is 186
+    T v2 = 0;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer), v2);
+    BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ(v2, 123);
+
+    const char* buffer3 = "2¼"; // 1/4 is 188
+    T v3 = 0;
+    auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
+    BOOST_TEST(r3.ec == std::errc()) && BOOST_TEST_EQ(v3, 2);
+
+    const char* buffer4 = "123²"; // squared is 178
+    T v4 = 0;
+    auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
+    BOOST_TEST(r4.ec == std::errc()) && BOOST_TEST_EQ(v4, 123);
+}
+
 int main()
 {
     simple_test<char>();
@@ -202,6 +226,11 @@ int main()
     test_128bit_int<__int128>();
     test_128bit_int<unsigned __int128>();
     #endif
+
+    extended_ascii_codes<int>();
+    extended_ascii_codes<unsigned>();
+    extended_ascii_codes<char>();
+    extended_ascii_codes<unsigned char>();
 
     return boost::report_errors();
 }
