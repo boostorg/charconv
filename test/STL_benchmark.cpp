@@ -370,6 +370,32 @@ void test_boost_from_chars(const char* const str, const vector<Floating>& origin
     verify(round_trip == original);
 }
 
+template <RoundTrip RT, typename Floating>
+void test_boost_from_chars_parser(const char* const str, const vector<Floating>&, const vector<char>& strings) {
+
+    const char* const last = strings.data() + strings.size();
+
+    vector<Floating> round_trip(N);
+
+    bool sign {};
+    std::uint64_t significand {};
+    std::int64_t  exponent {};
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        const char* first = strings.data();
+        for (size_t n = 0; n < N; ++n) {
+            const auto from_result = boost::charconv::detail::parser(first, last, sign, significand, exponent, boost_chars_format_from_RoundTrip(RT));
+            first                  = from_result.ptr + 1; // advance past null terminator
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    // verify(round_trip == original);
+}
+
 #endif // AVOID_CHARCONV
 
 void test_all() {
@@ -494,6 +520,8 @@ void test_all() {
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars float scientific", vec_flt, strings_sci_flt);
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars double scientific", vec_dbl, strings_sci_dbl);
 
+    test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser float scientific", vec_flt, strings_sci_flt);
+    test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser double scientific", vec_dbl, strings_sci_dbl);
     test_from_chars<RoundTrip::Hex>("std::from_chars float hex", vec_flt, erase_0x(strings_hex_flt));
     test_from_chars<RoundTrip::Hex>("std::from_chars double hex", vec_dbl, erase_0x(strings_hex_dbl));
     #endif // AVOID_CHARCONV
