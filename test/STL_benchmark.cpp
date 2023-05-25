@@ -43,9 +43,9 @@ void verify(const bool b) {
    }
 }
 
-enum class RoundTrip { Sci, Fix, Gen, Hex, Lossy };
+enum class RoundTrip { Sci, Fix, Gen, Hex, Lossy, u32, u64 };
 
-constexpr size_t N = 2'000'000; // how many floating-point values to test
+constexpr size_t N = 2'000'000; // how many values to test
 
 constexpr size_t K = 5; // how many times to repeat the test, for cleaner timing
 
@@ -243,8 +243,8 @@ void test_boost_to_chars(const char* const str, const vector<Floating>& vec, con
 }
 #endif // AVOID_CHARCONV
 
-template <RoundTrip RT, typename Floating>
-vector<char> prepare_strings(const vector<Floating>& vec) {
+template <RoundTrip RT, typename T>
+vector<char> prepare_strings(const vector<T>& vec) {
     vector<char> output;
 
     char buf[BufSize];
@@ -253,18 +253,22 @@ vector<char> prepare_strings(const vector<Floating>& vec) {
         int ret;
 
         if constexpr (RT == RoundTrip::Sci) {
-            if constexpr (is_same_v<Floating, float>) {
+            if constexpr (is_same_v<T, float>) {
                 ret = sprintf_wrapper(buf, "%.8e", elem);
             } else {
                 ret = sprintf_wrapper(buf, "%.16e", elem);
             }
-        } else {
-            static_assert(RT == RoundTrip::Hex);
-            if constexpr (is_same_v<Floating, float>) {
+        } else if constexpr (RT == RoundTrip::Hex) {
+            if constexpr (is_same_v<T, float>) {
                 ret = sprintf_wrapper(buf, "%.6a", elem);
             } else {
                 ret = sprintf_wrapper(buf, "%.13a", elem);
             }
+        } else if constexpr (RT == RoundTrip::u32) {
+            ret = sprintf_wrapper(buf, "%lu", elem);
+        } else {
+            static_assert(RT == RoundTrip::u64);
+            ret = sprintf_wrapper(buf, "%llu", elem);
         }
 
         verify(ret != -1);
@@ -348,6 +352,50 @@ void test_from_chars(const char* const str, const vector<Floating>& original, co
     verify(round_trip == original);
 }
 
+template <int base, typename Integer>
+void test_from_chars_integer(const char* const str, const vector<Integer>& original, const vector<char>& strings) {
+    
+    const char* const last = strings.data() + strings.size();
+
+    vector<Integer> round_trip(N);
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        const char* first = strings.data();
+        for (size_t n = 0; n < N; ++n) {
+            const auto from_result = from_chars(first, last, round_trip[n], base);
+            first                  = from_result.ptr + 1; // advance past null terminator
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    verify(round_trip == original);
+}
+
+template <int base, typename Integer>
+void test_boost_from_chars_integer(const char* const str, const vector<Integer>& original, const vector<char>& strings) {
+    
+    const char* const last = strings.data() + strings.size();
+
+    vector<Integer> round_trip(N);
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        const char* first = strings.data();
+        for (size_t n = 0; n < N; ++n) {
+            const auto from_result = boost::charconv::from_chars(first, last, round_trip[n], base);
+            first                  = from_result.ptr + 1; // advance past null terminator
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    verify(round_trip == original);
+}
+
 template <RoundTrip RT, typename Floating>
 void test_boost_from_chars(const char* const str, const vector<Floating>& original, const vector<char>& strings) {
 
@@ -419,6 +467,8 @@ void test_all() {
 
     vector<float> vec_flt;
     vector<double> vec_dbl;
+    vector<uint32_t> vec_u32;
+    vector<uint64_t> vec_u64;
 
     {
         mt19937_64 mt64;
@@ -448,8 +498,18 @@ void test_all() {
             memcpy(&dbl, &val, sizeof(dbl));
             vec_dbl.push_back(dbl);
         }
-    }
 
+        vec_u32.reserve(N);
+        while (vec_u32.size() < N) {
+            vec_u32.emplace_back(static_cast<uint32_t>(mt64()));
+        }
+
+        vec_u64.reserve(N);
+        while (vec_u64.size() < N) {
+            vec_u64.emplace_back(mt64());
+        }
+    }
+/*
     test_lexical_cast("Boost.lexical_cast float", vec_flt);
     test_lexical_cast("Boost.lexical_cast double", vec_dbl);
 
@@ -498,7 +558,7 @@ void test_all() {
     test_STL_to_chars<RoundTrip::Hex>("std::to_chars float hex 6", vec_flt, chars_format::hex, 6);
     test_STL_to_chars<RoundTrip::Hex>("std::to_chars double hex 13", vec_dbl, chars_format::hex, 13);
     #endif // AVOID_CHARCONV
-
+*/
     puts("----------");
 
     const vector<char> strings_sci_flt = prepare_strings<RoundTrip::Sci>(vec_flt);
@@ -507,13 +567,14 @@ void test_all() {
     const vector<char> strings_hex_flt = prepare_strings<RoundTrip::Hex>(vec_flt);
     const vector<char> strings_hex_dbl = prepare_strings<RoundTrip::Hex>(vec_dbl);
 
+    const vector<char> strings_u64 = prepare_strings<RoundTrip::u64>(vec_u64);
+/*
     test_strtox("std::strtof float scientific", vec_flt, strings_sci_flt);
     test_strtox("std::strtod double scientific", vec_dbl, strings_sci_dbl);
 
     test_strtox("std::strtof float hex", vec_flt, strings_hex_flt);
     test_strtox("std::strtod double hex", vec_dbl, strings_hex_dbl);
-
-    #ifndef AVOID_CHARCONV
+*/
     test_from_chars<RoundTrip::Sci>("std::from_chars float scientific", vec_flt, strings_sci_flt);
     test_from_chars<RoundTrip::Sci>("std::from_chars double scientific", vec_dbl, strings_sci_dbl);
 
@@ -522,10 +583,13 @@ void test_all() {
 
     test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser float scientific", vec_flt, strings_sci_flt);
     test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser double scientific", vec_dbl, strings_sci_dbl);
+
+    test_from_chars_integer<10>("std::from_chars uint64_t", vec_u64, strings_u64);
+    test_boost_from_chars_integer<10>("Boost.Charconv::from_chars uint64_t", vec_u64, strings_u64);
+/*
     test_from_chars<RoundTrip::Hex>("std::from_chars float hex", vec_flt, erase_0x(strings_hex_flt));
     test_from_chars<RoundTrip::Hex>("std::from_chars double hex", vec_dbl, erase_0x(strings_hex_dbl));
-    #endif // AVOID_CHARCONV
-
+*/
     printf("global_dummy: %u\n", global_dummy);
 }
 
