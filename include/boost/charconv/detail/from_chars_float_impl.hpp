@@ -158,7 +158,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 }
                 else
                 {
-                    r = from_chars_strtod(first, last, value);
+                    r = from_chars_strtod(first, r.ptr, value);
                 }
             }
             else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
@@ -175,7 +175,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 }
                 else
                 {
-                    r = from_chars_strtod(first, last, value);
+                    r = from_chars_strtod(first, r.ptr, value);
                 }
             }
             else BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
@@ -185,19 +185,18 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                     value = return_val;
                     r.ec = std::errc::result_out_of_range;
                 }
-                        #if BOOST_CHARCONV_LDBL_BITS == 64
-                    else if (exponent < -342)
-                        #else // 80 or 128 bit long doubles have same range
+                #if BOOST_CHARCONV_LDBL_BITS == 64
+                else if (exponent < -342)
+                #else // 80 or 128 bit long doubles have same range
                 else if (exponent < -4965)
-                        #endif
+                #endif
                 {
                     value = sign ? -0.0L : 0.0L;
                     r.ec = std::errc::result_out_of_range;
                 }
-
                 else
                 {
-                    r = from_chars_strtod(first, last, value);
+                    r = from_chars_strtod(first, r.ptr, value);
                 }
             }
         }
