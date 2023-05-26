@@ -189,4 +189,13 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
   #endif
 #endif
 
+#ifdef __has_include
+#  if  __has_include(<bit>)
+#    include <bit>
+#    if __cpp_lib_bit_cast >= 201806L
+#       define BOOST_CHARCONV_HAS_STD_BITCAST
+#    endif
+#  endif
+#endif
+
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
