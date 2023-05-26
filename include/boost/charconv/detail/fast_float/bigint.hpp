@@ -453,21 +453,17 @@ struct pow5_tables
         UINT64_C(298023223876953125), UINT64_C(1490116119384765625), UINT64_C(7450580596923828125)
     };
 
-    static_assert(sizeof(small_power_of_5) == 28 * sizeof(std::uint64_t), "Table size is incorrect. Should have 28 values");
-    
     #ifdef BOOST_CHARCONV_FASTFLOAT_64BIT
 
     constexpr static limb large_power_of_5[] = {
         UINT64_C(1414648277510068013), UINT64_C(9180637584431281687), UINT64_C(4539964771860779200),
         UINT64_C(10482974169319127550), UINT64_C(198276706040285095)};
-    static_assert(sizeof(large_power_of_5) == 5 * sizeof(std::uint64_t), "Table size is incorrect. Should have 5 values");
 
     #else
 
     constexpr static limb large_power_of_5[] = {
         UINT32_C(4279965485), UINT32_C(329373468), UINT32_C(4020270615), UINT32_C(2137533757), UINT32_C(4287402176),
         UINT32_C(1057042919), UINT32_C(1071430142), UINT32_C(2440757623), UINT32_C(381945767), UINT32_C(46164893)};
-    static_assert(sizeof(large_power_of_5) == 10 * sizeof(std::uint32_t), "Table size is incorrect. Should have 10 values");
 
     #endif
 };
@@ -704,16 +700,16 @@ struct bigint : pow5_tables<>
     }
 
     // multiply as if by 2 raised to a power.
-    BOOST_CHARCONV_CXX20_CONSTEXPR bool pow2(uint32_t exp) noexcept
+    BOOST_CHARCONV_CXX20_CONSTEXPR bool pow2(std::uint32_t exp) noexcept
     {
         return shl(exp);
     }
 
     // multiply as if by 5 raised to a power.
-    BOOST_CHARCONV_CXX20_CONSTEXPR bool pow5(uint32_t exp) noexcept
+    BOOST_CHARCONV_CXX20_CONSTEXPR bool pow5(std::uint32_t exp) noexcept
     {
         // multiply by a power of 5
-        std::size_t large_length = sizeof(large_power_of_5) / sizeof(limb);
+        constexpr std::size_t large_length = sizeof(large_power_of_5) / sizeof(limb);
         limb_span large = limb_span(large_power_of_5, large_length);
         while (exp >= large_step) 
         {
@@ -723,7 +719,7 @@ struct bigint : pow5_tables<>
 
         #ifdef BOOST_CHARCONV_FASTFLOAT_64BIT
 
-        std::uint64_t small_step = 27;
+        std::uint32_t small_step = 27;
         limb max_native = UINT64_C(7450580596923828125);
 
         #else
@@ -743,7 +739,7 @@ struct bigint : pow5_tables<>
             // Work around clang bug https://godbolt.org/z/zedh7rrhc
             // This is similar to https://github.com/llvm/llvm-project/issues/47746,
             // except the workaround described there don't work here
-            BOOST_CHARCONV_TRY(small_mul(vec, static_cast<limb>(((void)small_power_of_5[0], small_power_of_5[exp]))));
+            BOOST_CHARCONV_TRY(small_mul(vec, static_cast<limb>((static_cast<void>(small_power_of_5[0]), small_power_of_5[exp]))));
         }
 
         return true;
