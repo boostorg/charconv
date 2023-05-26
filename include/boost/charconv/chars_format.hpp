@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_CHARS_FORMAT_HPP
 #define BOOST_CHARCONV_CHARS_FORMAT_HPP
 
+#include <boost/charconv/detail/config.hpp>
+
 namespace boost { namespace charconv {
 
 // Floating-point format for primitive numerical conversion
@@ -37,17 +39,34 @@ constexpr chars_format operator^ (chars_format lhs, chars_format rhs) noexcept
     return static_cast<chars_format>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
 }
 
-constexpr chars_format operator|= (chars_format lhs, chars_format rhs) noexcept
+// Clang 3.7+ and MSVC 14.0+ has it figured out that this is constexpr at C++11
+// No version of GCC does though
+#if defined(BOOST_MSVC) || defined(__clang__)
+constexpr 
+#else
+BOOST_CHARCONV_CXX14_CONSTEXPR
+#endif
+chars_format operator|= (chars_format lhs, chars_format rhs) noexcept
 {
     return lhs = lhs | rhs;
 }
 
-constexpr chars_format operator&= (chars_format lhs, chars_format rhs) noexcept
+#if defined(BOOST_MSVC) || defined(__clang__)
+constexpr 
+#else
+BOOST_CHARCONV_CXX14_CONSTEXPR
+#endif
+chars_format operator&= (chars_format lhs, chars_format rhs) noexcept
 {
     return lhs = lhs & rhs;
 }
 
-constexpr chars_format operator^= (chars_format lhs, chars_format rhs) noexcept
+#if defined(BOOST_MSVC) || defined(__clang__)
+constexpr 
+#else
+BOOST_CHARCONV_CXX14_CONSTEXPR
+#endif
+chars_format operator^= (chars_format lhs, chars_format rhs) noexcept
 {
     return lhs = lhs ^ rhs;
 }
