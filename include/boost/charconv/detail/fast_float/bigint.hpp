@@ -28,14 +28,15 @@ namespace boost { namespace charconv { namespace detail { namespace fast_float {
 #if defined(BOOST_CHARCONV_FASTFLOAT_64BIT) && !defined(__sparc)
 
 #define BOOST_CHARCONV_FASTFLOAT_64BIT 1
+
 using limb = std::uint64_t;
 constexpr std::size_t limb_bits = 64;
 
 #else
 
 #define FASTFLOAT_32BIT_LIMB
-using limb = uint32_t;
-constexpr size_t limb_bits = 32;
+using limb = std::uint32_t;
+constexpr std::size_t limb_bits = 32;
 
 #endif
 
@@ -465,7 +466,7 @@ struct pow5_tables
 
     constexpr static limb large_power_of_5[] = {
         UINT32_C(4279965485), UINT32_C(329373468), UINT32_C(4020270615), UINT32_C(2137533757), UINT32_C(4287402176),
-        UINT32_C(1057042919), UINT32_C(1071430142), UINT32_C(2440757623), UINT32_C(381945767), UINT32_C(46164893U)};
+        UINT32_C(1057042919), UINT32_C(1071430142), UINT32_C(2440757623), UINT32_C(381945767), UINT32_C(46164893)};
     static_assert(sizeof(large_power_of_5) == 10 * sizeof(std::uint32_t), "Table size is incorrect. Should have 10 values");
 
     #endif

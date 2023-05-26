@@ -133,30 +133,30 @@ struct binary_format_lookup_tables<double, U>
     // Largest integer value v so that (5**index * v) <= 1<<53.
     // 0x10000000000000 == 1 << 53
     static constexpr std::uint64_t max_mantissa[] = {
-        0x10000000000000,
-        0x10000000000000 / 5,
-        0x10000000000000 / (5 * 5),
-        0x10000000000000 / (5 * 5 * 5),
-        0x10000000000000 / (5 * 5 * 5 * 5),
-        0x10000000000000 / (constant_55555),
-        0x10000000000000 / (constant_55555 * 5),
-        0x10000000000000 / (constant_55555 * 5 * 5),
-        0x10000000000000 / (constant_55555 * 5 * 5 * 5),
-        0x10000000000000 / (constant_55555 * 5 * 5 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555),
-        0x10000000000000 / (constant_55555 * constant_55555 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * 5 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5),
-        0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5 * 5)};
+        UINT64_C(0x10000000000000),
+        UINT64_C(0x10000000000000) / UINT64_C(5),
+        UINT64_C(0x10000000000000) / (UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (UINT64_C(5) * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555),
+        UINT64_C(0x10000000000000) / (constant_55555 * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * constant_55555),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+        UINT64_C(0x10000000000000) / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5) * UINT64_C(5))};
 };
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && BOOST_MSVC != 1900
@@ -175,18 +175,18 @@ struct binary_format_lookup_tables<float, U>
     // Largest integer value v so that (5**index * v) <= 1<<24.
     // 0x1000000 == 1<<24
     static constexpr uint64_t max_mantissa[] = {
-            0x1000000,
-            0x1000000 / 5,
-            0x1000000 / (5 * 5),
-            0x1000000 / (5 * 5 * 5),
-            0x1000000 / (5 * 5 * 5 * 5),
-            0x1000000 / (constant_55555),
-            0x1000000 / (constant_55555 * 5),
-            0x1000000 / (constant_55555 * 5 * 5),
-            0x1000000 / (constant_55555 * 5 * 5 * 5),
-            0x1000000 / (constant_55555 * 5 * 5 * 5 * 5),
-            0x1000000 / (constant_55555 * constant_55555),
-            0x1000000 / (constant_55555 * constant_55555 * 5)};
+            UINT64_C(0x1000000),
+            UINT64_C(0x1000000) / UINT64_C(5),
+            UINT64_C(0x1000000) / (UINT64_C(5) * UINT64_C(5)),
+            UINT64_C(0x1000000) / (UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+            UINT64_C(0x1000000) / (UINT64_C(5) * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+            UINT64_C(0x1000000) / (constant_55555),
+            UINT64_C(0x1000000) / (constant_55555 * UINT64_C(5)),
+            UINT64_C(0x1000000) / (constant_55555 * UINT64_C(5) * UINT64_C(5)),
+            UINT64_C(0x1000000) / (constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+            UINT64_C(0x1000000) / (constant_55555 * UINT64_C(5) * UINT64_C(5) * UINT64_C(5) * UINT64_C(5)),
+            UINT64_C(0x1000000) / (constant_55555 * constant_55555),
+            UINT64_C(0x1000000) / (constant_55555 * constant_55555 * UINT64_C(5))};
 };
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && BOOST_MSVC != 1900
