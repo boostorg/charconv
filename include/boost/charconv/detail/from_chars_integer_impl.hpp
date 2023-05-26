@@ -59,7 +59,7 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
 
-#elif defined(__GNUC__) && (__GNUC__ >= 9)
+#elif defined(__GNUC__) && (__GNUC__ >= 7)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 
