@@ -17,6 +17,41 @@ enum class chars_format : unsigned
     general = fixed | scientific
 };
 
+constexpr chars_format operator~ (chars_format fmt) noexcept
+{
+    return static_cast<chars_format>(~static_cast<unsigned>(fmt));
+}
+
+constexpr chars_format operator| (chars_format lhs, chars_format rhs) noexcept
+{
+    return static_cast<chars_format>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs));
+}
+
+constexpr chars_format operator& (chars_format lhs, chars_format rhs) noexcept
+{
+    return static_cast<chars_format>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
+}
+
+constexpr chars_format operator^ (chars_format lhs, chars_format rhs) noexcept
+{
+    return static_cast<chars_format>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
+}
+
+constexpr chars_format operator|= (chars_format lhs, chars_format rhs) noexcept
+{
+    return lhs = lhs | rhs;
+}
+
+constexpr chars_format operator&= (chars_format lhs, chars_format rhs) noexcept
+{
+    return lhs = lhs & rhs;
+}
+
+constexpr chars_format operator^= (chars_format lhs, chars_format rhs) noexcept
+{
+    return lhs = lhs ^ rhs;
+}
+
 }} // Namespaces
 
 #endif // BOOST_CHARCONV_CHARS_FROMAT_HPP
