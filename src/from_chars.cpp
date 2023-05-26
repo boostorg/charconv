@@ -3,11 +3,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+//#include <boost/charconv/detail/from_chars_float_impl.hpp>
+#include <boost/charconv/detail/fast_float/fast_float.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <system_error>
 #include <string>
 #include <cstdlib>
+#include <cerrno>
+#include <cstring>
 
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -28,12 +32,14 @@ std::errc boost::charconv::detail::errno_to_errc(int errno_value) noexcept
 
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
+    // return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
+    return boost::charconv::detail::fast_float::from_chars(first, last, value, fmt);
 }
 
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, double& value, boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
+    // return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
+    return boost::charconv::detail::fast_float::from_chars(first, last, value, fmt);
 }
 
 /*
@@ -101,9 +107,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 // Since long double is just a double we use the double implementation and cast into value
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
-    auto d = static_cast<double>(value);
+    static_assert(sizeof(double) == sizeof(long double), "64 bit long double detected, but the size is incorrect");
+    
+    double d;
+    std::memcpy(&d, &value, sizeof(double));
     const auto r = boost::charconv::from_chars(first, last, d, fmt);
-    value = static_cast<long double>(d);
+    std::memcpy(&value, &d, sizeof(long double));
 
     return r;
 }

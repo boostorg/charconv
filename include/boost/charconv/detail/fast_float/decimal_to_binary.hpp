@@ -76,7 +76,7 @@ constexpr BOOST_FORCEINLINE std::int32_t power(std::int32_t q) noexcept
 // create an adjusted mantissa, biased by the invalid power2
 // for significant digits already multiplied by 10 ** q.
 template <typename binary>
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE
 adjusted_mantissa compute_error_scaled(std::int64_t q, std::uint64_t w, int lz) noexcept
 {
     int hilz = int(w >> 63) ^ 1;

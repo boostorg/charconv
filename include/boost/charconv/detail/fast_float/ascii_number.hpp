@@ -84,7 +84,7 @@ BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR void write_u64(std::uint8_t *ch
 }
 
 // credit @aqrit
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR std::uint32_t parse_eight_digits_unrolled(std::uint64_t val) noexcept
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE std::uint32_t parse_eight_digits_unrolled(std::uint64_t val) noexcept
 {
     constexpr std::uint64_t mask = UINT64_C(0x000000FF000000FF);
     constexpr std::uint64_t mul1 = UINT64_C(0x000F424000000064); // 100 + (1000000ULL << 32)
@@ -335,7 +335,7 @@ parsed_number_string_t<UC> parse_number_string(const UC* p, const UC* pend, pars
             // We have now corrected both exponent and i, to a truncated value
         }
     }
-    
+
     answer.exponent = exponent;
     answer.mantissa = i;
     return answer;

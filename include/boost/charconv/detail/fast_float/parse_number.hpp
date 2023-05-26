@@ -164,7 +164,7 @@ BOOST_FORCEINLINE bool rounds_to_nearest() noexcept
 
 template<typename T, typename UC>
 BOOST_CHARCONV_CXX20_CONSTEXPR
-from_chars_result_t<UC> from_chars(const UC* first, const UC* last, T &value, chars_format fmt = chars_format::general) noexcept  
+from_chars_result_t<UC> from_chars(const UC* first, const UC* last, T &value, chars_format fmt) noexcept  
 {
     return from_chars_advanced(first, last, value, parse_options_t<UC>{fmt});
 }

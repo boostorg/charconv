@@ -194,13 +194,15 @@ struct stackvec
     }
 };
 
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR std::uint64_t empty_hi64(bool& truncated) noexcept
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE
+std::uint64_t empty_hi64(bool& truncated) noexcept
 {
     truncated = false;
     return 0;
 }
 
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR std::uint64_t uint64_hi64(std::uint64_t r0, bool& truncated) noexcept
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR 
+std::uint64_t uint64_hi64(std::uint64_t r0, bool& truncated) noexcept
 {
     truncated = false;
     int shl = boost::core::countl_zero(r0);
@@ -450,21 +452,21 @@ struct pow5_tables
         UINT64_C(298023223876953125), UINT64_C(1490116119384765625), UINT64_C(7450580596923828125)
     };
 
-    static_assert(sizeof(small_power_of_5) == 28 * sizeof(std::uint64_t));
+    static_assert(sizeof(small_power_of_5) == 28 * sizeof(std::uint64_t), "Table size is incorrect. Should have 28 values");
     
     #ifdef BOOST_CHARCONV_FASTFLOAT_64BIT
 
     constexpr static limb large_power_of_5[] = {
         UINT64_C(1414648277510068013), UINT64_C(9180637584431281687), UINT64_C(4539964771860779200),
         UINT64_C(10482974169319127550), UINT64_C(198276706040285095)};
-    static_assert(sizeof(large_power_of_5) == 5 * sizeof(std::uint64_t));
+    static_assert(sizeof(large_power_of_5) == 5 * sizeof(std::uint64_t), "Table size is incorrect. Should have 5 values");
 
     #else
 
     constexpr static limb large_power_of_5[] = {
         UINT32_C(4279965485), UINT32_C(329373468), UINT32_C(4020270615), UINT32_C(2137533757), UINT32_C(4287402176),
         UINT32_C(1057042919), UINT32_C(1071430142), UINT32_C(2440757623), UINT32_C(381945767), UINT32_C(46164893U)};
-    static_assert(sizeof(large_power_of_5) == 10 * sizeof(std::uint32_t));
+    static_assert(sizeof(large_power_of_5) == 10 * sizeof(std::uint32_t), "Table size is incorrect. Should have 10 values");
 
     #endif
 };

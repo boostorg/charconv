@@ -37,7 +37,7 @@ static constexpr std::uint64_t powers_of_ten_uint64[] = {
 // effect on performance: in order to have a faster algorithm, we'd need
 // to slow down performance for faster algorithms, and this is still fast.
 template <typename UC>
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR 
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE 
 std::int32_t scientific_exponent(parsed_number_string_t<UC> & num) noexcept 
 {
     std::uint64_t mantissa = num.mantissa;
@@ -118,7 +118,7 @@ adjusted_mantissa to_extended_halfway(T value) noexcept
 
 // round an extended-precision float to the nearest machine float.
 template <typename T, typename callback>
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR 
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE 
 void round(adjusted_mantissa& am, callback cb) noexcept
 {
     std::int32_t mantissa_shift = 64 - binary_format<T>::mantissa_explicit_bits() - 1;
@@ -152,7 +152,7 @@ void round(adjusted_mantissa& am, callback cb) noexcept
 }
 
 template <typename callback>
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR 
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE 
 void round_nearest_tie_even(adjusted_mantissa& am, std::int32_t shift, callback cb) noexcept
 {
     const std::uint64_t mask = (shift == 64) ? UINT64_MAX : (UINT64_C(1) << shift) - 1;
@@ -176,7 +176,7 @@ void round_nearest_tie_even(adjusted_mantissa& am, std::int32_t shift, callback 
     am.mantissa += static_cast<std::uint64_t>(cb(is_odd, is_halfway, is_above));
 }
 
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE
 void round_down(adjusted_mantissa& am, std::int32_t shift) noexcept
 {
     if (shift == 64) 
@@ -275,7 +275,7 @@ void parse_eight_digits(const char*& p, limb& value, std::size_t& counter, std::
 }
 
 template <typename UC>
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE
 void parse_one_digit(const UC*& p, limb& value, std::size_t& counter, std::size_t& count) noexcept
 {
     value = value * 10 + limb(*p - static_cast<UC>('0'));
