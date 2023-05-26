@@ -72,7 +72,7 @@ struct span
 
     BOOST_CHARCONV_CXX14_CONSTEXPR const T& operator[](std::size_t index) const noexcept
     {
-        BOOST_CHARCONV_ASSERT(index < length);
+        BOOST_CHARCONV_DEBUG_ASSERT(index < length);
         return ptr[index];
     }
 };

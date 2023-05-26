@@ -9,15 +9,14 @@
 #include <type_traits>
 #include <cfloat>
 
-// Once library is complete remove this block, and Boost.Assert from the CML if still unused.
-#ifndef BOOST_CHARCONV_STANDALONE
-#  include <boost/assert.hpp>
-#  define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
-#  define BOOST_CHARCONV_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
-#else // Use plain asserts
-#  include <cassert>
-#  define BOOST_CHARCONV_ASSERT(expr) assert(expr)
-#  define BOOST_CHARCONV_ASSERT_MSG(expr, msg) assert((expr)&&(msg))
+#include <boost/assert.hpp>
+#define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
+#define BOOST_CHARCONV_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
+
+#ifdef BOOST_CHARCONV_DEBUG
+#  define BOOST_CHARCONV_DEBUG_ASSERT(expr) BOOST_CHARCONV_ASSERT(expr)
+#else
+#  define BOOST_CHARCONV_DEBUG_ASSERT(expr)
 #endif
 
 // Rust style try macro
