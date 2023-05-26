@@ -64,7 +64,7 @@ struct stackvec
     stackvec &operator=(stackvec &&other) = delete;
 
     // create stack vector from existing limb span.
-    BOOST_CHARCONV_CXX20_CONSTEXPR stackvec(limb_span s) 
+    BOOST_CHARCONV_CXX20_CONSTEXPR stackvec(BOOST_ATTRIBUTE_UNUSED limb_span s) 
     {
         BOOST_CHARCONV_ASSERT(try_extend(s));
     }

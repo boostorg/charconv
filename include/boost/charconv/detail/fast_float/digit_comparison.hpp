@@ -411,7 +411,7 @@ void parse_mantissa(bigint& result, parsed_number_string_t<UC>& num, std::size_t
 
 template <typename T>
 inline BOOST_CHARCONV_CXX20_CONSTEXPR
-adjusted_mantissa positive_digit_comp(bigint& bigmant, std::int32_t exponent) noexcept
+adjusted_mantissa positive_digit_comp(bigint& bigmant, BOOST_ATTRIBUTE_UNUSED std::int32_t exponent) noexcept
 {
     BOOST_CHARCONV_ASSERT(bigmant.pow10(static_cast<std::uint32_t>(exponent)));
     adjusted_mantissa answer;
