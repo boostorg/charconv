@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-//#include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
+#include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <system_error>
@@ -32,14 +32,20 @@ std::errc boost::charconv::detail::errno_to_errc(int errno_value) noexcept
 
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
 {
-    // return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
-    return boost::charconv::detail::fast_float::from_chars(first, last, value, fmt);
+    if (fmt != boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::fast_float::from_chars(first, last, value, fmt);
+    }
+    return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
 }
 
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, double& value, boost::charconv::chars_format fmt) noexcept
 {
-    // return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
-    return boost::charconv::detail::fast_float::from_chars(first, last, value, fmt);
+    if (fmt != boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::fast_float::from_chars(first, last, value, fmt);
+    }
+    return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
 }
 
 /*

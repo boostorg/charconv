@@ -223,7 +223,8 @@ parsed_number_string_t<UC> parse_number_string(const UC* p, const UC* pend, pars
         return answer;
     }
     std::int64_t exp_number = 0; // explicit exponential part
-    if ((fmt & chars_format::scientific) && (p != pend) && ((static_cast<UC>('e') == *p) || (static_cast<UC>('E') == *p)))
+    if (static_cast<bool>(fmt & chars_format::scientific) && (p != pend) && 
+        ((static_cast<UC>('e') == *p) || (static_cast<UC>('E') == *p)))
     {
         const UC* location_of_e = p;
         ++p;

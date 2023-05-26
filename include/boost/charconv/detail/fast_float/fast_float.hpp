@@ -37,7 +37,7 @@ namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
 template<typename T, typename UC = char>
 BOOST_CHARCONV_CXX20_CONSTEXPR
-from_chars_result_t<UC> from_chars(const UC* first, const UC* last, T &value, chars_format fmt = chars_format::general) noexcept;
+from_chars_result_t<UC> from_chars(const UC* first, const UC* last, T &value, chars_format fmt) noexcept;
 
 /**
  * Like from_chars, but accepts an `options` argument to govern number parsing.
