@@ -6,6 +6,7 @@
 #define BOOST_CHARCONV_DETAIL_CONFIG_HPP
 
 #include <boost/config.hpp>
+#include <type_traits>
 
 // Once library is complete remove this block, and Boost.Assert from the CML if still unused.
 #ifndef BOOST_CHARCONV_STANDALONE
@@ -115,6 +116,49 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  endif
 #elif defined(BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION)
 #  define BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
+#endif
+
+// Is constant evaluated detection
+#ifdef __cpp_lib_is_constant_evaluated
+#  define BOOST_CHARCONV_HAS_IS_CONSTANT_EVALUATED
+#endif
+
+#ifdef __has_builtin
+#  if __has_builtin(__builtin_is_constant_evaluated) && !defined(BOOST_NO_CXX14_CONSTEXPR)
+#    define BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+#  endif
+#endif
+
+//
+// MSVC also supports __builtin_is_constant_evaluated if it's recent enough:
+//
+#if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 192528326)
+#  define BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+#endif
+
+//
+// As does GCC-9:
+//
+#if !defined(BOOST_NO_CXX14_CONSTEXPR) && (__GNUC__ >= 9) && !defined(BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED)
+#  define BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+#endif
+
+#if defined(BOOST_CHARCONV_HAS_IS_CONSTANT_EVALUATED) && !defined(BOOST_NO_CXX14_CONSTEXPR)
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) std::is_constant_evaluated()
+#elif defined(BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED)
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) __builtin_is_constant_evaluated()
+#elif !defined(BOOST_NO_CXX14_CONSTEXPR) && (__GNUC__ >= 6)
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) __builtin_constant_p(x)
+#  define BOOST_CHARCONV_USING_BUILTIN_CONSTANT_P
+#else
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) false
+#  define BOOST_CHARCONV_NO_CONSTEXPR_DETECTION
+#endif
+
+#if !defined(BOOST_CHARCONV_NO_CONSTEXPR_DETECTION) && __cpp_lib_constexpr_algorithms >= 201806L
+#  define BOOST_CHARCONV_CXX20_CONSTEXPR constexpr
+#else
+#  define BOOST_CHARCONV_CXX20_CONSTEXPR inline  
 #endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
