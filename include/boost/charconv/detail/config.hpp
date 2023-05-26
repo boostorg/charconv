@@ -7,6 +7,7 @@
 
 #include <boost/config.hpp>
 #include <type_traits>
+#include <cfloat>
 
 // Once library is complete remove this block, and Boost.Assert from the CML if still unused.
 #ifndef BOOST_CHARCONV_STANDALONE
@@ -18,6 +19,9 @@
 #  define BOOST_CHARCONV_ASSERT(expr) assert(expr)
 #  define BOOST_CHARCONV_ASSERT_MSG(expr, msg) assert((expr)&&(msg))
 #endif
+
+// Rust style try macro
+#define BOOST_CHARCONV_TRY(x) { if(!x) return false; }
 
 // Use 128 bit integers and supress warnings for using extensions
 #if defined(BOOST_HAS_INT128)
@@ -158,7 +162,32 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #if !defined(BOOST_CHARCONV_NO_CONSTEXPR_DETECTION) && __cpp_lib_constexpr_algorithms >= 201806L
 #  define BOOST_CHARCONV_CXX20_CONSTEXPR constexpr
 #else
-#  define BOOST_CHARCONV_CXX20_CONSTEXPR inline  
+#  define BOOST_CHARCONV_CXX20_CONSTEXPR  
+#endif
+
+#if (defined(__x86_64) || defined(__x86_64__) || defined(_M_X64)        \
+       || defined(__amd64) || defined(__aarch64__) || defined(_M_ARM64) \
+       || defined(__MINGW64__)                                          \
+       || defined(__s390x__)                                            \
+       || (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) || defined(__PPC64LE__)) )
+  #define BOOST_CHARCONV_FASTFLOAT_64BIT 1
+#elif (defined(__i386) || defined(__i386__) || defined(_M_IX86)   \
+     || defined(__arm__) || defined(_M_ARM) || defined(__ppc__)   \
+     || defined(__MINGW32__) || defined(__EMSCRIPTEN__))
+  #define BOOST_CHARCONV_FASTFLOAT_32BIT 1
+#else
+  // Need to check incrementally, since SIZE_MAX is a size_t, avoid overflow.
+  // We can never tell the register width, but the SIZE_MAX is a good approximation.
+  // UINTPTR_MAX and INTPTR_MAX are optional, so avoid them for max portability.
+  #if SIZE_MAX == 0xffff
+    #error Unknown platform (16-bit, unsupported)
+  #elif SIZE_MAX == 0xffffffff
+    #define BOOST_CHARCONV_FASTFLOAT_32BIT 1
+  #elif SIZE_MAX == 0xffffffffffffffff
+    #define BOOST_CHARCONV_FASTFLOAT_64BIT 1
+  #else
+    #error Unknown platform (not 32-bit, not 64-bit?)
+  #endif
 #endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
