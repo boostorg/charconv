@@ -302,7 +302,7 @@ parsed_number_string_t<UC> parse_number_string(const UC* p, const UC* pend, pars
         {
             if(*start == static_cast<UC>('0'))
             { 
-                digit_count --;
+                digit_count--;
             }
             start++;
         }
@@ -315,10 +315,10 @@ parsed_number_string_t<UC> parse_number_string(const UC* p, const UC* pend, pars
             i = 0;
             p = answer.integer.ptr;
             const UC* int_end = p + answer.integer.len();
-            const std::uint64_t minimal_nineteen_digit_integer{1000000000000000000};
+            constexpr std::uint64_t minimal_nineteen_digit_integer{1000000000000000000};
             while((i < minimal_nineteen_digit_integer) && (p != int_end))
             {
-                i = i * 10 + uint64_t(*p - static_cast<UC>('0'));
+                i = i * 10 + static_cast<std::uint64_t>(*p - static_cast<UC>('0'));
                 ++p;
             }
             if (i >= minimal_nineteen_digit_integer)
@@ -333,7 +333,7 @@ parsed_number_string_t<UC> parse_number_string(const UC* p, const UC* pend, pars
                 const UC* frac_end = p + answer.fraction.len();
                 while((i < minimal_nineteen_digit_integer) && (p != frac_end))
                 {
-                    i = i * 10 + std::uint64_t(*p - static_cast<UC>('0'));
+                    i = i * 10 + static_cast<std::uint64_t>(*p - static_cast<UC>('0'));
                     ++p;
                 }
                 exponent = answer.fraction.ptr - p + exp_number;

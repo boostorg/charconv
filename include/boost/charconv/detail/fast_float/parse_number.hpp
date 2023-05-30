@@ -281,7 +281,7 @@ from_chars_result_t<UC> from_chars_advanced(const UC* first, const UC* last, T &
     }
     // If we called compute_float<binary_format<T>>(pns.exponent, pns.mantissa) and we have an invalid power (am.power2 < 0),
     // then we need to go the long way around again. This is very uncommon.
-    if(BOOST_UNLIKELY(am.power2 < 0))
+    if (am.power2 < 0)
     { 
         am = digit_comp<T>(pns, am);
     }
