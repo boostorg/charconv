@@ -19,9 +19,9 @@ template <typename T>
 void spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
     T v;
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     BOOST_TEST(r.ec == std::errc());
-    if (!BOOST_TEST_EQ(v, expected_value))
+    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(buffer.c_str() + buffer.size(), r.ptr)))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
     }
@@ -597,6 +597,12 @@ int main()
     test_issue_48(-1.398276, "-1.398276;5.396485", 9);
     test_issue_48(-1.398276, "-1.398276\t5.396485", 9);
     test_issue_48(-1.398276, "-1.398276\n5.396485", 9);
+
+    // Pointers did not match
+    // See: https://github.com/cppalliance/charconv/issues/55
+    spot_value<double>("0e0", 0e0);
+    spot_value<double>("0e00000000000", 0e00000000000);
+    spot_value<double>("0e1", 0e1);
 
     // Value in range with 20 million digits. Malloc should max out at 16'711'568 bytes
     test_strtod_routines<double>(1.982645139827653964857196,
