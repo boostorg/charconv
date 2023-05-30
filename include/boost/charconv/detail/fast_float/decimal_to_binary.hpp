@@ -93,7 +93,7 @@ template <typename binary>
 BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR
 adjusted_mantissa compute_error(std::int64_t q, std::uint64_t w) noexcept 
 {
-    int lz = boost::core::countl_zero(w);
+    int lz = leading_zeroes(w);
     w <<= lz;
     uint128 product = compute_product_approximation<binary::mantissa_explicit_bits() + 3>(q, w);
 
@@ -126,7 +126,7 @@ BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR adjusted_mantissa compute_float
     // At this point in time q is in [powers::smallest_power_of_five, powers::largest_power_of_five].
 
     // We want the most significant bit of i to be 1. Shift if needed.
-    int lz = boost::core::countl_zero(w);
+    int lz = leading_zeroes(w);
     w <<= lz;
 
     // The required precision is binary::mantissa_explicit_bits() + 3 because

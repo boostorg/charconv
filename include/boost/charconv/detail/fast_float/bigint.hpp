@@ -206,14 +206,14 @@ BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR
 std::uint64_t uint64_hi64(std::uint64_t r0, bool& truncated) noexcept
 {
     truncated = false;
-    int shl = boost::core::countl_zero(r0);
+    int shl = leading_zeroes(r0);
     return r0 << shl;
 }
 
 BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR 
 std::uint64_t uint64_hi64(std::uint64_t r0, std::uint64_t r1, bool& truncated) noexcept
 {
-    int shl = boost::core::countl_zero(r0);
+    int shl = leading_zeroes(r0);
     if (shl == 0) 
     {
         truncated = r1 != 0;
@@ -671,13 +671,13 @@ struct bigint : pow5_tables<>
         }
         #ifdef BOOST_CHARCONV_FASTFLOAT_64BIT
         
-        return boost::core::countl_zero(vec.rindex(0));
+        return leading_zeroes(vec.rindex(0));
 
         #else
 
         // no use defining a specialized leading_zeroes for a 32-bit type.
         std::uint64_t r0 = vec.rindex(0);
-        return boost::core::countl_zero(r0 << 32);
+        return leading_zeroes(r0 << 32);
 
         #endif
     }

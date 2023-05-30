@@ -439,6 +439,52 @@ static constexpr std::uint64_t int_cmp_zeros()
         (static_cast<uint64_t>(static_cast<UC>('0')) << 32 | static_cast<UC>('0'));
 }
 
+// Helper C++11 constexpr generic implementation of leading_zeroes
+BOOST_FORCEINLINE constexpr
+int leading_zeroes_generic(std::uint64_t input_num, int last_bit = 0) {
+    return (
+        ((input_num & UINT64_C(0xffffffff00000000)) && (input_num >>= 32, last_bit |= 32)),
+        ((input_num & UINT64_C(        0xffff0000)) && (input_num >>= 16, last_bit |= 16)),
+        ((input_num & UINT64_C(            0xff00)) && (input_num >>=  8, last_bit |=  8)),
+        ((input_num & UINT64_C(              0xf0)) && (input_num >>=  4, last_bit |=  4)),
+        ((input_num & UINT64_C(               0xc)) && (input_num >>=  2, last_bit |=  2)),
+        ((input_num & UINT64_C(               0x2)) && (input_num >>=  1, last_bit |=  1)),
+        63 - last_bit
+    );
+}
+
+// Result might be undefined when input_num is zero
+BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR
+int leading_zeroes(std::uint64_t input_num)
+{
+    BOOST_CHARCONV_ASSERT(input_num > 0);
+
+    if (BOOST_CHARCONV_IS_CONSTANT_EVALUATED(input_num)) 
+    {
+        return leading_zeroes_generic(input_num);
+    }
+
+    #ifdef BOOST_MSVC
+    #  if defined(_M_X64) || defined(_M_ARM64)
+        unsigned long leading_zero = 0;
+        // Search the mask data from most significant bit (MSB)
+        // to least significant bit (LSB) for a set bit (1).
+        _BitScanReverse64(&leading_zero, input_num);
+        return static_cast<int>(63 - leading_zero);
+    
+    #  else
+    
+        return leading_zeroes_generic(input_num);
+    
+    #  endif
+    
+    #else
+
+    return __builtin_clzll(input_num);
+    
+    #endif
+}
+
 template <typename UC>
 static constexpr int int_cmp_len()
 {
