@@ -29,11 +29,16 @@ namespace detail {
  * The case comparisons could be made much faster given that we know that the
  * strings a null-free and fixed.
  **/
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 template <typename T, typename UC>
-from_chars_result_t<UC> BOOST_CHARCONV_CXX14_CONSTEXPR
+BOOST_CHARCONV_CXX14_CONSTEXPR from_chars_result_t<UC>
 parse_infnan(const UC* first, const UC* last, T &value) noexcept 
 {
-    from_chars_result_t<UC> answer;
+    from_chars_result_t<UC> answer {};
     answer.ptr = first;
     answer.ec = std::errc(); // be optimistic
     bool minus_sign = false;
@@ -92,6 +97,10 @@ parse_infnan(const UC* first, const UC* last, T &value) noexcept
     answer.ec = std::errc::invalid_argument;
     return answer;
 }
+
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 /**
  * Returns true if the floating-pointing rounding mode is to 'nearest'.
