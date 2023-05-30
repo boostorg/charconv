@@ -64,11 +64,20 @@ struct stackvec
     stackvec(stackvec &&) = delete;
     stackvec &operator=(stackvec &&other) = delete;
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4100)
+#endif
+
     // create stack vector from existing limb span.
     BOOST_CHARCONV_CXX20_CONSTEXPR stackvec(BOOST_ATTRIBUTE_UNUSED limb_span s) 
     {
         BOOST_CHARCONV_ASSERT(try_extend(s));
     }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
     BOOST_CHARCONV_CXX14_CONSTEXPR limb& operator[](std::size_t index) noexcept
     {
