@@ -89,7 +89,7 @@ parse_infnan(UC const * first, UC const * last, T &value)  noexcept  {
  * It is the default on most system. This function is meant to be inexpensive.
  * Credit : @mwalcott3
  */
-fastfloat_really_inline bool rounds_to_nearest() noexcept {
+BOOST_FORCEINLINE bool rounds_to_nearest() noexcept {
   // https://lemire.me/blog/2020/06/26/gcc-not-nearest/
 #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
   return false;

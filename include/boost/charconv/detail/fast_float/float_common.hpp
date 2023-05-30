@@ -107,12 +107,6 @@ using parse_options = parse_options_t<char>;
 #endif
 #endif
 
-#ifdef BOOST_CHARCONV_FASTFLOAT_VISUAL_STUDIO
-#define fastfloat_really_inline __forceinline
-#else
-#define fastfloat_really_inline inline __attribute__((always_inline))
-#endif
-
 #ifndef BOOST_CHARCONV_FASTFLOAT_ASSERT
 #define BOOST_CHARCONV_FASTFLOAT_ASSERT(x)  { ((void)(x)); }
 #endif
@@ -126,7 +120,7 @@ using parse_options = parse_options_t<char>;
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
-fastfloat_really_inline constexpr bool cpp20_and_in_constexpr() {
+BOOST_FORCEINLINE constexpr bool cpp20_and_in_constexpr() {
 #if BOOST_CHARCONV_FASTFLOAT_HAS_IS_CONSTANT_EVALUATED
   return std::is_constant_evaluated();
 #else
@@ -175,7 +169,7 @@ struct value128 {
 };
 
 /* Helper C++11 constexpr generic implementation of leading_zeroes */
-fastfloat_really_inline constexpr
+BOOST_FORCEINLINE constexpr
 int leading_zeroes_generic(uint64_t input_num, int last_bit = 0) {
   return (
     ((input_num & uint64_t(0xffffffff00000000)) && (input_num >>= 32, last_bit |= 32)),
@@ -189,7 +183,7 @@ int leading_zeroes_generic(uint64_t input_num, int last_bit = 0) {
 }
 
 /* result might be undefined when input_num is zero */
-fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
+BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 int leading_zeroes(uint64_t input_num) {
   assert(input_num > 0);
   if (cpp20_and_in_constexpr()) {
@@ -211,11 +205,11 @@ int leading_zeroes(uint64_t input_num) {
 }
 
 // slow emulation routine for 32-bit
-fastfloat_really_inline constexpr uint64_t emulu(uint32_t x, uint32_t y) {
+BOOST_FORCEINLINE constexpr uint64_t emulu(uint32_t x, uint32_t y) {
     return x * (uint64_t)y;
 }
 
-fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
+BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 uint64_t umul128_generic(uint64_t ab, uint64_t cd, uint64_t *hi) {
   uint64_t ad = emulu((uint32_t)(ab >> 32), (uint32_t)cd);
   uint64_t bd = emulu((uint32_t)ab, (uint32_t)cd);
@@ -231,7 +225,7 @@ uint64_t umul128_generic(uint64_t ab, uint64_t cd, uint64_t *hi) {
 
 // slow emulation routine for 32-bit
 #if !defined(__MINGW64__)
-fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
+BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 uint64_t _umul128(uint64_t ab, uint64_t cd, uint64_t *hi) {
   return umul128_generic(ab, cd, hi);
 }
@@ -241,7 +235,7 @@ uint64_t _umul128(uint64_t ab, uint64_t cd, uint64_t *hi) {
 
 
 // compute 64-bit a*b
-fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
+BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 value128 full_multiplication(uint64_t a, uint64_t b) {
   if (cpp20_and_in_constexpr()) {
     value128 answer;
@@ -527,7 +521,7 @@ template <> inline constexpr binary_format<double>::equiv_uint
 }
 
 template<typename T>
-fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
+BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 void to_float(bool negative, adjusted_mantissa am, T &value) {
   using uint = typename binary_format<T>::equiv_uint;
   uint word = (uint)am.mantissa;
