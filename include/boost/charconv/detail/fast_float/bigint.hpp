@@ -271,7 +271,11 @@ BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR limb scalar_add(limb x, limb y,
 }
 
 // multiply two small integers, getting both the high and low bits.
-BOOST_FORCEINLINE BOOST_CHARCONV_CXX20_CONSTEXPR limb scalar_mul(limb x, limb y, limb& carry) noexcept
+BOOST_FORCEINLINE
+#ifndef BOOST_MSVC 
+BOOST_CHARCONV_CXX20_CONSTEXPR
+#endif
+limb scalar_mul(limb x, limb y, limb& carry) noexcept
 {
     #ifdef BOOST_CHARCONV_FASTFLOAT_64BIT
     #  ifdef BOOST_CHARCONV_HAS_INT128
@@ -619,6 +623,11 @@ struct bigint : pow5_tables<>
         return true;
     }
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4996) // Not all versions of MSVC respond as they should to _SCL_NO_WARNINGS
+#endif
+
     // move the limbs left by `n` limbs.
     BOOST_CHARCONV_CXX20_CONSTEXPR bool shl_limbs(std::size_t n) noexcept
     {
@@ -644,6 +653,10 @@ struct bigint : pow5_tables<>
 
         return true;
     }
+
+#ifdef BOOST_MSVC
+#  pragma warning(pop)
+#endif
 
     // move the limbs left by `n` bits.
     BOOST_CHARCONV_CXX20_CONSTEXPR bool shl(std::size_t n) noexcept
