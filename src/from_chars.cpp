@@ -3,11 +3,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/config.hpp>
-
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
-#ifdef BOOST_MSVC
+#ifndef _SCL_SECURE_NO_WARNINGS
 # define _SCL_SECURE_NO_WARNINGS
+#endif
+#ifndef NO_WARN_MBCS_MFC_DEPRECATION
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
