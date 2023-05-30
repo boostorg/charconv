@@ -150,6 +150,11 @@ struct parsed_number_string_t
 using byte_span = span<char>;
 using parsed_number_string = parsed_number_string_t<char>;
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4800) 
+#endif
+
 // Assuming that you use no more than 19 digits, this will
 // parse an ASCII string.
 template <typename UC>
@@ -342,6 +347,9 @@ parsed_number_string_t<UC> parse_number_string(const UC* p, const UC* pend, pars
     return answer;
 }
 
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 }}}} // Namespaces
 
