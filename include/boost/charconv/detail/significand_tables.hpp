@@ -15,8 +15,8 @@ namespace boost { namespace charconv { namespace detail {
 
     // The significands of powers of ten from -308 to 308, extended out to sixty four
     // bits. The array contains the powers of ten approximated
-    // as a 64-bit significand. It goes from 10^FASTFLOAT_SMALLEST_POWER to
-    // 10^FASTFLOAT_LARGEST_POWER (inclusively).
+    // as a 64-bit significand. It goes from 10^BOOST_CHARCONV_FASTFLOAT_SMALLEST_POWER to
+    // 10^BOOST_CHARCONV_FASTFLOAT_LARGEST_POWER (inclusively).
     // The significand is truncated, and never rounded up. 
     // Uses about 5KB.
 static constexpr std::uint64_t significand_64[] = {

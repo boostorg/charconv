@@ -31,7 +31,7 @@ namespace boost { namespace charconv { namespace detail { namespace fast_float {
  * The default is  `fast_float::chars_format::general` which allows both `fixed` and `scientific`.
  */
 template<typename T, typename UC = char>
-FASTFLOAT_CONSTEXPR20
+BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 from_chars_result_t<UC> from_chars(UC const * first, UC const * last,
                              T &value, chars_format fmt = chars_format::general)  noexcept;
 
@@ -39,10 +39,10 @@ from_chars_result_t<UC> from_chars(UC const * first, UC const * last,
  * Like from_chars, but accepts an `options` argument to govern number parsing.
  */
 template<typename T, typename UC = char>
-FASTFLOAT_CONSTEXPR20
+BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last,
                                       T &value, parse_options_t<UC> options)  noexcept;
 
 }}}} // namespace fast_float
 #include <boost/charconv/detail/fast_float/parse_number.hpp>
-#endif // FASTFLOAT_FAST_FLOAT_H
+#endif // BOOST_CHARCONV_FASTFLOAT_FAST_FLOAT_H

@@ -36,7 +36,7 @@ using parse_options = parse_options_t<char>;
 
 }
 
-#if FASTFLOAT_HAS_BIT_CAST
+#if BOOST_CHARCONV_FASTFLOAT_HAS_BIT_CAST
 #include <bit>
 #endif
 
@@ -45,11 +45,11 @@ using parse_options = parse_options_t<char>;
        || defined(__MINGW64__)                                          \
        || defined(__s390x__)                                            \
        || (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) || defined(__PPC64LE__)) )
-#define FASTFLOAT_64BIT 1
+#define BOOST_CHARCONV_FASTFLOAT_64BIT 1
 #elif (defined(__i386) || defined(__i386__) || defined(_M_IX86)   \
      || defined(__arm__) || defined(_M_ARM) || defined(__ppc__)   \
      || defined(__MINGW32__) || defined(__EMSCRIPTEN__))
-#define FASTFLOAT_32BIT 1
+#define BOOST_CHARCONV_FASTFLOAT_32BIT 1
 #else
   // Need to check incrementally, since SIZE_MAX is a size_t, avoid overflow.
   // We can never tell the register width, but the SIZE_MAX is a good approximation.
@@ -57,9 +57,9 @@ using parse_options = parse_options_t<char>;
   #if SIZE_MAX == 0xffff
     #error Unknown platform (16-bit, unsupported)
   #elif SIZE_MAX == 0xffffffff
-    #define FASTFLOAT_32BIT 1
+    #define BOOST_CHARCONV_FASTFLOAT_32BIT 1
   #elif SIZE_MAX == 0xffffffffffffffff
-    #define FASTFLOAT_64BIT 1
+    #define BOOST_CHARCONV_FASTFLOAT_64BIT 1
   #else
     #error Unknown platform (not 32-bit, not 64-bit?)
   #endif
@@ -70,13 +70,13 @@ using parse_options = parse_options_t<char>;
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#define FASTFLOAT_VISUAL_STUDIO 1
+#define BOOST_CHARCONV_FASTFLOAT_VISUAL_STUDIO 1
 #endif
 
 #if defined __BYTE_ORDER__ && defined __ORDER_BIG_ENDIAN__
-#define FASTFLOAT_IS_BIG_ENDIAN (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #elif defined _WIN32
-#define FASTFLOAT_IS_BIG_ENDIAN 0
+#define BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN 0
 #else
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #include <machine/endian.h>
@@ -92,42 +92,42 @@ using parse_options = parse_options_t<char>;
 #
 #ifndef __BYTE_ORDER__
 // safe choice
-#define FASTFLOAT_IS_BIG_ENDIAN 0
+#define BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN 0
 #endif
 #
 #ifndef __ORDER_LITTLE_ENDIAN__
 // safe choice
-#define FASTFLOAT_IS_BIG_ENDIAN 0
+#define BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN 0
 #endif
 #
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define FASTFLOAT_IS_BIG_ENDIAN 0
+#define BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN 0
 #else
-#define FASTFLOAT_IS_BIG_ENDIAN 1
+#define BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN 1
 #endif
 #endif
 
-#ifdef FASTFLOAT_VISUAL_STUDIO
+#ifdef BOOST_CHARCONV_FASTFLOAT_VISUAL_STUDIO
 #define fastfloat_really_inline __forceinline
 #else
 #define fastfloat_really_inline inline __attribute__((always_inline))
 #endif
 
-#ifndef FASTFLOAT_ASSERT
-#define FASTFLOAT_ASSERT(x)  { ((void)(x)); }
+#ifndef BOOST_CHARCONV_FASTFLOAT_ASSERT
+#define BOOST_CHARCONV_FASTFLOAT_ASSERT(x)  { ((void)(x)); }
 #endif
 
-#ifndef FASTFLOAT_DEBUG_ASSERT
-#define FASTFLOAT_DEBUG_ASSERT(x) { ((void)(x)); }
+#ifndef BOOST_CHARCONV_FASTFLOAT_DEBUG_ASSERT
+#define BOOST_CHARCONV_FASTFLOAT_DEBUG_ASSERT(x) { ((void)(x)); }
 #endif
 
 // rust style `try!()` macro, or `?` operator
-#define FASTFLOAT_TRY(x) { if (!(x)) return false; }
+#define BOOST_CHARCONV_FASTFLOAT_TRY(x) { if (!(x)) return false; }
 
 namespace fast_float {
 
 fastfloat_really_inline constexpr bool cpp20_and_in_constexpr() {
-#if FASTFLOAT_HAS_IS_CONSTANT_EVALUATED
+#if BOOST_CHARCONV_FASTFLOAT_HAS_IS_CONSTANT_EVALUATED
   return std::is_constant_evaluated();
 #else
   return false;
@@ -136,7 +136,7 @@ fastfloat_really_inline constexpr bool cpp20_and_in_constexpr() {
 
 // Compares two ASCII strings in a case insensitive manner.
 template <typename UC>
-inline FASTFLOAT_CONSTEXPR14 bool
+inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14 bool
 fastfloat_strncasecmp(UC const * input1, UC const * input2, size_t length) {
   char running_diff{0};
   for (size_t i = 0; i < length; ++i) {
@@ -161,8 +161,8 @@ struct span {
     return length;
   }
 
-  FASTFLOAT_CONSTEXPR14 const T& operator[](size_t index) const noexcept {
-    FASTFLOAT_DEBUG_ASSERT(index < length);
+  BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14 const T& operator[](size_t index) const noexcept {
+    BOOST_CHARCONV_FASTFLOAT_DEBUG_ASSERT(index < length);
     return ptr[index];
   }
 };
@@ -189,13 +189,13 @@ int leading_zeroes_generic(uint64_t input_num, int last_bit = 0) {
 }
 
 /* result might be undefined when input_num is zero */
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 int leading_zeroes(uint64_t input_num) {
   assert(input_num > 0);
   if (cpp20_and_in_constexpr()) {
     return leading_zeroes_generic(input_num);
   }
-#ifdef FASTFLOAT_VISUAL_STUDIO
+#ifdef BOOST_CHARCONV_FASTFLOAT_VISUAL_STUDIO
   #if defined(_M_X64) || defined(_M_ARM64)
   unsigned long leading_zero = 0;
   // Search the mask data from most significant bit (MSB)
@@ -215,7 +215,7 @@ fastfloat_really_inline constexpr uint64_t emulu(uint32_t x, uint32_t y) {
     return x * (uint64_t)y;
 }
 
-fastfloat_really_inline FASTFLOAT_CONSTEXPR14
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 uint64_t umul128_generic(uint64_t ab, uint64_t cd, uint64_t *hi) {
   uint64_t ad = emulu((uint32_t)(ab >> 32), (uint32_t)cd);
   uint64_t bd = emulu((uint32_t)ab, (uint32_t)cd);
@@ -227,21 +227,21 @@ uint64_t umul128_generic(uint64_t ab, uint64_t cd, uint64_t *hi) {
   return lo;
 }
 
-#ifdef FASTFLOAT_32BIT
+#ifdef BOOST_CHARCONV_FASTFLOAT_32BIT
 
 // slow emulation routine for 32-bit
 #if !defined(__MINGW64__)
-fastfloat_really_inline FASTFLOAT_CONSTEXPR14
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 uint64_t _umul128(uint64_t ab, uint64_t cd, uint64_t *hi) {
   return umul128_generic(ab, cd, hi);
 }
 #endif // !__MINGW64__
 
-#endif // FASTFLOAT_32BIT
+#endif // BOOST_CHARCONV_FASTFLOAT_32BIT
 
 
 // compute 64-bit a*b
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 value128 full_multiplication(uint64_t a, uint64_t b) {
   if (cpp20_and_in_constexpr()) {
     value128 answer;
@@ -254,9 +254,9 @@ value128 full_multiplication(uint64_t a, uint64_t b) {
   // But MinGW on ARM64 doesn't have native support for 64-bit multiplications
   answer.high = __umulh(a, b);
   answer.low = a * b;
-#elif defined(FASTFLOAT_32BIT) || (defined(_WIN64) && !defined(__clang__))
+#elif defined(BOOST_CHARCONV_FASTFLOAT_32BIT) || (defined(_WIN64) && !defined(__clang__))
   answer.low = _umul128(a, b, &answer.high); // _umul128 not available on ARM64
-#elif defined(FASTFLOAT_64BIT)
+#elif defined(BOOST_CHARCONV_FASTFLOAT_64BIT)
   __uint128_t r = ((__uint128_t)a) * b;
   answer.low = uint64_t(r);
   answer.high = uint64_t(r >> 64);
@@ -527,20 +527,20 @@ template <> inline constexpr binary_format<double>::equiv_uint
 }
 
 template<typename T>
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 void to_float(bool negative, adjusted_mantissa am, T &value) {
   using uint = typename binary_format<T>::equiv_uint;
   uint word = (uint)am.mantissa;
   word |= uint(am.power2) << binary_format<T>::mantissa_explicit_bits();
   word |= uint(negative) << binary_format<T>::sign_index();
-#if FASTFLOAT_HAS_BIT_CAST
+#if BOOST_CHARCONV_FASTFLOAT_HAS_BIT_CAST
   value = std::bit_cast<T>(word);
 #else
   ::memcpy(&value, &word, sizeof(T));
 #endif
 }
 
-#ifdef FASTFLOAT_SKIP_WHITE_SPACE // disabled by default
+#ifdef BOOST_CHARCONV_FASTFLOAT_SKIP_WHITE_SPACE // disabled by default
 template <typename = void>
 struct space_lut {
   static constexpr bool value[] = {

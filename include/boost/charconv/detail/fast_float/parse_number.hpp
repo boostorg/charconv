@@ -34,7 +34,7 @@ namespace detail {
 #endif
 
 template <typename T, typename UC>
-from_chars_result_t<UC> FASTFLOAT_CONSTEXPR14
+from_chars_result_t<UC> BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 parse_infnan(UC const * first, UC const * last, T &value)  noexcept  {
   from_chars_result_t<UC> answer{};
   answer.ptr = first;
@@ -44,7 +44,7 @@ parse_infnan(UC const * first, UC const * last, T &value)  noexcept  {
       minusSign = true;
       ++first;
   }
-#ifdef FASTFLOAT_ALLOWS_LEADING_PLUS // disabled by default
+#ifdef BOOST_CHARCONV_FASTFLOAT_ALLOWS_LEADING_PLUS // disabled by default
   if (*first == UC('+')) {
       ++first;
   }
@@ -127,7 +127,7 @@ fastfloat_really_inline bool rounds_to_nearest() noexcept {
   //
   // Note: This may fail to be accurate if fast-math has been
   // enabled, as rounding conventions may not apply.
-  #ifdef FASTFLOAT_VISUAL_STUDIO
+  #ifdef BOOST_CHARCONV_FASTFLOAT_VISUAL_STUDIO
   #   pragma warning(push)
   //  todo: is there a VS warning?
   //  see https://stackoverflow.com/questions/46079446/is-there-a-warning-for-floating-point-equality-checking-in-visual-studio-2013
@@ -139,7 +139,7 @@ fastfloat_really_inline bool rounds_to_nearest() noexcept {
   #   pragma GCC diagnostic ignored "-Wfloat-equal"
   #endif
   return (fmini + 1.0f == 1.0f - fmini);
-  #ifdef FASTFLOAT_VISUAL_STUDIO
+  #ifdef BOOST_CHARCONV_FASTFLOAT_VISUAL_STUDIO
   #   pragma warning(pop)
   #elif defined(__clang__)
   #   pragma clang diagnostic pop
@@ -151,14 +151,14 @@ fastfloat_really_inline bool rounds_to_nearest() noexcept {
 } // namespace detail
 
 template<typename T, typename UC>
-FASTFLOAT_CONSTEXPR20
+BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 from_chars_result_t<UC> from_chars(UC const * first, UC const * last,
                              T &value, chars_format fmt /*= chars_format::general*/)  noexcept  {
   return from_chars_advanced(first, last, value, parse_options_t<UC>{fmt});
 }
 
 template<typename T, typename UC>
-FASTFLOAT_CONSTEXPR20
+BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last,
                                       T &value, parse_options_t<UC> options)  noexcept  {
 
@@ -169,7 +169,7 @@ from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last,
                  std::is_same<UC, char32_t>::value , "only char, wchar_t, char16_t and char32_t are supported");
 
   from_chars_result_t<UC> answer;
-#ifdef FASTFLOAT_SKIP_WHITE_SPACE  // disabled by default
+#ifdef BOOST_CHARCONV_FASTFLOAT_SKIP_WHITE_SPACE  // disabled by default
   while ((first != last) && fast_float::is_space(uint8_t(*first))) {
     first++;
   }

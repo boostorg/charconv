@@ -34,7 +34,7 @@ fastfloat_really_inline constexpr std::uint64_t byteswap(std::uint64_t val) {
     | (val & 0x00000000000000FF) << 56;
 }
 
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 std::uint64_t read_u64(const char *chars) {
   if (cpp20_and_in_constexpr()) {
     std::uint64_t val = 0;
@@ -46,14 +46,14 @@ std::uint64_t read_u64(const char *chars) {
   }
   std::uint64_t val;
   ::memcpy(&val, chars, sizeof(std::uint64_t));
-#if FASTFLOAT_IS_BIG_ENDIAN == 1
+#if BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN == 1
   // Need to read as-if the number was in little-endian order.
   val = byteswap(val);
 #endif
   return val;
 }
 
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 void write_u64(std::uint8_t *chars, std::uint64_t val) {
   if (cpp20_and_in_constexpr()) {
     for(int i = 0; i < 8; ++i) {
@@ -63,7 +63,7 @@ void write_u64(std::uint8_t *chars, std::uint64_t val) {
     }
     return;
   }
-#if FASTFLOAT_IS_BIG_ENDIAN == 1
+#if BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN == 1
   // Need to read as-if the number was in little-endian order.
   val = byteswap(val);
 #endif
@@ -71,7 +71,7 @@ void write_u64(std::uint8_t *chars, std::uint64_t val) {
 }
 
 // credit  @aqrit
-fastfloat_really_inline FASTFLOAT_CONSTEXPR14
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 std::uint32_t parse_eight_digits_unrolled(std::uint64_t val) {
   const std::uint64_t mask = 0x000000FF000000FF;
   const std::uint64_t mul1 = 0x000F424000000064; // 100 + (1000000ULL << 32)
@@ -92,7 +92,7 @@ std::uint32_t parse_eight_digits_unrolled(const char32_t *)  noexcept  {
   return 0;
 }
 
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 std::uint32_t parse_eight_digits_unrolled(const char *chars)  noexcept  {
   return parse_eight_digits_unrolled(read_u64(chars));
 }
@@ -113,7 +113,7 @@ bool is_made_of_eight_digits_fast(const char32_t *)  noexcept  {
   return false;
 }
 
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 bool is_made_of_eight_digits_fast(const char *chars)  noexcept  {
   return is_made_of_eight_digits_fast(read_u64(chars));
 }
@@ -135,7 +135,7 @@ using parsed_number_string = parsed_number_string_t<char>;
 // Assuming that you use no more than 19 digits, this will
 // parse an ASCII string.
 template <typename UC>
-fastfloat_really_inline FASTFLOAT_CONSTEXPR20
+fastfloat_really_inline BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 parsed_number_string_t<UC> parse_number_string(UC const *p, UC const * pend, parse_options_t<UC> options) noexcept {
   chars_format const fmt = options.format;
   UC const decimal_point = options.decimal_point;
@@ -144,7 +144,7 @@ parsed_number_string_t<UC> parse_number_string(UC const *p, UC const * pend, par
   answer.valid = false;
   answer.too_many_digits = false;
   answer.negative = (*p == UC('-'));
-#ifdef FASTFLOAT_ALLOWS_LEADING_PLUS // disabled by default
+#ifdef BOOST_CHARCONV_FASTFLOAT_ALLOWS_LEADING_PLUS // disabled by default
   if ((*p == UC('-')) || (*p == UC('+')))
 #else
   if (*p == UC('-')) // C++17 20.19.3.(7.1) explicitly forbids '+' sign here
