@@ -5,16 +5,12 @@
 //
 // Derivative of: https://github.com/fastfloat/fast_float
 
-#ifndef BOOST_CHARCONV_DETAIL_FAST_FLOAT_FAST_FLOAT_HPP
-#define BOOST_CHARCONV_DETAIL_FAST_FLOAT_FAST_FLOAT_HPP
+#ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_FLOAT_HPP
+#define BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_FLOAT_HPP
 
 #include <boost/charconv/detail/fast_float/float_common.hpp>
-#include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/from_chars_result.hpp>
-#include <boost/charconv/chars_format.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
-
 /**
  * This function parses the character sequence [first,last) for a number. It parses floating-point numbers expecting
  * a locale-indepent format equivalent to what is used by std::strtod in the default ("C") locale.
@@ -34,20 +30,19 @@ namespace boost { namespace charconv { namespace detail { namespace fast_float {
  * to determine whether we allow the fixed point and scientific notation respectively.
  * The default is  `fast_float::chars_format::general` which allows both `fixed` and `scientific`.
  */
-
 template<typename T, typename UC = char>
-BOOST_CHARCONV_CXX20_CONSTEXPR
-from_chars_result_t<UC> from_chars(const UC* first, const UC* last, T &value, chars_format fmt) noexcept;
+FASTFLOAT_CONSTEXPR20
+from_chars_result_t<UC> from_chars(UC const * first, UC const * last,
+                             T &value, chars_format fmt = chars_format::general)  noexcept;
 
 /**
  * Like from_chars, but accepts an `options` argument to govern number parsing.
  */
 template<typename T, typename UC = char>
-BOOST_CHARCONV_CXX20_CONSTEXPR
-from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last, T &value, parse_options_t<UC> options) noexcept;
+FASTFLOAT_CONSTEXPR20
+from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last,
+                                      T &value, parse_options_t<UC> options)  noexcept;
 
-}}}} // Namespaces
-
+}}}} // namespace fast_float
 #include <boost/charconv/detail/fast_float/parse_number.hpp>
-
-#endif // BOOST_CHARCONV_DETAIL_FAST_FLOAT_FAST_FLOAT_HPP
+#endif // FASTFLOAT_FAST_FLOAT_H

@@ -11,7 +11,7 @@ namespace boost { namespace charconv {
 
 // Floating-point format for primitive numerical conversion
 // chars_format is a bitmask type (16.3.3.3.3)
-enum class chars_format : unsigned
+enum chars_format : unsigned
 {
     scientific = 1 << 0,
     fixed = 1 << 1,
