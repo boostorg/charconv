@@ -34,7 +34,7 @@ struct parse_options_t {
 };
 using parse_options = parse_options_t<char>;
 
-}
+}}}}
 
 #if BOOST_CHARCONV_FASTFLOAT_HAS_BIT_CAST
 #include <bit>
@@ -124,7 +124,7 @@ using parse_options = parse_options_t<char>;
 // rust style `try!()` macro, or `?` operator
 #define BOOST_CHARCONV_FASTFLOAT_TRY(x) { if (!(x)) return false; }
 
-namespace fast_float {
+namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
 fastfloat_really_inline constexpr bool cpp20_and_in_constexpr() {
 #if BOOST_CHARCONV_FASTFLOAT_HAS_IS_CONSTANT_EVALUATED
