@@ -27,6 +27,12 @@ namespace detail {
  * The case comparisons could be made much faster given that we know that the
  * strings a null-free and fixed.
  **/
+
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 template <typename T, typename UC>
 from_chars_result_t<UC> FASTFLOAT_CONSTEXPR14
 parse_infnan(UC const * first, UC const * last, T &value)  noexcept  {
@@ -73,6 +79,10 @@ parse_infnan(UC const * first, UC const * last, T &value)  noexcept  {
   answer.ec = std::errc::invalid_argument;
   return answer;
 }
+
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 /**
  * Returns true if the floating-pointing rounding mode is to 'nearest'.
