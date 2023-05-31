@@ -259,9 +259,9 @@ void parse_mantissa(bigint& result, parsed_number_string_t<UC>& num, size_t max_
   digits = 0;
   limb value = 0;
 #ifdef BOOST_CHARCONV_FASTFLOAT_64BIT_LIMB
-  size_t step = 19;
+  constexpr size_t step = 19;
 #else
-  size_t step = 9;
+  constexpr size_t step = 9;
 #endif
 
   // process all integer digits.
@@ -390,9 +390,7 @@ adjusted_mantissa negative_digit_comp(bigint& bigmant, adjusted_mantissa am, int
   int ord = real_digits.compare(theor_digits);
   adjusted_mantissa answer = am;
   round<T>(answer, [ord](adjusted_mantissa& a, int32_t shift) {
-    round_nearest_tie_even(a, shift, [ord](bool is_odd, bool _, bool __) -> bool {
-      (void)_;  // not needed, since we've done our comparison
-      (void)__; // not needed, since we've done our comparison
+    round_nearest_tie_even(a, shift, [ord](bool is_odd, bool, bool) -> bool {
       if (ord > 0) {
         return true;
       } else if (ord < 0) {
@@ -406,7 +404,7 @@ adjusted_mantissa negative_digit_comp(bigint& bigmant, adjusted_mantissa am, int
   return answer;
 }
 
-// parse the significant digits as a big integer to unambiguously round the
+// parse the significant digits as a big integer to unambiguously round
 // the significant digits. here, we are trying to determine how to round
 // an extended float representation close to `b+h`, halfway between `b`
 // (the float rounded-down) and `b+u`, the next positive float. this

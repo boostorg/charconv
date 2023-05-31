@@ -73,9 +73,9 @@ void write_u64(uint8_t *chars, uint64_t val) {
 // credit  @aqrit
 BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 uint32_t parse_eight_digits_unrolled(uint64_t val) {
-  const uint64_t mask = 0x000000FF000000FF;
-  const uint64_t mul1 = 0x000F424000000064; // 100 + (1000000ULL << 32)
-  const uint64_t mul2 = 0x0000271000000001; // 1 + (10000ULL << 32)
+  constexpr uint64_t mask = 0x000000FF000000FF;
+  constexpr uint64_t mul1 = 0x000F424000000064; // 100 + (1000000ULL << 32)
+  constexpr uint64_t mul2 = 0x0000271000000001; // 1 + (10000ULL << 32)
   val -= 0x3030303030303030;
   val = (val * 10) + (val >> 8); // val = (val * 2561) >> 8;
   val = (((val & mask) * mul1) + (((val >> 16) & mask) * mul2)) >> 32;
@@ -99,8 +99,7 @@ uint32_t parse_eight_digits_unrolled(const char *chars)  noexcept  {
 
 // credit @aqrit
 BOOST_FORCEINLINE constexpr bool is_made_of_eight_digits_fast(uint64_t val)  noexcept  {
-  return !((((val + 0x4646464646464646) | (val - 0x3030303030303030)) &
-     0x8080808080808080));
+  return !((((val + 0x4646464646464646) | (val - 0x3030303030303030)) & 0x8080808080808080));
 }
 
 BOOST_FORCEINLINE constexpr
@@ -256,7 +255,7 @@ parsed_number_string_t<UC> parse_number_string(UC const *p, UC const * pend, par
       i = 0;
       p = answer.integer.ptr;
       UC const * int_end = p + answer.integer.len();
-      const uint64_t minimal_nineteen_digit_integer{1000000000000000000};
+      constexpr uint64_t minimal_nineteen_digit_integer{1000000000000000000};
       while((i < minimal_nineteen_digit_integer) && (p != int_end)) {
         i = i * 10 + uint64_t(*p - UC('0'));
         ++p;

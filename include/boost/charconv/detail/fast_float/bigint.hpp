@@ -582,18 +582,18 @@ struct bigint : pow5_tables<> {
   // multiply as if by 5 raised to a power.
   BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20 bool pow5(uint32_t exp) noexcept {
     // multiply by a power of 5
-    size_t large_length = sizeof(large_power_of_5) / sizeof(limb);
+    constexpr size_t large_length = sizeof(large_power_of_5) / sizeof(limb);
     limb_span large = limb_span(large_power_of_5, large_length);
     while (exp >= large_step) {
       BOOST_CHARCONV_FASTFLOAT_TRY(large_mul(vec, large));
       exp -= large_step;
     }
 #ifdef BOOST_CHARCONV_FASTFLOAT_64BIT_LIMB
-    uint32_t small_step = 27;
-    limb max_native = 7450580596923828125UL;
+    constexpr uint32_t small_step = 27;
+    constexpr limb max_native = 7450580596923828125UL;
 #else
-    uint32_t small_step = 13;
-    limb max_native = 1220703125U;
+    constexpr uint32_t small_step = 13;
+    constexpr limb max_native = 1220703125U;
 #endif
     while (exp >= small_step) {
       BOOST_CHARCONV_FASTFLOAT_TRY(small_mul(vec, max_native));
