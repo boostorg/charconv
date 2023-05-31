@@ -10,6 +10,7 @@
 
 #include <boost/charconv/detail/fast_float/constexpr_feature_detect.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <cfloat>
 #include <cstdint>

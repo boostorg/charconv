@@ -5,13 +5,11 @@
 #ifndef BOOST_CHARCONV_CHARS_FORMAT_HPP
 #define BOOST_CHARCONV_CHARS_FORMAT_HPP
 
-#include <boost/charconv/detail/config.hpp>
-
 namespace boost { namespace charconv {
 
 // Floating-point format for primitive numerical conversion
 // chars_format is a bitmask type (16.3.3.3.3)
-enum chars_format : unsigned
+enum class chars_format : unsigned
 {
     scientific = 1 << 0,
     fixed = 1 << 1,
@@ -21,4 +19,4 @@ enum chars_format : unsigned
 
 }} // Namespaces
 
-#endif // BOOST_CHARCONV_CHARS_FROMAT_HPP
+#endif // BOOST_CHARCONV_CHARS_FORMAT_HPP
