@@ -19,58 +19,6 @@ enum chars_format : unsigned
     general = fixed | scientific
 };
 
-constexpr chars_format operator~ (chars_format fmt) noexcept
-{
-    return static_cast<chars_format>(~static_cast<unsigned>(fmt));
-}
-
-constexpr chars_format operator| (chars_format lhs, chars_format rhs) noexcept
-{
-    return static_cast<chars_format>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs));
-}
-
-constexpr chars_format operator& (chars_format lhs, chars_format rhs) noexcept
-{
-    return static_cast<chars_format>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
-}
-
-constexpr chars_format operator^ (chars_format lhs, chars_format rhs) noexcept
-{
-    return static_cast<chars_format>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
-}
-
-// Clang 3.7+ and MSVC 14.0+ has it figured out that this is constexpr at C++11
-// No version of GCC does though
-#if defined(BOOST_MSVC) || defined(__clang__)
-constexpr 
-#else
-BOOST_CHARCONV_CXX14_CONSTEXPR
-#endif
-chars_format operator|= (chars_format lhs, chars_format rhs) noexcept
-{
-    return lhs = lhs | rhs;
-}
-
-#if defined(BOOST_MSVC) || defined(__clang__)
-constexpr 
-#else
-BOOST_CHARCONV_CXX14_CONSTEXPR
-#endif
-chars_format operator&= (chars_format lhs, chars_format rhs) noexcept
-{
-    return lhs = lhs & rhs;
-}
-
-#if defined(BOOST_MSVC) || defined(__clang__)
-constexpr 
-#else
-BOOST_CHARCONV_CXX14_CONSTEXPR
-#endif
-chars_format operator^= (chars_format lhs, chars_format rhs) noexcept
-{
-    return lhs = lhs ^ rhs;
-}
-
 }} // Namespaces
 
 #endif // BOOST_CHARCONV_CHARS_FROMAT_HPP

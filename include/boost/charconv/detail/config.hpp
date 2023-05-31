@@ -19,9 +19,6 @@
 #  define BOOST_CHARCONV_DEBUG_ASSERT(expr)
 #endif
 
-// Rust style try macro
-#define BOOST_CHARCONV_TRY(x) { if(!x) return false; }
-
 // Use 128 bit integers and supress warnings for using extensions
 #if defined(BOOST_HAS_INT128)
 #  define BOOST_CHARCONV_HAS_INT128
