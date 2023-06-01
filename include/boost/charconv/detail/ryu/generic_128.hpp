@@ -502,6 +502,7 @@ boost::uint128_type mulShift(const boost::uint128_type m, const uint64_t* const 
     return (((boost::uint128_type) result[1]) << 64) | result[0];
 }
 
+// TODO(mborland): I believe this can be replaced by the existing num_digits in integer_search_tress.hpp
 static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t decimalLength(const boost::uint128_type v) noexcept
 {
     constexpr boost::uint128_type LARGEST_POW10 = (((boost::uint128_type) UINT64_C(5421010862427522170) << 64) | UINT64_C(687399551400673280));

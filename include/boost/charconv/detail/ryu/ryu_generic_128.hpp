@@ -348,17 +348,28 @@ int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
     }
 
     // Print the exponent.
-    result[index++] = 'E';
+    result[index++] = 'e';
     int32_t exp = v.exponent + olength - 1;
     if (exp < 0)
     {
         result[index++] = '-';
         exp = -exp;
     }
+    else
+    {
+        result[index++] = '+';
+    }
 
     uint32_t elength = decimalLength(exp);
     for (uint32_t i = 0; i < elength; ++i)
     {
+        // Always print a minimum of 2 characters in the exponent field
+        if (elength == 1)
+        {
+            result[index + elength - 1 - i] = '0';
+            ++index;
+        }
+
         const uint32_t c = exp % 10;
         exp /= 10;
         result[index + elength - 1 - i] = (char) ('0' + c);
