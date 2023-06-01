@@ -9,6 +9,10 @@
 #include <boost/charconv/detail/config.hpp>
 #include <cstdint>
 
+#define BOOST_CHARCONV_POW5_TABLE_SIZE 56
+#define BOOST_CHARCONV_POW5_BITCOUNT 249
+#define BOOST_CHARCONV_POW5_INV_BITCOUNT 249
+
 namespace boost { namespace charconv { namespace detail { namespace ryu {
 
 // These tables are ~4.5 kByte total, compared to ~160 kByte for the full tables.
@@ -16,11 +20,7 @@ namespace boost { namespace charconv { namespace detail { namespace ryu {
 // There's no way to define 128-bit constants in C, so we use little-endian
 // pairs of 64-bit constants.
 
-static constexpr size_t   pow5_table_size = 56;
-static constexpr uint32_t pow5_bitcount = 249;
-static constexpr uint32_t pow5_inv_bitcount = 249;
-
-static constexpr uint64_t GENERIC_POW5_TABLE[pow5_table_size][2] = {
+static constexpr uint64_t GENERIC_POW5_TABLE[BOOST_CHARCONV_POW5_TABLE_SIZE][2] = {
 {                    1u,                    0u },
 {                    5u,                    0u },
 {                   25u,                    0u },
@@ -350,7 +350,7 @@ static constexpr uint64_t POW5_INV_ERRORS[154] = {
 };
 
 // Returns e == 0 ? 1 : ceil(log_2(5^e)); requires 0 <= e <= 32768.
-static constexpr uint32_t pow5bits(const uint32_t e) noexcept
+static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t pow5bits(const uint32_t e) noexcept
 {
     BOOST_CHARCONV_ASSERT(e <= 1 << 15);
     return static_cast<uint32_t>(((e * UINT64_C(163391164108059)) >> 46) + 1);
@@ -421,8 +421,8 @@ void mul_128_256_shift(
 // Computes 5^i in the form required by Ryu, and stores it in the given pointer.
 static BOOST_CXX14_CONSTEXPR void generic_computePow5(const uint32_t i, uint64_t* const result) noexcept
 {
-    const uint32_t base = i / pow5_table_size;
-    const uint32_t base2 = base * pow5_table_size;
+    const uint32_t base = i / BOOST_CHARCONV_POW5_TABLE_SIZE;
+    const uint32_t base2 = base * BOOST_CHARCONV_POW5_TABLE_SIZE;
     const uint64_t* const mul = GENERIC_POW5_SPLIT[base];
     if (i == base2)
     {
@@ -444,8 +444,8 @@ static BOOST_CXX14_CONSTEXPR void generic_computePow5(const uint32_t i, uint64_t
 // Computes 5^-i in the form required by Ryu, and stores it in the given pointer.
 static BOOST_CXX14_CONSTEXPR void generic_computeInvPow5(const uint32_t i, uint64_t* const result) noexcept
 {
-    const uint32_t base = (i + pow5_table_size - 1) / pow5_table_size;
-    const uint32_t base2 = base * pow5_table_size;
+    const uint32_t base = (i + BOOST_CHARCONV_POW5_TABLE_SIZE - 1) / BOOST_CHARCONV_POW5_TABLE_SIZE;
+    const uint32_t base2 = base * BOOST_CHARCONV_POW5_TABLE_SIZE;
     const uint64_t* const mul = GENERIC_POW5_INV_SPLIT[base]; // 1/5^base2
     if (i == base2)
     {
@@ -524,6 +524,15 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow2(const int32_t e) noexce
     BOOST_CHARCONV_ASSERT(e >= 0);
     BOOST_CHARCONV_ASSERT(e <= 1 << 15);
     return (uint32_t) ((((uint64_t) e) * UINT64_C(169464822037455)) >> 49);
+}
+
+// Returns floor(log_10(5^e)).
+static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow5(const int32_t e) noexcept
+{
+    // The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
+    assert(e >= 0);
+    assert(e <= 1 << 15);
+    return (uint32_t) ((((uint64_t) e) * UINT64_C(196742565691928)) >> 48);
 }
 
 }}}} // Namespaces
