@@ -494,10 +494,10 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR
 boost::uint128_type mulShift(const boost::uint128_type m, const uint64_t* const mul, const int32_t j) noexcept
 {
     BOOST_CHARCONV_ASSERT(j > 128);
-    uint64_t a[2];
+    uint64_t a[2] {};
     a[0] = (uint64_t) m;
     a[1] = (uint64_t) (m >> 64);
-    uint64_t result[4];
+    uint64_t result[4] {};
     mul_128_256_shift(a, mul, j, 0, result);
     return (((boost::uint128_type) result[1]) << 64) | result[0];
 }

@@ -259,7 +259,7 @@ struct floating_decimal_128 generic_binary_to_decimal(
         // Round even if the exact numbers is .....50..0.
         lastRemovedDigit = 4;
     }
-    // We need to take vr+1 if vr is outside bounds or we need to round up.
+    // We need to take vr+1 if vr is outside bounds, or we need to round up.
     output = vr + (boost::uint128_type)((vr == vm && (!acceptBounds || !vmIsTrailingZeros)) || (lastRemovedDigit >= 5));
     const int32_t exp = e10 + removed;
 
@@ -272,21 +272,30 @@ struct floating_decimal_128 generic_binary_to_decimal(
     return {output, exp, ieeeSign};
 }
 
-static inline int copy_special_str(char * const result, const struct floating_decimal_128 fd) noexcept
+static inline int copy_special_str(char* result, const struct floating_decimal_128 fd) noexcept
 {
-    // TODO(mborland): match the handling of the other NaNs and infinities in the library
-    if (fd.mantissa)
-    {
-        memcpy(result, "NaN", 3);
-        return 3;
-    }
     if (fd.sign)
     {
-        result[0] = '-';
+        *result = '-';
+        ++result;
     }
 
-    memcpy(result + fd.sign, "Infinity", 8);
-    return fd.sign + 8;
+    if (fd.mantissa)
+    {
+        if (fd.sign)
+        {
+            memcpy(result, "nan(ind)", 8);
+            return 9;
+        }
+        else
+        {
+            memcpy(result, "nan", 3);
+            return 4;
+        }
+    }
+
+    memcpy(result, "inf", 3);
+    return (int)fd.sign + 3;
 }
 
 // Converts the given decimal floating point number to a string, writing to result, and returning
@@ -296,7 +305,7 @@ static inline int copy_special_str(char * const result, const struct floating_de
 // Maximal char buffer requirement:
 // sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
-int generic_to_chars(const struct floating_decimal_128 v, char* const result) noexcept
+int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
