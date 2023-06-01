@@ -7,6 +7,7 @@
 #define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP//
 
 #include <boost/charconv/detail/ryu/generic_128.hpp>
+#include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <cinttypes>
@@ -27,7 +28,7 @@ struct floating_decimal_128
 
 #ifdef BOOST_CHARCONV_DEBUG
 static char* s(boost::uint128_type v) {
-  int len = decimalLength(v);
+  int len = num_digits(v);
   char* b = (char*) malloc((len + 1) * sizeof(char));
   for (int i = 0; i < len; i++) {
     const uint32_t c = (uint32_t) (v % 10);
@@ -344,7 +345,7 @@ int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
     }
 
     boost::uint128_type output = v.mantissa;
-    const uint32_t olength = decimalLength(output);
+    const uint32_t olength = num_digits(output);
 
     #ifdef BOOST_CHARCONV_DEBUG
     printf("DIGITS=%s\n", s(v.mantissa));
@@ -384,7 +385,7 @@ int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
         result[index++] = '+';
     }
 
-    uint32_t elength = decimalLength(exp);
+    uint32_t elength = num_digits(exp);
     for (uint32_t i = 0; i < elength; ++i)
     {
         // Always print a minimum of 2 characters in the exponent field

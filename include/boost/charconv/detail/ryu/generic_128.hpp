@@ -7,6 +7,7 @@
 #define BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/integer_search_trees.hpp>
 #include <cstdint>
 
 #define BOOST_CHARCONV_POW5_TABLE_SIZE 56
@@ -500,22 +501,6 @@ boost::uint128_type mulShift(const boost::uint128_type m, const uint64_t* const 
     uint64_t result[4] {};
     mul_128_256_shift(a, mul, j, 0, result);
     return (((boost::uint128_type) result[1]) << 64) | result[0];
-}
-
-// TODO(mborland): I believe this can be replaced by the existing num_digits in integer_search_tress.hpp
-static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t decimalLength(const boost::uint128_type v) noexcept
-{
-    constexpr boost::uint128_type LARGEST_POW10 = (((boost::uint128_type) UINT64_C(5421010862427522170) << 64) | UINT64_C(687399551400673280));
-    boost::uint128_type p10 = LARGEST_POW10;
-    for (uint32_t i = 39; i > 0; i--)
-    {
-        if (v >= p10)
-        {
-            return i;
-        }
-        p10 /= 10;
-    }
-    return 1;
 }
 
 // Returns floor(log_10(2^e)).
