@@ -133,10 +133,12 @@ struct floating_decimal_128 generic_binary_to_decimal(
         vr = mulShift(4 * m2, pow5, i);
         vp = mulShift(4 * m2 + 2, pow5, i);
         vm = mulShift(4 * m2 - 1 - mmShift, pow5, i);
-#ifdef BOOST_CHARCONV_DEBUG
+
+        #ifdef BOOST_CHARCONV_DEBUG
         printf("%s * 2^%d / 10^%d\n", s(mv), e2, q);
-    printf("V+=%s\nV =%s\nV-=%s\n", s(vp), s(vr), s(vm));
-#endif
+        printf("V+=%s\nV =%s\nV-=%s\n", s(vp), s(vr), s(vm));
+        #endif
+
         // floor(log_5(2^128)) = 55, this is very conservative
         if (q <= 55)
         {
@@ -172,11 +174,13 @@ struct floating_decimal_128 generic_binary_to_decimal(
         vr = mulShift(4 * m2, pow5, j);
         vp = mulShift(4 * m2 + 2, pow5, j);
         vm = mulShift(4 * m2 - 1 - mmShift, pow5, j);
-#ifdef BOOST_CHARCONV_DEBUG
+
+        #ifdef BOOST_CHARCONV_DEBUG
         printf("%s * 5^%d / 10^%d\n", s(mv), -e2, q);
-    printf("%d %d %d %d\n", q, i, k, j);
-    printf("V+=%s\nV =%s\nV-=%s\n", s(vp), s(vr), s(vm));
-#endif
+        printf("%d %d %d %d\n", q, i, k, j);
+        printf("V+=%s\nV =%s\nV-=%s\n", s(vp), s(vr), s(vm));
+        #endif
+
         if (q <= 1)
         {
             // {vr,vp,vm} is trailing zeros if {mv,mp,mm} has at least q trailing 0 bits.
@@ -417,13 +421,13 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
     boost::uint128_type bits = 0;
-    memcpy(&bits, &d, sizeof(long double));
+    std::memcpy(&bits, &d, sizeof(long double));
     return generic_binary_to_decimal(bits, 113, 15, true);
 }
 
 #endif
 
-#if BOOST_HAS_FLOAT128
+#ifdef BOOST_HAS_FLOAT128
 
 struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
 {

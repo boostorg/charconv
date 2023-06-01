@@ -572,7 +572,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
 }
 
-#if BOOST_CHARCONV_LDBL_BITS == 64
+#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
@@ -580,7 +580,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
 }
 
-#elif BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128
+#elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) && defined(BOOST_CHARCONV_HAS_INT128)
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
@@ -605,6 +605,12 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
                                                             boost::charconv::chars_format fmt, int precision) noexcept
 {
     (void)fmt;
+
+    if (precision == -1)
+    {
+        precision = std::numeric_limits<long double>::max_digits10;
+    }
+
     std::snprintf( first, last - first, "%.*Lg", precision, value );
     return { first + std::strlen(first), std::errc() };
 }
