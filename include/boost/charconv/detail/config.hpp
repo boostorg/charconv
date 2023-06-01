@@ -6,16 +6,17 @@
 #define BOOST_CHARCONV_DETAIL_CONFIG_HPP
 
 #include <boost/config.hpp>
+#include <type_traits>
+#include <cfloat>
 
-// Once library is complete remove this block, and Boost.Assert from the CML if still unused.
-#ifndef BOOST_CHARCONV_STANDALONE
-#  include <boost/assert.hpp>
-#  define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
-#  define BOOST_CHARCONV_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
-#else // Use plain asserts
-#  include <cassert>
-#  define BOOST_CHARCONV_ASSERT(expr) assert(expr)
-#  define BOOST_CHARCONV_ASSERT_MSG(expr, msg) assert((expr)&&(msg))
+#include <boost/assert.hpp>
+#define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
+#define BOOST_CHARCONV_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
+
+#ifdef BOOST_CHARCONV_DEBUG
+#  define BOOST_CHARCONV_DEBUG_ASSERT(expr) BOOST_CHARCONV_ASSERT(expr)
+#else
+#  define BOOST_CHARCONV_DEBUG_ASSERT(expr)
 #endif
 
 // Use 128 bit integers and supress warnings for using extensions
@@ -28,8 +29,10 @@
 
 #ifndef BOOST_NO_CXX14_CONSTEXPR
 #  define BOOST_CHARCONV_CXX14_CONSTEXPR BOOST_CXX14_CONSTEXPR
+#  define BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE BOOST_CXX14_CONSTEXPR
 #else
 #  define BOOST_CHARCONV_CXX14_CONSTEXPR inline
+#  define BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE
 #endif
 
 #if defined(__GNUC__) && __GNUC__ == 5
@@ -115,6 +118,43 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  endif
 #elif defined(BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION)
 #  define BOOST_CHARCONV_NO_CXX14_RETURN_TYPE_DEDUCTION
+#endif
+
+// Is constant evaluated detection
+#ifdef __cpp_lib_is_constant_evaluated
+#  define BOOST_CHARCONV_HAS_IS_CONSTANT_EVALUATED
+#endif
+
+#ifdef __has_builtin
+#  if __has_builtin(__builtin_is_constant_evaluated) && !defined(BOOST_NO_CXX14_CONSTEXPR)
+#    define BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+#  endif
+#endif
+
+//
+// MSVC also supports __builtin_is_constant_evaluated if it's recent enough:
+//
+#if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 192528326)
+#  define BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+#endif
+
+//
+// As does GCC-9:
+//
+#if !defined(BOOST_NO_CXX14_CONSTEXPR) && (__GNUC__ >= 9) && !defined(BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED)
+#  define BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+#endif
+
+#if defined(BOOST_CHARCONV_HAS_IS_CONSTANT_EVALUATED) && !defined(BOOST_NO_CXX14_CONSTEXPR)
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) std::is_constant_evaluated()
+#elif defined(BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED)
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) __builtin_is_constant_evaluated()
+#elif !defined(BOOST_NO_CXX14_CONSTEXPR) && (__GNUC__ >= 6)
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) __builtin_constant_p(x)
+#  define BOOST_CHARCONV_USING_BUILTIN_CONSTANT_P
+#else
+#  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) false
+#  define BOOST_CHARCONV_NO_CONSTEXPR_DETECTION
 #endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP

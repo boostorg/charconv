@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
@@ -18,9 +19,9 @@ template <typename T>
 void spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
     T v;
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     BOOST_TEST(r.ec == std::errc());
-    if (!BOOST_TEST_EQ(v, expected_value))
+    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(buffer.c_str() + buffer.size(), r.ptr)))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
     }
@@ -378,6 +379,12 @@ void boost_json_test()
        "00000000000000000000000000000000000000000000000000"
        "00000000000000000000000000000000000000000000000000" // 500 zeroes
     );
+
+    // Reported on slack
+    // https://cpplang.slack.com/archives/C04NBCS69U7/p1685363266630429
+    fc("25188282901709339043e-252");
+    fc("308984926168550152811e-052");
+    fc("6372891218502368041059e064");
 }
 
 template <typename T>
@@ -596,6 +603,12 @@ int main()
     test_issue_48(-1.398276, "-1.398276;5.396485", 9);
     test_issue_48(-1.398276, "-1.398276\t5.396485", 9);
     test_issue_48(-1.398276, "-1.398276\n5.396485", 9);
+
+    // Pointers did not match
+    // See: https://github.com/cppalliance/charconv/issues/55
+    spot_value<double>("0e0", 0e0);
+    spot_value<double>("0e00000000000", 0e00000000000);
+    spot_value<double>("0e1", 0e1);
 
     // Value in range with 20 million digits. Malloc should max out at 16'711'568 bytes
     test_strtod_routines<double>(1.982645139827653964857196,
