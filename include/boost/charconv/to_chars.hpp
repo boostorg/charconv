@@ -771,21 +771,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost
 #endif
 // floating point overloads
 
-#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
-#  define BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
-#endif
-
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value, 
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
-
-#ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
-#else
-BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value ) noexcept;
-#endif
 
 } // namespace charconv
 } // namespace boost

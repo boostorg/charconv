@@ -9,6 +9,10 @@
 #include <cstdio>
 #include <cstdint>
 
+#ifdef BOOST_CHARCONV_HAS_INT128
+#  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
+#endif
+
 namespace boost { namespace charconv { namespace detail { namespace to_chars_detail {
 
 #ifdef BOOST_MSVC
@@ -568,16 +572,43 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
 }
 
-#ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_TO_CHARS_IMPL
+#if BOOST_CHARCONV_LDBL_BITS == 64
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
 }
-#else
-boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value ) noexcept
+
+#elif BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
 {
-    std::snprintf( first, last - first, "%.*Lg", std::numeric_limits<long double>::max_digits10, value );
+    if (first > last)
+    {
+        return {last, std::errc::invalid_argument};
+    }
+
+    (void)fmt;
+    (void)precision;
+    // Ryu only handles the shortest representation case
+    const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
+    const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+
+    return { first + num_chars, std::errc() };
+};
+
+#else
+
+boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value,
+                                                            boost::charconv::chars_format fmt, int precision) noexcept
+{
+    (void)fmt;
+    std::snprintf( first, last - first, "%.*Lg", precision, value );
     return { first + std::strlen(first), std::errc() };
 }
+
 #endif
+
+

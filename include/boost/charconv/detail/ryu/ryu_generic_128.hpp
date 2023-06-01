@@ -382,7 +382,7 @@ struct floating_decimal_128 float_to_fd128(float f) noexcept
 {
     static_assert(sizeof(float) == sizeof(uint32_t), "Float is not 32 bits");
     uint32_t bits = 0;
-    memcpy(&bits, &f, sizeof(float));
+    std::memcpy(&bits, &f, sizeof(float));
     return generic_binary_to_decimal(bits, 23, 8, false);
 }
 
@@ -390,7 +390,7 @@ struct floating_decimal_128 double_to_fd128(double d) noexcept
 {
     static_assert(sizeof(double) == sizeof(uint64_t), "Float is not 64 bits");
     uint64_t bits = 0;
-    memcpy(&bits, &d, sizeof(double));
+    std::memcpy(&bits, &d, sizeof(double));
     return generic_binary_to_decimal(bits, 52, 11, false);
 }
 
@@ -399,7 +399,7 @@ struct floating_decimal_128 double_to_fd128(double d) noexcept
 struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
     boost::uint128_type bits = 0;
-    memcpy(&bits, &d, sizeof(long double));
+    std::memcpy(&bits, &d, sizeof(long double));
 
     #ifdef BOOST_CHARCONV_DEBUG
     // For some odd reason, this ends up with noise in the top 48 bits. We can
@@ -428,7 +428,7 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
 {
     boost::uint128_type bits = 0;
-    memcpy(&bits, &d, sizeof(__float128));
+    std::memcpy(&bits, &d, sizeof(__float128));
     return generic_binary_to_decimal(bits, 113, 15, true);
 }
 
