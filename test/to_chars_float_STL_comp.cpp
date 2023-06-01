@@ -187,12 +187,14 @@ int main()
     // General format
     random_test<float>();
     random_test<double>();
+    random_test<long double>();
     test_spot<double>(0.0);
     test_spot<double>(-0.0);
 
     // Scientific
     random_test<float>(boost::charconv::chars_format::scientific);
     random_test<double>(boost::charconv::chars_format::scientific);
+    random_test<long double>(boost::charconv::chars_format::scientific);
     test_spot<double>(0.0, boost::charconv::chars_format::scientific);
     test_spot<double>(-0.0, boost::charconv::chars_format::scientific);
 

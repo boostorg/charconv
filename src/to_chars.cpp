@@ -592,7 +592,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 
     (void)fmt;
     (void)precision;
-    // Ryu only handles the shortest representation case
     const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
     const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
 
