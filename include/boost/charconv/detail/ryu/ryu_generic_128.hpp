@@ -412,6 +412,17 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 
 #endif
 
+#if BOOST_HAS_FLOAT128
+
+struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
+{
+    boost::uint128_type bits = 0;
+    memcpy(&bits, &d, sizeof(__float128));
+    return generic_binary_to_decimal(bits, 113, 15, true);
+}
+
+#endif
+
 }}}} // Namespaces
 
 #endif //BOOST_RYU_GENERIC_128_HPP
