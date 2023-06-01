@@ -288,13 +288,33 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
     {
         if (fd.sign)
         {
-            memcpy(result, "nan(ind)", 8);
-            return 9;
+            if (fd.mantissa == (boost::uint128_type)2305843009213693952 ||
+                fd.mantissa == (boost::uint128_type)6917529027641081856 ||
+                fd.mantissa == (boost::uint128_type)1 << 110) // 2^110
+            {
+                std::memcpy(result, "nan(snan)", 9);
+                return 10;
+            }
+            else
+            {
+                std::memcpy(result, "nan(ind)", 8);
+                return 9;
+            }
         }
         else
         {
-            memcpy(result, "nan", 3);
-            return 4;
+            if (fd.mantissa == (boost::uint128_type)2305843009213693952 ||
+                fd.mantissa == (boost::uint128_type)6917529027641081856 ||
+                fd.mantissa == (boost::uint128_type)1 << 110) // 2^110
+            {
+                std::memcpy(result, "nan(snan)", 9);
+                return 9;
+            }
+            else
+            {
+                std::memcpy(result, "nan", 3);
+                return 3;
+            }
         }
     }
 
