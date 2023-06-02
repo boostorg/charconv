@@ -618,7 +618,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 #ifdef BOOST_HAS_FLOAT128
 
-boost::charconv::to_chars_result to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
 {
     if (first > last)
     {

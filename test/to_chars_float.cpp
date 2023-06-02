@@ -137,6 +137,7 @@ int main()
     non_finite_values<double>(boost::charconv::chars_format::scientific, 2);
     non_finite_values<double>(boost::charconv::chars_format::hex);
     non_finite_values<double>(boost::charconv::chars_format::hex, 2);
+    non_finite_values<long double>();
 
     fixed_values<float>();
     fixed_values<double>();
