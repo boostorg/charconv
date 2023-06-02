@@ -616,4 +616,21 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 #endif
 
+#ifdef BOOST_HAS_FLOAT128
 
+boost::charconv::to_chars_result to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
+{
+    if (first > last)
+    {
+        return {last, std::errc::invalid_argument};
+    }
+
+    (void)fmt;
+    (void)precision;
+    const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
+    const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+
+    return { first + num_chars, std::errc() };
+}
+
+#endif
