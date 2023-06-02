@@ -600,6 +600,37 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         return {last, std::errc::invalid_argument};
     }
 
+    #if BOOST_CHARCONV_LDBL_BITS == 128
+    if (std::isnan(value))
+    {
+        bool is_negative = false;
+        if (std::signbit(value))
+        {
+            is_negative = true;
+            *first++ = '-';
+        }
+
+        if (issignaling(value))
+        {
+            std::memcpy(first, "nan(snan)", 9);
+            return { first + 9 + (int)is_negative, std::errc() };
+        }
+        else
+        {
+            if (is_negative)
+            {
+                std::memcpy(first, "nan(ind)", 8);
+                return { first + 9, std::errc() };
+            }
+            else
+            {
+                std::memcpy(first, "nan", 3);
+                return { first + 3, std::errc() };
+            }
+        }
+    }
+    #endif
+
     (void)fmt;
     (void)precision;
     const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
