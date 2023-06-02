@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdint>
+#include <cmath>
 
 // C14 includes an issignaling function that never made it into C++
 #ifndef __STDC_WANT_IEC_60559_BFP_EXT__
@@ -612,10 +613,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value,
                                                             boost::charconv::chars_format fmt, int precision) noexcept
 {
-    if (isnan(value))
+    if (std::isnan(value))
     {
         bool is_negative = false;
-        if (signbit(value))
+        if (std::signbit(value))
         {
             is_negative = true;
             *first++ = '-';
