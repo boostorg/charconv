@@ -9,6 +9,15 @@
 #include <cstdio>
 #include <cstdint>
 
+// C14 includes an issignaling function that never made it into C++
+#ifndef __STDC_WANT_IEC_60559_BFP_EXT__
+#  define __STDC_WANT_IEC_60559_BFP_EXT__
+#endif
+extern "C"
+{
+    #include <math.h>
+}
+
 #ifdef BOOST_CHARCONV_HAS_INT128
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #endif
@@ -603,6 +612,35 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value,
                                                             boost::charconv::chars_format fmt, int precision) noexcept
 {
+    if (isnan(value))
+    {
+        bool is_negative = false;
+        if (signbit(value))
+        {
+            is_negative = true;
+            *first++ = '-';
+        }
+
+        if (issignaling(value))
+        {
+            std::memcpy(first, "nan(snan)", 9);
+            return { first + 9 + (int)is_negative, std::errc() };
+        }
+        else
+        {
+            if (is_negative)
+            {
+                std::memcpy(first, "nan(ind)", 8);
+                return { first + 9, std::errc() };
+            }
+            else
+            {
+                std::memcpy(first, "nan", 3);
+                return { first + 3, std::errc() };
+            }
+        }
+    }
+
     (void)fmt;
 
     if (precision == -1)
