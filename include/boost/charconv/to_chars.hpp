@@ -778,7 +778,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double val
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 
-#ifdef BOOST_HAS_FLOAT128
+#if defined(BOOST_HAS_FLOAT128) && defined(BOOST_CHARCONV_HAS_INT128)
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, __float128 value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
