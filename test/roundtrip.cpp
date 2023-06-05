@@ -73,7 +73,7 @@ static boost::detail::splitmix64 rng;
 
 // integral types, random values
 
-#if defined(__GNUC__) && (__GNUC__ == 12)
+#if defined(__GNUC__) && (__GNUC__ >= 12)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
