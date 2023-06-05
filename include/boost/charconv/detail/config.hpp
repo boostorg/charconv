@@ -157,4 +157,27 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  define BOOST_CHARCONV_NO_CONSTEXPR_DETECTION
 #endif
 
+// Detection for C++23 fixed width floating point types
+// All of these types are optional so check for each of them individually
+#ifdef __has_include
+#  if __has_include(<stdfloat>)
+#    include <stdfloat>
+#  endif
+#endif
+#ifdef __STDCPP_FLOAT16_T__
+#  define BOOST_CHARCONV_HAS_FLOAT16
+#endif
+#ifdef __STDCPP_FLOAT32_T__
+#  define BOOST_CHARCONV_HAS_FLOAT32
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+#  define BOOST_CHARCONV_HAS_FLOAT64
+#endif
+#ifdef __STDCPP_FLOAT128_T__
+#  define BOOST_CHARCONV_HAS_FLOAT128
+#endif
+#ifdef __STDCPP_BFLOAT16_T__
+#  define BOOST_CHARCONV_HAS_BRAINFLOAT16
+#endif
+
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP

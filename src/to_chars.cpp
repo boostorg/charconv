@@ -581,3 +581,26 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
     return { first + std::strlen(first), std::errc() };
 }
 #endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float32_t value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
+{
+    static_assert(std::numeric_limits<std::float32_t>::digits == FLT_MANT_DIG &&
+                  std::numeric_limits<std::float32_t>::min_exponent == FLT_MIN_EXP,
+                  "float and std::float32_t are not the same layout like they should be");
+
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
+}
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float64_t value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
+{
+    static_assert(std::numeric_limits<std::float64_t>::digits == DBL_MANT_DIG &&
+                  std::numeric_limits<std::float64_t>::min_exponent == DBL_MIN_EXP,
+                  "double and std::float64_t are not the same layout like they should be");
+    
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
+}
+#endif

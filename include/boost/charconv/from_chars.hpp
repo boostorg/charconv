@@ -94,6 +94,14 @@ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* 
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
 
+// <stdfloat> types
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, std::float32_t& value, chars_format fmt = chars_format::general) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, std::float64_t& value, chars_format fmt = chars_format::general) noexcept;
+#endif
+
 } // namespace charconv
 } // namespace boost
 
