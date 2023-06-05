@@ -360,6 +360,27 @@ int main()
         test_roundtrip_bv<float>();
     }
 
+    #ifdef BOOST_CHARCONV_HAS_FLOAT32
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float32_t w0 = static_cast<std::float32_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float32_t w1 = static_cast<std::float32_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float32_t w2 = (std::numeric_limits<std::float32_t>::max)() / static_cast<std::float32_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float32_t w3 = (std::numeric_limits<std::float32_t>::min)() * static_cast<std::float32_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float32_t>();
+    }
+    #endif
+
     // double
 
     {
@@ -380,6 +401,27 @@ int main()
 
         test_roundtrip_bv<double>();
     }
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT64
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float64_t w0 = static_cast<std::float64_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float64_t w1 = static_cast<std::float64_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float64_t w2 = (std::numeric_limits<std::float64_t>::max)() / static_cast<std::float64_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float64_t w3 = (std::numeric_limits<std::float64_t>::min)() * static_cast<std::float64_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float64_t>();
+    }
+    #endif
 
     // long double
 
