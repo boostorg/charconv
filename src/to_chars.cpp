@@ -601,7 +601,8 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     }
 
     #if BOOST_CHARCONV_LDBL_BITS == 128
-    if (std::isnan(value))
+    const auto classification = std::fpclassify(value);
+    if (classification == FP_NAN)
     {
         bool is_negative = false;
         if (std::signbit(value))
@@ -627,6 +628,19 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
                 std::memcpy(first, "nan", 3);
                 return { first + 3, std::errc() };
             }
+        }
+    }
+    else if (classification == FP_INFINITE)
+    {
+        if (std::signbit(value))
+        {
+            std::memcpy(first, "-inf", 4);
+            return { first + 4, std::errc() };
+        }
+        else
+        {
+            std::memcpy(first, "inf", 3);
+            return { first + 3, std::errc() };
         }
     }
     #endif
