@@ -337,9 +337,53 @@ int main()
     // the stub implementations fail under Cygwin, s390x, linux ARM, and Apple Clang w/Xcode 12.2;
     // re-enable these when we have real ones
 
-    // float
+    // 16-bit types
 
     double const q = std::pow( 1.0, -64 );
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float16_t w0 = static_cast<std::float16_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float16_t w1 = static_cast<std::float16_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float16_t w2 = (std::numeric_limits<std::float16_t>::max)() / static_cast<std::float16_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float16_t w3 = (std::numeric_limits<std::float16_t>::min)() * static_cast<std::float16_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float16_t>();
+    }
+    #endif
+
+    #ifdef BOOST_CHARCONV_HAS_BFLOAT16
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::bfloat16_t w0 = static_cast<std::bfloat16_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::bfloat16_t w2 = (std::numeric_limits<std::bfloat16_t>::max)() / static_cast<std::bfloat16_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::bfloat16_t w3 = (std::numeric_limits<std::bfloat16_t>::min)() * static_cast<std::bfloat16_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::bfloat16_t>();
+    }
+    #endif
+
+    // float
 
     {
         for( int i = 0; i < N; ++i )

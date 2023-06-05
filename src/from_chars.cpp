@@ -57,6 +57,19 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
 }
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    float f;
+    const auto r = boost::charconv::from_chars(first, last, f, fmt);
+    if (r.ec == std::errc())
+    {
+        value = static_cast<std::float16_t>(f);
+    }
+    return r;
+}
+#endif
+
 #ifdef BOOST_CHARCONV_HAS_FLOAT32
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float32_t& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -71,6 +84,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 #endif
+
 #ifdef BOOST_CHARCONV_HAS_FLOAT64
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float64_t& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -82,6 +96,19 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     std::memcpy(&d, &value, sizeof(double));
     const auto r = boost::charconv::from_chars(first, last, d, fmt);
     std::memcpy(&value, &d, sizeof(std::float64_t));
+    return r;
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_BFLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    float f;
+    const auto r = boost::charconv::from_chars(first, last, f, fmt);
+    if (r.ec == std::errc())
+    {
+        value = static_cast<std::bfloat16_t>(f);
+    }
     return r;
 }
 #endif

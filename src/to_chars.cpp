@@ -582,6 +582,14 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 }
 #endif
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float16_t value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
+}
+#endif
+
 #ifdef BOOST_CHARCONV_HAS_FLOAT32
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float32_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
@@ -593,6 +601,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
+
 #ifdef BOOST_CHARCONV_HAS_FLOAT64
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float64_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
@@ -602,5 +611,13 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
                   "double and std::float64_t are not the same layout like they should be");
     
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_BFLOAT16
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
