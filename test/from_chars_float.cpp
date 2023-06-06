@@ -23,7 +23,13 @@ void spot_value(const std::string& buffer, T expected_value, boost::charconv::ch
     BOOST_TEST(r.ec == std::errc());
     if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(buffer.c_str() + buffer.size(), r.ptr)))
     {
+        #if __GNUC__ >= 5
+        std::cerr << std::hexfloat
+                  << "Test failure for: " << expected_value
+                  << "\n             Got: " << v << std::endl;
+        #else
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+        #endif
     }
 }
 
@@ -521,6 +527,15 @@ int main()
     // Value from Lemire's comments
     spot_check<double>(7.3177701707893310e+15, "7.3177701707893310e+15", boost::charconv::chars_format::scientific);
 
+    // From GCC 13 Excess Precision Support was implemented and made standard and causes these hard value tests to be off by 1 ULP
+    //
+    // Excess precision support (which has been available in C since GCC 4.5) has been implemented for C++ as well.
+    // It is enabled by default in strict standard modes like -std=c++17, where it defaults to -fexcess-precision=standard,
+    // while in GNU standard modes like -std=gnu++20 it defaults to -fexcess-precision=fast.
+    // The option mainly affects IA-32/x86-64 using x87 math and in some cases on Motorola 68000,
+    // where float and double expressions are evaluated in long double precision and S/390, System z,
+    // IBM z Systems where float expressions are evaluated in double precision.
+    //
     // Values from testbase report: https://www.icir.org/vern/papers/testbase-report.pdf
     // Table 1
     spot_check<double>(9e-265, "9e-265", boost::charconv::chars_format::scientific);
