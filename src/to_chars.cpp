@@ -10,17 +10,9 @@
 #include <cstdint>
 #include <cmath>
 
-// C14 includes an issignaling function that never made it into C++
-#ifndef __STDC_WANT_IEC_60559_BFP_EXT__
-#  define __STDC_WANT_IEC_60559_BFP_EXT__
-#endif
-extern "C"
-{
-    #include <math.h>
-}
-
 #ifdef BOOST_CHARCONV_HAS_INT128
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
+#  include <boost/charconv/detail/issignaling.hpp>
 #endif
 
 namespace boost { namespace charconv { namespace detail { namespace to_chars_detail {
@@ -611,7 +603,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
             *first++ = '-';
         }
 
-        if (issignaling(value))
+        if (boost::charconv::detail::issignaling(value))
         {
             std::memcpy(first, "nan(snan)", 9);
             return { first + 9 + (int)is_negative, std::errc() };
