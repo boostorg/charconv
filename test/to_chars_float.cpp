@@ -137,7 +137,11 @@ int main()
     non_finite_values<double>(boost::charconv::chars_format::scientific, 2);
     non_finite_values<double>(boost::charconv::chars_format::hex);
     non_finite_values<double>(boost::charconv::chars_format::hex, 2);
+
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57484
+    #if !(__GNUC__ == 4 && __GNUC_MINOR__ < 9 && defined(__i686__))
     non_finite_values<long double>();
+    #endif
 
     fixed_values<float>();
     fixed_values<double>();
