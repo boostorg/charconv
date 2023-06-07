@@ -685,14 +685,27 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
         }
     }
 
-    (void)fmt;
-
     if (precision == -1)
     {
-        precision = std::numeric_limits<long double>::max_digits10;
+        if (value > 1 && value < 1e20L)
+        {
+            precision = boost::charconv::detail::num_digits(static_cast<std::uint64_t>(value));
+        }
+        else
+        {
+            precision = std::numeric_limits<long double>::max_digits10;
+        }
     }
 
-    std::snprintf( first, last - first, "%.*Lg", precision, value );
+    if (fmt == boost::charconv::chars_format::general)
+    {
+        std::snprintf( first, last - first, "%.*Lg", precision, value );
+    }
+    else if (fmt == boost::charconv::chars_format::scientific)
+    {
+        std::snprintf( first, last - first, "%.*Le", precision, value );
+    }
+
     return { first + std::strlen(first), std::errc() };
 }
 

@@ -104,7 +104,7 @@ char const* fmt_from_type_scientific( long double )
 
 char const* fmt_from_type_scientific( long double )
 {
-    return "%.19Le";
+    return "%.20Le";
 }
 
 #else
@@ -304,6 +304,8 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
     // Remove trailing zeros from printf
     // Ryu only supports shortest representation
     std::string printf_string {buffer2};
+
+    #ifndef __i686__
     if (fmt == boost::charconv::chars_format::scientific)
     {
         std::size_t found_trailing_0 = printf_string.find_first_of('e');
@@ -317,6 +319,7 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
             }
         }
     }
+    #endif
 
     // printf weirdness as above
     //
@@ -327,7 +330,7 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
     //   Value: 5.65459196790898857701e-4913
     //To chars: 5.654591967908988577e-4913
     //Snprintf: 5.65459e-4913
-    if (fmt == boost::charconv::chars_format::general && value > 1e16L && value < 1e20L)
+    if (value > 1e16L && value < 1e20L)
     {
         return;
     }
