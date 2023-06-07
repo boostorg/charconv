@@ -334,11 +334,7 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
     {
         return;
     }
-    #if BOOST_CHARCONV_LDBL_BITS == 80
     else if (value > 1e4912L || value < 1e-4912L)
-    #else
-    else if (value > 1e16380L || value < 1e-16380L)
-    #endif
     {
         return;
     }
