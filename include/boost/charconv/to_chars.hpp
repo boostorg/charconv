@@ -769,7 +769,83 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost
     return detail::to_chars128(first, last, value, base);
 }
 #endif
-// floating point overloads
+
+//----------------------------------------------------------------------------------------------------------------------
+// Floating Point
+//----------------------------------------------------------------------------------------------------------------------
+
+namespace detail {
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+inline int print_val(char* first, char* last, char* format, __float128 value) noexcept
+{
+    return quadmath_snprintf(first, last - first, format, value);
+}
+#endif
+
+inline int print_val(char* first, char* last, char* format, long double value) noexcept
+{
+    return std::snprintf(first, last - first, format, value);
+}
+
+template <typename T>
+to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_format fmt, int precision)
+{
+    //v % + . + num_digits(INT_MAX) + specifier + null terminator
+    // 1 + 1 + 10 + 1 + 1
+    char format[14] {};
+    std::memcpy(&format, "%.", 2);
+    std::size_t pos = 2;
+
+    // precision of -1 is unspecified
+    if (precision > -1)
+    {
+        const auto unsigned_precision = static_cast<std::uint32_t>(precision);
+        if (precision >= 0 && precision < 10)
+        {
+            boost::charconv::detail::print_1_digit(precision, format + pos);
+            ++pos;
+        }
+        else if (precision < 100)
+        {
+            boost::charconv::detail::print_2_digits(precision, format + pos);
+            pos += 2;
+        }
+        else
+        {
+            boost::charconv::to_chars(format + pos, format + sizeof(format), precision);
+            pos = std::strlen(format);
+        }
+    }
+
+    switch (fmt)
+    {
+        case boost::charconv::chars_format::general:
+            format[pos] = 'g';
+            break;
+
+        case boost::charconv::chars_format::scientific:
+            format[pos] = 'e';
+            break;
+
+        case boost::charconv::chars_format::fixed:
+            format[pos] = 'f';
+            break;
+
+        case boost::charconv::chars_format::hex:
+            format[pos] = 'a';
+            break;
+    }
+
+    ++pos;
+    format[pos] = '\n';
+
+    const auto rv = print_val(first, last - first, format, value);
+
+    return {first + rv, static_cast<std::errc>(errno)};
+}
+
+} // Namespace detail
 
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
