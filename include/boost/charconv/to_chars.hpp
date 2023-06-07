@@ -777,15 +777,15 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, boost
 namespace detail {
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
-inline int print_val(char* first, char* last, char* format, __float128 value) noexcept
+inline int print_val(char* first, std::size_t size, char* format, __float128 value) noexcept
 {
-    return quadmath_snprintf(first, last - first, format, value);
+    return quadmath_snprintf(first, size, format, value);
 }
 #endif
 
-inline int print_val(char* first, char* last, char* format, long double value) noexcept
+inline int print_val(char* first, std::size_t size, char* format, long double value) noexcept
 {
-    return std::snprintf(first, last - first, format, value);
+    return std::snprintf(first, size, format, value);
 }
 
 template <typename T>
@@ -801,14 +801,14 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     if (precision > -1)
     {
         const auto unsigned_precision = static_cast<std::uint32_t>(precision);
-        if (precision >= 0 && precision < 10)
+        if (unsigned_precision < 10)
         {
-            boost::charconv::detail::print_1_digit(precision, format + pos);
+            boost::charconv::detail::print_1_digit(unsigned_precision, format + pos);
             ++pos;
         }
-        else if (precision < 100)
+        else if (unsigned_precision < 100)
         {
-            boost::charconv::detail::print_2_digits(precision, format + pos);
+            boost::charconv::detail::print_2_digits(unsigned_precision, format + pos);
             pos += 2;
         }
         else
@@ -854,7 +854,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double val
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 
-#if defined(BOOST_HAS_FLOAT128) && defined(BOOST_CHARCONV_HAS_INT128)
+#if defined(BOOST_CHARCONV_HAS_FLOAT128) && defined(BOOST_CHARCONV_HAS_INT128)
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, __float128 value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
