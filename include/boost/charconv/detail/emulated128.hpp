@@ -372,7 +372,10 @@ struct uint128
     INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long)
     INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long long)
 
-    // Arithmetic operators
+    #undef INTEGER_BINARY_OPERATOR_RIGHT_SHIFT
+    #undef INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT
+
+    // Arithmetic operators (Add, sub, mul, div, mod)
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator+=(std::uint64_t n) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator+(uint128 lhs, uint128 rhs) noexcept;
@@ -382,6 +385,10 @@ struct uint128
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator-(uint128 lhs, uint128 rhs) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator-=(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator*(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator*=(uint128 v) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator/(uint128 lhs, uint128 rhs) noexcept;
 
@@ -536,6 +543,41 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator-=(uint128 v) noexcept
     return *this;
 }
 
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator*(uint128 lhs, uint128 rhs) noexcept
+{
+    #if defined(BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS)
+
+    std::uint64_t carry;
+    const std::uint64_t low = _umul128(lhs.low, rhs.low, &carry);
+    return {lhs.low * rhs.high + lhs.high * rhs.low + carry, low};
+
+    #elif defined(__arm__)
+
+    const std::uint64_t carry = __umulh(lhs.low, rhs.low);
+    const std::uint64_t low = x * y;
+    return {lhs.low * rhs.high + lhs.high * rhs.low + carry, low};
+
+    #else
+
+    const auto a = static_cast<std::uint64_t>(lhs.low >> 32);
+    const auto b = static_cast<std::uint64_t>(lhs.low & UINT32_MAX);
+    const auto c = static_cast<std::uint64_t>(lhs.low >> 32);
+    const auto d = static_cast<std::uint64_t>(lhs.low & UINT32_MAX);
+
+    uint128 result { lhs.high * rhs.low + lhs.low * rhs.high + a * c, b * d };
+    result += uint128(a * d) << 32;
+    result += uint128(b * c) << 32;
+    return result;
+
+    #endif
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator*=(uint128 v) noexcept
+{
+    *this = *this - v;
+    return *this;
+}
+
 BOOST_CHARCONV_CXX14_CONSTEXPR int high_bit(uint128 v) noexcept
 {
     if (v.high != 0)
@@ -553,6 +595,8 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int high_bit(uint128 v) noexcept
 // See: https://stackoverflow.com/questions/5386377/division-without-using
 BOOST_CHARCONV_CXX14_CONSTEXPR void div_impl(uint128 lhs, uint128 rhs, uint128& quotient, uint128& remainder) noexcept
 {
+    BOOST_CHARCONV_ASSUME(rhs > 0);
+
     const uint128 one {0, 1};
 
     if (rhs > lhs)
