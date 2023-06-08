@@ -54,6 +54,9 @@ struct uint128
     UNSIGNED_CONSTRUCTOR(unsigned long)
     UNSIGNED_CONSTRUCTOR(unsigned long long)
 
+    #undef SIGNED_CONSTRUCTOR
+    #undef UNSIGNED_CONSTRUCTOR
+
     // Assignment Operators
     #define SIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(expr v) noexcept { high = v < 0 ? UINT64_MAX : UINT64_C(0); low = static_cast<std::uint64_t>(v); return *this; }
     #define UNSIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(expr v) noexcept { high = 0U; low = static_cast<std::uint64_t>(v); return *this; }
@@ -73,8 +76,11 @@ struct uint128
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(uint128 v) noexcept;
 
+    #undef SIGNED_ASSIGNMENT_OPERATOR
+    #undef UNSIGNED_ASSIGNMENT_OPERATOR
+
     // Conversion Operators
-    #define INTEGER_CONVERSION_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR explicit operator expr() const noexcept { return static_cast<expr>(low); }
+    #define INTEGER_CONVERSION_OPERATOR(expr) constexpr explicit operator expr() const noexcept { return static_cast<expr>(low); }
     #define FLOAT_CONVERSION_OPERATOR(expr) explicit operator expr() const noexcept { return std::ldexp(static_cast<expr>(high), 64) + static_cast<expr>(low); }
 
     INTEGER_CONVERSION_OPERATOR(char)
@@ -92,6 +98,9 @@ struct uint128
     FLOAT_CONVERSION_OPERATOR(float)
     FLOAT_CONVERSION_OPERATOR(double)
     FLOAT_CONVERSION_OPERATOR(long double)
+
+    #undef INTEGER_CONVERSION_OPERATOR
+    #undef FLOAT_CONVERSION_OPERATOR
 
     // Comparison Operators
 
@@ -204,6 +213,10 @@ struct uint128
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned)
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long)
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long long)
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator>=(uint128 lhs, uint128 rhs) noexcept;
+
+    #undef INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO
 
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(uint128 v) noexcept
 {
