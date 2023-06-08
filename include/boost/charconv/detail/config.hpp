@@ -162,4 +162,18 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  define BOOST_CHARCONV_NO_CONSTEXPR_DETECTION
 #endif
 
+#if BOOST_MSVC
+#  define BOOST_CHARCONV_ASSUME(expr) __assume(expr)
+#elif defined(__clang__)
+#  define BOOST_CHARCONV_ASSUME(expr) __builtin_assume(expr)
+#elif defined(__GNUC__)
+#  define BOOST_CHARCONV_ASSUME(expr) if (expr) {} else { __builtin_unreachable(); }
+#elif defined(__has_cpp_attribute)
+#  if __has_cpp_attribute(assume)
+#    define BOOST_CHARCONV_ASSUME(expr) [[assume(expr)]]
+#  endif
+#else
+#  define BOOST_CHARCONV_ASSUME(expr)
+#endif
+
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
