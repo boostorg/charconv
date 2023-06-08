@@ -72,6 +72,27 @@ struct uint128
     UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long long)
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(uint128 v) noexcept;
+
+    // Conversion Operators
+    #define INTEGER_CONVERSION_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR explicit operator expr() const noexcept { return static_cast<expr>(low); }
+    #define FLOAT_CONVERSION_OPERATOR(expr) explicit operator expr() const noexcept { return std::ldexp(static_cast<expr>(high), 64) + static_cast<expr>(low); }
+
+    INTEGER_CONVERSION_OPERATOR(char)
+    INTEGER_CONVERSION_OPERATOR(signed char)
+    INTEGER_CONVERSION_OPERATOR(short)
+    INTEGER_CONVERSION_OPERATOR(int)
+    INTEGER_CONVERSION_OPERATOR(long)
+    INTEGER_CONVERSION_OPERATOR(long long)
+    INTEGER_CONVERSION_OPERATOR(unsigned char)
+    INTEGER_CONVERSION_OPERATOR(unsigned short)
+    INTEGER_CONVERSION_OPERATOR(unsigned)
+    INTEGER_CONVERSION_OPERATOR(unsigned long)
+    INTEGER_CONVERSION_OPERATOR(unsigned long long)
+
+    FLOAT_CONVERSION_OPERATOR(float)
+    FLOAT_CONVERSION_OPERATOR(double)
+    FLOAT_CONVERSION_OPERATOR(long double)
+
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(uint128 v) noexcept
 {
     low = v.low;
