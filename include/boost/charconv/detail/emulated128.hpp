@@ -93,6 +93,118 @@ struct uint128
     FLOAT_CONVERSION_OPERATOR(double)
     FLOAT_CONVERSION_OPERATOR(long double)
 
+    // Comparison Operators
+
+    // Equality
+    #define INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && rhs >= 0 && lhs.low == rhs; }
+
+    INTEGER_OPERATOR_EQUAL(char)
+    INTEGER_OPERATOR_EQUAL(signed char)
+    INTEGER_OPERATOR_EQUAL(short)
+    INTEGER_OPERATOR_EQUAL(int)
+    INTEGER_OPERATOR_EQUAL(long)
+    INTEGER_OPERATOR_EQUAL(long long)
+    INTEGER_OPERATOR_EQUAL(unsigned char)
+    INTEGER_OPERATOR_EQUAL(unsigned short)
+    INTEGER_OPERATOR_EQUAL(unsigned)
+    INTEGER_OPERATOR_EQUAL(unsigned long)
+    INTEGER_OPERATOR_EQUAL(unsigned long long)
+
+    constexpr friend bool operator==(uint128 lhs, uint128 rhs) noexcept;
+
+    #undef INTEGER_OPERATOR_EQUAL
+
+    // Inequality
+    #define INTEGER_OPERATOR_NOTEQUAL(expr) constexpr friend bool operator!=(uint128 lhs, expr rhs) noexcept { return !(lhs == rhs); }
+
+    INTEGER_OPERATOR_NOTEQUAL(char)
+    INTEGER_OPERATOR_NOTEQUAL(signed char)
+    INTEGER_OPERATOR_NOTEQUAL(short)
+    INTEGER_OPERATOR_NOTEQUAL(int)
+    INTEGER_OPERATOR_NOTEQUAL(long)
+    INTEGER_OPERATOR_NOTEQUAL(long long)
+    INTEGER_OPERATOR_NOTEQUAL(unsigned char)
+    INTEGER_OPERATOR_NOTEQUAL(unsigned short)
+    INTEGER_OPERATOR_NOTEQUAL(unsigned)
+    INTEGER_OPERATOR_NOTEQUAL(unsigned long)
+    INTEGER_OPERATOR_NOTEQUAL(unsigned long long)
+
+    constexpr friend bool operator!=(uint128 lhs, uint128 rhs) noexcept;
+
+    #undef INTEGER_OPERATOR_NOTEQUAL
+
+    // Less than
+    #define INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs > 0 && lhs.low < rhs; }
+
+    INTEGER_OPERATOR_LESS_THAN(char)
+    INTEGER_OPERATOR_LESS_THAN(signed char)
+    INTEGER_OPERATOR_LESS_THAN(short)
+    INTEGER_OPERATOR_LESS_THAN(int)
+    INTEGER_OPERATOR_LESS_THAN(long)
+    INTEGER_OPERATOR_LESS_THAN(long long)
+    INTEGER_OPERATOR_LESS_THAN(unsigned char)
+    INTEGER_OPERATOR_LESS_THAN(unsigned short)
+    INTEGER_OPERATOR_LESS_THAN(unsigned)
+    INTEGER_OPERATOR_LESS_THAN(unsigned long)
+    INTEGER_OPERATOR_LESS_THAN(unsigned long long)
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator<(uint128 lhs, uint128 rhs) noexcept;
+
+    #undef INTEGER_OPERATOR_LESS_THAN
+
+    // Less than or equal to
+    #define INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs >= 0 && lhs.low <= rhs; }
+
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(char)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(signed char)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(short)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(int)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long long)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned char)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned short)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long long)
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator<=(uint128 lhs, uint128 rhs) noexcept;
+
+    #undef INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO
+
+    // Greater than
+    #define INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low > rhs; }
+
+    INTEGER_OPERATOR_GREATER_THAN(char)
+    INTEGER_OPERATOR_GREATER_THAN(signed char)
+    INTEGER_OPERATOR_GREATER_THAN(short)
+    INTEGER_OPERATOR_GREATER_THAN(int)
+    INTEGER_OPERATOR_GREATER_THAN(long)
+    INTEGER_OPERATOR_GREATER_THAN(long long)
+    INTEGER_OPERATOR_GREATER_THAN(unsigned char)
+    INTEGER_OPERATOR_GREATER_THAN(unsigned short)
+    INTEGER_OPERATOR_GREATER_THAN(unsigned)
+    INTEGER_OPERATOR_GREATER_THAN(unsigned long)
+    INTEGER_OPERATOR_GREATER_THAN(unsigned long long)
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator>(uint128 lhs, uint128 rhs) noexcept;
+
+    #undef INTEGER_OPERATOR_GREATER_THAN
+
+    // Greater than or equal to
+    #define INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low >= rhs; }
+
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(char)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(signed char)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(short)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(int)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long long)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned char)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned short)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long long)
+
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(uint128 v) noexcept
 {
     low = v.low;
@@ -100,7 +212,41 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(uint128 v) noexcept
     return *this;
 }
 
+constexpr bool operator==(uint128 lhs, uint128 rhs) noexcept
+{
+    return lhs.high == rhs.high && lhs.low == rhs.low;
+}
+
+constexpr bool operator!=(uint128 lhs, uint128 rhs) noexcept
+{
+    return !(lhs == rhs);
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR bool operator<(uint128 lhs, uint128 rhs) noexcept
+{
+    if (lhs.high == rhs.high)
     {
+        return lhs.low < rhs.low;
+    }
+
+    return lhs.high < rhs.high;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR bool operator<=(uint128 lhs, uint128 rhs) noexcept
+{
+    return !(rhs < lhs);
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR bool operator>(uint128 lhs, uint128 rhs) noexcept
+{
+    return rhs < lhs;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR bool operator>=(uint128 lhs, uint128 rhs) noexcept
+{
+    return !(lhs < rhs);
+}
+
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
         
         unsigned long long carry;
