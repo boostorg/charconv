@@ -105,7 +105,8 @@ struct uint128
     // Comparison Operators
 
     // Equality
-    #define INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && rhs >= 0 && lhs.low == rhs; }
+    #define INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && rhs >= 0 && lhs.low == static_cast<std::uint64_t>(rhs); }
+    #define UNSIGNED_INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && lhs.low == static_cast<std::uint64_t>(rhs); }
 
     INTEGER_OPERATOR_EQUAL(char)
     INTEGER_OPERATOR_EQUAL(signed char)
@@ -113,15 +114,16 @@ struct uint128
     INTEGER_OPERATOR_EQUAL(int)
     INTEGER_OPERATOR_EQUAL(long)
     INTEGER_OPERATOR_EQUAL(long long)
-    INTEGER_OPERATOR_EQUAL(unsigned char)
-    INTEGER_OPERATOR_EQUAL(unsigned short)
-    INTEGER_OPERATOR_EQUAL(unsigned)
-    INTEGER_OPERATOR_EQUAL(unsigned long)
-    INTEGER_OPERATOR_EQUAL(unsigned long long)
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned char)
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned short)
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned)
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned long)
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned long long)
 
     constexpr friend bool operator==(uint128 lhs, uint128 rhs) noexcept;
 
     #undef INTEGER_OPERATOR_EQUAL
+    #undef UNSIGNED_INTEGER_OPERATOR_EQUAL
 
     // Inequality
     #define INTEGER_OPERATOR_NOTEQUAL(expr) constexpr friend bool operator!=(uint128 lhs, expr rhs) noexcept { return !(lhs == rhs); }
@@ -143,7 +145,8 @@ struct uint128
     #undef INTEGER_OPERATOR_NOTEQUAL
 
     // Less than
-    #define INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs > 0 && lhs.low < rhs; }
+    #define INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs > 0 && lhs.low < static_cast<std::uint64_t>(rhs); }
+    #define UNSIGNED_INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && lhs.low < static_cast<std::uint64_t>(rhs); }
 
     INTEGER_OPERATOR_LESS_THAN(char)
     INTEGER_OPERATOR_LESS_THAN(signed char)
@@ -151,18 +154,20 @@ struct uint128
     INTEGER_OPERATOR_LESS_THAN(int)
     INTEGER_OPERATOR_LESS_THAN(long)
     INTEGER_OPERATOR_LESS_THAN(long long)
-    INTEGER_OPERATOR_LESS_THAN(unsigned char)
-    INTEGER_OPERATOR_LESS_THAN(unsigned short)
-    INTEGER_OPERATOR_LESS_THAN(unsigned)
-    INTEGER_OPERATOR_LESS_THAN(unsigned long)
-    INTEGER_OPERATOR_LESS_THAN(unsigned long long)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned char)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned short)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned long)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned long long)
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator<(uint128 lhs, uint128 rhs) noexcept;
 
     #undef INTEGER_OPERATOR_LESS_THAN
+    #undef UNSIGNED_INTEGER_OPERATOR_LESS_THAN
 
     // Less than or equal to
-    #define INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs >= 0 && lhs.low <= rhs; }
+    #define INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs >= 0 && lhs.low <= static_cast<std::uint64_t>(rhs); }
+    #define UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && lhs.low <= static_cast<std::uint64_t>(rhs); }
 
     INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(char)
     INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(signed char)
@@ -170,18 +175,20 @@ struct uint128
     INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(int)
     INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long)
     INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long long)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned char)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned short)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long long)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned char)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned short)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long)
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long long)
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator<=(uint128 lhs, uint128 rhs) noexcept;
 
     #undef INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO
+    #undef UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO
 
     // Greater than
-    #define INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low > rhs; }
+    #define INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low > static_cast<std::uint64_t>(rhs); }
+    #define UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || lhs.low > static_cast<std::uint64_t>(rhs); }
 
     INTEGER_OPERATOR_GREATER_THAN(char)
     INTEGER_OPERATOR_GREATER_THAN(signed char)
@@ -189,18 +196,20 @@ struct uint128
     INTEGER_OPERATOR_GREATER_THAN(int)
     INTEGER_OPERATOR_GREATER_THAN(long)
     INTEGER_OPERATOR_GREATER_THAN(long long)
-    INTEGER_OPERATOR_GREATER_THAN(unsigned char)
-    INTEGER_OPERATOR_GREATER_THAN(unsigned short)
-    INTEGER_OPERATOR_GREATER_THAN(unsigned)
-    INTEGER_OPERATOR_GREATER_THAN(unsigned long)
-    INTEGER_OPERATOR_GREATER_THAN(unsigned long long)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned char)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned short)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned long)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned long long)
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator>(uint128 lhs, uint128 rhs) noexcept;
 
     #undef INTEGER_OPERATOR_GREATER_THAN
+    #undef UNSIGNED_INTEGER_OPERATOR_GREATER_THAN
 
     // Greater than or equal to
-    #define INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low >= rhs; }
+    #define INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low >= static_cast<std::uint64_t>(rhs); }
+    #define UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || lhs.low >= static_cast<std::uint64_t>(rhs); }
 
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(char)
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(signed char)
@@ -208,34 +217,160 @@ struct uint128
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(int)
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long)
     INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long long)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned char)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned short)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long long)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned char)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned short)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long)
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long long)
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator>=(uint128 lhs, uint128 rhs) noexcept;
 
     #undef INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO
+    #undef UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO
 
-    // Logical Operators
-    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator~(uint128 v) noexcept;
+    // Binary Operators
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator|(uint128 lhs, uint128 rhs) noexcept;
+    // Not
+    constexpr friend uint128 operator~(uint128 v) noexcept;
+
+    // Or
+    #define INTEGER_BINARY_OPERATOR_OR(expr) constexpr friend bool operator|(uint128 lhs, expr rhs) noexcept { return lhs.low | rhs; }
+
+    INTEGER_BINARY_OPERATOR_OR(char)
+    INTEGER_BINARY_OPERATOR_OR(signed char)
+    INTEGER_BINARY_OPERATOR_OR(short)
+    INTEGER_BINARY_OPERATOR_OR(int)
+    INTEGER_BINARY_OPERATOR_OR(long)
+    INTEGER_BINARY_OPERATOR_OR(long long)
+    INTEGER_BINARY_OPERATOR_OR(unsigned char)
+    INTEGER_BINARY_OPERATOR_OR(unsigned short)
+    INTEGER_BINARY_OPERATOR_OR(unsigned)
+    INTEGER_BINARY_OPERATOR_OR(unsigned long)
+    INTEGER_BINARY_OPERATOR_OR(unsigned long long)
+
+    constexpr friend uint128 operator|(uint128 lhs, uint128 rhs) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator|=(uint128 v) noexcept;
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator&(uint128 lhs, uint128 rhs) noexcept;
+    #undef INTEGER_BINARY_OPERATOR_OR
+
+    // And
+    #define INTEGER_BINARY_OPERATOR_AND(expr) constexpr friend bool operator&(uint128 lhs, expr rhs) noexcept { return lhs.low & rhs; }
+
+    INTEGER_BINARY_OPERATOR_AND(char)
+    INTEGER_BINARY_OPERATOR_AND(signed char)
+    INTEGER_BINARY_OPERATOR_AND(short)
+    INTEGER_BINARY_OPERATOR_AND(int)
+    INTEGER_BINARY_OPERATOR_AND(long)
+    INTEGER_BINARY_OPERATOR_AND(long long)
+    INTEGER_BINARY_OPERATOR_AND(unsigned char)
+    INTEGER_BINARY_OPERATOR_AND(unsigned short)
+    INTEGER_BINARY_OPERATOR_AND(unsigned)
+    INTEGER_BINARY_OPERATOR_AND(unsigned long)
+    INTEGER_BINARY_OPERATOR_AND(unsigned long long)
+
+    constexpr friend uint128 operator&(uint128 lhs, uint128 rhs) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator&=(uint128 v) noexcept;
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator<<(uint128 lhs, int amount) noexcept;
+    #undef INTEGER_BINARY_OPERATOR_AND
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator<<=(int amount) noexcept;
+    // Left shift
+    #define INTEGER_BINARY_OPERATOR_LEFT_SHIFT(expr)                                            \
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator<<(uint128 lhs, expr rhs) noexcept    \
+    {                                                                                           \
+        if (rhs >= 64)                                                                          \
+        {                                                                                       \
+            return {lhs.low << (rhs - 64), 0};                                                  \
+        }                                                                                       \
+        else if (rhs == 0)                                                                      \
+        {                                                                                       \
+            return lhs;                                                                         \
+        }                                                                                       \
+                                                                                                \
+        return {(lhs.high << rhs) | (lhs.low >> (64 - rhs)), lhs.low << rhs};                   \
+    }
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator>>(uint128 lhs, int amount) noexcept;
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(char)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(signed char)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(short)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(int)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(long)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(long long)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned char)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned short)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned long)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned long long)
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator>>=(int amount) noexcept;
+    #define INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(expr)                     \
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator<<=(expr amount) noexcept   \
+    {                                                                           \
+        *this = *this << amount;                                                \
+        return *this;                                                           \
+    }
+
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(char)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(signed char)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(short)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(int)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(long)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(long long)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned char)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned short)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned long)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned long long)
+
+    #undef INTEGER_BINARY_OPERATOR_LEFT_SHIFT
+    #undef INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT
+
+    // Right Shift
+    #define INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(expr)                                               \
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator>>(uint128 lhs, expr amount) noexcept     \
+    {                                                                                               \
+        if (amount >= 64)                                                                           \
+        {                                                                                           \
+            return {0, lhs.high >> (amount - 64)};                                                  \
+        }                                                                                           \
+        else if (amount == 0)                                                                       \
+        {                                                                                           \
+            return lhs;                                                                             \
+        }                                                                                           \
+                                                                                                    \
+        return {lhs.high >> amount, (lhs.low >> amount) | (lhs.high << (64 - amount))};             \
+    }
+
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(char)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(signed char)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(short)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(int)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(long)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(long long)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned char)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned short)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned long)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned long long)
+
+    #define INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(expr)                        \
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator>>=(expr amount) noexcept       \
+    {                                                                               \
+        *this = *this >> amount;                                                    \
+        return *this;                                                               \
+    }
+
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(char)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(signed char)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(short)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(int)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(long)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(long long)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned char)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned short)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long long)
 
     // Arithmetic operators
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator+=(std::uint64_t n) noexcept;
@@ -305,12 +440,12 @@ BOOST_CHARCONV_CXX14_CONSTEXPR bool operator>=(uint128 lhs, uint128 rhs) noexcep
     return !(lhs < rhs);
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator~(uint128 v) noexcept
+constexpr uint128 operator~(uint128 v) noexcept
 {
     return {~v.high, ~v.low};
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator|(uint128 lhs, uint128 rhs) noexcept
+constexpr uint128 operator|(uint128 lhs, uint128 rhs) noexcept
 {
     return {lhs.high | rhs.high, lhs.low | rhs.low};
 }
@@ -321,7 +456,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator|=(uint128 v) noexcept
     return *this;
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator&(uint128 lhs, uint128 rhs) noexcept
+constexpr uint128 operator&(uint128 lhs, uint128 rhs) noexcept
 {
     return {lhs.high & rhs.high, lhs.low & rhs.low};
 }
@@ -329,46 +464,6 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator&(uint128 lhs, uint128 rhs) noexc
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator&=(uint128 v) noexcept
 {
     *this = *this & v;
-    return *this;
-}
-
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator<<(uint128 lhs, int amount) noexcept
-{
-    if (amount >= 64)
-    {
-        return {lhs.low << (amount - 64), 0};
-    }
-    else if (amount == 0)
-    {
-        return lhs;
-    }
-
-    return {(lhs.high << amount) | (lhs.low >> (64 - amount)), lhs.low << amount};
-}
-
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator<<=(int amount) noexcept
-{
-    *this = *this << amount;
-    return *this;
-}
-
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator>>(uint128 lhs, int amount) noexcept
-{
-    if (amount >= 64)
-    {
-        return {0, lhs.high >> (amount - 64)};
-    }
-    else if (amount == 0)
-    {
-        return lhs;
-    }
-
-    return {lhs.high >> amount, (lhs.low >> amount) | (lhs.high << (64 - amount))};
-}
-
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator>>=(int amount) noexcept
-{
-    *this = *this >> amount;
     return *this;
 }
 
