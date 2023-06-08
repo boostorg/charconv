@@ -3,6 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <type_traits>
@@ -57,6 +58,20 @@ void test()
     BOOST_TEST_EQ(boost::charconv::detail::num_digits(val), std::numeric_limits<T>::digits10 + 1);
 }
 
+void test_emulated128()
+{
+    using namespace boost::charconv::detail;
+
+    uint128 v1 {0, 1234};
+    BOOST_TEST_EQ(num_digits(v1), 4);
+
+    uint128 v2 {1234, 0};
+    BOOST_TEST_EQ(num_digits(v2), 23);
+
+    uint128 v3 {UINT64_MAX, UINT64_MAX};
+    BOOST_TEST_EQ(num_digits(v3), 39);
+}
+
 int main()
 {
     test<char>();
@@ -77,6 +92,8 @@ int main()
     #ifdef BOOST_CHARCONV_HAS_INT128
     test128<boost::uint128_type>();
     #endif
+
+    test_emulated128();
 
     return boost::report_errors();
 }

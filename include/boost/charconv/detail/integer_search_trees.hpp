@@ -9,6 +9,7 @@
 // https://graphics.stanford.edu/~seander/bithacks.html
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <limits>
 #include <array>
 #include <cstdint>
@@ -154,6 +155,16 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(std::uint64_t x) noexcept
         return 2;
     }
     return 1;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(uint128 x) noexcept
+{
+    if (x.high != 0)
+    {
+        return num_digits(x.high) + 19;
+    }
+
+    return num_digits(x.low);
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
