@@ -10,8 +10,12 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
+#include <boost/core/bit.hpp>
+#include <type_traits>
+#include <limits>
 #include <cstdint>
 #include <cassert>
+#include <cmath>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -20,12 +24,36 @@ namespace boost { namespace charconv { namespace detail {
 // so we avoid using those built-ins. That said, they are still useful for
 // implementing 64-bit x 64-bit -> 128-bit multiplication.
 
-struct uint128 
+struct uint128
 {
     std::uint64_t high;
     std::uint64_t low;
 
-    uint128& operator+=(std::uint64_t n) & noexcept 
+    // Constructors
+    constexpr uint128() noexcept : high {}, low {} {}
+
+    constexpr uint128(const uint128& v) noexcept = default;
+
+    constexpr uint128(uint128&& v) noexcept = default;
+
+    constexpr uint128(std::uint64_t high_, std::uint64_t low_) noexcept : high {high_}, low {low_} {}
+
+    #define SIGNED_CONSTRUCTOR(expr) explicit constexpr uint128(expr v) noexcept : high {v < 0 ? UINT64_MAX : UINT64_C(0)}, low {static_cast<std::uint64_t>(v)} {}
+    #define UNSIGNED_CONSTRUCTOR(expr) explicit constexpr uint128(expr v) noexcept : high {}, low {static_cast<std::uint64_t>(v)} {}
+
+    SIGNED_CONSTRUCTOR(char)
+    SIGNED_CONSTRUCTOR(signed char)
+    SIGNED_CONSTRUCTOR(short)
+    SIGNED_CONSTRUCTOR(int)
+    SIGNED_CONSTRUCTOR(long)
+    SIGNED_CONSTRUCTOR(long long)
+
+    UNSIGNED_CONSTRUCTOR(unsigned char)
+    UNSIGNED_CONSTRUCTOR(unsigned short)
+    UNSIGNED_CONSTRUCTOR(unsigned)
+    UNSIGNED_CONSTRUCTOR(unsigned long)
+    UNSIGNED_CONSTRUCTOR(unsigned long long)
+
     {
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
         
