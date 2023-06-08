@@ -218,6 +218,51 @@ struct uint128
 
     #undef INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO
 
+    // Logical Operators
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator~(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator|(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator|=(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator&(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator&=(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator<<(uint128 lhs, int amount) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator<<=(int amount) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator>>(uint128 lhs, int amount) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator>>=(int amount) noexcept;
+
+    // Arithmetic operators
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator+=(std::uint64_t n) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator+(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator+=(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator-(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator-=(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator/(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator/=(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator%(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator%=(uint128 v) noexcept;
+
+private:
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend int high_bit(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR friend void
+    div_impl(uint128 lhs, uint128 rhs, uint128 &quotient, uint128 &remainder) noexcept;
+};
+
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(uint128 v) noexcept
 {
     low = v.low;
@@ -260,37 +305,223 @@ BOOST_CHARCONV_CXX14_CONSTEXPR bool operator>=(uint128 lhs, uint128 rhs) noexcep
     return !(lhs < rhs);
 }
 
-        #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
-        
-        unsigned long long carry;
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator~(uint128 v) noexcept
+{
+    return {~v.high, ~v.low};
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator|(uint128 lhs, uint128 rhs) noexcept
+{
+    return {lhs.high | rhs.high, lhs.low | rhs.low};
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator|=(uint128 v) noexcept
+{
+    *this = *this | v;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator&(uint128 lhs, uint128 rhs) noexcept
+{
+    return {lhs.high & rhs.high, lhs.low & rhs.low};
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator&=(uint128 v) noexcept
+{
+    *this = *this & v;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator<<(uint128 lhs, int amount) noexcept
+{
+    if (amount >= 64)
+    {
+        return {lhs.low << (amount - 64), 0};
+    }
+    else if (amount == 0)
+    {
+        return lhs;
+    }
+
+    return {(lhs.high << amount) | (lhs.low >> (64 - amount)), lhs.low << amount};
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator<<=(int amount) noexcept
+{
+    *this = *this << amount;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator>>(uint128 lhs, int amount) noexcept
+{
+    if (amount >= 64)
+    {
+        return {0, lhs.high >> (amount - 64)};
+    }
+    else if (amount == 0)
+    {
+        return lhs;
+    }
+
+    return {lhs.high >> amount, (lhs.low >> amount) | (lhs.high << (64 - amount))};
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator>>=(int amount) noexcept
+{
+    *this = *this >> amount;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator+=(std::uint64_t n) noexcept
+{
+    #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
+
+    unsigned long long carry;
         low = __builtin_addcll(low, n, 0, &carry);
         high = __builtin_addcll(high, 0, carry, &carry);
-        
-        #elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
-        
-        unsigned long long result;
+
+    #elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
+
+    unsigned long long result;
         auto carry = __builtin_ia32_addcarryx_u64(0, low, n, &result);
         low = result;
         __builtin_ia32_addcarryx_u64(carry, high, 0, &result);
         high = result;
-        
-        #elif defined(BOOST_MSVC) && defined(_M_X64)
-        
-        auto carry = _addcarry_u64(0, low, n, &low);
-        _addcarry_u64(carry, high, 0, &high);
-        
-        #else
-        
-        auto sum = low + n;
-        high += (sum < low ? 1 : 0);
-        low = sum;
-        
-        #endif
-        return *this;
-    }
-};
 
-static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept 
+    #elif defined(BOOST_MSVC) && defined(_M_X64)
+
+    auto carry = _addcarry_u64(0, low, n, &low);
+        _addcarry_u64(carry, high, 0, &high);
+
+    #else
+
+    auto sum = low + n;
+    high += (sum < low ? 1 : 0);
+    low = sum;
+
+    #endif
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator+(uint128 lhs, uint128 rhs) noexcept
+{
+    const uint128 temp = {lhs.high + rhs.high, lhs.low + rhs.low};
+
+    // Need to carry a bit into rhs
+    if (temp.low < lhs.low)
+    {
+        return {temp.high + 1, temp.low};
+    }
+
+    return temp;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator+=(uint128 v) noexcept
+{
+    *this = *this + v;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator-(uint128 lhs, uint128 rhs) noexcept
+{
+    const uint128 temp {lhs.high - rhs.high, lhs.low - rhs.low};
+
+    // Check for carry
+    if (lhs.low < rhs.low)
+    {
+        return {temp.high - 1, temp.low};
+    }
+
+    return temp;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator-=(uint128 v) noexcept
+{
+    *this = *this - v;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR int high_bit(uint128 v) noexcept
+{
+    if (v.high != 0)
+    {
+        return 127 - boost::core::countl_zero(v.high);
+    }
+    else if (v.low != 0)
+    {
+        return 63 - boost::core::countl_zero(v.low);
+    }
+
+    return 0;
+}
+
+// See: https://stackoverflow.com/questions/5386377/division-without-using
+BOOST_CHARCONV_CXX14_CONSTEXPR void div_impl(uint128 lhs, uint128 rhs, uint128& quotient, uint128& remainder) noexcept
+{
+    const uint128 one {0, 1};
+
+    if (rhs > lhs)
+    {
+        quotient = 0U;
+        remainder = 0U;
+    }
+    else if (lhs == rhs)
+    {
+        quotient = 1U;
+        remainder = 0U;
+    }
+
+    uint128 denom = rhs;
+    quotient = 0U;
+
+    const int shift = high_bit(lhs) - high_bit(rhs);
+    denom <<= shift;
+
+    for (int i = 0; i <= shift; ++i)
+    {
+        quotient <<= 1;
+        if (lhs >= denom)
+        {
+            lhs -= denom;
+            quotient |= one;
+        }
+        denom >>= 1;
+    }
+
+    remainder = lhs;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator/(uint128 lhs, uint128 rhs) noexcept
+{
+    uint128 quotient {0, 0};
+    uint128 remainder {0, 0};
+    div_impl(lhs, rhs, quotient, remainder);
+
+    return quotient;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator/=(uint128 v) noexcept
+{
+    *this = *this / v;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator%(uint128 lhs, uint128 rhs) noexcept
+{
+    uint128 quotient {0, 0};
+    uint128 remainder {0, 0};
+    div_impl(lhs, rhs, quotient, remainder);
+
+    return remainder;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator%=(uint128 v) noexcept
+{
+    *this = *this % v;
+    return *this;
+}
+
+static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
 {
 #if defined(BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS)
     return __emulu(x, y);
