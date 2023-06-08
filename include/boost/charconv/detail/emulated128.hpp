@@ -436,7 +436,7 @@ struct uint128
     #undef INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT
 
     // Arithmetic operators (Add, sub, mul, div, mod)
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator+=(std::uint64_t n) noexcept;
+    inline uint128 &operator+=(std::uint64_t n) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator+(uint128 lhs, uint128 rhs) noexcept;
 
@@ -534,7 +534,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator&=(uint128 v) noexcept
     return *this;
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator+=(std::uint64_t n) noexcept
+inline uint128 &uint128::operator+=(std::uint64_t n) noexcept
 {
     #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
 
