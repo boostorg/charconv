@@ -54,6 +54,31 @@ struct uint128
     UNSIGNED_CONSTRUCTOR(unsigned long)
     UNSIGNED_CONSTRUCTOR(unsigned long long)
 
+    // Assignment Operators
+    #define SIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(expr v) noexcept { high = v < 0 ? UINT64_MAX : UINT64_C(0); low = static_cast<std::uint64_t>(v); return *this; }
+    #define UNSIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(expr v) noexcept { high = 0U; low = static_cast<std::uint64_t>(v); return *this; }
+
+    SIGNED_ASSIGNMENT_OPERATOR(char)
+    SIGNED_ASSIGNMENT_OPERATOR(signed char)
+    SIGNED_ASSIGNMENT_OPERATOR(short)
+    SIGNED_ASSIGNMENT_OPERATOR(int)
+    SIGNED_ASSIGNMENT_OPERATOR(long)
+    SIGNED_ASSIGNMENT_OPERATOR(long long)
+
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned char)
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned short)
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned)
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long)
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long long)
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(uint128 v) noexcept;
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(uint128 v) noexcept
+{
+    low = v.low;
+    high = v.high;
+    return *this;
+}
+
     {
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
         
