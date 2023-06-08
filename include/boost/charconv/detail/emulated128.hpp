@@ -478,13 +478,13 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator+=(std::uint64_t n) noe
 {
     #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_addcll)
 
-    unsigned long long carry;
+    unsigned long long carry {};
         low = __builtin_addcll(low, n, 0, &carry);
         high = __builtin_addcll(high, 0, carry, &carry);
 
     #elif BOOST_CHARCONV_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
 
-    unsigned long long result;
+    unsigned long long result {};
         auto carry = __builtin_ia32_addcarryx_u64(0, low, n, &result);
         low = result;
         __builtin_ia32_addcarryx_u64(carry, high, 0, &result);
@@ -547,7 +547,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator*(uint128 lhs, uint128 rhs) noexc
 {
     #if defined(BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS)
 
-    std::uint64_t carry;
+    std::uint64_t carry {};
     const std::uint64_t low = _umul128(lhs.low, rhs.low, &carry);
     return {lhs.low * rhs.high + lhs.high * rhs.low + carry, low};
 
