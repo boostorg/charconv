@@ -444,9 +444,15 @@ struct uint128
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator++() noexcept;
 
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator++(int) noexcept;
+
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator-(uint128 lhs, uint128 rhs) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator-=(uint128 v) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator--() noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator--(int) noexcept;
 
     inline friend uint128 operator*(uint128 lhs, uint128 rhs) noexcept;
 
@@ -601,6 +607,11 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator++() noexcept
     return *this;
 }
 
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator++(int) noexcept
+{
+    return ++(*this);
+}
+
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator-(uint128 lhs, uint128 rhs) noexcept
 {
     const uint128 temp {lhs.high - rhs.high, lhs.low - rhs.low};
@@ -618,6 +629,26 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator-=(uint128 v) noexcept
 {
     *this = *this - v;
     return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator--() noexcept
+{
+	if (this->low == 0)
+	{
+        this->low = UINT64_MAX;
+        --this->high;
+	}
+    else
+    {
+        --this->low;
+    }
+
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator--(int) noexcept
+{
+    return --(*this);
 }
 
 inline uint128 operator*(uint128 lhs, uint128 rhs) noexcept
@@ -672,7 +703,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int high_bit(uint128 v) noexcept
 // See: https://stackoverflow.com/questions/5386377/division-without-using
 BOOST_CHARCONV_CXX14_CONSTEXPR void div_impl(uint128 lhs, uint128 rhs, uint128& quotient, uint128& remainder) noexcept
 {
-    const uint128 one {0, 1};
+    constexpr uint128 one {0, 1};
 
     if (rhs > lhs)
     {
