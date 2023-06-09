@@ -161,7 +161,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(uint128 x) noexcept
 {
     if (x.high != 0)
     {
-        return num_digits(x.high) + 19;
+        return num_digits(x.high) + 20;
     }
 
     return num_digits(x.low);

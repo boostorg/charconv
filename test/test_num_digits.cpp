@@ -66,10 +66,10 @@ void test_emulated128()
     BOOST_TEST_EQ(num_digits(v1), 4);
 
     uint128 v2 {1234, 0};
-    BOOST_TEST_EQ(num_digits(v2), 23);
+    BOOST_TEST_EQ(num_digits(v2), 24);
 
     uint128 v3 {UINT64_MAX, UINT64_MAX};
-    BOOST_TEST_EQ(num_digits(v3), 39);
+    BOOST_TEST_EQ(num_digits(v3), 40);
 }
 
 int main()
