@@ -24,6 +24,18 @@ namespace boost { namespace charconv { namespace detail {
 // so we avoid using those built-ins. That said, they are still useful for
 // implementing 64-bit x 64-bit -> 128-bit multiplication.
 
+// Memcpy-able temp class for uint128
+struct trivial_uint128
+{
+    #if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
+    std::uint64_t low;
+    std::uint64_t high;
+    #else
+    std::uint64_t high;
+    std::uint64_t low;
+    #endif
+};
+
 struct uint128
 {
     std::uint64_t high;
@@ -37,6 +49,10 @@ struct uint128
     constexpr uint128(uint128&& v) noexcept = default;
 
     constexpr uint128(std::uint64_t high_, std::uint64_t low_) noexcept : high {high_}, low {low_} {}
+
+    constexpr uint128(const trivial_uint128& v) noexcept : high {v.high}, low {v.low} {}
+
+    constexpr uint128(trivial_uint128&& v) noexcept : high {v.high}, low {v.low} {}
 
     #define SIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {v < 0 ? UINT64_MAX : UINT64_C(0)}, low {static_cast<std::uint64_t>(v)} {}
     #define UNSIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {}, low {static_cast<std::uint64_t>(v)} {}
@@ -89,7 +105,7 @@ struct uint128
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const boost::uint128_type& v) noexcept { *this = uint128(v); return *this; }
     #endif
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const uint128& v) noexcept;
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const trivial_uint128& v) noexcept { this->low = v.low; this->high = v.high; return *this; }
 
     #undef SIGNED_ASSIGNMENT_OPERATOR
     #undef UNSIGNED_ASSIGNMENT_OPERATOR

@@ -64,6 +64,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <cstdint>
 
 using boost::charconv::detail::uint128;
+using boost::charconv::detail::trivial_uint128;
 
 template <typename T>
 void test_relational_operators(T val = (std::numeric_limits<T>::max)())
@@ -187,6 +188,22 @@ void test_bitwise_operators()
     #endif
 }
 
+void test_memcpy()
+{
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    __float128 fval = 1e4000Q;
+    boost::uint128_type ref;
+    trivial_uint128 cpyval;
+
+    std::memcpy(&cpyval, &fval, sizeof(fval));
+    std::memcpy(&ref, &fval, sizeof(fval));
+
+    uint128 test_val = cpyval;
+
+    BOOST_TEST(test_val == ref);
+    #endif
+}
+
 int main()
 {
     test_relational_operators<char>();
@@ -204,5 +221,8 @@ int main()
     test_arithmetic_operators();
 
     test_bitwise_operators();
+
+    test_memcpy();
+
     return boost::report_errors();
 }
