@@ -669,8 +669,8 @@ inline uint128 operator*(uint128 lhs, uint128 rhs) noexcept
 
     const auto a = static_cast<std::uint64_t>(lhs.low >> 32);
     const auto b = static_cast<std::uint64_t>(lhs.low & UINT32_MAX);
-    const auto c = static_cast<std::uint64_t>(lhs.low >> 32);
-    const auto d = static_cast<std::uint64_t>(lhs.low & UINT32_MAX);
+    const auto c = static_cast<std::uint64_t>(rhs.low >> 32);
+    const auto d = static_cast<std::uint64_t>(rhs.low & UINT32_MAX);
 
     uint128 result { lhs.high * rhs.low + lhs.low * rhs.high + a * c, b * d };
     result += uint128(a * d) << 32;
@@ -682,7 +682,7 @@ inline uint128 operator*(uint128 lhs, uint128 rhs) noexcept
 
 inline uint128 &uint128::operator*=(uint128 v) noexcept
 {
-    *this = *this - v;
+    *this = *this * v;
     return *this;
 }
 
