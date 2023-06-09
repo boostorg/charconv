@@ -853,7 +853,7 @@ struct main_cache_compressed
                 recovered_cache = uint128{(recovered_cache.low >> alpha) | high_to_middle, ((middle_low.low >> alpha) | middle_to_low)};
 
                 BOOST_CHARCONV_ASSERT(recovered_cache.low + 1 != 0);
-                recovered_cache = {recovered_cache.high, recovered_cache.low + 1};
+                recovered_cache = uint128(recovered_cache.high, recovered_cache.low + 1);
 
                 return recovered_cache;
             }

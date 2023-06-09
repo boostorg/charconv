@@ -107,6 +107,8 @@ struct uint128
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const trivial_uint128& v) noexcept { this->low = v.low; this->high = v.high; return *this; }
 
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const uint128&) noexcept;
+
     #undef SIGNED_ASSIGNMENT_OPERATOR
     #undef UNSIGNED_ASSIGNMENT_OPERATOR
 
