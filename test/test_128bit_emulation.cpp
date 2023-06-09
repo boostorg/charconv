@@ -46,20 +46,65 @@ void test_arithmetic_operators()
     uint128 test_val = fixed_val;
     BOOST_TEST(test_val / 2 == UINT64_MAX / 4);
     BOOST_TEST(test_val + 1 == fixed_val + 1);
-    test_val += 1;
+    test_val++;
     BOOST_TEST(test_val == fixed_val + 1);
     BOOST_TEST(test_val % fixed_val == 1);
-    test_val -= 1;
+    test_val--;
     BOOST_TEST(test_val == fixed_val);
     BOOST_TEST(test_val % fixed_val == 0);
     BOOST_TEST(test_val / fixed_val == 1);
+
+
+    test_val = 2;
+    std::uint64_t comp_val = 1;
+	while (test_val < UINT64_MAX)
+    {
+        comp_val *= 2;
+		if(!BOOST_TEST(test_val == comp_val))
+		{
+            std::cerr << "Target: " << comp_val
+                << "\ntest_val: " << test_val.low << std::endl;
+		}
+        test_val *= 2;
+    }
+
+    // And back down
+    while (test_val >= 2)
+    {
+        test_val /= 2;
+        if(!BOOST_TEST(test_val == comp_val))
+        {
+            std::cerr << "Target: " << comp_val
+                << "\ntest_val: " << test_val.low << std::endl;
+        }
+        comp_val /= 2;
+    }
+
 
     // Add the high word
     uint128 test_high_word = UINT64_MAX;
     ++test_high_word;
     BOOST_TEST(test_high_word.high == 1 && test_high_word.low == 0);
-    ++test_high_word;
-    BOOST_TEST(test_high_word.high == 1 && test_high_word.low == 1);
+    --test_high_word;
+
+	#ifdef BOOST_CHARCONV_HAS_INT128
+    boost::uint128_type reference = UINT64_MAX;
+
+    for (int i = 0; i < 63; ++i)
+    {
+        BOOST_TEST(test_val == reference);
+        test_val *= 2;
+        reference *= 2;
+    }
+
+    while (test_val >= 2)
+    {
+        BOOST_TEST(test_val == reference);
+        test_val /= 2;
+        reference /= 2;
+    }
+
+	#endif
 }
 
 int main()
