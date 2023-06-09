@@ -204,6 +204,18 @@ void test_memcpy()
     #endif
 }
 
+void test_limits()
+{
+    BOOST_TEST(std::numeric_limits<uint128>::min() == 0);
+    BOOST_TEST(std::numeric_limits<uint128>::max() == uint128(UINT64_MAX, UINT64_MAX));
+    BOOST_TEST(std::numeric_limits<uint128>::is_signed == false);
+    BOOST_TEST(std::numeric_limits<uint128>::is_integer == true);
+    BOOST_TEST(std::numeric_limits<uint128>::digits == CHAR_BIT * sizeof(std::uint64_t) * 2);
+
+    // Max value is 340,282,366,920,938,463,463,374,607,431,768,211,455 (39 digits) so 38 without change
+    BOOST_TEST(std::numeric_limits<uint128>::digits10 == 38);
+}
+
 int main()
 {
     test_relational_operators<char>();
@@ -223,6 +235,8 @@ int main()
     test_bitwise_operators();
 
     test_memcpy();
+
+    test_limits();
 
     return boost::report_errors();
 }
