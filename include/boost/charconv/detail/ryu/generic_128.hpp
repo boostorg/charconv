@@ -8,6 +8,7 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <cstdint>
 
 #define BOOST_CHARCONV_POW5_TABLE_SIZE 56
@@ -16,6 +17,12 @@
 
 namespace boost { namespace charconv { namespace detail { namespace ryu {
 
+#ifdef BOOST_CHARCONV_HAS_INT128
+using unsigned_128_type = boost::uint128_type;
+#else
+using unsigned_128_type = uint128;
+#endif
+    
 // These tables are ~4.5 kByte total, compared to ~160 kByte for the full tables.
 //
 // There's no way to define 128-bit constants in C, so we use little-endian
@@ -365,35 +372,35 @@ void mul_128_256_shift(
 {
     BOOST_CHARCONV_ASSERT(shift > 0);
     BOOST_CHARCONV_ASSERT(shift < 256);
-    const boost::uint128_type b00 = ((boost::uint128_type) a[0]) * b[0]; // 0
-    const boost::uint128_type b01 = ((boost::uint128_type) a[0]) * b[1]; // 64
-    const boost::uint128_type b02 = ((boost::uint128_type) a[0]) * b[2]; // 128
-    const boost::uint128_type b03 = ((boost::uint128_type) a[0]) * b[3]; // 196
-    const boost::uint128_type b10 = ((boost::uint128_type) a[1]) * b[0]; // 64
-    const boost::uint128_type b11 = ((boost::uint128_type) a[1]) * b[1]; // 128
-    const boost::uint128_type b12 = ((boost::uint128_type) a[1]) * b[2]; // 196
-    const boost::uint128_type b13 = ((boost::uint128_type) a[1]) * b[3]; // 256
+    const unsigned_128_type b00 = ((unsigned_128_type) a[0]) * b[0]; // 0
+    const unsigned_128_type b01 = ((unsigned_128_type) a[0]) * b[1]; // 64
+    const unsigned_128_type b02 = ((unsigned_128_type) a[0]) * b[2]; // 128
+    const unsigned_128_type b03 = ((unsigned_128_type) a[0]) * b[3]; // 196
+    const unsigned_128_type b10 = ((unsigned_128_type) a[1]) * b[0]; // 64
+    const unsigned_128_type b11 = ((unsigned_128_type) a[1]) * b[1]; // 128
+    const unsigned_128_type b12 = ((unsigned_128_type) a[1]) * b[2]; // 196
+    const unsigned_128_type b13 = ((unsigned_128_type) a[1]) * b[3]; // 256
 
-    const boost::uint128_type s0 = b00;       // 0   x
-    const boost::uint128_type s1 = b01 + b10; // 64  x
-    const boost::uint128_type c1 = s1 < b01;  // 196 x
-    const boost::uint128_type s2 = b02 + b11; // 128 x
-    const boost::uint128_type c2 = s2 < b02;  // 256 x
-    const boost::uint128_type s3 = b03 + b12; // 196 x
-    const boost::uint128_type c3 = s3 < b03;  // 324 x
+    const unsigned_128_type s0 = b00;       // 0   x
+    const unsigned_128_type s1 = b01 + b10; // 64  x
+    const unsigned_128_type c1 = s1 < b01;  // 196 x
+    const unsigned_128_type s2 = b02 + b11; // 128 x
+    const unsigned_128_type c2 = s2 < b02;  // 256 x
+    const unsigned_128_type s3 = b03 + b12; // 196 x
+    const unsigned_128_type c3 = s3 < b03;  // 324 x
 
-    const boost::uint128_type p0 = s0 + (s1 << 64);                                // 0
-    const boost::uint128_type d0 = p0 < b00;                                       // 128
-    const boost::uint128_type q1 = s2 + (s1 >> 64) + (s3 << 64);                   // 128
-    const boost::uint128_type d1 = q1 < s2;                                        // 256
-    const boost::uint128_type p1 = q1 + (c1 << 64) + d0;                           // 128
-    const boost::uint128_type d2 = p1 < q1;                                        // 256
-    const boost::uint128_type p2 = b13 + (s3 >> 64) + c2 + (c3 << 64) + d1 + d2;   // 256
+    const unsigned_128_type p0 = s0 + (s1 << 64);                                // 0
+    const unsigned_128_type d0 = p0 < b00;                                       // 128
+    const unsigned_128_type q1 = s2 + (s1 >> 64) + (s3 << 64);                   // 128
+    const unsigned_128_type d1 = q1 < s2;                                        // 256
+    const unsigned_128_type p1 = q1 + (c1 << 64) + d0;                           // 128
+    const unsigned_128_type d2 = p1 < q1;                                        // 256
+    const unsigned_128_type p2 = b13 + (s3 >> 64) + c2 + (c3 << 64) + d1 + d2;   // 256
 
     if (shift < 128)
     {
-        const boost::uint128_type r0 = corr + ((p0 >> shift) | (p1 << (128 - shift)));
-        const boost::uint128_type r1 = ((p1 >> shift) | (p2 << (128 - shift))) + (r0 < corr);
+        const unsigned_128_type r0 = corr + ((p0 >> shift) | (p1 << (128 - shift)));
+        const unsigned_128_type r1 = ((p1 >> shift) | (p2 << (128 - shift))) + (r0 < corr);
         result[0] = (uint64_t) r0;
         result[1] = (uint64_t) (r0 >> 64);
         result[2] = (uint64_t) r1;
@@ -401,8 +408,8 @@ void mul_128_256_shift(
     }
     else if (shift == 128)
     {
-        const boost::uint128_type r0 = corr + p1;
-        const boost::uint128_type r1 = p2 + (r0 < corr);
+        const unsigned_128_type r0 = corr + p1;
+        const unsigned_128_type r1 = p2 + (r0 < corr);
         result[0] = (uint64_t) r0;
         result[1] = (uint64_t) (r0 >> 64);
         result[2] = (uint64_t) r1;
@@ -410,8 +417,8 @@ void mul_128_256_shift(
     }
     else
     {
-        const boost::uint128_type r0 = corr + ((p1 >> (shift - 128)) | (p2 << (256 - shift)));
-        const boost::uint128_type r1 = (p2 >> (shift - 128)) + (r0 < corr);
+        const unsigned_128_type r0 = corr + ((p1 >> (shift - 128)) | (p2 << (256 - shift)));
+        const unsigned_128_type r1 = (p2 >> (shift - 128)) + (r0 < corr);
         result[0] = (uint64_t) r0;
         result[1] = (uint64_t) (r0 >> 64);
         result[2] = (uint64_t) r1;
@@ -465,7 +472,7 @@ static BOOST_CXX14_CONSTEXPR void generic_computeInvPow5(const uint32_t i, uint6
     }
 }
 
-static BOOST_CXX14_CONSTEXPR uint32_t pow5Factor(boost::uint128_type value) noexcept
+static BOOST_CXX14_CONSTEXPR uint32_t pow5Factor(unsigned_128_type value) noexcept
 {
     for (uint32_t count = 0; value > 0; ++count)
     {
@@ -479,20 +486,20 @@ static BOOST_CXX14_CONSTEXPR uint32_t pow5Factor(boost::uint128_type value) noex
 }
 
 // Returns true if value is divisible by 5^p.
-static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf5(const boost::uint128_type value, const uint32_t p) noexcept
+static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf5(const unsigned_128_type value, const uint32_t p) noexcept
 {
     // I tried a case distinction on p, but there was no performance difference.
     return pow5Factor(value) >= p;
 }
 
 // Returns true if value is divisible by 2^p.
-static constexpr bool multipleOfPowerOf2(const boost::uint128_type value, const uint32_t p) noexcept
+static constexpr bool multipleOfPowerOf2(const unsigned_128_type value, const uint32_t p) noexcept
 {
-    return (value & ((((boost::uint128_type) 1) << p) - 1)) == 0;
+    return (value & ((((unsigned_128_type) 1) << p) - 1)) == 0;
 }
 
 static BOOST_CHARCONV_CXX14_CONSTEXPR
-boost::uint128_type mulShift(const boost::uint128_type m, const uint64_t* const mul, const int32_t j) noexcept
+unsigned_128_type mulShift(const unsigned_128_type m, const uint64_t* const mul, const int32_t j) noexcept
 {
     BOOST_CHARCONV_ASSERT(j > 128);
     uint64_t a[2] {};
@@ -500,7 +507,7 @@ boost::uint128_type mulShift(const boost::uint128_type m, const uint64_t* const 
     a[1] = (uint64_t) (m >> 64);
     uint64_t result[4] {};
     mul_128_256_shift(a, mul, j, 0, result);
-    return (((boost::uint128_type) result[1]) << 64) | result[0];
+    return (((unsigned_128_type) result[1]) << 64) | result[0];
 }
 
 // Returns floor(log_10(2^e)).

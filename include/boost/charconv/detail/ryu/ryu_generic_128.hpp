@@ -17,17 +17,17 @@
 namespace boost { namespace charconv { namespace detail { namespace ryu {
 
 static constexpr int32_t fd128_exceptional_exponent = 0x7FFFFFFF;
-static constexpr boost::uint128_type one = 1;
+static constexpr unsigned_128_type one = 1;
 
 struct floating_decimal_128
 {
-    boost::uint128_type mantissa;
+    unsigned_128_type mantissa;
     int32_t exponent;
     bool sign;
 };
 
 #ifdef BOOST_CHARCONV_DEBUG
-static char* s(boost::uint128_type v) {
+static char* s(unsigned_128_type v) {
   int len = num_digits(v);
   char* b = (char*) malloc((len + 1) * sizeof(char));
   for (int i = 0; i < len; i++) {
@@ -41,7 +41,7 @@ static char* s(boost::uint128_type v) {
 #endif
 
 struct floating_decimal_128 generic_binary_to_decimal(
-        const boost::uint128_type bits,
+        const unsigned_128_type bits,
         const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit) noexcept
 {
     #ifdef BOOST_CHARCONV_DEBUG
@@ -55,7 +55,7 @@ struct floating_decimal_128 generic_binary_to_decimal(
 
     const uint32_t bias = (1u << (exponentBits - 1)) - 1;
     const bool ieeeSign = ((bits >> (mantissaBits + exponentBits)) & 1) != 0;
-    const boost::uint128_type ieeeMantissa = bits & ((one << mantissaBits) - 1);
+    const unsigned_128_type ieeeMantissa = bits & ((one << mantissaBits) - 1);
     const uint32_t ieeeExponent = (uint32_t) ((bits >> mantissaBits) & ((one << exponentBits) - 1u));
 
     if (ieeeExponent == 0 && ieeeMantissa == 0)
@@ -73,7 +73,7 @@ struct floating_decimal_128 generic_binary_to_decimal(
     }
 
     int32_t e2;
-    boost::uint128_type m2;
+    unsigned_128_type m2;
     // We subtract 2 in all cases so that the bounds computation has 2 additional bits.
     if (explicitLeadingBit)
     {
@@ -108,16 +108,16 @@ struct floating_decimal_128 generic_binary_to_decimal(
     #endif
 
     // Step 2: Determine the interval of legal decimal representations.
-    const boost::uint128_type mv = 4 * m2;
+    const unsigned_128_type mv = 4 * m2;
     // Implicit bool -> int conversion. True is 1, false is 0.
     const uint32_t mmShift =
             (ieeeMantissa != (explicitLeadingBit ? one << (mantissaBits - 1) : 0))
             || (ieeeExponent == 0);
 
     // Step 3: Convert to a decimal power base using 128-bit arithmetic.
-    boost::uint128_type vr;
-    boost::uint128_type vp;
-    boost::uint128_type vm;
+    unsigned_128_type vr;
+    unsigned_128_type vp;
+    unsigned_128_type vm;
     int32_t e10;
     bool vmIsTrailingZeros = false;
     bool vrIsTrailingZeros = false;
@@ -223,7 +223,7 @@ struct floating_decimal_128 generic_binary_to_decimal(
     // Step 4: Find the shortest decimal representation in the interval of legal representations.
     uint32_t removed = 0;
     uint8_t lastRemovedDigit = 0;
-    boost::uint128_type output;
+    unsigned_128_type output;
 
     while (vp / 10 > vm / 10)
     {
@@ -265,7 +265,7 @@ struct floating_decimal_128 generic_binary_to_decimal(
         lastRemovedDigit = 4;
     }
     // We need to take vr+1 if vr is outside bounds, or we need to round up.
-    output = vr + (boost::uint128_type)((vr == vm && (!acceptBounds || !vmIsTrailingZeros)) || (lastRemovedDigit >= 5));
+    output = vr + (unsigned_128_type)((vr == vm && (!acceptBounds || !vmIsTrailingZeros)) || (lastRemovedDigit >= 5));
     const int32_t exp = e10 + removed;
 
     #ifdef BOOST_CHARCONV_DEBUG
@@ -289,9 +289,9 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
     {
         if (fd.sign)
         {
-            if (fd.mantissa == (boost::uint128_type)2305843009213693952 ||
-                fd.mantissa == (boost::uint128_type)6917529027641081856 ||
-                fd.mantissa == (boost::uint128_type)1 << 110) // 2^110
+            if (fd.mantissa == (unsigned_128_type)2305843009213693952 ||
+                fd.mantissa == (unsigned_128_type)6917529027641081856 ||
+                fd.mantissa == (unsigned_128_type)1 << 110) // 2^110
             {
                 std::memcpy(result, "nan(snan)", 9);
                 return 10;
@@ -304,9 +304,9 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
         }
         else
         {
-            if (fd.mantissa == (boost::uint128_type)2305843009213693952 ||
-                fd.mantissa == (boost::uint128_type)6917529027641081856 ||
-                fd.mantissa == (boost::uint128_type)1 << 110) // 2^110
+            if (fd.mantissa == (unsigned_128_type)2305843009213693952 ||
+                fd.mantissa == (unsigned_128_type)6917529027641081856 ||
+                fd.mantissa == (unsigned_128_type)1 << 110) // 2^110
             {
                 std::memcpy(result, "nan(snan)", 9);
                 return 9;
@@ -344,7 +344,7 @@ int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
         result[index++] = '-';
     }
 
-    boost::uint128_type output = v.mantissa;
+    unsigned_128_type output = v.mantissa;
     const uint32_t olength = num_digits(output);
 
     #ifdef BOOST_CHARCONV_DEBUG
@@ -423,7 +423,7 @@ struct floating_decimal_128 double_to_fd128(double d) noexcept
 
 struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
-    boost::uint128_type bits = 0;
+    unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(long double));
 
     #ifdef BOOST_CHARCONV_DEBUG
@@ -441,7 +441,7 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 
 struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
-    boost::uint128_type bits = 0;
+    unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(long double));
     return generic_binary_to_decimal(bits, 113, 15, true);
 }
@@ -452,7 +452,7 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 
 struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
 {
-    boost::uint128_type bits = 0;
+    unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(__float128));
     return generic_binary_to_decimal(bits, 113, 15, true);
 }
