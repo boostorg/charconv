@@ -190,7 +190,7 @@ void test_bitwise_operators()
 
 void test_memcpy()
 {
-    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    #if defined(BOOST_CHARCONV_HAS_FLOAT128) && defined(BOOST_CHARCONV_HAS_INT128)
     __float128 fval = 1e4000Q;
     boost::uint128_type ref;
     trivial_uint128 cpyval;
