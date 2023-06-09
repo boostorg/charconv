@@ -2,6 +2,60 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/config.hpp>
+
+#ifdef BOOST_HAS_INT128
+
+// We need to define these operator<< overloads before
+// including boost/core/lightweight_test.hpp, or they
+// won't be visible to BOOST_TEST_EQ
+
+#include <ostream>
+
+static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
+{
+    char* p = buffer + 64;
+    *--p = '\0';
+
+    do
+    {
+        *--p = "0123456789"[ v % 10 ];
+        v /= 10;
+    }
+    while ( v != 0 );
+
+    return p;
+}
+
+std::ostream& operator<<( std::ostream& os, boost::uint128_type v )
+{
+    char buffer[ 64 ];
+
+    os << mini_to_chars( buffer, v );
+    return os;
+}
+
+std::ostream& operator<<( std::ostream& os, boost::int128_type v )
+{
+    char buffer[ 64 ];
+    char* p;
+
+    if( v >= 0 )
+    {
+        p = mini_to_chars( buffer, v );
+    }
+    else
+    {
+        p = mini_to_chars( buffer, -(boost::uint128_type)v );
+        *--p = '-';
+    }
+
+    os << p;
+    return os;
+}
+
+#endif // #ifdef BOOST_HAS_INT128
+
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <limits>
@@ -75,7 +129,7 @@ void test_arithmetic_operators()
         if(!BOOST_TEST(test_val == comp_val))
         {
             std::cerr << "Target: " << comp_val
-                << "\ntest_val: " << test_val.low << std::endl;
+                      << "\ntest_val: " << test_val.low << std::endl;
         }
         comp_val /= 2;
     }
@@ -89,18 +143,24 @@ void test_arithmetic_operators()
 
 	#ifdef BOOST_CHARCONV_HAS_INT128
     boost::uint128_type reference = UINT64_MAX;
+    BOOST_TEST(test_high_word == reference);
 
     for (int i = 0; i < 63; ++i)
     {
-        BOOST_TEST(test_val == reference);
-        test_val *= 2;
+        if(!BOOST_TEST(test_high_word == reference))
+        {
+            std::cerr << "i: " << i
+                      << "\nTarget: " << reference
+                      << "\ntest_val: " << test_high_word.high << " " << test_high_word.low << std::endl;
+        }
+        test_high_word *= 2;
         reference *= 2;
     }
 
-    while (test_val >= 2)
+    while (test_high_word >= 2)
     {
-        BOOST_TEST(test_val == reference);
-        test_val /= 2;
+        BOOST_TEST(test_high_word == reference);
+        test_high_word /= 2;
         reference /= 2;
     }
 
