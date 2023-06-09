@@ -38,8 +38,8 @@ struct uint128
 
     constexpr uint128(std::uint64_t high_, std::uint64_t low_) noexcept : high {high_}, low {low_} {}
 
-    #define SIGNED_CONSTRUCTOR(expr) explicit constexpr uint128(expr v) noexcept : high {v < 0 ? UINT64_MAX : UINT64_C(0)}, low {static_cast<std::uint64_t>(v)} {}
-    #define UNSIGNED_CONSTRUCTOR(expr) explicit constexpr uint128(expr v) noexcept : high {}, low {static_cast<std::uint64_t>(v)} {}
+    #define SIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {v < 0 ? UINT64_MAX : UINT64_C(0)}, low {static_cast<std::uint64_t>(v)} {}
+    #define UNSIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {}, low {static_cast<std::uint64_t>(v)} {}
 
     SIGNED_CONSTRUCTOR(char)
     SIGNED_CONSTRUCTOR(signed char)
@@ -68,8 +68,8 @@ struct uint128
     #undef UNSIGNED_CONSTRUCTOR
 
     // Assignment Operators
-    #define SIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(expr v) noexcept { high = v < 0 ? UINT64_MAX : UINT64_C(0); low = static_cast<std::uint64_t>(v); return *this; }
-    #define UNSIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(expr v) noexcept { high = 0U; low = static_cast<std::uint64_t>(v); return *this; }
+    #define SIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const expr& v) noexcept { high = v < 0 ? UINT64_MAX : UINT64_C(0); low = static_cast<std::uint64_t>(v); return *this; }
+    #define UNSIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const expr& v) noexcept { high = 0U; low = static_cast<std::uint64_t>(v); return *this; }
 
     SIGNED_ASSIGNMENT_OPERATOR(char)
     SIGNED_ASSIGNMENT_OPERATOR(signed char)
@@ -85,11 +85,11 @@ struct uint128
     UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long long)
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(boost::int128_type  v) noexcept { *this = uint128(v); return *this; }
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(boost::uint128_type v) noexcept { *this = uint128(v); return *this; }
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const boost::int128_type&  v) noexcept { *this = uint128(v); return *this; }
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const boost::uint128_type& v) noexcept { *this = uint128(v); return *this; }
     #endif
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(uint128 v) noexcept;
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const uint128& v) noexcept;
 
     #undef SIGNED_ASSIGNMENT_OPERATOR
     #undef UNSIGNED_ASSIGNMENT_OPERATOR
@@ -442,6 +442,8 @@ struct uint128
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator+=(uint128 v) noexcept;
 
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator++() noexcept;
+
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator-(uint128 lhs, uint128 rhs) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator-=(uint128 v) noexcept;
@@ -465,7 +467,7 @@ private:
     div_impl(uint128 lhs, uint128 rhs, uint128 &quotient, uint128 &remainder) noexcept;
 };
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(uint128 v) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(const uint128& v) noexcept
 {
     low = v.low;
     high = v.high;
@@ -581,6 +583,21 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator+(uint128 lhs, uint128 rhs) noexc
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator+=(uint128 v) noexcept
 {
     *this = *this + v;
+    return *this;
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator++() noexcept
+{
+    if (this->low == UINT64_MAX)
+    {
+        this->low = 0;
+        ++this->high;
+    }
+    else
+    {
+        ++this->low;
+    }
+
     return *this;
 }
 
