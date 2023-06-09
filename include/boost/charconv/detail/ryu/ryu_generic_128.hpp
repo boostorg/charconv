@@ -359,6 +359,7 @@ int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
         output /= 10;
         result[index + olength - i] = (char) ('0' + c);
     }
+    BOOST_CHARCONV_ASSERT(output < 10);
     result[index] = '0' + (uint32_t)(output % 10); // output should be < 10 by now.
 
     // Print decimal point if needed.
@@ -423,8 +424,14 @@ struct floating_decimal_128 double_to_fd128(double d) noexcept
 
 struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
+    #ifndef BOOST_CHARCONV_HAS_INT128
+    trivial_uint128 trivial_bits;
+    std::memcpy(&trivial_bits, &d, sizeof(long double));
+    unsigned_128_type bits {trivial_bits};
+    #else
     unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(long double));
+    #endif
 
     #ifdef BOOST_CHARCONV_DEBUG
     // For some odd reason, this ends up with noise in the top 48 bits. We can

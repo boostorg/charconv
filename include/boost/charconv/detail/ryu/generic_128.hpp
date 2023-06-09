@@ -493,7 +493,7 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf5(const unsigned_128
 }
 
 // Returns true if value is divisible by 2^p.
-static constexpr bool multipleOfPowerOf2(const unsigned_128_type value, const uint32_t p) noexcept
+static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf2(const unsigned_128_type value, const uint32_t p) noexcept
 {
     return (value & ((((unsigned_128_type) 1) << p) - 1)) == 0;
 }
