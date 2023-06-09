@@ -128,6 +128,8 @@ struct uint128
     INTEGER_CONVERSION_OPERATOR(unsigned long)
     INTEGER_CONVERSION_OPERATOR(unsigned long long)
 
+    explicit constexpr operator bool() const noexcept { return high || low; }
+
     #ifdef BOOST_CHARCONV_HAS_INT128
     explicit constexpr operator boost::int128_type()  const noexcept { return (static_cast<boost::int128_type>(high) << 64) + low; }
     explicit constexpr operator boost::uint128_type() const noexcept { return (static_cast<boost::uint128_type>(high) << 64) + low; }
