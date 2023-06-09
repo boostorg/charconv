@@ -446,9 +446,9 @@ struct uint128
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator-=(uint128 v) noexcept;
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator*(uint128 lhs, uint128 rhs) noexcept;
+    inline friend uint128 operator*(uint128 lhs, uint128 rhs) noexcept;
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator*=(uint128 v) noexcept;
+    inline uint128 &operator*=(uint128 v) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator/(uint128 lhs, uint128 rhs) noexcept;
 
@@ -603,7 +603,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator-=(uint128 v) noexcept
     return *this;
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator*(uint128 lhs, uint128 rhs) noexcept
+inline uint128 operator*(uint128 lhs, uint128 rhs) noexcept
 {
     #if defined(BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS)
 
@@ -632,7 +632,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 operator*(uint128 lhs, uint128 rhs) noexc
     #endif
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator*=(uint128 v) noexcept
+inline uint128 &uint128::operator*=(uint128 v) noexcept
 {
     *this = *this - v;
     return *this;
