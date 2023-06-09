@@ -167,6 +167,26 @@ void test_arithmetic_operators()
 	#endif
 }
 
+void test_bitwise_operators()
+{
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    boost::uint128_type ref = UINT64_MAX;
+    uint128 test_val = UINT64_MAX;
+
+    ref <<= 1;
+    test_val <<= 1;
+    BOOST_TEST(test_val == ref);
+
+    ref >>= 2;
+    test_val >>= 2;
+    BOOST_TEST(test_val == ref);
+
+    BOOST_TEST((test_val | 1) == (ref | 1));
+    BOOST_TEST((test_val & 1) == (ref & 1));
+    BOOST_TEST(~test_val == ~ref);
+    #endif
+}
+
 int main()
 {
     test_relational_operators<char>();
@@ -183,5 +203,6 @@ int main()
 
     test_arithmetic_operators();
 
+    test_bitwise_operators();
     return boost::report_errors();
 }
