@@ -791,15 +791,17 @@ inline int print_val(char* first, std::size_t size, char* format, long double va
 template <typename T>
 to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_format fmt, int precision)
 {
-    //v % + . + num_digits(INT_MAX) + specifier + null terminator
+    // v % + . + num_digits(INT_MAX) + specifier + null terminator
     // 1 + 1 + 10 + 1 + 1
     char format[14] {};
-    std::memcpy(&format, "%.", 2);
-    std::size_t pos = 2;
+    std::memcpy(&format, "%", 1);
+    std::size_t pos = 1;
 
     // precision of -1 is unspecified
-    if (precision > -1)
+    if (precision > -1 && fmt != chars_format::fixed)
     {
+        format[pos] = '.';
+        ++pos;
         const auto unsigned_precision = static_cast<std::uint32_t>(precision);
         if (unsigned_precision < 10)
         {
@@ -817,7 +819,22 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
             pos = std::strlen(format);
         }
     }
+    else if (fmt == chars_format::fixed)
+    {
+        // Force 0 decimal places
+        std::memcpy(&format, ".0", 2);
+        pos += 2;
+    }
 
+    // Add the type identifier
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    format[pos] = std::is_same<T, __float128>::value ? 'Q' : 'L';
+    #else
+    format[pos] = 'L';
+    #endif
+    ++pos;
+
+    // Add the format character
     switch (fmt)
     {
         case boost::charconv::chars_format::general:
@@ -839,7 +856,6 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
 
     ++pos;
     format[pos] = '\n';
-
     const auto rv = print_val(first, last - first, format, value);
 
     return {first + rv, static_cast<std::errc>(errno)};

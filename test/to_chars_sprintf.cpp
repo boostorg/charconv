@@ -587,7 +587,7 @@ int main()
             long double w0 = rng() * 1.0; // 0 .. 2^64
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w0, boost::charconv::chars_format::fixed );
             #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
             //test_sprintf_float( w0, boost::charconv::chars_format::hex );
             #endif
@@ -595,7 +595,7 @@ int main()
             long double w1 = rng() * q; // 0.0 .. 1.0
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w1, boost::charconv::chars_format::fixed );
             #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
             //test_sprintf_float( w1, boost::charconv::chars_format::hex );
             #endif
@@ -603,7 +603,7 @@ int main()
             long double w2 = LDBL_MAX / rng(); // large values
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w2, boost::charconv::chars_format::fixed );
             #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
             //test_sprintf_float( w2, boost::charconv::chars_format::hex );
             #endif
@@ -611,7 +611,7 @@ int main()
             long double w3 = LDBL_MIN * rng(); // small values
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w3, boost::charconv::chars_format::fixed );
             #if ((defined(__GNUC__) && __GNUC__ > 4) || defined(__clang__)) && !(defined(BOOST_WINDOWS) && (defined(__clang__) || defined(__GNUC__)))
             //test_sprintf_float( w3, boost::charconv::chars_format::hex );
             #endif
