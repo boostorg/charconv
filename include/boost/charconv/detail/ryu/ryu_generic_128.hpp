@@ -459,8 +459,15 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 
 struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
 {
+    #ifdef BOOST_CHARCONV_HAS_INT128
     unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(__float128));
+    #else
+    trivial_uint128 trivial_bits;
+    std::memcpy(&trivial_bits, &d, sizeof(__float128));
+    unsigned_128_type bits {trivial_bits};
+    #endif
+
     return generic_binary_to_decimal(bits, 113, 15, true);
 }
 
