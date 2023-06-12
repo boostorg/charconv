@@ -93,11 +93,22 @@ assert(!strcmp(buffer, "2a")); // strcmp returns 0 on match
 ==== Floating Point
 [source, c++]
 ----
-char buffer[64] {};
-double v = -1.08260383390082946e+307;
-to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, boost::charconv::chars_format::hex);
-assert(r.ec == std::errc());
-assert(!strcmp(buffer, "-1.ed5658af91a0fp+1019"));
+char buffer_u[64] {};
+double u = -1.08260383390082950e+20;
+
+char buffer_v[64] {};
+double v = -1.08260383390082946e+20;
+
+to_chars(buffer_u, buffer_u + sizeof(buffer_u) - 1, u, chars_format::hex);
+to_chars(buffer_v, buffer_v + sizeof(buffer_v) - 1, v, chars_format::hex);
+
+std::cout << "U: " << buffer_u << "\nV: " << buffer_v << std::endl;
+
+// U: -1.779a8946bb5fap+66
+// V: -1.779a8946bb5f9p+66
+//
+// With hexfloats we can see the ULP distance between U and V is a - 9 == 1.
+
 ----
 
 === std::errc::result_out_of_range

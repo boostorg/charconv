@@ -859,6 +859,23 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, __float128
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float16_t value, 
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float32_t value, 
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float64_t value, 
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_BFLOAT16
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::bfloat16_t value, 
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+#endif
+
 } // namespace charconv
 } // namespace boost
 

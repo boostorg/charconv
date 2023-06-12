@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
+#include <limits>
 
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -55,6 +56,62 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     }
     return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
 }
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    float f;
+    const auto r = boost::charconv::from_chars(first, last, f, fmt);
+    if (r.ec == std::errc())
+    {
+        value = static_cast<std::float16_t>(f);
+    }
+    return r;
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float32_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    static_assert(std::numeric_limits<std::float32_t>::digits == FLT_MANT_DIG &&
+                  std::numeric_limits<std::float32_t>::min_exponent == FLT_MIN_EXP,
+                  "float and std::float32_t are not the same layout like they should be");
+    
+    float f;
+    std::memcpy(&f, &value, sizeof(float));
+    const auto r = boost::charconv::from_chars(first, last, f, fmt);
+    std::memcpy(&value, &f, sizeof(std::float32_t));
+    return r;
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float64_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    static_assert(std::numeric_limits<std::float64_t>::digits == DBL_MANT_DIG &&
+                  std::numeric_limits<std::float64_t>::min_exponent == DBL_MIN_EXP,
+                  "double and std::float64_t are not the same layout like they should be");
+    
+    double d;
+    std::memcpy(&d, &value, sizeof(double));
+    const auto r = boost::charconv::from_chars(first, last, d, fmt);
+    std::memcpy(&value, &d, sizeof(std::float64_t));
+    return r;
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_BFLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    float f;
+    const auto r = boost::charconv::from_chars(first, last, f, fmt);
+    if (r.ec == std::errc())
+    {
+        value = static_cast<std::bfloat16_t>(f);
+    }
+    return r;
+}
+#endif
 
 /*
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(_WIN64) || defined(_WIN32)
