@@ -131,6 +131,25 @@ struct IEEEl2bits
 #  define BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
 #endif
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+
+struct IEEEbinary128
+{
+#if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
+    std::uint64_t mantissa_l : 64;
+    std::uint64_t mantissa_h : 48;
+    std::uint32_t exponent : 15;
+    std::uint32_t sign : 1;
+#else // Big endian
+    std::uint32_t sign : 1;
+    std::uint32_t exponent : 15;
+    std::uint64_t mantissa_h : 48;
+    std::uint64_t mantissa_l : 64;
+#endif
+};
+
+#endif
+
 }}} // Namespaces
 
 #endif // BOOST_CHARCONV_DETAIL_BIT_LAYOUTS_HPP
