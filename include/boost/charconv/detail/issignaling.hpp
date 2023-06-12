@@ -5,13 +5,17 @@
 #ifndef BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP
 #define BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <cstdint>
 #include <cstring>
 
 namespace boost { namespace charconv { namespace detail {
 
-#if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_FLOAT128)
+template <typename T>
+inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept;
+
+#if BOOST_CHARCONV_LDBL_BITS == 128
 
 struct words128
 {
@@ -25,7 +29,7 @@ struct words128
 };
 
 template <typename T>
-inline bool issignaling(T x) noexcept
+inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept
 {
     words128 bits;
     std::memcpy(&bits, &x, sizeof(T));
@@ -36,6 +40,16 @@ inline bool issignaling(T x) noexcept
     hi_word ^= UINT64_C(0x0000800000000000);
     hi_word |= (lo_word | -lo_word) >> 63;
     return ((hi_word & INT64_MAX) > UINT64_C(0x7FFF800000000000));
+}
+
+#endif
+
+#if defined(BOOST_CHARCONV_HAS_FLOAT128)
+
+template <>
+inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128 x) noexcept
+{
+    return issignalingq(x);
 }
 
 #endif
