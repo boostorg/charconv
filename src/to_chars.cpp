@@ -678,12 +678,26 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         return {last, std::errc::invalid_argument};
     }
 
-    (void)fmt;
-    (void)precision;
-    const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
-    const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+    if (isnanq(value))
+    {
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_NAN);
+    }
+    else if (isinfq(value))
+    {
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_INFINITE);
+    }
 
-    return { first + num_chars, std::errc() };
+    if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific) &&
+        precision == -1)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+
+        return { first + num_chars, std::errc() };
+    }
+
+    // Fallback to printf
+    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
 }
 
 #endif

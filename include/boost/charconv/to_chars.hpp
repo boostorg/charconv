@@ -28,7 +28,7 @@
 #include <climits>
 #include <cmath>
 
-#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
+#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) || defined(BOOST_CHARCONV_HAS_FLOAT128)
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #  include <boost/charconv/detail/issignaling.hpp>
 #endif
@@ -460,6 +460,9 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 // Floating Point Detail
 // ---------------------------------------------------------------------------------------------------------------------
 
+template <typename Real>
+to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
+
 #if BOOST_CHARCONV_LDBL_BITS == 128
 
 template <typename Real>
@@ -528,7 +531,78 @@ to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int clas
     return { first + offset, std::errc() };
 }
 
-#endif
+#endif // BOOST_CHARCONV_LDBL_BITS == 128
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+
+template <>
+to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, __float128 value, int classification) noexcept
+{
+    std::ptrdiff_t offset {};
+    std::ptrdiff_t buffer_size = last - first;
+
+    IEEEbinary128 bits;
+    std::memcpy(&bits, &value, sizeof(value));
+    const bool is_negative = bits.sign;
+
+    if (classification == FP_NAN)
+    {
+        const bool is_signaling = issignaling(value);
+
+        if (is_negative)
+        {
+            *first++ = '-';
+        }
+
+        if (is_signaling && buffer_size >= (9 + (int)is_negative))
+        {
+            std::memcpy(first, "nan(snan)", 9);
+            offset = 9 + (int)is_negative;
+        }
+        else if (is_negative && buffer_size >= 9)
+        {
+            std::memcpy(first, "nan(ind)", 8);
+            offset = 8;
+        }
+        else if (!is_negative && !is_signaling && buffer_size >= 3)
+        {
+            std::memcpy(first, "nan", 3);
+            offset = 3;
+        }
+        else
+        {
+            // Avoid buffer overflow
+            return { first, std::errc::result_out_of_range };
+        }
+
+    }
+    else if (classification == FP_INFINITE)
+    {
+        if (is_negative && buffer_size >= 4)
+        {
+            std::memcpy(first, "-inf", 4);
+            offset = 4;
+        }
+        else if (!is_negative && buffer_size >= 3)
+        {
+            std::memcpy(first, "inf", 3);
+            offset = 3;
+        }
+        else
+        {
+            // Avoid buffer overflow
+            return { first, std::errc::result_out_of_range };
+        }
+    }
+    else
+    {
+        BOOST_UNREACHABLE_RETURN(first);
+    }
+
+    return { first + offset, std::errc() };
+}
+
+#endif // BOOST_CHARCONV_HAS_FLOAT128
 
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
