@@ -40,7 +40,7 @@ static char* s(unsigned_128_type v) {
 }
 #endif
 
-struct floating_decimal_128 generic_binary_to_decimal(
+static inline struct floating_decimal_128 generic_binary_to_decimal(
         const unsigned_128_type bits,
         const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit) noexcept
 {
@@ -330,7 +330,7 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
 // Maximal char buffer requirement:
 // sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
-int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
+static inline int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -404,7 +404,7 @@ int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
     return index;
 }
 
-struct floating_decimal_128 float_to_fd128(float f) noexcept
+static inline struct floating_decimal_128 float_to_fd128(float f) noexcept
 {
     static_assert(sizeof(float) == sizeof(uint32_t), "Float is not 32 bits");
     uint32_t bits = 0;
@@ -412,7 +412,7 @@ struct floating_decimal_128 float_to_fd128(float f) noexcept
     return generic_binary_to_decimal(bits, 23, 8, false);
 }
 
-struct floating_decimal_128 double_to_fd128(double d) noexcept
+static inline struct floating_decimal_128 double_to_fd128(double d) noexcept
 {
     static_assert(sizeof(double) == sizeof(uint64_t), "Float is not 64 bits");
     uint64_t bits = 0;
@@ -422,7 +422,7 @@ struct floating_decimal_128 double_to_fd128(double d) noexcept
 
 #if BOOST_CHARCONV_LDBL_BITS == 80
 
-struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
+static inline struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
     #ifdef BOOST_CHARCONV_HAS_INT128
     unsigned_128_type bits = 0;
@@ -446,7 +446,7 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 
 #elif BOOST_CHARCONV_LDBL_BITS == 128
 
-struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
+static inline struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
     unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(long double));
@@ -457,7 +457,7 @@ struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 
 #ifdef BOOST_HAS_FLOAT128
 
-struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
+static inline struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
 {
     #ifdef BOOST_CHARCONV_HAS_INT128
     unsigned_128_type bits = 0;
