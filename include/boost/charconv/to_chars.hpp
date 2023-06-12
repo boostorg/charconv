@@ -461,12 +461,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 // ---------------------------------------------------------------------------------------------------------------------
 
 template <typename Real>
-to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
+inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
 
 #if BOOST_CHARCONV_LDBL_BITS == 128
 
 template <typename Real>
-to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept
+inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept
 {
     std::ptrdiff_t offset {};
     std::ptrdiff_t buffer_size = last - first;
@@ -536,7 +536,7 @@ to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int clas
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 
 template <>
-to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, __float128 value, int classification) noexcept
+inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, __float128 value, int classification) noexcept
 {
     std::ptrdiff_t offset {};
     std::ptrdiff_t buffer_size = last - first;
