@@ -722,7 +722,11 @@ BOOST_CHARCONV_CXX14_CONSTEXPR void div_impl(uint128 lhs, uint128 rhs, uint128& 
     uint128 denom = rhs;
     quotient = 0U;
 
-    const int shift = high_bit(lhs) - high_bit(rhs);
+    std::int32_t shift = high_bit(lhs) - high_bit(rhs);
+    if (shift < 0)
+    {
+        shift = 32 - shift;
+    }
     denom <<= shift;
 
     for (int i = 0; i <= shift; ++i)
