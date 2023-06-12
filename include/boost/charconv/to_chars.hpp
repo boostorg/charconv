@@ -28,6 +28,11 @@
 #include <climits>
 #include <cmath>
 
+#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
+#  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
+#  include <boost/charconv/detail/issignaling.hpp>
+#endif
+
 namespace boost { namespace charconv {
 
 // 22.13.2, Primitive numerical output conversion
@@ -112,7 +117,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     int converted_value_digits {};
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
-    
+
     if (first > last)
     {
         return {last, std::errc::invalid_argument};
@@ -140,7 +145,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     // If the type is greater than 32 bits we use a binary search tree to figure out how many digits
     // are present and then decompose the value into two (or more) std::uint32_t of known length so that we
     // don't have the issue of removing leading zeros from the least significant digits
-    
+
     // Yields: warning C4127: conditional expression is constant because first half of the expression is constant,
     // but we need to short circuit to avoid UB on the second half
     if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint32_t>::digits ||
@@ -160,7 +165,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         {
             *first++ = '-';
         }
-            
+
         boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - converted_value_digits), converted_value_digits);
     }
     else if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint64_t>::digits ||
@@ -206,7 +211,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
                 decompose32(y, buffer);
                 boost::charconv::detail::memcpy(first + 8, buffer + 1, sizeof(buffer) - 1);
-            
+
                 decompose32(z, buffer);
                 boost::charconv::detail::memcpy(first + 17, buffer + 8, 2);
             }
@@ -217,13 +222,13 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
                 decompose32(y, buffer);
                 boost::charconv::detail::memcpy(first + 9, buffer + 1, sizeof(buffer) - 1);
-            
+
                 decompose32(z, buffer);
                 boost::charconv::detail::memcpy(first + 18, buffer + 8, 2);
             }
         }
     }
-    
+
     return {first + converted_value_digits, std::errc()};
 }
 
@@ -241,7 +246,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     const std::ptrdiff_t user_buffer_size = last - first;
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
-    
+
     if (first > last)
     {
         return {last, std::errc::invalid_argument};
@@ -332,7 +337,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         return {first, std::errc()};
     }
 
-    Unsigned_Integer unsigned_value {};    
+    Unsigned_Integer unsigned_value {};
     const auto unsigned_base = static_cast<Unsigned_Integer>(base);
 
     BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
@@ -411,7 +416,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     }
 
     const std::ptrdiff_t num_chars = buffer_end - end - 1;
-    
+
     if (num_chars > output_length)
     {
         return {last, std::errc::result_out_of_range};
@@ -454,27 +459,108 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 // ---------------------------------------------------------------------------------------------------------------------
 // Floating Point Detail
 // ---------------------------------------------------------------------------------------------------------------------
+
+#if BOOST_CHARCONV_LDBL_BITS == 128
+
+template <typename Real>
+to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept
+{
+    std::ptrdiff_t offset {};
+    std::ptrdiff_t buffer_size = last - first;
+
+    if (classification == FP_NAN)
+    {
+        bool is_negative = false;
+        const bool is_signaling = issignaling(value);
+
+        if (std::signbit(value))
+        {
+            is_negative = true;
+            *first++ = '-';
+        }
+
+        if (is_signaling && buffer_size >= (9 + (int)is_negative))
+        {
+            std::memcpy(first, "nan(snan)", 9);
+            offset = 9 + (int)is_negative;
+        }
+        else if (is_negative && buffer_size >= 9)
+        {
+            std::memcpy(first, "nan(ind)", 8);
+            offset = 8;
+        }
+        else if (!is_negative && !is_signaling && buffer_size >= 3)
+        {
+            std::memcpy(first, "nan", 3);
+            offset = 3;
+        }
+        else
+        {
+            // Avoid buffer overflow
+            return { first, std::errc::result_out_of_range };
+        }
+
+    }
+    else if (classification == FP_INFINITE)
+    {
+        auto sign_bit_value = std::signbit(value);
+        if (sign_bit_value && buffer_size >= 4)
+        {
+            std::memcpy(first, "-inf", 4);
+            offset = 4;
+        }
+        else if (!sign_bit_value && buffer_size >= 3)
+        {
+            std::memcpy(first, "inf", 3);
+            offset = 3;
+        }
+        else
+        {
+            // Avoid buffer overflow
+            return { first, std::errc::result_out_of_range };
+        }
+    }
+    else
+    {
+        BOOST_UNREACHABLE_RETURN(first);
+    }
+
+    return { first + offset, std::errc() };
+}
+
+#endif
+
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
 {
     // If the user did not specify a precision than we use the maximum representable amount
     // and remove trailing zeros at the end
     int real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
-    
+
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
     if (buffer_size < real_precision || first > last)
     {
         return {last, std::errc::result_out_of_range};
     }
-    
+
     // Handle edge cases first
     BOOST_ATTRIBUTE_UNUSED char* ptr;
-    switch (std::fpclassify(value))
+    const int classification = std::fpclassify(value);
+    switch (classification)
     {
         case FP_INFINITE:
-            BOOST_FALLTHROUGH;
         case FP_NAN:
+            BOOST_IF_CONSTEXPR (std::is_same<Real, long double>::value)
+            {
+                #if BOOST_CHARCONV_LDBL_BITS == 80
+                const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
+                const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+                return { first + num_chars, std::errc() };
+                #elif BOOST_CHARCONV_LDBL_BITS == 128
+                return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
+                #endif
+            }
             // The dragonbox impl will return the correct type of NaN
             ptr = boost::charconv::detail::to_chars(value, first, chars_format::general);
             return { ptr, std::errc() };

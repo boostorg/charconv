@@ -11,11 +11,6 @@
 #include <cstdint>
 #include <cmath>
 
-#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
-#  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
-#  include <boost/charconv/detail/issignaling.hpp>
-#endif
-
 namespace boost { namespace charconv { namespace detail { namespace to_chars_detail {
 
 #ifdef BOOST_MSVC
@@ -595,46 +590,9 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 
     #if BOOST_CHARCONV_LDBL_BITS == 128
     const auto classification = std::fpclassify(value);
-    if (classification == FP_NAN)
+    if (classification == FP_NAN || classification == FP_INFINITE)
     {
-        bool is_negative = false;
-        if (std::signbit(value))
-        {
-            is_negative = true;
-            *first++ = '-';
-        }
-
-        if (boost::charconv::detail::issignaling(value))
-        {
-            std::memcpy(first, "nan(snan)", 9);
-            return { first + 9 + (int)is_negative, std::errc() };
-        }
-        else
-        {
-            if (is_negative)
-            {
-                std::memcpy(first, "nan(ind)", 8);
-                return { first + 9, std::errc() };
-            }
-            else
-            {
-                std::memcpy(first, "nan", 3);
-                return { first + 3, std::errc() };
-            }
-        }
-    }
-    else if (classification == FP_INFINITE)
-    {
-        if (std::signbit(value))
-        {
-            std::memcpy(first, "-inf", 4);
-            return { first + 4, std::errc() };
-        }
-        else
-        {
-            std::memcpy(first, "inf", 3);
-            return { first + 3, std::errc() };
-        }
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
     }
     #endif
 
