@@ -73,7 +73,7 @@ static boost::detail::splitmix64 rng;
 
 // integral types, random values
 
-#if defined(__GNUC__) && (__GNUC__ == 12)
+#if defined(__GNUC__) && (__GNUC__ >= 12)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
@@ -337,9 +337,53 @@ int main()
     // the stub implementations fail under Cygwin, s390x, linux ARM, and Apple Clang w/Xcode 12.2;
     // re-enable these when we have real ones
 
-    // float
+    // 16-bit types
 
     double const q = std::pow( 1.0, -64 );
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float16_t w0 = static_cast<std::float16_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float16_t w1 = static_cast<std::float16_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float16_t w2 = (std::numeric_limits<std::float16_t>::max)() / static_cast<std::float16_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float16_t w3 = (std::numeric_limits<std::float16_t>::min)() * static_cast<std::float16_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float16_t>();
+    }
+    #endif
+
+    #ifdef BOOST_CHARCONV_HAS_BFLOAT16
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::bfloat16_t w0 = static_cast<std::bfloat16_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::bfloat16_t w2 = (std::numeric_limits<std::bfloat16_t>::max)() / static_cast<std::bfloat16_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::bfloat16_t w3 = (std::numeric_limits<std::bfloat16_t>::min)() * static_cast<std::bfloat16_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::bfloat16_t>();
+    }
+    #endif
+
+    // float
 
     {
         for( int i = 0; i < N; ++i )
@@ -359,6 +403,27 @@ int main()
 
         test_roundtrip_bv<float>();
     }
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT32
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float32_t w0 = static_cast<std::float32_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float32_t w1 = static_cast<std::float32_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float32_t w2 = (std::numeric_limits<std::float32_t>::max)() / static_cast<std::float32_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float32_t w3 = (std::numeric_limits<std::float32_t>::min)() * static_cast<std::float32_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float32_t>();
+    }
+    #endif
 
     // double
 
@@ -380,6 +445,27 @@ int main()
 
         test_roundtrip_bv<double>();
     }
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT64
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float64_t w0 = static_cast<std::float64_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float64_t w1 = static_cast<std::float64_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float64_t w2 = (std::numeric_limits<std::float64_t>::max)() / static_cast<std::float64_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float64_t w3 = (std::numeric_limits<std::float64_t>::min)() * static_cast<std::float64_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float64_t>();
+    }
+    #endif
 
     // long double
 
