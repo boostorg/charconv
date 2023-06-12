@@ -360,7 +360,7 @@ int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
         result[index + olength - i] = (char) ('0' + c);
     }
     BOOST_CHARCONV_ASSERT(output < 10);
-    result[index] = '0' + (uint32_t)(output % 10); // output should be < 10 by now.
+    result[index] = (char)('0' + (uint32_t)(output % 10)); // output should be < 10 by now.
 
     // Print decimal point if needed.
     if (olength > 1)
