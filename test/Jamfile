@@ -16,6 +16,8 @@ project : requirements
   <toolset>clang:<warnings-as-errors>on
   <toolset>gcc:<warnings-as-errors>on ;
 
+lib quadmath ;
+
 run quick.cpp ;
 
 run from_chars.cpp ;
@@ -38,3 +40,4 @@ run to_chars_float.cpp ;
 run test_boost_json_values.cpp ;
 run to_chars_float_STL_comp.cpp : : : [ requires cxx17_hdr_charconv ] ;
 run from_chars_float2.cpp ;
+run test_float128.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <library>"quadmath" ] ;
