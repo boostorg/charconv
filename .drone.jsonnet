@@ -184,6 +184,13 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
     ),
 
     linux_pipeline(
+        "Linux 23.04 GCC 13 GNU 64 ASAN",
+        "cppalliance/droneubuntu2304:1",
+        { TOOLSET: 'gcc', COMPILER: 'g++-13', CXXSTD: '03,11,14,17,20,23', ADDRMD: '32,64', CXXFLAGS: "-fexcess-precision=fast", CXXSTDDIALECT: "gnu" } + asan,
+        "g++-13-multilib",
+    ),
+
+    linux_pipeline(
         "Linux 16.04 Clang 3.5",
         "cppalliance/droneubuntu1604:1",
         { TOOLSET: 'clang', COMPILER: 'clang++-3.5', CXXSTD: '03,11' },
