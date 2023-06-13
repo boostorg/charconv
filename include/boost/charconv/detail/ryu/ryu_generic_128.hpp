@@ -330,7 +330,7 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
 // Maximal char buffer requirement:
 // sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
-static inline int generic_to_chars(const struct floating_decimal_128 v, char* result) noexcept
+static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -346,6 +346,10 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     unsigned_128_type output = v.mantissa;
     const uint32_t olength = num_digits(output);
+    if (olength > (uint32_t)result_size)
+    {
+        return -1;
+    }
 
     #ifdef BOOST_CHARCONV_DEBUG
     printf("DIGITS=%s\n", s(v.mantissa));

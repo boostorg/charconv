@@ -600,7 +600,12 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         precision == -1)
     {
         const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
+
+        if (num_chars == -1)
+        {
+            return { last, std::errc::result_out_of_range };
+        }
 
         return { first + num_chars, std::errc() };
     }
@@ -691,8 +696,12 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         precision == -1)
     {
         const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
 
+        if (num_chars == -1)
+        {
+            return { last, std::errc::result_out_of_range };
+        }
         return { first + num_chars, std::errc() };
     }
 

@@ -629,7 +629,11 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
             {
                 #if BOOST_CHARCONV_LDBL_BITS == 80
                 const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
-                const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first);
+                const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
+                if (num_chars == -1)
+                {
+                    return { last, std::errc::result_out_of_range };
+                }
                 return { first + num_chars, std::errc() };
                 #elif BOOST_CHARCONV_LDBL_BITS == 128
                 return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
