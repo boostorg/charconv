@@ -15,7 +15,7 @@ namespace boost { namespace charconv { namespace detail {
 template <typename T>
 inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept;
 
-#if BOOST_CHARCONV_LDBL_BITS == 128
+#if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_FLOAT128)
 
 struct words128
 {
@@ -40,16 +40,6 @@ inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept
     hi_word ^= UINT64_C(0x0000800000000000);
     hi_word |= (lo_word | -lo_word) >> 63;
     return ((hi_word & INT64_MAX) > UINT64_C(0x7FFF800000000000));
-}
-
-#endif
-
-#if defined(BOOST_CHARCONV_HAS_FLOAT128)
-
-template <>
-inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128 x) noexcept
-{
-    return issignalingq(x);
 }
 
 #endif

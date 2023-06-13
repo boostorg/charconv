@@ -27,10 +27,13 @@ std::ostream& operator<<( std::ostream& os, __float128 v )
 
 void test_signaling_nan()
 {
-    BOOST_TEST(boost::charconv::detail::issignaling(std::numeric_limits<__float128>::signaling_NaN()));
+    #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_nansq)
+    BOOST_TEST(boost::charconv::detail::issignaling(__builtin_nansq("")));
+    BOOST_TEST(boost::charconv::detail::issignaling(-__builtin_nansq("")));
+    #endif
+
     BOOST_TEST(!boost::charconv::detail::issignaling(std::numeric_limits<__float128>::quiet_NaN()));
     BOOST_TEST(!boost::charconv::detail::issignaling(std::numeric_limits<__float128>::infinity()));
-    BOOST_TEST(boost::charconv::detail::issignaling(-std::numeric_limits<__float128>::signaling_NaN()));
     BOOST_TEST(!boost::charconv::detail::issignaling(-std::numeric_limits<__float128>::quiet_NaN()));
     BOOST_TEST(!boost::charconv::detail::issignaling(-std::numeric_limits<__float128>::infinity()));
 }
