@@ -62,8 +62,10 @@ void test_signaling_nan()
     }
     else
     {
+        #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
         BOOST_TEST(boost::charconv::detail::issignaling(std::numeric_limits<T>::signaling_NaN()));
         BOOST_TEST(boost::charconv::detail::issignaling(-std::numeric_limits<T>::signaling_NaN()));
+        #endif
     }
 
     BOOST_TEST(!boost::charconv::detail::issignaling(std::numeric_limits<T>::quiet_NaN()));
