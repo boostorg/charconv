@@ -106,6 +106,15 @@ void test_roundtrip_bv()
     test_roundtrip( -std::numeric_limits<T>::max() );
 }
 
+template <>
+void test_roundtrip_bv<__float128>()
+{
+    test_roundtrip( FLT128_MIN );
+    test_roundtrip( -FLT128_MIN );
+    test_roundtrip( FLT128_MAX );
+    test_roundtrip( -FLT128_MAX );
+}
+
 int main()
 {
     test_signaling_nan<__float128>();

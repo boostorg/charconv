@@ -212,6 +212,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
                 decompose32(y, buffer);
                 boost::charconv::detail::memcpy(first + 8, buffer + 1, sizeof(buffer) - 1);
 
+                // TODO(mborland): This is always 2 so can probably replace with something more efficient than 10
                 decompose32(z, buffer);
                 boost::charconv::detail::memcpy(first + 17, buffer + 8, 2);
             }
@@ -223,6 +224,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
                 decompose32(y, buffer);
                 boost::charconv::detail::memcpy(first + 9, buffer + 1, sizeof(buffer) - 1);
 
+                // TODO(mborland): This is always 2 so can probably replace with something more efficient than 10
                 decompose32(z, buffer);
                 boost::charconv::detail::memcpy(first + 18, buffer + 8, 2);
             }
