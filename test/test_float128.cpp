@@ -6,9 +6,9 @@
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 
-#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
-#define BOOST_CHARCONV_HAS_FLOAT128_OSTREAM
 #include <ostream>
+
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
 #include <charconv>
 
 std::ostream& operator<<( std::ostream& os, __float128 v )
@@ -23,6 +23,16 @@ std::ostream& operator<<( std::ostream& os, std::float128_t v)
 {
     char buffer [ 256 ] {};
     std::to_chars(buffer, buffer + sizeof(buffer), v);
+    os << buffer;
+    return os;
+}
+
+#else
+
+std::ostream& operator<<( std::ostream& os, __float128 v )
+{
+    char buffer[ 256 ] {};
+    quadmath_snprintf(buffer, sizeof(buffer), "%Qg", v);
     os << buffer;
     return os;
 }
@@ -79,14 +89,10 @@ void test_roundtrip( T value )
     }
     else
     {
-        #ifdef BOOST_CHARCONV_HAS_FLOAT128_OSTREAM
         std::cerr << std::setprecision(35)
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )
                   << "\nFrom chars: " << v2 << std::endl;
-        #else
-        std::cerr << "Test failure. Enable GCC 13+ with/C++23 for diagnostics." << std::endl;
-        #endif
     }
 }
 
