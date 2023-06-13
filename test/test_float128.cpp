@@ -68,10 +68,10 @@ void test_signaling_nan()
         #endif
     }
 
-    BOOST_TEST(!boost::charconv::detail::issignaling(std::numeric_limits<T>::quiet_NaN()));
-    BOOST_TEST(!boost::charconv::detail::issignaling(std::numeric_limits<T>::infinity()));
-    BOOST_TEST(!boost::charconv::detail::issignaling(-std::numeric_limits<T>::quiet_NaN()));
-    BOOST_TEST(!boost::charconv::detail::issignaling(-std::numeric_limits<T>::infinity()));
+    BOOST_TEST(!(boost::charconv::detail::issignaling)(std::numeric_limits<T>::quiet_NaN()));
+    BOOST_TEST(!(boost::charconv::detail::issignaling)(std::numeric_limits<T>::infinity()));
+    BOOST_TEST(!(boost::charconv::detail::issignaling)(-std::numeric_limits<T>::quiet_NaN()));
+    BOOST_TEST(!(boost::charconv::detail::issignaling)(-std::numeric_limits<T>::infinity()));
 }
 
 template <typename T>
