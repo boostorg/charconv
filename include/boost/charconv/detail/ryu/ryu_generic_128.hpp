@@ -473,7 +473,7 @@ static inline struct floating_decimal_128 float128_to_fd128(__float128 d) noexce
     unsigned_128_type bits {trivial_bits};
     #endif
 
-    return generic_binary_to_decimal(bits, 113, 15, true);
+    return generic_binary_to_decimal(bits, 112, 15, false);
 }
 
 #endif
