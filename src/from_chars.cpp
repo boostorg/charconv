@@ -214,7 +214,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     from_chars_result r = {};
 
     std::string tmp( first, last ); // zero termination
-    char* ptr = 0;
+    char* ptr = nullptr;
 
     value = std::strtold( tmp.c_str(), &ptr );
 
@@ -224,7 +224,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 
-#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
 {
     static_assert(sizeof(__float128) == sizeof(std::float128_t));

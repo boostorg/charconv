@@ -1053,7 +1053,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float64_t value, 
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
-#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float128_t value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
