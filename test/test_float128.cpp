@@ -98,22 +98,26 @@ void test_roundtrip( T value )
     }
 }
 
-const char* fmt_from_type (__float128)
+template <typename T>
+const char* fmt_from_type (T)
 {
     return "%Qg";
 }
 
-const char* fmt_from_type_fixed (__float128)
+template <typename T>
+const char* fmt_from_type_fixed (T)
 {
     return "%.0f";
 }
 
-const char* fmt_from_type_scientific (__float128)
+template <typename T>
+const char* fmt_from_type_scientific (T)
 {
     return "%.35Qe";
 }
 
-const char* fmt_from_type_hex (__float128)
+template <typename T>
+const char* fmt_from_type_hex (T)
 {
     return "%Qa";
 }
@@ -124,30 +128,13 @@ inline int print(__float128 value, char* buffer, size_t buffer_size, const char*
 }
 
 #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
-const char* fmt_from_type (std::float128_t)
-{
-    return "%F128g";
-}
-
-const char* fmt_from_type_fixed (std::float128_t)
-{
-    return "%.0F128f";
-}
-
-const char* fmt_from_type_scientific (std::float128_t)
-{
-    return "%.35F128e";
-}
-
-const char* fmt_from_type_hex (std::float128_t)
-{
-    return "%F128a";
-}
-
+// Has no overload of strtod/sprintf etc so cast to __float128
+// See: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1467r9.html#library
 inline int print(std::float128_t value, char* buffer, size_t buffer_size, const char* fmt)
 {
-    return std::snprintf(buffer, buffer_size, fmt, value);
+    return print(static_cast<__float128>(value), buffer, buffer_size, fmt);
 }
+
 #endif
 
 template <typename T>
@@ -293,6 +280,44 @@ int main()
 
     #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
     test_signaling_nan<std::float128_t>();
+
+    // std::float128_t
+    {
+        const std::float128_t q = 1e128F128;
+
+        for( int i = 0; i < N; ++i )
+        {
+            std::float128_t w0 = static_cast<std::float128_t>( rng() ); // 0 .. 2^128
+            test_roundtrip( w0 );
+            //test_sprintf_float( w0, boost::charconv::chars_format::general );
+            //test_sprintf_float( w0, boost::charconv::chars_format::scientific );
+            //test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            //test_sprintf_float( w0, boost::charconv::chars_format::hex );
+
+            std::float128_t w1 = static_cast<std::float128_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+            //test_sprintf_float( w1, boost::charconv::chars_format::general );
+            //test_sprintf_float( w1, boost::charconv::chars_format::scientific );
+            //test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            //test_sprintf_float( w1, boost::charconv::chars_format::hex );
+
+            std::float128_t w2 = (std::numeric_limits<std::float128_t>::max)() / static_cast<std::float128_t>( rng() ); // large values
+            test_roundtrip( w2 );
+            //test_sprintf_float( w2, boost::charconv::chars_format::general );
+            //test_sprintf_float( w2, boost::charconv::chars_format::scientific );
+            //test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            //test_sprintf_float( w2, boost::charconv::chars_format::hex );
+
+            std::float128_t w3 = (std::numeric_limits<std::float128_t>::min)() * static_cast<std::float128_t>( rng() ); // small values
+            test_roundtrip( w3 );
+            //test_sprintf_float( w3, boost::charconv::chars_format::general );
+            //test_sprintf_float( w3, boost::charconv::chars_format::scientific );
+            //test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            //test_sprintf_float( w3, boost::charconv::chars_format::hex );
+        }
+
+        test_roundtrip_bv<std::float128_t>();
+    }
     #endif
 
     return boost::report_errors();

@@ -465,7 +465,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 template <typename Real>
 inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
 
-#if BOOST_CHARCONV_LDBL_BITS == 128
+#if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128)
 
 template <typename Real>
 inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept
@@ -1051,6 +1051,10 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float
 #endif
 #ifdef BOOST_CHARCONV_HAS_FLOAT64
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float64_t value, 
+                                             chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float128_t value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
 #ifdef BOOST_CHARCONV_HAS_BFLOAT16

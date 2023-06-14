@@ -736,6 +736,40 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 }
 #endif
 
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float128_t value,
+                                                           boost::charconv::chars_format fmt, int precision) noexcept
+{
+    if (first > last)
+    {
+        return {last, std::errc::invalid_argument};
+    }
+
+    const auto classification = std::fpclassify(value);
+    if (classification == FP_NAN || classification == FP_INFINITE)
+    {
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
+    }
+
+    if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific) &&
+        precision == -1)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::stdfloat128_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
+
+        if (num_chars == -1)
+        {
+            return { last, std::errc::result_out_of_range };
+        }
+
+        return { first + num_chars, std::errc() };
+    }
+
+    // Fallback to printf methods
+    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+}
+#endif
+
 #ifdef BOOST_CHARCONV_HAS_BFLOAT16
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept

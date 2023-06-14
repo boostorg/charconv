@@ -224,4 +224,18 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return r;
 }
 
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    static_assert(sizeof(__float128) == sizeof(std::float128_t));
+
+    __float128 q;
+    std::memcpy(&q, &value, sizeof(__float128));
+    const auto r = boost::charconv::from_chars(first, last, q, fmt);
+    std::memcpy(&value, &q, sizeof(std::float128_t));
+
+    return r;
+}
+#endif
+
 #endif // long double implementations
