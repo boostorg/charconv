@@ -280,7 +280,7 @@ int main()
 
     // std::float128_t
     {
-        const std::float128_t q = 1e128F128;
+        const std::float128_t q = 1e-128F128;
 
         for( int i = 0; i < N; ++i )
         {
