@@ -196,8 +196,8 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
     //     Value: 6.8220421318020332664117517756596e+4913
     //  To chars: 6.8220421318020332664117517756596e+4913
     //  Snprintf: 6.82204e+4913
-    if ((value > 1e16Q && value < 1e20Q) ||
-        (value > 1e4912Q || value < 1e-4912Q))
+    if ((value > static_cast<T>(1e16Q) && value < static_cast<T>(1e20Q)) ||
+        (value > static_cast<T>(1e4912Q) || value < static_cast<T>(1e-4912Q)))
     {
         return;
     }
