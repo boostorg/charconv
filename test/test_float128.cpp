@@ -233,6 +233,69 @@ void test_roundtrip_bv<__float128>()
     test_roundtrip( -FLT128_MAX );
 }
 
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+template <typename T>
+void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
+{
+    std::chars_format stl_fmt;
+    switch (fmt)
+    {
+        case boost::charconv::chars_format::general:
+            stl_fmt = std::chars_format::general;
+            break;
+        case boost::charconv::chars_format::fixed:
+            stl_fmt = std::chars_format::fixed;
+            break;
+        case boost::charconv::chars_format::scientific:
+            stl_fmt = std::chars_format::scientific;
+            break;
+        case boost::charconv::chars_format::hex:
+            stl_fmt = std::chars_format::hex;
+            break;
+        default:
+            BOOST_UNREACHABLE_RETURN(fmt);
+            break;
+    }
+
+    char buffer_boost[256];
+    char buffer_stl[256];
+
+    boost::charconv::to_chars_result r_boost;
+    std::to_chars_result r_stl;
+
+    if (precision == -1)
+    {
+        r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt);
+        r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt);
+    }
+    else
+    {
+        r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt, precision);
+        r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt, precision);
+    }
+
+    BOOST_TEST(r_boost.ec == std::errc());
+    if (r_stl.ec != std::errc())
+    {
+        // STL failed
+        return;
+    }
+
+    const std::ptrdiff_t diff_boost = r_boost.ptr - buffer_boost;
+    const std::ptrdiff_t diff_stl = r_stl.ptr - buffer_stl;
+    const auto boost_str = std::string(buffer_boost, r_boost.ptr);
+    const auto stl_str = std::string(buffer_stl, r_stl.ptr);
+
+    else if (!(BOOST_TEST_CSTR_EQ(boost_str.c_str(), stl_str.c_str()) && BOOST_TEST_EQ(diff_boost, diff_stl)))
+    {
+        std::cerr << std::setprecision(35)
+                  << "Value: " << val
+                  << "\nBoost: " << boost_str.c_str()
+                  << "\n  STL: " << stl_str.c_str() << std::endl;
+    }
+}
+#endif
+
 int main()
 {
     test_signaling_nan<__float128>();
@@ -290,6 +353,10 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
             test_sprintf_float( w0, boost::charconv::chars_format::hex );
+            test_spot( w0, boost::charconv::chars_format::general );
+            test_spot( w0, boost::charconv::chars_format::scientific );
+            test_spot( w0, boost::charconv::chars_format::fixed );
+            test_spot( w0, boost::charconv::chars_format::hex );
 
             std::float128_t w1 = static_cast<std::float128_t>( rng() * q ); // 0.0 .. 1.0
             test_roundtrip( w1 );
@@ -297,6 +364,10 @@ int main()
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
             test_sprintf_float( w1, boost::charconv::chars_format::hex );
+            test_spot( w1, boost::charconv::chars_format::general );
+            test_spot( w1, boost::charconv::chars_format::scientific );
+            test_spot( w1, boost::charconv::chars_format::fixed );
+            test_spot( w1, boost::charconv::chars_format::hex );
 
             std::float128_t w2 = (std::numeric_limits<std::float128_t>::max)() / static_cast<std::float128_t>( rng() ); // large values
             test_roundtrip( w2 );
@@ -304,6 +375,10 @@ int main()
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
             test_sprintf_float( w2, boost::charconv::chars_format::hex );
+            test_spot( w2, boost::charconv::chars_format::general );
+            test_spot( w2, boost::charconv::chars_format::scientific );
+            test_spot( w2, boost::charconv::chars_format::fixed );
+            test_spot( w2, boost::charconv::chars_format::hex );
 
             std::float128_t w3 = (std::numeric_limits<std::float128_t>::min)() * static_cast<std::float128_t>( rng() ); // small values
             test_roundtrip( w3 );
@@ -311,6 +386,10 @@ int main()
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
             test_sprintf_float( w3, boost::charconv::chars_format::hex );
+            test_spot( w3, boost::charconv::chars_format::general );
+            test_spot( w3, boost::charconv::chars_format::scientific );
+            test_spot( w3, boost::charconv::chars_format::fixed );
+            test_spot( w3, boost::charconv::chars_format::hex );
         }
 
         test_roundtrip_bv<std::float128_t>();
