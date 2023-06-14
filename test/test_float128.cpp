@@ -105,7 +105,7 @@ const char* fmt_from_type (__float128)
 
 const char* fmt_from_type_fixed (__float128)
 {
-    return "%.0Qf";
+    return "%.0f";
 }
 
 const char* fmt_from_type_scientific (__float128)
@@ -263,28 +263,28 @@ int main()
             test_roundtrip( w0 );
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w0, boost::charconv::chars_format::fixed );
             test_sprintf_float( w0, boost::charconv::chars_format::hex );
 
             __float128 w1 = static_cast<__float128>( rng() * q ); // 0.0 .. 1.0
             test_roundtrip( w1 );
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w1, boost::charconv::chars_format::fixed );
             test_sprintf_float( w1, boost::charconv::chars_format::hex );
 
             __float128 w2 = FLT128_MAX / static_cast<__float128>( rng() ); // large values
             test_roundtrip( w2 );
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w2, boost::charconv::chars_format::fixed );
             test_sprintf_float( w2, boost::charconv::chars_format::hex );
 
             __float128 w3 = FLT128_MIN * static_cast<__float128>( rng() ); // small values
             test_roundtrip( w3 );
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w3, boost::charconv::chars_format::fixed );
             test_sprintf_float( w3, boost::charconv::chars_format::hex );
         }
 
