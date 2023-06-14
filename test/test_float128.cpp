@@ -173,8 +173,6 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
 
     // Remove trailing zeros from printf (if applicable)
     std::string printf_string {buffer2};
-
-    #ifndef __i686__
     if (fmt == boost::charconv::chars_format::scientific)
     {
         std::size_t found_trailing_0 = printf_string.find_first_of('e');
@@ -188,7 +186,6 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
             }
         }
     }
-    #endif
 
     // Same issues that arise in to_chars_snprintf.cpp so abort if in range
     //
@@ -289,31 +286,31 @@ int main()
         {
             std::float128_t w0 = static_cast<std::float128_t>( rng() ); // 0 .. 2^128
             test_roundtrip( w0 );
-            //test_sprintf_float( w0, boost::charconv::chars_format::general );
-            //test_sprintf_float( w0, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w0, boost::charconv::chars_format::fixed );
-            //test_sprintf_float( w0, boost::charconv::chars_format::hex );
+            test_sprintf_float( w0, boost::charconv::chars_format::general );
+            test_sprintf_float( w0, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w0, boost::charconv::chars_format::hex );
 
             std::float128_t w1 = static_cast<std::float128_t>( rng() * q ); // 0.0 .. 1.0
             test_roundtrip( w1 );
-            //test_sprintf_float( w1, boost::charconv::chars_format::general );
-            //test_sprintf_float( w1, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w1, boost::charconv::chars_format::fixed );
-            //test_sprintf_float( w1, boost::charconv::chars_format::hex );
+            test_sprintf_float( w1, boost::charconv::chars_format::general );
+            test_sprintf_float( w1, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w1, boost::charconv::chars_format::hex );
 
             std::float128_t w2 = (std::numeric_limits<std::float128_t>::max)() / static_cast<std::float128_t>( rng() ); // large values
             test_roundtrip( w2 );
-            //test_sprintf_float( w2, boost::charconv::chars_format::general );
-            //test_sprintf_float( w2, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w2, boost::charconv::chars_format::fixed );
-            //test_sprintf_float( w2, boost::charconv::chars_format::hex );
+            test_sprintf_float( w2, boost::charconv::chars_format::general );
+            test_sprintf_float( w2, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w2, boost::charconv::chars_format::hex );
 
             std::float128_t w3 = (std::numeric_limits<std::float128_t>::min)() * static_cast<std::float128_t>( rng() ); // small values
             test_roundtrip( w3 );
-            //test_sprintf_float( w3, boost::charconv::chars_format::general );
-            //test_sprintf_float( w3, boost::charconv::chars_format::scientific );
-            //test_sprintf_float( w3, boost::charconv::chars_format::fixed );
-            //test_sprintf_float( w3, boost::charconv::chars_format::hex );
+            test_sprintf_float( w3, boost::charconv::chars_format::general );
+            test_sprintf_float( w3, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w3, boost::charconv::chars_format::hex );
         }
 
         test_roundtrip_bv<std::float128_t>();
