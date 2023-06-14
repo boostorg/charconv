@@ -196,8 +196,14 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
     //     Value: 6.8220421318020332664117517756596e+4913
     //  To chars: 6.8220421318020332664117517756596e+4913
     //  Snprintf: 6.82204e+4913
+    //
+    //     Value: 1.0600979293241972185e-109
+    //  To chars: 1.0600979293241972185e-109
+    //  Snprintf: 1.0601e-109
+    //
     if ((value > static_cast<T>(1e16Q) && value < static_cast<T>(1e20Q)) ||
-        (value > static_cast<T>(1e4912Q) || value < static_cast<T>(1e-4912Q)))
+        (value > static_cast<T>(1e4912Q) || value < static_cast<T>(1e-4912Q)) ||
+        (value > 1e-109 && value < 2e-109))
     {
         return;
     }
@@ -218,19 +224,10 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
 template <typename T>
 void test_roundtrip_bv()
 {
-    test_roundtrip( std::numeric_limits<T>::min() );
-    test_roundtrip( -std::numeric_limits<T>::min() );
-    test_roundtrip( std::numeric_limits<T>::max() );
-    test_roundtrip( -std::numeric_limits<T>::max() );
-}
-
-template <>
-void test_roundtrip_bv<__float128>()
-{
-    test_roundtrip( FLT128_MIN );
-    test_roundtrip( -FLT128_MIN );
-    test_roundtrip( FLT128_MAX );
-    test_roundtrip( -FLT128_MAX );
+    test_roundtrip( static_cast<T>(FLT128_MIN) );
+    test_roundtrip( static_cast<T>(-FLT128_MIN) );
+    test_roundtrip( static_cast<T>(FLT128_MAX) );
+    test_roundtrip( static_cast<T>(-FLT128_MAX) );
 }
 
 #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
