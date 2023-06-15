@@ -157,6 +157,11 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(std::uint64_t x) noexcept
     return 1;
 }
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4307) // MSVC 14.1 warns of intergral constant overflow
+#endif
+
 BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(uint128 x) noexcept
 {
     if (x.high == 0)
@@ -180,6 +185,10 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(uint128 x) noexcept
 
     return 1;
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 static constexpr std::array<std::uint64_t, 20> powers_of_10 =
