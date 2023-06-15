@@ -353,7 +353,7 @@ int main()
             test_spot( w0, boost::charconv::chars_format::general );
             test_spot( w0, boost::charconv::chars_format::scientific );
             //test_spot( w0, boost::charconv::chars_format::fixed );
-            //test_spot( w0, boost::charconv::chars_format::hex );
+            test_spot( w0, boost::charconv::chars_format::hex );
 
             std::float128_t w1 = static_cast<std::float128_t>( rng() * q ); // 0.0 .. 1.0
             test_roundtrip( w1 );
@@ -364,7 +364,7 @@ int main()
             test_spot( w1, boost::charconv::chars_format::general );
             test_spot( w1, boost::charconv::chars_format::scientific );
             //test_spot( w1, boost::charconv::chars_format::fixed );
-            //test_spot( w1, boost::charconv::chars_format::hex );
+            test_spot( w1, boost::charconv::chars_format::hex );
 
             // std::numeric_limits<std::float128_t> was not specialized until GCC-14
             // same with __float128
@@ -378,7 +378,7 @@ int main()
             test_spot( w2, boost::charconv::chars_format::general );
             test_spot( w2, boost::charconv::chars_format::scientific );
             //test_spot( w2, boost::charconv::chars_format::fixed );
-            //test_spot( w2, boost::charconv::chars_format::hex );
+            test_spot( w2, boost::charconv::chars_format::hex );
 
             std::float128_t w3 = static_cast<std::float128_t>(FLT128_MIN) * static_cast<std::float128_t>( rng() ); // small values
             test_roundtrip( w3 );
@@ -389,7 +389,7 @@ int main()
             test_spot( w3, boost::charconv::chars_format::general );
             test_spot( w3, boost::charconv::chars_format::scientific );
             //test_spot( w3, boost::charconv::chars_format::fixed );
-            //test_spot( w3, boost::charconv::chars_format::hex );
+            test_spot( w3, boost::charconv::chars_format::hex );
         }
 
         test_roundtrip_bv<std::float128_t>();
