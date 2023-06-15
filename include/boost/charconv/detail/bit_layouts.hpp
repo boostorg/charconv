@@ -6,10 +6,12 @@
 #define BOOST_CHARCONV_DETAIL_BIT_LAYOUTS_HPP
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <cstdint>
 #include <cfloat>
 
 // Layouts of floating point types as specified by IEEE 754
+// See page 23 of IEEE 754-2008
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -147,6 +149,23 @@ struct IEEEbinary128
     std::uint64_t mantissa_l : 64;
 #endif
 };
+
+struct ieee754_binary128
+{
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    using uint128_t = boost::uint128_type;
+    #else
+    using uint128_t = uint128;
+    #endif
+
+    static constexpr int significand_bits = 112;
+    static constexpr int exponent_bits = 15;
+    static constexpr int min_exponent = -16382;
+    static constexpr int max_exponent = 16383;
+    static constexpr int exponent_bias = 16383;
+    static constexpr int decimal_digits = 33;
+};
+
 
 #endif
 
