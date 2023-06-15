@@ -678,6 +678,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
             return { first + num_chars, std::errc() };
         }
     }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+    }
 
     first = original_first;
     // Fallback to printf

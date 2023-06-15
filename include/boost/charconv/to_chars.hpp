@@ -797,6 +797,164 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     return to_chars_int(first, last, abs_unbiased_exponent);
 }
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+
+template <>
+to_chars_result to_chars_hex<__float128>(char* first, char* last, __float128 value, int precision) noexcept
+{
+    // If the user did not specify a precision than we use the maximum representable amount
+    // and remove trailing zeros at the end
+    int real_precision = precision == -1 ? 33 : precision;
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
+
+    using type_layout = ieee754_binary128;
+
+    // Extract the significand and the exponent
+    #ifdef BOOST_CHARCONV_HAS_INT128
+
+    using Unsigned_Integer = boost::uint128_type;
+    Unsigned_Integer uint_value;
+    std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
+
+    #else
+
+    using Unsigned_Integer = uint128;
+    trivial_uint128 trivial_bits;
+    std::memcpy(&trivial_bits, &value, sizeof(Unsigned_Integer));
+    Unsigned_Integer uint_value {trivial_bits};
+
+    #endif
+
+    // Denorm mask with uint128 can not be made constexpr so remove from type_layout struct
+    const Unsigned_Integer denorm_mask = (Unsigned_Integer(1) << (type_layout::significand_bits)) - 1;
+    const Unsigned_Integer significand = uint_value & denorm_mask;
+    const auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits) + 2;
+
+    // Align the significand to the hexit boundaries (i.e. divisible by 4)
+    constexpr auto hex_precision = 28;
+    constexpr auto nibble_bits = CHAR_BIT / 2;
+    constexpr auto hex_bits = hex_precision * nibble_bits;
+    const Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
+    Unsigned_Integer aligned_significand = significand;
+
+    // Adjust the exponent based on the bias as described in IEEE 754
+    std::int32_t unbiased_exponent;
+    if (exponent == 0 && significand != 0)
+    {
+        // Subnormal value since we already handled zero
+        unbiased_exponent = 1 + type_layout::exponent_bias;
+    }
+    else
+    {
+        aligned_significand |= static_cast<Unsigned_Integer>(1) << hex_bits;
+        unbiased_exponent = exponent + type_layout::exponent_bias;
+    }
+
+    // Bounds check the exponent
+    if (unbiased_exponent > 16383)
+    {
+        unbiased_exponent -= 32768;
+    }
+
+    const std::uint32_t abs_unbiased_exponent = unbiased_exponent < 0 ? static_cast<std::uint32_t>(-unbiased_exponent) :
+                                                static_cast<std::uint32_t>(unbiased_exponent);
+
+    // Bounds check
+    // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
+    const std::ptrdiff_t total_length = (value < 0) + 2 + real_precision + 2 + num_digits(abs_unbiased_exponent);
+    if (total_length > buffer_size)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
+
+    // Round if required
+    if (real_precision < hex_precision)
+    {
+        const int lost_bits = (hex_precision - real_precision) * nibble_bits;
+        const Unsigned_Integer lsb_bit = aligned_significand;
+        const Unsigned_Integer round_bit = aligned_significand << 1;
+        const Unsigned_Integer tail_bit = round_bit - 1;
+        const Unsigned_Integer round = round_bit & (tail_bit | lsb_bit) & (static_cast<Unsigned_Integer>(1) << lost_bits);
+        aligned_significand += round;
+    }
+
+    // Print the sign
+    if (value < 0)
+    {
+        *first++ = '-';
+    }
+
+    // Print the leading hexit and then mask away
+    const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
+    *first++ = static_cast<char>('0' + leading_nibble);
+    aligned_significand &= hex_mask;
+
+    // Print the fractional part
+    if (real_precision > 0)
+    {
+        *first++ = '.';
+        std::int32_t remaining_bits = hex_bits;
+
+        while (true)
+        {
+            remaining_bits -= nibble_bits;
+            const auto current_nibble = static_cast<std::uint32_t>(aligned_significand >> remaining_bits);
+            *first++ = digit_table[current_nibble];
+
+            --real_precision;
+            if (real_precision == 0)
+            {
+                break;
+            }
+            else if (remaining_bits == 0)
+            {
+                // Do not print trailing zeros with unspecified precision
+                if (precision != -1)
+                {
+                    std::memset(first, '0', static_cast<std::size_t>(real_precision));
+                    first += real_precision;
+                }
+                break;
+            }
+
+            // Mask away the hexit we just printed
+            aligned_significand &= (static_cast<Unsigned_Integer>(1) << remaining_bits) - 1;
+        }
+    }
+
+    // Remove any trailing zeros if the precision was unspecified
+    if (precision == -1)
+    {
+        --first;
+        while (*first == '0')
+        {
+            --first;
+        }
+        ++first;
+    }
+
+    // Print the exponent
+    *first++ = 'p';
+    if (unbiased_exponent < 0)
+    {
+        *first++ = '-';
+    }
+    else
+    {
+        *first++ = '+';
+    }
+
+    return to_chars_int(first, last, abs_unbiased_exponent);
+}
+
+#endif
+
 template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
 {
