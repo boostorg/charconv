@@ -203,7 +203,7 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
     //
     if ((value > static_cast<T>(1e16Q) && value < static_cast<T>(1e20Q)) ||
         (value > static_cast<T>(1e4912Q) || value < static_cast<T>(1e-4912Q)) ||
-        (value > 1e-109 && value < 2e-109))
+        (value > static_cast<T>(1e-115Q) && value < static_cast<T>(2e-109Q)))
     {
         return;
     }
@@ -340,7 +340,7 @@ int main()
 
     // std::float128_t
     {
-        const std::float128_t q = 1e-128F128;
+        const std::float128_t q = 1.0e-128F128;
 
         for( int i = 0; i < N; ++i )
         {
@@ -366,7 +366,10 @@ int main()
             //test_spot( w1, boost::charconv::chars_format::fixed );
             //test_spot( w1, boost::charconv::chars_format::hex );
 
-            std::float128_t w2 = (std::numeric_limits<std::float128_t>::max)() / static_cast<std::float128_t>( rng() ); // large values
+            // std::numeric_limits<std::float128_t> was not specialized until GCC-14
+            // same with __float128
+
+            std::float128_t w2 = static_cast<std::float128_t>(FLT128_MAX) / static_cast<std::float128_t>( rng() ); // large values
             test_roundtrip( w2 );
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
@@ -377,7 +380,7 @@ int main()
             //test_spot( w2, boost::charconv::chars_format::fixed );
             //test_spot( w2, boost::charconv::chars_format::hex );
 
-            std::float128_t w3 = (std::numeric_limits<std::float128_t>::min)() * static_cast<std::float128_t>( rng() ); // small values
+            std::float128_t w3 = static_cast<std::float128_t>(FLT128_MIN) * static_cast<std::float128_t>( rng() ); // small values
             test_roundtrip( w3 );
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
