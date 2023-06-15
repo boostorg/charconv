@@ -964,7 +964,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     std::size_t pos = 1;
 
     // precision of -1 is unspecified
-    if (precision > -1 && fmt != chars_format::fixed)
+    if (precision != -1 && fmt != chars_format::fixed)
     {
         format[pos] = '.';
         ++pos;
@@ -1023,6 +1023,11 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     ++pos;
     format[pos] = '\n';
     const auto rv = print_val(first, last - first, format, value);
+
+    if (rv == -1)
+    {
+        return {last, static_cast<std::errc>(errno)};
+    }
 
     return {first + rv, static_cast<std::errc>(errno)};
 }

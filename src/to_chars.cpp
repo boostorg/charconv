@@ -641,28 +641,8 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
         }
     }
 
-    if (precision == -1)
-    {
-        if (value > 1 && value < 1e20L)
-        {
-            precision = boost::charconv::detail::num_digits(static_cast<std::uint64_t>(value));
-        }
-        else
-        {
-            precision = std::numeric_limits<long double>::max_digits10;
-        }
-    }
-
-    if (fmt == boost::charconv::chars_format::general)
-    {
-        std::snprintf( first, last - first, "%.*Lg", precision, value );
-    }
-    else if (fmt == boost::charconv::chars_format::scientific)
-    {
-        std::snprintf( first, last - first, "%.*Le", precision, value );
-    }
-
-    return { first + std::strlen(first), std::errc() };
+    // Fallback to printf
+    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
 }
 
 #endif
@@ -671,6 +651,8 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
 {
+    char* const original_first = first;
+
     if (first > last)
     {
         return {last, std::errc::invalid_argument};
@@ -691,13 +673,13 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
         const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
 
-        if (num_chars == -1)
+        if (num_chars != -1)
         {
-            return { last, std::errc::result_out_of_range };
+            return { first + num_chars, std::errc() };
         }
-        return { first + num_chars, std::errc() };
     }
 
+    first = original_first;
     // Fallback to printf
     return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
 }
