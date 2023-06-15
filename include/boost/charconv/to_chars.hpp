@@ -797,14 +797,35 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     return to_chars_int(first, last, abs_unbiased_exponent);
 }
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
-
-template <>
-to_chars_result to_chars_hex<__float128>(char* first, char* last, __float128 value, int precision) noexcept
+// Works for 80 and 128 bit types (long double, __float128, std::float128_t)
+template <typename Real>
+to_chars_result to_chars_hex_ld(char* first, char* last, Real value, int precision) noexcept
 {
     // If the user did not specify a precision than we use the maximum representable amount
     // and remove trailing zeros at the end
-    int real_precision = precision == -1 ? 33 : precision;
+
+    int real_precision;
+    if (precision == -1)
+    {
+        #ifdef BOOST_CHARCONV_HAS_FLOAT128
+        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<Real, __float128>::value)
+        {
+            real_precision = 33;
+        }
+        else
+        #endif
+        {
+            #if BOOST_CHARCONV_LDBL_BITS == 128
+            real_precision = 33;
+            #else
+            real_precision = 18;
+            #endif
+        }
+    }
+    else
+    {
+        real_precision = precision;
+    }
 
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
@@ -813,20 +834,26 @@ to_chars_result to_chars_hex<__float128>(char* first, char* last, __float128 val
         return {last, std::errc::result_out_of_range};
     }
 
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    using type_layout = typename std::conditional<std::is_same<Real, __float128>::value || BOOST_CHARCONV_LDBL_BITS == 128, ieee754_binary128, ieee754_binary80>::type;
+    #elif BOOST_CHARCONV_LDBL_BITS == 128
     using type_layout = ieee754_binary128;
+    #else
+    using type_layout = ieee754_binary80;
+    #endif
 
     // Extract the significand and the exponent
     #ifdef BOOST_CHARCONV_HAS_INT128
 
     using Unsigned_Integer = boost::uint128_type;
     Unsigned_Integer uint_value;
-    std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
+    std::memcpy(&uint_value, &value, sizeof(Real));
 
     #else
 
     using Unsigned_Integer = uint128;
     trivial_uint128 trivial_bits;
-    std::memcpy(&trivial_bits, &value, sizeof(Unsigned_Integer));
+    std::memcpy(&trivial_bits, &value, sizeof(Real));
     Unsigned_Integer uint_value {trivial_bits};
 
     #endif
@@ -952,8 +979,6 @@ to_chars_result to_chars_hex<__float128>(char* first, char* last, __float128 val
 
     return to_chars_int(first, last, abs_unbiased_exponent);
 }
-
-#endif
 
 template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept

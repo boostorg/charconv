@@ -201,6 +201,7 @@ int main()
     // Hex
     random_test<float>(boost::charconv::chars_format::hex);
     random_test<double>(boost::charconv::chars_format::hex);
+    random_test<long double>(boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e+306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e-306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e+305, boost::charconv::chars_format::hex);

@@ -595,12 +595,14 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
         const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
 
-        if (num_chars == -1)
+        if (num_chars != -1)
         {
-            return { last, std::errc::result_out_of_range };
+            return { first + num_chars, std::errc() };
         }
-
-        return { first + num_chars, std::errc() };
+    }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::to_chars_hex_ld(first, last, value, precision);
     }
 
     // Fallback to printf methods
@@ -680,7 +682,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     }
     else if (fmt == boost::charconv::chars_format::hex)
     {
-        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+        return boost::charconv::detail::to_chars_hex_ld(first, last, value, precision);
     }
 
     first = original_first;

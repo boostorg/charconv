@@ -87,6 +87,16 @@ struct IEEEl2bits
 #endif
 };
 
+struct ieee754_binary80
+{
+    static constexpr int significand_bits = 63;
+    static constexpr int exponent_bits = 15;
+    static constexpr int min_exponent = -16382;
+    static constexpr int max_exponent = 16383;
+    static constexpr int exponent_bias = 16383;
+    static constexpr int decimal_digits = 18;
+};
+
 #define BOOST_CHARCONV_LDBL_BITS 80
 
 // 128 bit long double (e.g. s390x, ppcle64)
@@ -152,12 +162,6 @@ struct IEEEbinary128
 
 struct ieee754_binary128
 {
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    using uint128_t = boost::uint128_type;
-    #else
-    using uint128_t = uint128;
-    #endif
-
     static constexpr int significand_bits = 112;
     static constexpr int exponent_bits = 15;
     static constexpr int min_exponent = -16382;
