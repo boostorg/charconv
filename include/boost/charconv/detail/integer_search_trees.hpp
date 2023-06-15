@@ -159,12 +159,26 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(std::uint64_t x) noexcept
 
 BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(uint128 x) noexcept
 {
-    if (x.high != 0)
+    if (x.high == 0)
     {
-        return num_digits(x.high) + 20;
+        return num_digits(x.low);
     }
 
-    return num_digits(x.low);
+    BOOST_CHARCONV_CXX14_CONSTEXPR_NO_INLINE uint128 digits_39 = static_cast<uint128>(UINT64_C(10000000000000000000)) *
+                                                                 static_cast<uint128>(UINT64_C(10000000000000000000));
+    uint128 current_power_of_10 = digits_39;
+
+    for (int i = 39; i > 0; --i)
+    {
+        if (x >= current_power_of_10)
+        {
+            return i;
+        }
+
+        current_power_of_10 /= 10U;
+    }
+
+    return 1;
 }
 
 #ifdef BOOST_CHARCONV_HAS_INT128
@@ -180,7 +194,7 @@ static constexpr std::array<std::uint64_t, 20> powers_of_10 =
 // Max value is 340,282,366,920,938,463,463,374,607,431,768,211,455 (39 digits)
 BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(boost::uint128_type x) noexcept
 {
-    // There is not literal for boost::uint128_type so we need to calculate them using the max value of the
+    // There is no literal for boost::uint128_type, so we need to calculate them using the max value of the
     // std::uint64_t powers of 10
     constexpr boost::uint128_type digits_39 = static_cast<boost::uint128_type>(UINT64_C(10000000000000000000)) * 
                                               static_cast<boost::uint128_type>(UINT64_C(10000000000000000000));
