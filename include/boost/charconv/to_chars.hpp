@@ -797,6 +797,8 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     return to_chars_int(first, last, abs_unbiased_exponent);
 }
 
+#if (BOOST_CHARCONV_LDBL_BITS == 80) || (BOOST_CHARCONV_LDBL_BITS == 128) || defined(BOOST_CHARCONV_HAS_FLOAT128)
+
 // Works for 80 and 128 bit types (long double, __float128, std::float128_t)
 template <typename Real>
 to_chars_result to_chars_hex_ld(char* first, char* last, Real value, int precision) noexcept
@@ -979,6 +981,8 @@ to_chars_result to_chars_hex_ld(char* first, char* last, Real value, int precisi
 
     return to_chars_int(first, last, abs_unbiased_exponent);
 }
+
+#endif
 
 template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept

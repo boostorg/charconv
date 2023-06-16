@@ -143,8 +143,6 @@ struct IEEEl2bits
 #  define BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
 #endif
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
-
 struct IEEEbinary128
 {
 #if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
@@ -169,9 +167,6 @@ struct ieee754_binary128
     static constexpr int exponent_bias = 16383;
     static constexpr int decimal_digits = 33;
 };
-
-
-#endif
 
 }}} // Namespaces
 
