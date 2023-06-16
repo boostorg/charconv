@@ -444,18 +444,19 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     else if (v.exponent > 0)
     {
         // Option 2: Append 0s to the end of the number until we get the proper output
-        std::memset(r.ptr, '0', v.exponent);
+        memset(r.ptr, '0', v.exponent);
         current_len += v.exponent;
     }
     else if ((-v.exponent) < current_len)
     {
         // Option 3: Insert a decimal point into the middle of the existing number
-        std::cerr << "insert into middle" << std::endl;
+        memmove(result - v.exponent + 1, result - v.exponent, -v.exponent);
+        memcpy(result - v.exponent, ".", 1);
+        ++current_len;
     }
     else
     {
         // Option 4: Leading 0s
-        std::cerr << "Leading 0s" << std::endl;
         memmove(result - v.exponent - current_len + 2, result, current_len);
         memcpy(result, "0.", 2);
         memset(result + 2, '0', 0 - v.exponent - current_len);
