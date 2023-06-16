@@ -1,6 +1,8 @@
-//
-// Created by mborland on 6/16/23.
-//
+// Copyright 2020-2023 Junekey Jeon
+// Copyright 2022 Peter Dimov
+// Copyright 2023 Matt Borland
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_INTEGER_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_INTEGER_IMPL_HPP
@@ -8,6 +10,8 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
+#include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <limits>
 #include <system_error>
 #include <type_traits>
@@ -203,7 +207,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     return {first + converted_value_digits, std::errc()};
 }
 
-#ifdef BOOST_CHARCONV_HAS_INT128
 // Prior to GCC 10.3 std::numeric_limits was not specialized for __int128 which breaks the above control flow
 // Here we find if the 128-bit type will fit into a 64-bit type and use the above, or we use string manipulation
 // to extract the digits
@@ -212,7 +215,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 template <typename Integer>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, char* last, Integer value) noexcept
 {
+    #ifdef BOOST_CHARCONV_HAS_INT128
     using Unsigned_Integer = boost::uint128_type;
+    #else
+    using Unsigned_Integer = uint128;
+    #endif
+
     Unsigned_Integer unsigned_value {};
 
     const std::ptrdiff_t user_buffer_size = last - first;
@@ -224,6 +232,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     }
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
+    #ifdef BOOST_CHARCONV_HAS_INT128
     BOOST_IF_CONSTEXPR (std::is_same<boost::int128_type, Integer>::value)
     {
         if (value < 0)
@@ -237,11 +246,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         }
     }
     else
+    #endif
     {
         unsigned_value = value;
     }
 
-    auto converted_value = static_cast<boost::uint128_type>(unsigned_value);
+    auto converted_value = static_cast<Unsigned_Integer>(unsigned_value);
 
     const int converted_value_digits = num_digits(converted_value);
 
@@ -288,7 +298,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     return {first + converted_value_digits, std::errc()};
 }
-#endif
 
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
