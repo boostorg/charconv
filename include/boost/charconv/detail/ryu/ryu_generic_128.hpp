@@ -10,6 +10,7 @@
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/to_chars.hpp>
 #include <cinttypes>
 #include <cstdio>
 #include <cstdint>
@@ -406,6 +407,62 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     }
     index += elength;
     return index;
+}
+
+static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int) noexcept
+{
+    if (v.exponent == fd128_exceptional_exponent)
+    {
+        return copy_special_str(result, v);
+    }
+
+    // Step 5: Print the decimal representation.
+    size_t index = 0;
+    if (v.sign)
+    {
+        result[index++] = '-';
+    }
+
+    unsigned_128_type output = v.mantissa;
+    const auto r = to_chars_128integer_impl(result, result + result_size, output);
+    if (r.ec != std::errc())
+    {
+        return -static_cast<int>(r.ec);
+    }
+
+    auto current_len = r.ptr - result;
+
+    std::cerr << "Exp: " << v.exponent
+              << "\nMantissa: " << s(v.mantissa)
+              << "\nMan len: " << current_len << std::endl;
+
+    if (v.exponent == 0)
+    {
+        // Option 1: We need to do nothing
+        return current_len;
+    }
+    else if (v.exponent > 0)
+    {
+        // Option 2: Append 0s to the end of the number until we get the proper output
+        std::memset(r.ptr, '0', v.exponent);
+        current_len += v.exponent;
+    }
+    else if ((-v.exponent) < current_len)
+    {
+        // Option 3: Insert a decimal point into the middle of the existing number
+        std::cerr << "insert into middle" << std::endl;
+    }
+    else
+    {
+        // Option 4: Leading 0s
+        std::cerr << "Leading 0s" << std::endl;
+        memmove(result - v.exponent - current_len + 2, result, current_len);
+        memcpy(result, "0.", 2);
+        memset(result + 2, '0', 0 - v.exponent - current_len);
+        current_len = -v.exponent + 2;
+    }
+
+    return current_len;
 }
 
 static inline struct floating_decimal_128 float_to_fd128(float f) noexcept
