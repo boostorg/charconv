@@ -15,6 +15,10 @@
 #include <cstdio>
 #include <cstdint>
 
+#ifdef BOOST_CHARCONV_DEBUG
+#  include <iostream>
+#endif
+
 namespace boost { namespace charconv { namespace detail { namespace ryu {
 
 static constexpr int32_t fd128_exceptional_exponent = 0x7FFFFFFF;
@@ -432,9 +436,11 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 
     auto current_len = r.ptr - result;
 
+    #ifdef BOOST_CHARCONV_DEBUG
     std::cerr << "Exp: " << v.exponent
               << "\nMantissa: " << s(v.mantissa)
               << "\nMan len: " << current_len << std::endl;
+    #endif
 
     if (v.exponent == 0)
     {
