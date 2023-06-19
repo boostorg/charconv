@@ -669,11 +669,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_INFINITE);
     }
 
-    if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific) &&
-        precision == -1)
+    if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific))
     {
         const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, precision);
 
         if (num_chars != -1)
         {

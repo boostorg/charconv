@@ -335,7 +335,8 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
 // Maximal char buffer requirement:
 // sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
-static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size) noexcept
+static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
+                                   int precision = -1) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -380,6 +381,44 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     else
     {
         ++index;
+    }
+
+    // Reset the index to where the required precision should be
+    if (precision != -1)
+    {
+        if ((size_t)precision < index)
+        {
+            index = (size_t)precision + 3; // need to capture the integer part and decimal point 
+
+            // Now we need to see if we need to round
+            if (result[index] == '5' ||
+                result[index] == '6' ||
+                result[index] == '7' ||
+                result[index] == '8' ||
+                result[index] == '9')
+            {
+                bool continue_rounding = false;
+                auto current_index = index;
+                do
+                {
+                    --current_index;
+                    if (result[current_index] == '9')
+                    {
+                        continue_rounding = true;
+                        result[current_index] = '0';
+                    }
+                    else
+                    {
+                        result[current_index] = result[current_index] + (char)1;
+                    }
+                } while (continue_rounding);
+            }
+        }
+        else if ((size_t)precision > index)
+        {
+            // Use our fallback routine that will capture more of the precision
+            return -1;
+        }
     }
 
     // Print the exponent.
