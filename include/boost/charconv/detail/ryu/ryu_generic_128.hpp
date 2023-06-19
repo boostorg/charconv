@@ -413,7 +413,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     return index;
 }
 
-static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int) noexcept
+static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -467,6 +467,12 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         memcpy(result, "0.", 2);
         memset(result + 2, '0', 0 - v.exponent - current_len);
         current_len = -v.exponent + 2;
+    }
+
+    if (current_len < precision)
+    {
+        memset(result + current_len, '0', precision - current_len);
+        current_len = precision;
     }
 
     return current_len;
