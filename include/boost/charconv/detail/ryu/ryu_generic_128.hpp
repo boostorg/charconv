@@ -388,7 +388,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     {
         if ((size_t)precision < index)
         {
-            index = (size_t)precision + 3; // need to capture the integer part and decimal point 
+            index = (size_t)precision + 1; // Precision is number of characters not just the decimal portion
 
             // Now we need to see if we need to round
             if (result[index] == '5' ||
