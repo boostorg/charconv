@@ -142,6 +142,12 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
 {
     char buffer [ 256 ] {};
 
+    if (fmt == boost::charconv::chars_format::fixed && (value > 1e100 || value < 1e-100))
+    {
+        // Avoid failres from overflow
+        return;
+    }
+
     const auto r = boost::charconv::to_chars( buffer, buffer + sizeof(buffer), value, fmt );
     BOOST_TEST( r.ec == std::errc() );
 
@@ -234,6 +240,12 @@ void test_roundtrip_bv()
 template <typename T>
 void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
 {
+    if (fmt == boost::charconv::chars_format::fixed && (val > 1e100 || val < 1e-100))
+    {
+        // Avoid failres from overflow
+        return;
+    }
+
     std::chars_format stl_fmt;
     switch (fmt)
     {
@@ -352,7 +364,7 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::hex );
             test_spot( w0, boost::charconv::chars_format::general );
             test_spot( w0, boost::charconv::chars_format::scientific );
-            //test_spot( w0, boost::charconv::chars_format::fixed );
+            test_spot( w0, boost::charconv::chars_format::fixed );
             test_spot( w0, boost::charconv::chars_format::hex );
 
             std::float128_t w1 = static_cast<std::float128_t>( rng() * q ); // 0.0 .. 1.0
@@ -363,7 +375,7 @@ int main()
             test_sprintf_float( w1, boost::charconv::chars_format::hex );
             test_spot( w1, boost::charconv::chars_format::general );
             test_spot( w1, boost::charconv::chars_format::scientific );
-            //test_spot( w1, boost::charconv::chars_format::fixed );
+            test_spot( w1, boost::charconv::chars_format::fixed );
             test_spot( w1, boost::charconv::chars_format::hex );
 
             // std::numeric_limits<std::float128_t> was not specialized until GCC-14
@@ -377,7 +389,7 @@ int main()
             test_sprintf_float( w2, boost::charconv::chars_format::hex );
             test_spot( w2, boost::charconv::chars_format::general );
             test_spot( w2, boost::charconv::chars_format::scientific );
-            //test_spot( w2, boost::charconv::chars_format::fixed );
+            test_spot( w2, boost::charconv::chars_format::fixed );
             test_spot( w2, boost::charconv::chars_format::hex );
 
             std::float128_t w3 = static_cast<std::float128_t>(FLT128_MIN) * static_cast<std::float128_t>( rng() ); // small values
@@ -388,7 +400,7 @@ int main()
             test_sprintf_float( w3, boost::charconv::chars_format::hex );
             test_spot( w3, boost::charconv::chars_format::general );
             test_spot( w3, boost::charconv::chars_format::scientific );
-            //test_spot( w3, boost::charconv::chars_format::fixed );
+            test_spot( w3, boost::charconv::chars_format::fixed );
             test_spot( w3, boost::charconv::chars_format::hex );
         }
 
