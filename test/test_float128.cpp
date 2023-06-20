@@ -144,7 +144,7 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
 
     if (fmt == boost::charconv::chars_format::fixed && (value > 1e100 || value < 1e-100))
     {
-        // Avoid failres from overflow
+        // Avoid failures from overflow
         return;
     }
 
