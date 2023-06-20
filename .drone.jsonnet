@@ -136,6 +136,13 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
     ),
 
     linux_pipeline(
+        "Linux 20.04 GCC 9* ARM64 - ASAN",
+        "cppalliance/droneubuntu2004:multiarch",
+        { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a' } + asan,
+        arch="arm64",
+    ),
+
+    linux_pipeline(
         "Linux 20.04 GCC 9* S390x",
         "cppalliance/droneubuntu2004:multiarch",
         { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a' },
