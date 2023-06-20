@@ -352,9 +352,9 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     unsigned_128_type output = v.mantissa;
     const uint32_t olength = num_digits(output);
-    if (olength > (uint32_t)result_size)
+    if (index + olength > (size_t)result_size)
     {
-        return -1;
+        return -static_cast<int>(std::errc::result_out_of_range);
     }
 
     #ifdef BOOST_CHARCONV_DEBUG
