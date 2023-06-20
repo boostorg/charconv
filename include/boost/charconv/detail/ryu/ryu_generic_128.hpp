@@ -15,8 +15,6 @@
 #include <cstdio>
 #include <cstdint>
 
-#include <iostream>
-
 #ifdef BOOST_CHARCONV_DEBUG
 #  include <iostream>
 #endif
@@ -33,6 +31,7 @@ struct floating_decimal_128
     bool sign;
 };
 
+#ifdef BOOST_CHARCONV_DEBUG
 static char* s(unsigned_128_type v) {
   int len = num_digits(v);
   char* b = (char*) malloc((len + 1) * sizeof(char));
@@ -44,6 +43,7 @@ static char* s(unsigned_128_type v) {
   b[len] = 0;
   return b;
 }
+#endif
 
 static inline struct floating_decimal_128 generic_binary_to_decimal(
         const unsigned_128_type bits,
@@ -496,21 +496,21 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 
     auto current_len = r.ptr - result;
 
+    #ifdef BOOST_CHARCONV_DEBUG
     char* man_print = s(v.mantissa);
     std::cerr << "Exp: " << v.exponent
               << "\nMantissa: " << man_print
               << "\nMan len: " << current_len << std::endl;
     free(man_print);
+    #endif
 
     if (v.exponent == 0)
     {
-        std::cerr << "Option 1" << std::endl;
         // Option 1: We need to do nothing
         return current_len;
     }
     else if (v.exponent > 0)
     {
-        std::cerr << "Option 2" << std::endl;
         // Option 2: Append 0s to the end of the number until we get the proper output
         if (current_len + v.exponent > result_size)
         {
@@ -522,7 +522,6 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     }
     else if ((-v.exponent) < current_len)
     {
-        std::cerr << "Option 3" << std::endl;
         // Option 3: Insert a decimal point into the middle of the existing number
         memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, -v.exponent);
         memcpy(result + current_len + v.exponent, ".", 1);
@@ -530,7 +529,6 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     }
     else
     {
-        std::cerr << "Option 4" << std::endl;
         // Option 4: Leading 0s
         if (-v.exponent + 2 > result_size)
         {
