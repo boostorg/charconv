@@ -613,6 +613,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first + num_chars, std::errc() };
         }
+        else if (num_chars == -static_cast<int>(std::errc::result_out_of_range))
+        {
+            return { last, std::errc::result_out_of_range };
+        }
     }
 
     // Fallback to printf methods
@@ -701,6 +705,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         if (num_chars > 0)
         {
             return { first + num_chars, std::errc() };
+        }
+        else if (num_chars == -static_cast<int>(std::errc::result_out_of_range))
+        {
+            return { last, std::errc::result_out_of_range };
         }
     }
 

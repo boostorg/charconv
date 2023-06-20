@@ -280,6 +280,30 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
 
     const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, fmt);
 
+    if (!BOOST_TEST( r.ec == std::errc() ))
+    {
+        const char* error_format;
+        switch (fmt)
+        {
+            case boost::charconv::chars_format::general:
+                error_format = "General";
+                break;
+            case boost::charconv::chars_format::scientific:
+                error_format = "Scientific";
+                break;
+            case boost::charconv::chars_format::fixed:
+                error_format = "Fixed";
+                break;
+            case boost::charconv::chars_format::hex:
+                error_format = "Hex";
+                break;
+        }
+
+        std::cerr << "Failure: " << static_cast<int>(r.ec)
+                  << "\nValue: " << value
+                  << "\nFormat: " << error_format << std::endl;
+    }
+
     if (fmt == boost::charconv::chars_format::general)
     {
         std::snprintf( buffer2, sizeof( buffer2 ), fmt_from_type( value ), value );
