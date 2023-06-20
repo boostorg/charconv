@@ -483,8 +483,18 @@ template<class T> void test_sprintf_bv_fp()
     test_sprintf_float( std::numeric_limits<T>::min(), boost::charconv::chars_format::scientific );
     test_sprintf_float( -std::numeric_limits<T>::min(), boost::charconv::chars_format::scientific );
     test_sprintf_float( std::numeric_limits<T>::max(), boost::charconv::chars_format::scientific );
-    test_sprintf_float( +std::numeric_limits<T>::max(), boost::charconv::chars_format::scientific );
+    test_sprintf_float( -std::numeric_limits<T>::max(), boost::charconv::chars_format::scientific );
 }
+
+#if BOOST_CHARCONV_LDBL_BITS > 64
+template<> void test_sprintf_bv_fp<long double>()
+{
+    test_sprintf_float( LDBL_MIN, boost::charconv::chars_format::scientific );
+    test_sprintf_float( -LDBL_MIN, boost::charconv::chars_format::scientific );
+    test_sprintf_float( LDBL_MAX, boost::charconv::chars_format::scientific );
+    test_sprintf_float( -LDBL_MAX, boost::charconv::chars_format::scientific );
+}
+#endif
 
 //
 

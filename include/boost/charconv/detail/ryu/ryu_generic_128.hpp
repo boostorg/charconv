@@ -356,6 +356,10 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     {
         return -static_cast<int>(std::errc::result_out_of_range);
     }
+    else if (olength == 0)
+    {
+        return -1; // Something has gone horribly wrong
+    }
 
     #ifdef BOOST_CHARCONV_DEBUG
     printf("DIGITS=%s\n", s(v.mantissa));
