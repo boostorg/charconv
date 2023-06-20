@@ -409,6 +409,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                     }
                     else
                     {
+                        continue_rounding = false;
                         result[current_index] = result[current_index] + (char)1;
                     }
                 } while (continue_rounding && current_index > 2);
