@@ -282,7 +282,7 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
 
     if (!BOOST_TEST( r.ec == std::errc() ))
     {
-        const char* error_format;
+        const char* error_format {};
         switch (fmt)
         {
             case boost::charconv::chars_format::general:
