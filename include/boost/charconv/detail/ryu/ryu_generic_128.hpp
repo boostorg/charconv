@@ -517,8 +517,8 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     else if ((-v.exponent) < current_len)
     {
         // Option 3: Insert a decimal point into the middle of the existing number
-        memmove(result - v.exponent + 1, result - v.exponent, -v.exponent);
-        memcpy(result - v.exponent, ".", 1);
+        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, -v.exponent);
+        memcpy(result + current_len + v.exponent, ".", 1);
         ++current_len;
     }
     else
