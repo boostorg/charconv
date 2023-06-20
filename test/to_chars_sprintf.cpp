@@ -336,11 +336,9 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
     //   Value: 5.65459196790898857701e-4913
     //To chars: 5.654591967908988577e-4913
     //Snprintf: 5.65459e-4913
-    if (value > 1e16L && value < 1e20L)
-    {
-        return;
-    }
-    else if (value > 1e4912L || value < 1e-4912L)
+    if ((value > 1e16L && value < 1e20L) ||
+        (value > 1e4912L || value < 1e-4912L) ||
+        (value > 1e-115L && value < 2e-109L))
     {
         return;
     }

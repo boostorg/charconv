@@ -604,6 +604,17 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         return boost::charconv::detail::to_chars_hex_ld(first, last, value, precision);
     }
 
+    else if (fmt == boost::charconv::chars_format::fixed)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars_fixed(fd128, first, last - first, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+    }
+
     // Fallback to printf methods
     return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
 }
