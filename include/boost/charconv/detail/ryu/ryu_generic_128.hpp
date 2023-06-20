@@ -411,7 +411,13 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                     {
                         result[current_index] = result[current_index] + (char)1;
                     }
-                } while (continue_rounding);
+                } while (continue_rounding && current_index > 2);
+            }
+
+            // If the last digit is a zero than overwrite that as well
+            while (result[index - 1] == '0')
+            {
+                --index;
             }
         }
         else if ((size_t)precision > index)
