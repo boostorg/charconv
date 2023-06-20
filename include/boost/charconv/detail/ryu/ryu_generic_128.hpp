@@ -336,7 +336,7 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
 // sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
 static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
-                                   int precision = -1) noexcept
+                                   chars_format fmt = chars_format::general, int precision = -1) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -388,7 +388,14 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     {
         if ((size_t)precision < index)
         {
-            index = (size_t)precision + 1; // Precision is number of characters not just the decimal portion
+            if (fmt != chars_format::scientific)
+            {
+                index = (size_t) precision + 1; // Precision is number of characters not just the decimal portion
+            }
+            else
+            {
+                index = (size_t) precision + 2; // In scientific format the precision is just the decimal places
+            }
 
             // Now we need to see if we need to round
             if (result[index] == '5' ||
@@ -415,10 +422,13 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                 } while (continue_rounding && current_index > 2);
             }
 
-            // If the last digit is a zero than overwrite that as well
-            while (result[index - 1] == '0')
+            // If the last digit is a zero than overwrite that as well, but not in scientific formatting
+            if (fmt != chars_format::scientific)
             {
-                --index;
+                while (result[index - 1] == '0')
+                {
+                    --index;
+                }
             }
         }
         else if ((size_t)precision > index)
