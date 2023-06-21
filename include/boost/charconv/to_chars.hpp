@@ -199,39 +199,6 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         return {last, std::errc::result_out_of_range};
     }
 
-    // Handle edge cases first
-    BOOST_ATTRIBUTE_UNUSED char* ptr;
-    const int classification = std::fpclassify(value);
-    switch (classification)
-    {
-        case FP_INFINITE:
-        case FP_NAN:
-            BOOST_IF_CONSTEXPR (std::is_same<Real, long double>::value)
-            {
-                #if BOOST_CHARCONV_LDBL_BITS == 80
-                const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
-                const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first);
-                if (num_chars == -1)
-                {
-                    return { last, std::errc::result_out_of_range };
-                }
-                return { first + num_chars, std::errc() };
-                #elif BOOST_CHARCONV_LDBL_BITS == 128
-                return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
-                #endif
-            }
-            // The dragonbox impl will return the correct type of NaN
-            ptr = boost::charconv::detail::to_chars(value, first, chars_format::general);
-            return { ptr, std::errc() };
-        case FP_ZERO:
-            if (std::signbit(value))
-            {
-                *first++ = '-';
-            }
-            std::memcpy(first, "0p+0", 4);
-            return {first + 4, std::errc()};
-    }
-
     // Extract the significand and the exponent
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t, std::uint64_t>::type;
     using type_layout = typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32, ieee754_binary64>::type;
@@ -636,6 +603,25 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
             auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
             return { ptr, std::errc() };
         }
+    }
+
+    // Before passing to hex check for edge cases
+    BOOST_ATTRIBUTE_UNUSED char* ptr;
+    const int classification = std::fpclassify(value);
+    switch (classification)
+    {
+        case FP_INFINITE:
+        case FP_NAN:
+            // The dragonbox impl will return the correct type of NaN
+            ptr = boost::charconv::detail::to_chars(value, first, chars_format::general);
+            return { ptr, std::errc() };
+        case FP_ZERO:
+            if (std::signbit(value))
+            {
+                *first++ = '-';
+            }
+            std::memcpy(first, "0p+0", 4);
+            return {first + 4, std::errc()};
     }
 
     // Hex handles both cases already
