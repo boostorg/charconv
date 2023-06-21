@@ -27,7 +27,7 @@
 #  define BOOST_CHARCONV_UINT128_MAX ((2 * (boost::uint128_type) BOOST_CHARCONV_INT128_MAX) + 1)
 #endif
 
-#if defined(BOOST_HAS_FLOAT128) && !defined(__STRICT_ANSI__)
+#if defined(BOOST_HAS_FLOAT128) && !defined(__STRICT_ANSI__) && !defined(BOOST_CHARCONV_CMAKE_TESTING)
 #  define BOOST_CHARCONV_HAS_FLOAT128
 #  include <quadmath.h>
 #endif

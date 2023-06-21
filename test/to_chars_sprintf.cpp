@@ -16,7 +16,7 @@
 #include <cfloat>
 #include <cmath>
 
-int const N = 10;
+int const N = 1024;
 
 static boost::detail::splitmix64 rng;
 
