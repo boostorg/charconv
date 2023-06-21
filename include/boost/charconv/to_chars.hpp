@@ -202,6 +202,10 @@ Unsigned_Integer convert_value(Real value) noexcept
     Unsigned_Integer temp {trivial_bits};
     return temp;
 }
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127) // Conditional expression is constant (BOOST_IF_CONSTEXPR in pre-C++17 modes)
+#endif
 
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
@@ -413,6 +417,10 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 
     return to_chars_int(first, last, abs_unbiased_exponent);
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
