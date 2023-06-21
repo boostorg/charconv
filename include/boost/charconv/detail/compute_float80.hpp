@@ -6,6 +6,8 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/bit.hpp>
+#include <system_error>
 #include <limits>
 #include <cstdint>
 #include <cmath>
@@ -19,8 +21,15 @@ static constexpr long double powers_of_ten[] = {
     1e21L, 1e22L, 1e23L, 1e24L, 1e25L, 1e26L, 1e27L
 };
 
+// Notation:
+// m -> binary significand
+// p -> binary exponent
+//
+// w -> decimal significand
+// q -> decimal exponent
+
 template <typename Unsigned_Integer>
-inline long double compute_float80(std::int64_t power, Unsigned_Integer i, bool negative, bool& success) noexcept
+inline long double compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, int& success) noexcept
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     static constexpr auto smallest_power = -4951;
@@ -32,9 +41,9 @@ inline long double compute_float80(std::int64_t power, Unsigned_Integer i, bool 
     // ACM SIGPLAN Notices. 1990
     // https://dl.acm.org/doi/pdf/10.1145/93542.93557
     #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
-    if (0 <= power && power <= 27 && i <= static_cast<Unsigned_Integer>(1) << 64)
+    if (0 <= q && q <= 27 && w <= static_cast<Unsigned_Integer>(1) << 64)
     #else
-    if (-27 <= power && power <= 27 && i <= static_cast<Unsigned_Integer>(1) << 64)
+    if (-27 <= q && q <= 27 && w <= static_cast<Unsigned_Integer>(1) << 64)
     #endif
     {
         // The general idea is as follows.
@@ -43,15 +52,15 @@ inline long double compute_float80(std::int64_t power, Unsigned_Integer i, bool 
         // because of this s*p and s/p will produce
         // correctly rounded values
 
-        auto ld = static_cast<long double>(i);
+        auto ld = static_cast<long double>(w);
 
-        if (power < 0)
+        if (q < 0)
         {
-            ld /= powers_of_ten[-power];
+            ld /= powers_of_ten[-q];
         }
         else
         {
-            ld *= powers_of_ten[power];
+            ld *= powers_of_ten[q];
         }
 
         if (negative)
@@ -63,14 +72,26 @@ inline long double compute_float80(std::int64_t power, Unsigned_Integer i, bool 
         return ld;
     }
 
-    if (i == 0 || power < smallest_power)
+    // Steps 1 and 2: Return now if the number is unrepresentable
+    if (w == 0)
     {
+        success = 0;
         return negative ? -0.0L : 0.0L;
     }
-    else if (power > largest_power)
+    else if (q < smallest_power)
     {
+        success = static_cast<int>(std::errc::result_out_of_range);
+        return negative ? -0.0L : 0.0L;
+    }
+    else if (q > largest_power)
+    {
+        success = static_cast<int>(std::errc::result_out_of_range);
         return negative ? -HUGE_VALL : HUGE_VALL;
     }
+
+    // Step 3: Compute the number of leading zeros of w and store as l
+    // UB when w is 0 but this has already been filtered out in step 1
+    const auto l = clz_u128(w);
 }
 
 /*
