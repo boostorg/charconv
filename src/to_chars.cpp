@@ -581,11 +581,22 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         return {last, std::errc::invalid_argument};
     }
 
-    #if BOOST_CHARCONV_LDBL_BITS == 128
     const auto classification = std::fpclassify(value);
+    #if BOOST_CHARCONV_LDBL_BITS == 128
     if (classification == FP_NAN || classification == FP_INFINITE)
     {
         return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
+    }
+    #else
+    if (classification == FP_NAN || classification == FP_INFINITE)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
     }
     #endif
 

@@ -218,10 +218,13 @@ int main()
     // Various non-finite values
     non_finite_test<float>();
     non_finite_test<double>();
+    non_finite_test<long double>();
     non_finite_test<float>(boost::charconv::chars_format::scientific);
     non_finite_test<double>(boost::charconv::chars_format::scientific);
+    non_finite_test<long double>(boost::charconv::chars_format::scientific);
     non_finite_test<float>(boost::charconv::chars_format::hex);
     non_finite_test<double>(boost::charconv::chars_format::hex);
+    non_finite_test<long double>(boost::charconv::chars_format::hex);
 
     #if (defined(__GNUC__) && __GNUC__ >= 11) || (defined(_MSC_VER) && _MSC_VER >= 1924)
     // Selected additional values
