@@ -601,9 +601,8 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     }
     else if (fmt == boost::charconv::chars_format::hex)
     {
-        return boost::charconv::detail::to_chars_hex_ld(first, last, value, precision);
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
     }
-
     else if (fmt == boost::charconv::chars_format::fixed)
     {
         const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
@@ -695,7 +694,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     }
     else if (fmt == boost::charconv::chars_format::hex)
     {
-        return boost::charconv::detail::to_chars_hex_ld(first, last, value, precision);
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
     }
     else if (fmt == boost::charconv::chars_format::fixed)
     {

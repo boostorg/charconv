@@ -16,6 +16,7 @@
 #include <boost/charconv/detail/dragonbox.hpp>
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
@@ -185,12 +186,51 @@ inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, _
 
 #endif // BOOST_CHARCONV_HAS_FLOAT128
 
+template <typename Unsigned_Integer, typename Real, typename std::enable_if<!std::is_same<Unsigned_Integer, uint128>::value, bool>::type = true>
+Unsigned_Integer convert_value(Real value) noexcept
+{
+    Unsigned_Integer temp;
+    std::memcpy(&temp, &value, sizeof(Real));
+    return temp;
+}
+
+template <typename Unsigned_Integer, typename Real, typename std::enable_if<std::is_same<Unsigned_Integer, uint128>::value, bool>::type = true>
+Unsigned_Integer convert_value(Real value) noexcept
+{
+    trivial_uint128 trivial_bits;
+    std::memcpy(&trivial_bits, &value, sizeof(Real));
+    Unsigned_Integer temp {trivial_bits};
+    return temp;
+}
+
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
 {
     // If the user did not specify a precision than we use the maximum representable amount
     // and remove trailing zeros at the end
-    int real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
+
+    int real_precision;
+    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value || std::is_same<Real, double>::value)
+    {
+        real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
+    }
+    else
+    {
+        #ifdef BOOST_CHARCONV_HAS_FLOAT128
+        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<Real, __float128>::value)
+        {
+            real_precision = 33;
+        }
+        else
+        #endif
+        {
+            #if BOOST_CHARCONV_LDBL_BITS == 128
+            real_precision = 33;
+            #else
+            real_precision = 18;
+            #endif
+        }
+    }
 
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
@@ -200,19 +240,41 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Extract the significand and the exponent
-    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t, std::uint64_t>::type;
-    using type_layout = typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32, ieee754_binary64>::type;
+    using type_layout = typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32,
+                        typename std::conditional<std::is_same<Real, double>::value, ieee754_binary64,
+                        #ifdef BOOST_CHARCONV_HAS_FLOAT128
+                        typename std::conditional<std::is_same<Real, __float128>::value || BOOST_CHARCONV_LDBL_BITS == 128, ieee754_binary128, ieee754_binary80>::type
+                        #elif BOOST_CHARCONV_LDBL_BITS == 128
+                        ieee754_binary128
+                        #else
+                        ieee754_binary80
+                        #endif
+                        >::type>::type;
 
-    Unsigned_Integer uint_value;
-    std::memcpy(&uint_value, &value, sizeof(Unsigned_Integer));
-    const Unsigned_Integer significand = uint_value & type_layout::denorm_mask;
-    const auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits);
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t,
+                             typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, boost::uint128_type>::type>::type;
+    #else
+    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t,
+                             typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, uint128>::type>::type;
+    #endif
+
+    Unsigned_Integer uint_value {convert_value<Unsigned_Integer>(value)};
+
+    const Unsigned_Integer denorm_mask = (Unsigned_Integer(1) << (type_layout::significand_bits)) - 1;
+    const Unsigned_Integer significand = uint_value & denorm_mask;
+    auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits);
+    BOOST_IF_CONSTEXPR (!(std::is_same<Real, float>::value || std::is_same<Real, double>::value))
+    {
+        exponent += 2;
+    }
 
     // Align the significand to the hexit boundaries (i.e. divisible by 4)
-    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 : 13;
+    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 : std::is_same<Real, double>::value ? 13 : 28;
     constexpr auto nibble_bits = CHAR_BIT / 2;
     constexpr auto hex_bits = hex_precision * nibble_bits;
-    constexpr Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
+    const Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
+
     Unsigned_Integer aligned_significand;
     BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
     {
@@ -244,11 +306,18 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
             unbiased_exponent -= 256;
         }
     }
-    else
+    else BOOST_IF_CONSTEXPR (std::is_same<Real, double>::value)
     {
         if (unbiased_exponent > 1023)
         {
             unbiased_exponent -= 2048;
+        }
+    }
+    else
+    {
+        if (unbiased_exponent > 16383)
+        {
+            unbiased_exponent -= 32768;
         }
     }
 
@@ -342,193 +411,6 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 
     return to_chars_int(first, last, abs_unbiased_exponent);
 }
-
-#if (BOOST_CHARCONV_LDBL_BITS == 80) || (BOOST_CHARCONV_LDBL_BITS == 128) || defined(BOOST_CHARCONV_HAS_FLOAT128)
-
-// Works for 80 and 128 bit types (long double, __float128, std::float128_t)
-template <typename Real>
-to_chars_result to_chars_hex_ld(char* first, char* last, Real value, int precision) noexcept
-{
-    // If the user did not specify a precision than we use the maximum representable amount
-    // and remove trailing zeros at the end
-
-    int real_precision;
-    if (precision == -1)
-    {
-        #ifdef BOOST_CHARCONV_HAS_FLOAT128
-        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<Real, __float128>::value)
-        {
-            real_precision = 33;
-        }
-        else
-        #endif
-        {
-            #if BOOST_CHARCONV_LDBL_BITS == 128
-            real_precision = 33;
-            #else
-            real_precision = 18;
-            #endif
-        }
-    }
-    else
-    {
-        real_precision = precision;
-    }
-
-    // Sanity check our bounds
-    const std::ptrdiff_t buffer_size = last - first;
-    if (buffer_size < real_precision || first > last)
-    {
-        return {last, std::errc::result_out_of_range};
-    }
-
-    #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    using type_layout = typename std::conditional<std::is_same<Real, __float128>::value || BOOST_CHARCONV_LDBL_BITS == 128, ieee754_binary128, ieee754_binary80>::type;
-    #elif BOOST_CHARCONV_LDBL_BITS == 128
-    using type_layout = ieee754_binary128;
-    #else
-    using type_layout = ieee754_binary80;
-    #endif
-
-    // Extract the significand and the exponent
-    #ifdef BOOST_CHARCONV_HAS_INT128
-
-    using Unsigned_Integer = boost::uint128_type;
-    Unsigned_Integer uint_value;
-    std::memcpy(&uint_value, &value, sizeof(Real));
-
-    #else
-
-    using Unsigned_Integer = uint128;
-    trivial_uint128 trivial_bits;
-    std::memcpy(&trivial_bits, &value, sizeof(Real));
-    Unsigned_Integer uint_value {trivial_bits};
-
-    #endif
-
-    // Denorm mask with uint128 can not be made constexpr so remove from type_layout struct
-    const Unsigned_Integer denorm_mask = (Unsigned_Integer(1) << (type_layout::significand_bits)) - 1;
-    const Unsigned_Integer significand = uint_value & denorm_mask;
-    const auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits) + 2;
-
-    // Align the significand to the hexit boundaries (i.e. divisible by 4)
-    constexpr auto hex_precision = 28;
-    constexpr auto nibble_bits = CHAR_BIT / 2;
-    constexpr auto hex_bits = hex_precision * nibble_bits;
-    const Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
-    Unsigned_Integer aligned_significand = significand;
-
-    // Adjust the exponent based on the bias as described in IEEE 754
-    std::int32_t unbiased_exponent;
-    if (exponent == 0 && significand != 0)
-    {
-        // Subnormal value since we already handled zero
-        unbiased_exponent = 1 + type_layout::exponent_bias;
-    }
-    else
-    {
-        aligned_significand |= static_cast<Unsigned_Integer>(1) << hex_bits;
-        unbiased_exponent = exponent + type_layout::exponent_bias;
-    }
-
-    // Bounds check the exponent
-    if (unbiased_exponent > 16383)
-    {
-        unbiased_exponent -= 32768;
-    }
-
-    const std::uint32_t abs_unbiased_exponent = unbiased_exponent < 0 ? static_cast<std::uint32_t>(-unbiased_exponent) :
-                                                static_cast<std::uint32_t>(unbiased_exponent);
-
-    // Bounds check
-    // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
-    const std::ptrdiff_t total_length = (value < 0) + 2 + real_precision + 2 + num_digits(abs_unbiased_exponent);
-    if (total_length > buffer_size)
-    {
-        return {last, std::errc::result_out_of_range};
-    }
-
-    // Round if required
-    if (real_precision < hex_precision)
-    {
-        const int lost_bits = (hex_precision - real_precision) * nibble_bits;
-        const Unsigned_Integer lsb_bit = aligned_significand;
-        const Unsigned_Integer round_bit = aligned_significand << 1;
-        const Unsigned_Integer tail_bit = round_bit - 1;
-        const Unsigned_Integer round = round_bit & (tail_bit | lsb_bit) & (static_cast<Unsigned_Integer>(1) << lost_bits);
-        aligned_significand += round;
-    }
-
-    // Print the sign
-    if (value < 0)
-    {
-        *first++ = '-';
-    }
-
-    // Print the leading hexit and then mask away
-    const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
-    *first++ = static_cast<char>('0' + leading_nibble);
-    aligned_significand &= hex_mask;
-
-    // Print the fractional part
-    if (real_precision > 0)
-    {
-        *first++ = '.';
-        std::int32_t remaining_bits = hex_bits;
-
-        while (true)
-        {
-            remaining_bits -= nibble_bits;
-            const auto current_nibble = static_cast<std::uint32_t>(aligned_significand >> remaining_bits);
-            *first++ = digit_table[current_nibble];
-
-            --real_precision;
-            if (real_precision == 0)
-            {
-                break;
-            }
-            else if (remaining_bits == 0)
-            {
-                // Do not print trailing zeros with unspecified precision
-                if (precision != -1)
-                {
-                    std::memset(first, '0', static_cast<std::size_t>(real_precision));
-                    first += real_precision;
-                }
-                break;
-            }
-
-            // Mask away the hexit we just printed
-            aligned_significand &= (static_cast<Unsigned_Integer>(1) << remaining_bits) - 1;
-        }
-    }
-
-    // Remove any trailing zeros if the precision was unspecified
-    if (precision == -1)
-    {
-        --first;
-        while (*first == '0')
-        {
-            --first;
-        }
-        ++first;
-    }
-
-    // Print the exponent
-    *first++ = 'p';
-    if (unbiased_exponent < 0)
-    {
-        *first++ = '-';
-    }
-    else
-    {
-        *first++ = '+';
-    }
-
-    return to_chars_int(first, last, abs_unbiased_exponent);
-}
-
-#endif
 
 template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
