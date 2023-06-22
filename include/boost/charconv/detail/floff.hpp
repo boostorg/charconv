@@ -722,7 +722,7 @@ bool only_two_neg_k_can_be_integer(int k, int exp2_base,
 
 inline void print_1_digit(std::uint32_t n, char* buffer) noexcept 
 {
-    *buffer = char('0' | n);
+    *buffer = char('0' + n);
 }
 
 inline void print_2_digits(std::uint32_t n, char* buffer) noexcept
