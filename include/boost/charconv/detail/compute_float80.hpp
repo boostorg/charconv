@@ -10,11 +10,14 @@
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/emulated256.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/significand_tables.hpp>
 #include <system_error>
 #include <type_traits>
 #include <limits>
 #include <cstdint>
 #include <cmath>
+#include <climits>
+#include <cfloat>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -149,44 +152,119 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         #endif
     }
 
-    // Step 3: Compute the number of leading zeros of w and store as l
+    // Step 3: Compute the number of leading zeros of w and store as leading_zeros
     // UB when w is 0 but this has already been filtered out in step 1
-    const auto l = clz_u128(w);
+    const auto leading_zeros = clz_u128(w);
 
     // Step 4: Normalize the significand
-    w = (1 << l) * w;
-}
+    w <<= static_cast<uint128>(leading_zeros);
 
-/*
-inline long double compute_float80(std::int64_t power, std::uint64_t i, bool negative, bool& success) noexcept
-{
-    long double return_val;
+    // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication
+    // if the result is exact
+    const uint128 factor_significand = significand_256_high[q - smallest_power];
+    const std::int64_t exponent = (((152170 + 65536) * q) >> 16) + 1024 + 63; // Expected binary exponent
+    uint256 product = umul256(w, factor_significand);
+    uint128 low = product.low;
+    uint128 high = product.high;
 
-    // At the absolute minimum and maximum rounding errors of 1 ULP can cause overflow
-    if (power == 4914 && i == UINT64_C(1189731495357231765))
+    // Step 5b:
+    // We know that upper has at most one leading zero because
+    // both i and  factor_mantissa have a leading one. This means
+    // that the result is at least as large as ((1<<127)*(1<<127))/(1<<128).
+    //
+    // As long as the first 18 bits of "upper" are not "1", then we
+    // know that we have an exact computed value for the leading
+    // 115 bits because any imprecision would play out as a +1, in the worst case.
+    // Having 115 bits is necessary because we need 113 bits for the mantissa,
+    // but we have to have one rounding bit and, we can waste a bit if the most
+    // significant bit of the product is zero.
+    //
+    // We expect this next branch to be rarely taken (say 1% of the time).
+    // When (upper & 0x1FF) == 0x1FF, it can be common for
+    // lower + i < lower to be true (proba. much higher than 1%).
+    if (BOOST_UNLIKELY((high & UINT64_C(0x1FF)) == 0x1FF) && (low + w < low))
     {
-        return_val = std::numeric_limits<long double>::max();
-    }
-    else if (power == -4950 && i == UINT64_C(3362103143112093506))
-    {
-        return_val = std::numeric_limits<long double>::min();
-    }
-    else
-    {
-        return_val = i * std::pow(10.0L, static_cast<long double>(power));
-        if (std::isinf(return_val))
+        const uint128 factor_significand_low = significand_256_low[q - smallest_power];
+        product = umul(w, factor_significand_low);
+        const uint128 product_low = product.low;
+        const uint128 product_middle2 = product.high;
+        const uint128 product_middle1 = low;
+        uint128 product_high = high;
+        const uint128 product_middle = product_middle1 + product_middle2;
+
+        if (product_middle < product_middle1)
+        {
+            ++product_high;
+        }
+
+        // We want to check whether mantissa *it + i would affect the result
+        if (((product_middle + 1 == 0) && ((product_high & UINT64_C(0x1FF)) == UINT64_C(0x1FF)) &&
+            (product_low + w < product_low)))
         {
             success = false;
-            return negative ? -0.0L : 0.0L;
+            return 0;
         }
+
+        low = product_middle;
+        high = product_high;
     }
 
-    return_val = negative ? -return_val : return_val;
+    // The final significand should be 113 bits with a leading 1
+    // We shift it so that it occupies 114 bits with a leading 1
+    const uint128 upper_bit = high >> 127;
+    uint128 significand = high >> static_cast<std::uint64_t>(upper_bit + 14);
+    leading_zeros += static_cast<int>(1 ^ upper_bit);
 
+    // If we have lots of trailing zeros we may fall between two values
+    if (BOOST_UNLIKELY((low == 0) && ((high & 0x1FF) == 0) && ((significand & 3) == 1)))
+    {
+        // if significand & 1 == 1 we might need to round up
+        success = false;
+        return 0;
+    }
+
+    // Here the significand < (1 << 113), unless this is an overflow
+    if (significand >= (uint128(1) << 113))
+    {
+        significand = (uint128(1) << 112);
+        --leading_zeros;
+    }
+
+    significand &= ~(uint128(1) << 112);
+    const std::uint64_t real_exponent = exponent - leading_zeros;
+
+    // Check that the real_exponent is in range
+    if (BOOST_UNLIKELY(real_exponent == 0))
+    {
+        success = static_cast<int>(std::errc::result_out_of_range);
+        return 0;
+    }
+    else if (BOOST_UNLIKELY(real_exponent > 32766))
+    {
+        success = static_cast<int>(std::errc::result_out_of_range);
+        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
+        {
+            return negative ? -HUGE_VALL : HUGE_VALL;
+        }
+        #ifdef BOOST_CHARCONV_HAS_FLOAT128
+        else
+        {
+            return negative ? -HUGE_VALQ : HUGE_VALQ;
+        }
+        #endif
+    }
+
+    significand |= uint128(real_exponent) << 112;
+    significand |= ((static_cast<uint128>(negative) << 127));
+
+    ResultType res;
+    trivial_uint128 temp {significand.high, significand.low};
+    std::memcpy(&res, &temp, sizeof(ResultType));
     success = true;
-    return return_val;
+
+    return res;
 }
-*/
+
 }}} // Namespaces
 
 #endif // BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
