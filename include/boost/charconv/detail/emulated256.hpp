@@ -31,8 +31,8 @@ inline uint256 umul256_impl(std::uint64_t a, std::uint64_t b, std::uint64_t c, s
             (intermediate << 64) + static_cast<std::uint64_t>(bd)};
 }
 
-template <typename T, typename T2>
-inline uint256 umul256(const T& x, const T2& y) noexcept
+template <typename T>
+inline uint256 umul256(const T& x, const uint128& y) noexcept
 {
     static_assert(sizeof(T) == 16 && (!std::numeric_limits<T>::is_signed
                                       #ifdef BOOST_CHARCONV_HAS_INT128
@@ -43,14 +43,11 @@ inline uint256 umul256(const T& x, const T2& y) noexcept
 
     const auto a = static_cast<std::uint64_t>(x >> 64);
     const auto b = static_cast<std::uint64_t>(x);
-    const auto c = static_cast<std::uint64_t>(y >> 64);
-    const auto d = static_cast<std::uint64_t>(y);
 
-    return umul256_impl(a, b, c, d);
+    return umul256_impl(a, b, y.high, y.low);
 }
 
-template <>
-inline uint256 umul256<uint128, uint128>(const uint128& x, const uint128& y) noexcept
+inline uint256 umul256(const uint128& x, const uint128& y) noexcept
 {
     return umul256_impl(x.high, x.low, y.high, y.low);
 }

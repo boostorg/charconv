@@ -27,7 +27,7 @@ inline void test_fast_path()
 
     BOOST_TEST_EQ(compute_float80<long double>(1, T(1), false, success), 10.0L);
     BOOST_TEST_EQ(compute_float80<long double>(1, T(1), true, success), -10.0L);
-    BOOST_TEST_EQ(compute_float80<long double>(27, T(1) << 112, false, success), -5.1922968585348276285304963292200960000000000000000e60L);
+    BOOST_TEST_EQ(compute_float80<long double>(27, T(1) << 112, false, success), 5.1922968585348276285304963292200960000000000000000e60L);
     BOOST_TEST_EQ(compute_float80<long double>(27, T(1) << 112, true, success), -5.1922968585348276285304963292200960000000000000000e60L);
 }
 
