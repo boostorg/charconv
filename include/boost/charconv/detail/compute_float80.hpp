@@ -123,12 +123,30 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     else if (q < smallest_power)
     {
         success = static_cast<int>(std::errc::result_out_of_range);
-        return negative ? -0.0L : 0.0L;
+        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
+        {
+            return negative ? -0.0L : 0.0L;
+        }
+        #ifdef BOOST_CHARCONV_HAS_FLOAT128
+        else
+        {
+            return negative ? -0.0Q : 0.0Q;
+        }
+        #endif
     }
     else if (q > largest_power)
     {
         success = static_cast<int>(std::errc::result_out_of_range);
-        return negative ? -HUGE_VALL : HUGE_VALL;
+        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
+        {
+            return negative ? -HUGE_VALL : HUGE_VALL;
+        }
+        #ifdef BOOST_CHARCONV_HAS_FLOAT128
+        else
+        {
+            return negative ? -HUGE_VALQ : HUGE_VALQ;
+        }
+        #endif
     }
 
     // Step 3: Compute the number of leading zeros of w and store as l
