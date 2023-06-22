@@ -95,12 +95,12 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     {
         const auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
         #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
-        if (0 <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 64)
+        if (0 <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
         #else
-        if (-clinger_max_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 64)
+        if (-clinger_max_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
         #endif
         {
-            fast_path<ResultType>(q, w, negative, success, powers_of_ten);
+            return fast_path<ResultType>(q, w, negative, success, powers_of_ten);
         }
     }
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
@@ -112,7 +112,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         if (-48 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 64)
         #endif
         {
-            fast_path<ResultType>(q, w, negative, success, powers_of_tenq);
+            return fast_path<ResultType>(q, w, negative, success, powers_of_tenq);
         }
     }
     #endif
@@ -154,10 +154,10 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Step 3: Compute the number of leading zeros of w and store as leading_zeros
     // UB when w is 0 but this has already been filtered out in step 1
-    const auto leading_zeros = clz_u128(w);
+    auto leading_zeros = clz_u128(w);
 
     // Step 4: Normalize the significand
-    w <<= static_cast<uint128>(leading_zeros);
+    w <<= leading_zeros;
 
     // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication
     // if the result is exact
@@ -185,7 +185,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     if (BOOST_UNLIKELY((high & UINT64_C(0x1FF)) == 0x1FF) && (low + w < low))
     {
         const uint128 factor_significand_low = significand_256_low[q - smallest_power];
-        product = umul(w, factor_significand_low);
+        product = umul256(w, factor_significand_low);
         const uint128 product_low = product.low;
         const uint128 product_middle2 = product.high;
         const uint128 product_middle1 = low;
