@@ -71,11 +71,11 @@ struct uint128
     UNSIGNED_CONSTRUCTOR(unsigned long long)
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    explicit constexpr uint128(boost::int128_type  v) noexcept :
+    constexpr uint128(boost::int128_type v) noexcept :
         high {static_cast<std::uint64_t>(v >> 64)},
          low {static_cast<std::uint64_t>(static_cast<boost::uint128_type>(v) & ~UINT64_C(0))} {}
 
-    explicit constexpr uint128(boost::uint128_type v) noexcept :
+    constexpr uint128(boost::uint128_type v) noexcept :
         high {static_cast<std::uint64_t>(v >> 64)},
          low {static_cast<std::uint64_t>(v & ~UINT64_C(0))} {}
     #endif
