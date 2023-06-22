@@ -18,7 +18,7 @@ for q in range(-4951, 0):
     z = 0
     while (1 << z) < power5:
         z += 1
-    if q >= -27:
+    if q >= -55:
         b = z + 255
         c = 2 ** b // power5 + 1
         format_hex(c)
