@@ -57,6 +57,24 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
 }
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
+{
+    (void)fmt;
+    from_chars_result r = {};
+
+    std::string tmp( first, last ); // zero termination
+    char* ptr = nullptr;
+
+    value = strtoflt128( tmp.c_str(), &ptr );
+
+    r.ptr = ptr;
+    r.ec = static_cast<std::errc>(errno);
+
+    return r;
+}
+#endif
+
 #ifdef BOOST_CHARCONV_HAS_FLOAT16
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float16_t& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -196,7 +214,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     from_chars_result r = {};
 
     std::string tmp( first, last ); // zero termination
-    char* ptr = 0;
+    char* ptr = nullptr;
 
     value = std::strtold( tmp.c_str(), &ptr );
 
@@ -205,5 +223,19 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 
     return r;
 }
+
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    static_assert(sizeof(__float128) == sizeof(std::float128_t));
+
+    __float128 q;
+    std::memcpy(&q, &value, sizeof(__float128));
+    const auto r = boost::charconv::from_chars(first, last, q, fmt);
+    std::memcpy(&value, &q, sizeof(std::float128_t));
+
+    return r;
+}
+#endif
 
 #endif // long double implementations

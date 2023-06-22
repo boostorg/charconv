@@ -1,6 +1,24 @@
 // Copyright 2023 Peter Dimov
+// Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+
+#include <boost/charconv/detail/config.hpp>
+#include <ostream>
+
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+#include <charconv>
+
+std::ostream& operator<<( std::ostream& os, std::float128_t v)
+{
+    char buffer [ 256 ] {};
+    std::to_chars(buffer, buffer + sizeof(buffer), v);
+    os << buffer;
+    return os;
+}
+
+#endif
+
 
 #include <boost/charconv/to_chars.hpp>
 #include <boost/core/type_name.hpp>
@@ -34,6 +52,28 @@ template<class T> static BOOST_NOINLINE void init_input_data( std::vector<T>& da
         data.push_back( x );
     }
 }
+
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+template<> BOOST_NOINLINE void init_input_data<std::float128_t>( std::vector<std::float128_t>& data )
+{
+    data.reserve( N );
+
+    boost::detail::splitmix64 rng;
+
+    for( unsigned i = 0; i < N; ++i )
+    {
+        boost::charconv::detail::uint128 tmp {rng(), rng()};
+        boost::uint128_type temp {tmp};
+
+        std::float128_t x;
+        std::memcpy( &x, &temp, sizeof(x) );
+
+        if( !std::isfinite(x) ) continue;
+
+        data.push_back( x );
+    }
+}
+#endif
 
 using namespace std::chrono_literals;
 
@@ -89,8 +129,8 @@ template<class T> static BOOST_NOINLINE void test_std_to_chars( std::vector<T> c
             std::chars_format fmt = general? std::chars_format::general: std::chars_format::scientific;
 
             auto r = precision == 0?
-                std::to_chars( buffer, buffer + sizeof( buffer ), x, fmt ):
-                std::to_chars( buffer, buffer + sizeof( buffer ), x, fmt, precision );
+                     std::to_chars( buffer, buffer + sizeof( buffer ), x, fmt ):
+                     std::to_chars( buffer, buffer + sizeof( buffer ), x, fmt, precision );
 
             s += static_cast<std::size_t>( r.ptr - buffer );
             s += static_cast<unsigned char>( buffer[0] );
@@ -117,8 +157,8 @@ template<class T> static BOOST_NOINLINE void test_boost_to_chars( std::vector<T>
             boost::charconv::chars_format fmt = general? boost::charconv::chars_format::general: boost::charconv::chars_format::scientific;
 
             auto r = precision == 0?
-                boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), x, fmt ):
-                boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), x, fmt, precision );
+                     boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), x, fmt ):
+                     boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), x, fmt, precision );
 
             s += static_cast<std::size_t>( r.ptr - buffer );
             s += static_cast<unsigned char>( buffer[0] );
@@ -160,6 +200,34 @@ template<class T> static void test()
     std::cout << std::endl;
 }
 
+#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+template<> void test<std::float128_t>()
+{
+    std::vector<std::float128_t> data;
+    init_input_data( data );
+
+    test_std_to_chars( data, false, "scientific", 0 );
+    test_boost_to_chars( data, false, "scientific", 0 );
+
+    std::cout << std::endl;
+
+    test_std_to_chars( data, false, "scientific", 6 );
+    test_boost_to_chars( data, false, "scientific", 6 );
+
+    std::cout << std::endl;
+
+    test_std_to_chars( data, true, "general", 0 );
+    test_boost_to_chars( data, true, "general", 0 );
+
+    std::cout << std::endl;
+
+    test_std_to_chars( data, true, "general", 6 );
+    test_boost_to_chars( data, true, "general", 6 );
+
+    std::cout << std::endl;
+}
+#endif
+
 int main()
 {
     std::cout << BOOST_COMPILER << "\n";
@@ -167,4 +235,7 @@ int main()
 
     test<float>();
     test<double>();
+    #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+    test<std::float128_t>();
+    #endif
 }

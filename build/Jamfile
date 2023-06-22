@@ -1,4 +1,5 @@
 # Copyright 2022 Peter Dimov
+# Copyright 2023 Matt Borland
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
@@ -7,6 +8,8 @@ import ../../config/checks/config : requires ;
 project boost/charconv ;
 
 local SOURCES = from_chars.cpp to_chars.cpp ;
+
+lib quadmath ;
 
 lib boost_charconv
 
@@ -18,6 +21,7 @@ lib boost_charconv
     <define>BOOST_CHARCONV_SOURCE=1
 
     [ requires cxx11_variadic_templates cxx11_decltype ]
+    [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <library>"quadmath" ]
 
   # default-build
   :

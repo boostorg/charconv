@@ -6,10 +6,12 @@
 #define BOOST_CHARCONV_DETAIL_BIT_LAYOUTS_HPP
 
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <cstdint>
 #include <cfloat>
 
 // Layouts of floating point types as specified by IEEE 754
+// See page 23 of IEEE 754-2008
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -85,6 +87,16 @@ struct IEEEl2bits
 #endif
 };
 
+struct ieee754_binary80
+{
+    static constexpr int significand_bits = 63;
+    static constexpr int exponent_bits = 15;
+    static constexpr int min_exponent = -16382;
+    static constexpr int max_exponent = 16383;
+    static constexpr int exponent_bias = 16383;
+    static constexpr int decimal_digits = 18;
+};
+
 #define BOOST_CHARCONV_LDBL_BITS 80
 
 // 128 bit long double (e.g. s390x, ppcle64)
@@ -130,6 +142,31 @@ struct IEEEl2bits
 #else // Unsupported long double representation
 #  define BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
 #endif
+
+struct IEEEbinary128
+{
+#if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
+    std::uint64_t mantissa_l : 64;
+    std::uint64_t mantissa_h : 48;
+    std::uint32_t exponent : 15;
+    std::uint32_t sign : 1;
+#else // Big endian
+    std::uint32_t sign : 1;
+    std::uint32_t exponent : 15;
+    std::uint64_t mantissa_h : 48;
+    std::uint64_t mantissa_l : 64;
+#endif
+};
+
+struct ieee754_binary128
+{
+    static constexpr int significand_bits = 112;
+    static constexpr int exponent_bits = 15;
+    static constexpr int min_exponent = -16382;
+    static constexpr int max_exponent = 16383;
+    static constexpr int exponent_bias = 16383;
+    static constexpr int decimal_digits = 33;
+};
 
 }}} // Namespaces
 

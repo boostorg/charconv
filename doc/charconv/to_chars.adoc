@@ -57,6 +57,9 @@ See xref:chars_format.adoc[chars_format overview] for description.
 ** -qNaN returns "-nan(ind)"
 ** +sNaN returns "nan(snan)"
 ** -sNaN returns "-nan(snan)"
+* These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
+** Long doubles can be either 64, 80, or 128-bit but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported format is `ibm128`.
+** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
 
 == Examples
 
