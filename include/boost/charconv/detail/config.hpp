@@ -162,7 +162,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  define BOOST_CHARCONV_NO_CONSTEXPR_DETECTION
 #endif
 
-#if BOOST_MSVC
+#ifdef BOOST_MSVC
 #  define BOOST_CHARCONV_ASSUME(expr) __assume(expr)
 #elif defined(__clang__)
 #  define BOOST_CHARCONV_ASSUME(expr) __builtin_assume(expr)
@@ -171,6 +171,8 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #elif defined(__has_cpp_attribute)
 #  if __has_cpp_attribute(assume)
 #    define BOOST_CHARCONV_ASSUME(expr) [[assume(expr)]]
+#  else
+#    define BOOST_CHARCONV_ASSUME(expr)
 #  endif
 #else
 #  define BOOST_CHARCONV_ASSUME(expr)
