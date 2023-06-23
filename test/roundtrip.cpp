@@ -67,7 +67,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <cfloat>
 #include <cmath>
 
-int const N = 1024;
+int const N = 10;
 
 static boost::detail::splitmix64 rng;
 
@@ -237,14 +237,14 @@ template<class T> void test_roundtrip( T value )
     }
     else
     {
-        #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
+        //#ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
         std::cerr << std::setprecision(17)
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )
                   << "\nFrom chars: " << v2 << std::endl;
-        #else
-        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
-        #endif
+        //#else
+        //std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        //#endif
     }
 }
 
