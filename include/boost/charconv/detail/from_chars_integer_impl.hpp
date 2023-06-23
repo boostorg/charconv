@@ -249,7 +249,7 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
     return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 
-#ifdef BOOST_HAS_INT128
+#ifdef BOOST_CHARCONV_HAS_INT128
 template <typename Integer>
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, Integer& value, int base = 10) noexcept
 {

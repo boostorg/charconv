@@ -100,7 +100,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         #endif
         {
             success = std::errc();
-            return fast_path<ResultType>(q, w, negative, success, powers_of_ten_ld);
+            return fast_path<ResultType>(q, w, negative, powers_of_ten_ld);
         }
     }
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
@@ -113,7 +113,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         #endif
         {
             success = std::errc();
-            return fast_path<ResultType>(q, w, negative, success, powers_of_tenq);
+            return fast_path<ResultType>(q, w, negative, powers_of_tenq);
         }
     }
     #endif
