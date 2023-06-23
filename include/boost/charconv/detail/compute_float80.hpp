@@ -165,7 +165,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     {
         const uint128 factor_significand_low = significand_256_low[q - smallest_power];
         product = umul256(w, factor_significand_low);
-        const uint128 product_low = product.low;
+        //const uint128 product_low = product.low;
         const uint128 product_middle2 = product.high;
         const uint128 product_middle1 = low;
         uint128 product_high = high;
@@ -176,6 +176,9 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
             ++product_high;
         }
 
+        // https://arxiv.org/pdf/2212.06644.pdf
+        // Unneeded fallback checks
+        /*
         // We want to check whether mantissa *it + i would affect the result
         if (((product_middle + 1 == 0) && ((product_high & UINT64_C(0x1FF)) == UINT64_C(0x1FF)) &&
             (product_low + w < product_low)))
@@ -183,6 +186,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
             success = std::errc::not_supported;
             return 0;
         }
+        */
 
         low = product_middle;
         high = product_high;
