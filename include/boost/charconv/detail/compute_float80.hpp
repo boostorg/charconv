@@ -51,7 +51,7 @@ static constexpr __float128 powers_of_tenq[] = {
 // q -> decimal exponent
 
 template <typename ResultType, typename Unsigned_Integer, typename ArrayPtr>
-inline long double fast_path(std::int64_t q, Unsigned_Integer w, bool negative, int& success, ArrayPtr table) noexcept
+inline long double fast_path(std::int64_t q, Unsigned_Integer w, bool negative, ArrayPtr table) noexcept
 {
     // The general idea is as follows.
     // if 0 <= s <= 2^64 and if 10^0 <= p <= 10^27
@@ -75,12 +75,11 @@ inline long double fast_path(std::int64_t q, Unsigned_Integer w, bool negative, 
         ld = -ld;
     }
 
-    success = true;
     return ld;
 }
 
 template <typename ResultType, typename Unsigned_Integer>
-inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, int& success) noexcept
+inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     static constexpr auto smallest_power = -4951;
@@ -100,7 +99,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         if (-clinger_max_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
         #endif
         {
-            return fast_path<ResultType>(q, w, negative, success, powers_of_ten);
+            success = std::errc();
+            return fast_path<ResultType>(q, w, negative, success, powers_of_ten_ld);
         }
     }
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
@@ -112,6 +112,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         if (-48 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 64)
         #endif
         {
+            success = std::errc();
             return fast_path<ResultType>(q, w, negative, success, powers_of_tenq);
         }
     }
@@ -120,12 +121,12 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // Steps 1 and 2: Return now if the number is unrepresentable
     if (w == 0)
     {
-        success = true;
+        success = std::errc();
         return negative ? -0.0L : 0.0L;
     }
     else if (q < smallest_power)
     {
-        success = static_cast<int>(std::errc::result_out_of_range);
+        success = std::errc::result_out_of_range;
         BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
         {
             return negative ? -0.0L : 0.0L;
@@ -140,7 +141,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     }
     else if (q > largest_power)
     {
-        success = static_cast<int>(std::errc::result_out_of_range);
+        success = std::errc::result_out_of_range;
         BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
         {
             return negative ? -HUGE_VALL : HUGE_VALL;
@@ -203,7 +204,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         if (((product_middle + 1 == 0) && ((product_high & UINT64_C(0x1FF)) == UINT64_C(0x1FF)) &&
             (product_low + w < product_low)))
         {
-            success = false;
+            success = std::errc::not_supported;
             return 0;
         }
 
@@ -221,7 +222,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     if (BOOST_UNLIKELY((low == 0) && ((high & 0x1FF) == 0) && ((significand & 3) == 1)))
     {
         // if significand & 1 == 1 we might need to round up
-        success = false;
+        success = std::errc::not_supported;
         return 0;
     }
 
@@ -238,12 +239,12 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // Check that the real_exponent is in range
     if (BOOST_UNLIKELY(real_exponent == 0))
     {
-        success = static_cast<int>(std::errc::result_out_of_range);
+        success = std::errc::result_out_of_range;
         return 0;
     }
     else if (BOOST_UNLIKELY(real_exponent > 32766))
     {
-        success = static_cast<int>(std::errc::result_out_of_range);
+        success = std::errc::result_out_of_range;
         BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
         {
             return negative ? -HUGE_VALL : HUGE_VALL;
@@ -263,7 +264,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     ResultType res;
     trivial_uint128 temp {significand.high, significand.low};
     std::memcpy(&res, &temp, sizeof(ResultType));
-    success = true;
+    success = std::errc();
 
     return res;
 }
