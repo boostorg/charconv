@@ -45,6 +45,18 @@ inline bool is_delimiter(char c, chars_format fmt) noexcept
     return !is_hex_char(c) && c != 'p' && c != 'P';
 }
 
+inline from_chars_result from_chars_dispatch(const char* first, const char* last, std::uint64_t& value, int base) noexcept
+{
+    return boost::charconv::detail::from_chars(first, last, value, base);
+}
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+inline from_chars_result from_chars_dispatch(const char* first, const char* last, boost::uint128_type & value, int base) noexcept
+{
+    return boost::charconv::detail::from_chars128(first, last, value, base);
+}
+#endif
+
 template <typename Unsigned_Integer, typename Integer>
 inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
@@ -128,7 +140,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         exponent = 0;
         std::size_t offset = i;
 
-        from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
+        from_chars_result r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, base);
         switch (r.ec)
         {
             case std::errc::invalid_argument:
@@ -210,7 +222,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         std::size_t offset = i;
         
-        from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
+        from_chars_result r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, base);
         switch (r.ec)
         {
             case std::errc::invalid_argument:
@@ -261,7 +273,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // See GitHub issue #29: https://github.com/cppalliance/charconv/issues/29
         if (offset != 0)
         {
-            from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
+            from_chars_result r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, base);
             switch (r.ec)
             {
                 case std::errc::invalid_argument:
