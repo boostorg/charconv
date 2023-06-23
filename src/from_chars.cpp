@@ -156,12 +156,16 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     bool sign {};
-    #if defined(BOOST_CHARCONV_HAS_INT128) && ((defined(__clang_major__) && __clang_major__ > 8 ) || (defined(BOOST_GCC) && BOOST_GCC > 90000))
+    std::int64_t exponent {};
+
+    #if defined(BOOST_CHARCONV_HAS_INT128) && ((defined(__clang_major__) && __clang_major__ > 12 ) || \
+        (defined(BOOST_GCC) && (BOOST_GCC > 100000 || BOOST_CHARCONV_LDBL_BITS == 128)))
+
     boost::uint128_type significand {};
+
     #else
     boost::charconv::detail::uint128 significand {};
     #endif
-    std::int64_t  exponent {};
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != std::errc())
