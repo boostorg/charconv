@@ -82,8 +82,9 @@ template <typename ResultType, typename Unsigned_Integer>
 inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
-    static constexpr auto smallest_power = -4951;
-    static constexpr auto largest_power = 4931;
+    // 39 is the max number of digits in an uint128_t
+    static constexpr auto smallest_power = -4951 + 39;
+    static constexpr auto largest_power = 4931 - 39;
 
     // We start with a fast path
     // It is an extension of what was described in Clinger WD.
@@ -124,35 +125,10 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         success = std::errc();
         return negative ? -0.0L : 0.0L;
     }
-    else if (q < smallest_power)
+    else if (q < smallest_power || q > largest_power)
     {
-        success = std::errc::result_out_of_range;
-        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
-        {
-            return negative ? -0.0L : 0.0L;
-        }
-        #ifdef BOOST_CHARCONV_HAS_FLOAT128
-        else
-        {
-            // Suprerflous cast but needed to suppress warnings in C++11 and 14
-            return negative ? -static_cast<ResultType>(0.0Q) : static_cast<ResultType>(0.0Q);
-        }
-        #endif
-    }
-    else if (q > largest_power)
-    {
-        success = std::errc::result_out_of_range;
-        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
-        {
-            return negative ? -HUGE_VALL : HUGE_VALL;
-        }
-        #ifdef BOOST_CHARCONV_HAS_FLOAT128
-        else
-        {
-            // Suprerflous cast but needed to suppress warnings in C++11 and 14
-            return negative ? -static_cast<ResultType>(HUGE_VALQ) : static_cast<ResultType>(HUGE_VALQ);
-        }
-        #endif
+        success = std::errc::not_supported;
+        return 0;
     }
 
     // Step 3: Compute the number of leading zeros of w and store as leading_zeros
