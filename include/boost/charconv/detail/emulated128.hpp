@@ -142,6 +142,10 @@ struct uint128
     #undef INTEGER_CONVERSION_OPERATOR
     #undef FLOAT_CONVERSION_OPERATOR
 
+    // Unary Operators
+    constexpr friend uint128 operator-(uint128 val) noexcept;
+    constexpr friend uint128 operator+(uint128 val) noexcept;
+
     // Comparison Operators
 
     // Equality
@@ -518,6 +522,16 @@ private:
     BOOST_CHARCONV_CXX14_CONSTEXPR friend void
     div_impl(uint128 lhs, uint128 rhs, uint128 &quotient, uint128 &remainder) noexcept;
 };
+
+constexpr uint128 operator-(uint128 val) noexcept
+{
+    return {~val.high + static_cast<std::uint64_t>(val.low == 0), ~val.low + 1};
+}
+
+constexpr uint128 operator+(uint128 val) noexcept
+{
+    return val;
+}
 
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(const uint128& v) noexcept
 {
