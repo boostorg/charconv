@@ -8,6 +8,7 @@
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <system_error>
@@ -237,7 +238,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 # pragma warning(pop)
 #elif defined(__clang__) && defined(__APPLE__)
 # pragma clang diagnostic pop
-#elif defined(__GNUC__) && (__GNUC__ < 7 || __GNUC__ >= 9)
+#elif defined(__GNUC__)
 # pragma GCC diagnostic pop
 #endif
 
@@ -257,6 +258,11 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first,
     return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 #endif
+
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, uint128& value, int base = 10) noexcept
+{
+    return from_chars_integer_impl<uint128, uint128>(first, last, value, base);
+}
 
 }}} // Namespaces
 

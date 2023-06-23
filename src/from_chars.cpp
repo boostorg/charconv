@@ -156,7 +156,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     bool sign {};
-    #ifdef BOOST_CHARCONV_HAS_INT128
+    #if defined(BOOST_CHARCONV_HAS_INT128) && ((defined(__clang_major__) && __clang_major__ > 8 ) || (defined(BOOST_GCC) && BOOST_GCC > 90000))
     boost::uint128_type significand {};
     #else
     boost::charconv::detail::uint128 significand {};

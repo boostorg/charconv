@@ -50,6 +50,11 @@ inline from_chars_result from_chars_dispatch(const char* first, const char* last
     return boost::charconv::detail::from_chars(first, last, value, base);
 }
 
+inline from_chars_result from_chars_dispatch(const char* first, const char* last, uint128& value, int base) noexcept
+{
+    return boost::charconv::detail::from_chars128(first, last, value, base);
+}
+
 #ifdef BOOST_CHARCONV_HAS_INT128
 inline from_chars_result from_chars_dispatch(const char* first, const char* last, boost::uint128_type& value, int base) noexcept
 {
