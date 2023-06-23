@@ -237,7 +237,7 @@ template<class T> void test_roundtrip( T value )
     }
     else
     {
-        #ifdef BOOST_CHARCONV_DEBUG
+        #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
         std::cerr << std::setprecision(17)
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )

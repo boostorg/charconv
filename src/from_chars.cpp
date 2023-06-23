@@ -178,6 +178,15 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     {
         value = return_val;
     }
+    else if (r.ec == std::errc::not_supported)
+    {
+        // Fallback routine
+        std::string temp (first, last); // zero termination
+        char* ptr = nullptr;
+        value = std::strtold(temp.c_str(), &ptr);
+        r.ptr = ptr;
+        r.ec = detail::errno_to_errc(errno);
+    }
 
     return r;
 }

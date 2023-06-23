@@ -23,7 +23,7 @@ using boost::charconv::detail::uint128;
 template <typename T>
 inline void test_fast_path()
 {
-    int success;
+    std::errc success;
 
     BOOST_TEST_EQ(compute_float80<long double>(1, T(1), false, success), 10.0L);
     BOOST_TEST_EQ(compute_float80<long double>(1, T(1), true, success), -10.0L);
