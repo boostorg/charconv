@@ -133,7 +133,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         #ifdef BOOST_CHARCONV_HAS_FLOAT128
         else
         {
-            return negative ? -0.0Q : 0.0Q;
+            // Suprerflous cast but needed to suppress warnings in C++11 and 14
+            return negative ? -static_cast<ResultType>(0.0Q) : static_cast<ResultType>(0.0Q);
         }
         #endif
     }
@@ -147,7 +148,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         #ifdef BOOST_CHARCONV_HAS_FLOAT128
         else
         {
-            return negative ? -HUGE_VALQ : HUGE_VALQ;
+            // Suprerflous cast but needed to suppress warnings in C++11 and 14
+            return negative ? -static_cast<ResultType>(HUGE_VALQ) : static_cast<ResultType>(HUGE_VALQ);
         }
         #endif
     }
@@ -249,7 +251,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         #ifdef BOOST_CHARCONV_HAS_FLOAT128
         else
         {
-            return negative ? -HUGE_VALQ : HUGE_VALQ;
+            // Suprerflous cast but needed to suppress warnings in C++11 and 14
+            return negative ? -static_cast<ResultType>(HUGE_VALQ) : static_cast<ResultType>(HUGE_VALQ);
         }
         #endif
     }
