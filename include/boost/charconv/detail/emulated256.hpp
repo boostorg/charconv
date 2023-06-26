@@ -95,6 +95,24 @@ inline uint256 umul256(const uint128& x, const uint128& y) noexcept
     return umul256_impl(x.high, x.low, y.high, y.low);
 }
 
+// Returns only the high 256 bits of a 256x256 multiplication
+inline uint256 umul512_high256(const uint256& x, const uint256& y) noexcept
+{
+    const auto a = x.high;
+    const auto b = x.low;
+    const auto c = y.high;
+    const auto d = y.low;
+
+    const auto ac = umul256(a, c);
+    const auto bc = umul256(b, c);
+    const auto ad = umul256(a, d);
+    const auto bd = umul256(b, d);
+
+    const auto intermediate = (bd >> 128) + ad.high + bc.high;
+
+    return ac + (intermediate >> 128) + (ad >> 128) + (bc >> 128);
+}
+
 }}} // Namespaces
 
 #endif // BOOST_CHARCONV_DETAIL_EMULATED256_HPP
