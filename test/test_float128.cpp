@@ -304,7 +304,6 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
                   << "\n  STL: " << stl_str.c_str() << std::endl;
     }
 }
-#endif
 
 template <typename T>
 void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
@@ -317,6 +316,7 @@ void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_form
         test_spot<T>(dist(gen), fmt);
     }
 }
+#endif
 
 int main()
 {
@@ -400,7 +400,6 @@ int main()
         }
 
         test_roundtrip_bv<__float128>();
-        random_test<__float128>();
     }
 
     #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
@@ -477,8 +476,11 @@ int main()
         }
 
         test_roundtrip_bv<std::float128_t>();
-        random_test<std::float128_t>();
     }
+
+    random_test<__float128>();
+    random_test<std::float128_t>();
+    
     #endif
 
     return boost::report_errors();
