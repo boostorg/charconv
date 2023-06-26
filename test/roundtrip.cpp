@@ -463,6 +463,7 @@ int main()
     #endif
 
     // long double
+    #if !(BOOST_CHARCONV_LDBL_BITS == 128)
 
     {
         long double const ql = std::pow( 1.0L, -64 );
@@ -484,6 +485,8 @@ int main()
 
         test_roundtrip_bv<long double>();
     }
+
+    #endif
 
     // Selected additional values
     //

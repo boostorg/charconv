@@ -307,6 +307,48 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
 
 int main()
 {
+    #if BOOST_CHARCONV_LDBL_BITS == 128
+    test_signaling_nan<long double>();
+
+    // 128-bit long double
+    {
+        const long double q = powq( 1.0L, -128.0L );
+
+        for( int i = 0; i < N; ++i )
+        {
+            long double w0 = static_cast<long double>( rng() ); // 0 .. 2^128
+            test_roundtrip( w0 );
+            test_sprintf_float( w0, boost::charconv::chars_format::general );
+            test_sprintf_float( w0, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w0, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w0, boost::charconv::chars_format::hex );
+
+            long double w1 = static_cast<long double>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+            test_sprintf_float( w1, boost::charconv::chars_format::general );
+            test_sprintf_float( w1, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w1, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w1, boost::charconv::chars_format::hex );
+
+            long double w2 = FLT128_MAX / static_cast<long double>( rng() ); // large values
+            test_roundtrip( w2 );
+            test_sprintf_float( w2, boost::charconv::chars_format::general );
+            test_sprintf_float( w2, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w2, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w2, boost::charconv::chars_format::hex );
+
+            long double w3 = FLT128_MIN * static_cast<long double>( rng() ); // small values
+            test_roundtrip( w3 );
+            test_sprintf_float( w3, boost::charconv::chars_format::general );
+            test_sprintf_float( w3, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w3, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w3, boost::charconv::chars_format::hex );
+        }
+
+        test_roundtrip_bv<__float128>();
+    }
+    #endif
+
     test_signaling_nan<__float128>();
 
     // __float128
