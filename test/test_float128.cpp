@@ -46,6 +46,7 @@ std::ostream& operator<<( std::ostream& os, __float128 v )
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <random>
 
 constexpr int N = 1024;
 static boost::detail::splitmix64 rng;
@@ -305,6 +306,18 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
 }
 #endif
 
+template <typename T>
+void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    std::mt19937_64 gen(42);
+    std::uniform_real_distribution<T> dist(0, FLT128_MAX);
+
+    for (int i = 0; i < N; ++i)
+    {
+        test_spot<T>(dist(gen), fmt);
+    }
+}
+
 int main()
 {
     #if BOOST_CHARCONV_LDBL_BITS == 128
@@ -387,6 +400,7 @@ int main()
         }
 
         test_roundtrip_bv<__float128>();
+        random_test<__float128>();
     }
 
     #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
@@ -463,6 +477,7 @@ int main()
         }
 
         test_roundtrip_bv<std::float128_t>();
+        random_test<std::float128_t>();
     }
     #endif
 
