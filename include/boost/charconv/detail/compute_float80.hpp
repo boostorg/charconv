@@ -78,7 +78,6 @@ inline long double fast_path(std::int64_t q, Unsigned_Integer w, bool negative, 
     return ld;
 }
 
-template <typename Unsigned_Integer>
 inline uint256 compute_power_of_5(std::uint64_t n)
 {
     // Use exponentiation by squaring but only capture the high bits each time
@@ -112,7 +111,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // https://dl.acm.org/doi/pdf/10.1145/93542.93557
     BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
     {
-        const auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
+        constexpr auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
         #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
         if (0 <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
         #else
@@ -180,10 +179,14 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // We expect this next branch to be rarely taken (say 1% of the time).
     // When (upper & 0x1FF) == 0x1FF, it can be common for
     // lower + i < lower to be true (proba. much higher than 1%).
-    if (BOOST_UNLIKELY((high & UINT64_C(0x1FF)) == 0x1FF) && (low + w < low))
+    if (BOOST_UNLIKELY((high & UINT64_C(0x1FFFF)) == 0x1FFFF) && (low + w < low))
     {
-        const uint128 factor_significand_low = significand_256_low[q - smallest_power];
-        product = umul256(w, factor_significand_low);
+        assert(1 == 0);
+        // The following can be used if using a pre-calculated table
+        // The table for the low values is ~155kb
+        // const uint128 factor_significand_low = significand_256_low[q - smallest_power];
+        // product = umul256(w, factor_significand_low);
+        product = compute_power_of_5(std::abs(q));
         //const uint128 product_low = product.low;
         const uint128 product_middle2 = product.high;
         const uint128 product_middle1 = low;
