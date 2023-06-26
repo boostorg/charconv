@@ -159,7 +159,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     std::int64_t exponent {};
 
     #if defined(BOOST_CHARCONV_HAS_INT128) && ((defined(__clang_major__) && __clang_major__ > 12 ) || \
-        (defined(BOOST_GCC) && (BOOST_GCC > 100000 || BOOST_CHARCONV_LDBL_BITS == 128)))
+        (defined(BOOST_GCC) && BOOST_GCC > 100000))
 
     boost::uint128_type significand {};
 
