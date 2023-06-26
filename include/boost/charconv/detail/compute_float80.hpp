@@ -78,6 +78,25 @@ inline long double fast_path(std::int64_t q, Unsigned_Integer w, bool negative, 
     return ld;
 }
 
+template <typename Unsigned_Integer>
+inline uint256 compute_power_of_5(std::uint64_t n)
+{
+    // Use exponentiation by squaring but only capture the high bits each time
+    uint256 base {0, 5};
+    uint256 result {0, 1};
+    while (n > 1)
+    {
+        if (n & 1)
+        {
+            result = umul512_high256(base, result);
+        }
+        base = umul512_high256(base, base);
+        n /= 2;
+    }
+
+    return result;
+}
+
 template <typename ResultType, typename Unsigned_Integer>
 inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
