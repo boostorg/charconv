@@ -15,7 +15,50 @@ struct uint256
 {
     uint128 high;
     uint128 low;
+
+    inline friend uint256 operator>>(uint256 lhs, int amount) noexcept;
+    inline friend uint256 operator+(uint256 lhs, uint256 rhs) noexcept;
+    inline friend uint256 operator+(uint256 lhs, uint128 rhs) noexcept;
 };
+
+uint256 operator>>(uint256 lhs, int amount) noexcept
+{
+    if (amount >= 128)
+    {
+        return {0, lhs.high >> (amount - 128)};
+    }
+    else if (amount == 0)
+    {
+        return lhs;
+    }
+
+    return {lhs.high >> amount, (lhs.low >> amount) | (lhs.high << (128 - amount))};
+}
+
+uint256 operator+(uint256 lhs, uint256 rhs) noexcept
+{
+    const uint256 temp = {lhs.high + rhs.high, lhs.low + rhs.low};
+
+    // Need to carry a bit into hrs
+    if (temp.low < lhs.low)
+    {
+        return {temp.high + 1, temp.low};
+    }
+
+    return temp;
+}
+
+uint256 operator+(uint256 lhs, uint128 rhs) noexcept
+{
+    const uint256 temp = {lhs.high, lhs.low + rhs};
+
+    if (temp.low < lhs.low)
+    {
+        return {temp.high + 1, temp.low};
+    }
+
+    return temp;
+}
 
 // Get the 256-bit result of multiplication of two 128-bit unsigned integers
 inline uint256 umul256_impl(std::uint64_t a, std::uint64_t b, std::uint64_t c, std::uint64_t d) noexcept
