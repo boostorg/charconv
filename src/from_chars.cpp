@@ -65,16 +65,42 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
 {
-    (void)fmt;
-    from_chars_result r = {};
+    bool sign {};
+    std::int64_t exponent {};
 
-    std::string tmp( first, last ); // zero termination
-    char* ptr = nullptr;
+    #if defined(BOOST_CHARCONV_HAS_INT128) && ((defined(__clang_major__) && __clang_major__ > 12 ) || \
+        (defined(BOOST_GCC) && BOOST_GCC > 100000))
 
-    value = strtoflt128( tmp.c_str(), &ptr );
+    boost::uint128_type significand {};
 
-    r.ptr = ptr;
-    r.ec = static_cast<std::errc>(errno);
+    #else
+    boost::charconv::detail::uint128 significand {};
+    #endif
+
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
+    if (r.ec != std::errc())
+    {
+        value = 0.0Q;
+        return r;
+    }
+
+    std::errc success {};
+    auto return_val = boost::charconv::detail::compute_float80<long double>(exponent, significand, sign, success);
+    r.ec = static_cast<std::errc>(success);
+
+    if (r.ec == std::errc())
+    {
+        value = return_val;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        // Fallback routine
+        std::string temp (first, last); // zero termination
+        char* ptr = nullptr;
+        value = strtoflt128(temp.c_str(), &ptr);
+        r.ptr = ptr;
+        r.ec = detail::errno_to_errc(errno);
+    }
 
     return r;
 }
