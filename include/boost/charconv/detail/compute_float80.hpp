@@ -19,6 +19,8 @@
 #include <climits>
 #include <cfloat>
 
+#include <iostream>
+
 namespace boost { namespace charconv { namespace detail {
 
 static constexpr long double powers_of_ten_ld[] = {
@@ -181,6 +183,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // lower + i < lower to be true (proba. much higher than 1%).
     if (BOOST_UNLIKELY((high & UINT64_C(0x1FFFF)) == 0x1FFFF) && (low + w < low))
     {
+        std::cerr << "Fallback" << std::endl;
         // The following can be used if using a pre-calculated table
         // The table for the low values is ~155kb
         // const uint128 factor_significand_low = significand_256_low[q - smallest_power];
