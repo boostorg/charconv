@@ -17,6 +17,7 @@ struct uint256
     uint128 low;
 
     inline friend uint256 operator>>(uint256 lhs, int amount) noexcept;
+    inline friend uint256 operator<<(uint256 lhs, int amount) noexcept;
     inline friend uint256 operator+(uint256 lhs, uint256 rhs) noexcept;
     inline friend uint256 operator+(uint256 lhs, uint128 rhs) noexcept;
 };
@@ -33,6 +34,20 @@ uint256 operator>>(uint256 lhs, int amount) noexcept
     }
 
     return {lhs.high >> amount, (lhs.low >> amount) | (lhs.high << (128 - amount))};
+}
+
+uint256 operator<<(uint256 lhs, int amount) noexcept
+{
+    if (amount >= 128)
+    {
+        return {lhs.low << (amount - 128), 0};
+    }
+    else if (amount == 0)
+    {
+        return lhs;
+    }
+
+    return {(lhs.high << amount) | (lhs.low >> (128 - amount)), lhs.low << amount};
 }
 
 uint256 operator+(uint256 lhs, uint256 rhs) noexcept
