@@ -98,6 +98,40 @@ inline uint256 compute_power_of_5(std::uint64_t n)
     return result;
 }
 
+template <typename T>
+inline T huge_val() noexcept;
+
+template <>
+inline long double huge_val() noexcept
+{
+    return HUGE_VALL;
+}
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+inline __float128 huge_val() noexcept
+{
+    return HUGE_VALQ;
+}
+#endif
+
+template <typename T>
+inline T pow2toneg113() noexcept;
+
+template <>
+inline long double pow2toneg113() noexcept
+{
+    return std::pow(2.0L, -113.0L);
+}
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+inline __float128 pow2toneg113() noexcept
+{
+    return powq(2.0Q, -113.0Q);
+}
+#endif
+
 template <typename ResultType, typename Unsigned_Integer>
 inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
@@ -105,6 +139,9 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // 39 is the max number of digits in an uint128_t
     static constexpr auto smallest_power = -4951 + 39;
     static constexpr auto largest_power = 4931 - 39;
+    static constexpr auto smallest_binary_power = -16444;
+    static constexpr auto largest_binary_power = 16383;
+    static const auto pow2to113 = (uint128(1) << 113);
 
     // We start with a fast path
     // It is an extension of what was described in Clinger WD.
@@ -147,8 +184,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     }
     else if (q < smallest_power || q > largest_power)
     {
-        success = std::errc::not_supported;
-        return 0;
+        success = std::errc::result_out_of_range;
+        return negative ? -huge_val<ResultType>() : huge_val<ResultType>();
     }
 
     // Step 3: Compute the number of leading zeros of w and store as leading_zeros
@@ -156,8 +193,71 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     auto leading_zeros = clz_u128(w);
 
     // Step 4: Normalize the significand
-    w <<= leading_zeros;
+    w = (1 << leading_zeros) * w;
 
+    // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication if
+    // no more are required to represetent the number exactly
+    auto z = significand_256_high[q - smallest_power] / (UINT64_MAX);
+
+    // Step 5b: Some kind of branch to use the second table
+
+    // Step 6: Abort if the number is unrepresentable
+    if (BOOST_UNLIKELY(z % UINT64_MAX == (UINT64_MAX - 1) && (q < -27 || q > 55)))
+    {
+        success = std::errc::not_supported;
+        return 0;
+    }
+
+    // Step 7: Capture the most significant bits (for the significand) (112 bits for 128 bits)
+    // TODO(mborland): needs to work for 80 bits
+    constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
+    auto m = (z >> 113) & mask;
+
+    // Step 8: Value of the most significant bit of z
+    const auto u = z / (uint128(1) << 127);
+
+    // Step 9: Calculate the expected binary exponent
+    auto p = static_cast<std::int64_t>(((217706 * q) / 65536) + 127 - leading_zeros + u);
+
+    // Step 10: Check the boundaries of the binary exponent
+    if (p < smallest_binary_power - 128)
+    {
+        const auto s = smallest_binary_power - p + 1;
+        m /= (1 << s);
+        if (m & 1)
+        {
+            ++m;
+        }
+    }
+
+    // Step 11: Line 16 rounding ties to even
+
+    // Step 12: Round the significand
+    if (m & 1)
+    {
+        ++m;
+    }
+
+    m /= 2;
+
+    // Step 12: make m in range
+    if (m == pow2to113)
+    {
+        m /= 2;
+        ++p;
+    }
+
+    // Step 13: if the exponent is out of range than return HUGE_VAL
+    if (p > largest_binary_power)
+    {
+        success = std::errc::result_out_of_range;
+        return negative ? -huge_val<ResultType>() : huge_val<ResultType>();
+    }
+
+    success = std::errc();
+    return static_cast<long double>(m) * static_cast<long double>(1 << p) * pow2toneg113<ResultType>();
+
+    /*
     // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication
     // if the result is exact
     const uint128 factor_significand = significand_256_high[q - smallest_power];
@@ -183,7 +283,6 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // lower + i < lower to be true (proba. much higher than 1%).
     if (BOOST_UNLIKELY((high & UINT64_C(0x1FFFF)) == 0x1FFFF) && (low + w < low))
     {
-        std::cerr << "Fallback" << std::endl;
         // The following can be used if using a pre-calculated table
         // The table for the low values is ~155kb
         // const uint128 factor_significand_low = significand_256_low[q - smallest_power];
@@ -202,7 +301,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
         // https://arxiv.org/pdf/2212.06644.pdf
         // Unneeded fallback checks
-        /*
+
         // We want to check whether mantissa *it + i would affect the result
         if (((product_middle + 1 == 0) && ((product_high & UINT64_C(0x1FF)) == UINT64_C(0x1FF)) &&
             (product_low + w < product_low)))
@@ -210,7 +309,6 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
             success = std::errc::not_supported;
             return 0;
         }
-        */
 
         low = product_middle;
         high = product_high;
@@ -271,6 +369,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     success = std::errc();
 
     return res;
+    */
 }
 
 }}} // Namespaces
