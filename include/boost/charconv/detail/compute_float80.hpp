@@ -231,7 +231,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication if
     // no more are required to represetent the number exactly
-    auto z = significand_256_high[q - smallest_power] / (UINT64_MAX);
+    auto z = significand_256_high[q - smallest_power] * w / (UINT64_MAX);
 
     // Step 5b: Some kind of branch to use the second table
 
