@@ -19,7 +19,10 @@
 #include <climits>
 #include <cfloat>
 
+#ifdef BOOST_CHARCONV_DEBUG_FLOAT128
 #include <iostream>
+#include <boost/charconv/detail/to_chars_integer_impl.hpp>
+#endif
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -154,8 +157,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     // 39 is the max number of digits in an uint128_t
-    static constexpr auto smallest_power = -4951 + 39;
-    static constexpr auto largest_power = 4931 - 39;
+    static constexpr auto smallest_power = -4951;
+    static constexpr auto largest_power = 4931;
     static constexpr auto smallest_binary_power = -16444;
     static constexpr auto largest_binary_power = 16383;
     static const auto pow2to113 = (uint128(1) << 113);
@@ -194,6 +197,15 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     #endif
 
     // Steps 1 and 2: Return now if the number is unrepresentable
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    char buffer [50] {};
+    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(w));
+    std::cerr << "Inputs"
+              << "\nMantissa: " << buffer
+              << "\nPower: " << q
+              << "\nSign: " << negative << std::endl;
+    #endif
+
     if (w == 0)
     {
         success = std::errc();
@@ -224,6 +236,11 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // Step 5b: Some kind of branch to use the second table
 
     // Step 6: Abort if the number is unrepresentable
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(z));
+    std::cerr << "z: " << buffer << std::endl;
+    #endif
+
     if (BOOST_UNLIKELY(z % UINT64_MAX == (UINT64_MAX - 1) && (q < -27 || q > 55)))
     {
         success = std::errc::not_supported;
