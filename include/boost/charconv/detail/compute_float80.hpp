@@ -116,6 +116,23 @@ inline __float128 huge_val() noexcept
 #endif
 
 template <typename T>
+inline T zero_val() noexcept;
+
+template <>
+inline long double zero_val() noexcept
+{
+    return 0.0L;
+}
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+inline __float128 zero_val() noexcept
+{
+    return 0.0Q;
+}
+#endif
+
+template <typename T>
 inline T pow2toneg113() noexcept;
 
 template <>
@@ -182,10 +199,15 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         success = std::errc();
         return negative ? -0.0L : 0.0L;
     }
-    else if (q < smallest_power || q > largest_power)
+    else if (q > largest_power)
     {
         success = std::errc::result_out_of_range;
         return negative ? -huge_val<ResultType>() : huge_val<ResultType>();
+    }
+    else if (q < smallest_power)
+    {
+        success = std::errc::result_out_of_range;
+        return negative ? -zero_val<ResultType>() : zero_val<ResultType>();
     }
 
     // Step 3: Compute the number of leading zeros of w and store as leading_zeros
