@@ -163,7 +163,7 @@ inline uint128 mask_mantissa(uint128 z) noexcept
     static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
     return (z >> 64) & mask;
 }
-#else
+#elif BOOST_CHARCONV_LDBL_BITS == 128
 
 template <typename T>
 inline uint128 mask_mantissa(uint128 z) noexcept
@@ -183,6 +183,36 @@ inline uint128 mask_mantissa<__float128>(uint128 z) noexcept
 }
 
 #endif
+
+template <typename T>
+inline uint128 significant_bit(uint128 z) noexcept;
+
+#if BOOST_CHARCONV_LDBL_BITS == 80
+
+template <typename T>
+inline uint128 significant_bit(uint128 z) noexcept
+{
+    return z / (uint128(1) << 79);
+}
+
+#elif BOOST_CHARCONV_LDBL_BITS == 128
+
+template <typename T>
+inline uint128 significant_bit(uint128 z) noexcept
+{
+    return z / (uint128(1) << 127);
+}
+
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+inline uint128 significant_bit<__float128>(uint128 z) noexcept
+{
+    return z / (uint128(1) << 127);
+}
+#endif
+
 
 template <typename ResultType, typename Unsigned_Integer>
 inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
@@ -281,9 +311,17 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Step 7: Capture the most significant bits (for the significand)
     auto m = mask_mantissa<ResultType>(z);
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(m));
+    std::cerr << "m: " << buffer << std::endl;
+    #endif
 
     // Step 8: Value of the most significant bit of z
-    const auto u = z / (uint128(1) << 127);
+    const auto u = significant_bit<ResultType>(z);
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(u));
+    std::cerr << "u: " << buffer << std::endl;
+    #endif
 
     // Step 9: Calculate the expected binary exponent
     auto p = static_cast<std::int64_t>(((217706 * q) / 65536) + 127 - leading_zeros + u);
