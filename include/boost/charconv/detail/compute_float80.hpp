@@ -152,6 +152,38 @@ inline __float128 pow2toneg113() noexcept
 }
 #endif
 
+template <typename T>
+inline uint128 mask_mantissa(uint128 z) noexcept;
+
+#if BOOST_CHARCONV_LDBL_BITS == 80
+
+template <typename T>
+inline uint128 mask_mantissa(uint128 z) noexcept
+{
+    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
+    return (z >> 64) & mask;
+}
+#else
+
+template <typename T>
+inline uint128 mask_mantissa(uint128 z) noexcept
+{
+    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
+    return (z >> 113) & mask;
+}
+
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+inline uint128 mask_mantissa<__float128>(uint128 z) noexcept
+{
+    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
+    return (z >> 113) & mask;
+}
+
+#endif
+
 template <typename ResultType, typename Unsigned_Integer>
 inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
@@ -247,10 +279,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         return 0;
     }
 
-    // Step 7: Capture the most significant bits (for the significand) (112 bits for 128 bits)
-    // TODO(mborland): needs to work for 80 bits
-    constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
-    auto m = (z >> 113) & mask;
+    // Step 7: Capture the most significant bits (for the significand)
+    auto m = mask_mantissa<ResultType>(z);
 
     // Step 8: Value of the most significant bit of z
     const auto u = z / (uint128(1) << 127);
