@@ -325,8 +325,50 @@ inline uint256 umul512_high256(const uint256& x, const uint256& y) noexcept
     return ac + (intermediate >> 128) + (ad >> 128) + (bc >> 128);
 }
 
-
-
 }}} // Namespaces
+
+namespace std {
+
+template <>
+struct numeric_limits<boost::charconv::detail::uint256>
+{
+    // Member constants
+    static constexpr bool is_specialized = true;
+    static constexpr bool is_signed = false;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = true;
+    static constexpr bool has_infinity = false;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = false;
+    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    static constexpr bool has_denorm_loss = false;
+    static constexpr std::float_round_style round_style = std::round_toward_zero;
+    static constexpr bool is_iec559 = false;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = true;
+    static constexpr int digits = 256;
+    static constexpr int digits10 = 76;
+    static constexpr int max_digits10 = 0;
+    static constexpr int radix = 2;
+    static constexpr int min_exponent = 0;
+    static constexpr int min_exponent10 = 0;
+    static constexpr int max_exponent = 0;
+    static constexpr int max_exponent10 = 0;
+    static constexpr bool traps = std::numeric_limits<std::uint64_t>::traps;
+    static constexpr bool tinyness_before = false;
+
+    // Member functions
+    static constexpr boost::charconv::detail::uint256 (min)() { return {0, 0}; }
+    static constexpr boost::charconv::detail::uint256 lowest() { return {0, 0}; }
+    static constexpr boost::charconv::detail::uint256 (max)() { return {{UINT64_MAX, UINT64_MAX}, {UINT64_MAX, UINT64_MAX}}; }
+    static constexpr boost::charconv::detail::uint256 epsilon() { return {0, 0}; }
+    static constexpr boost::charconv::detail::uint256 round_error() { return {0, 0}; }
+    static constexpr boost::charconv::detail::uint256 infinity() { return {0, 0}; }
+    static constexpr boost::charconv::detail::uint256 quiet_NaN() { return {0, 0}; }
+    static constexpr boost::charconv::detail::uint256 signaling_NaN() { return {0, 0}; }
+    static constexpr boost::charconv::detail::uint256 denorm_min() { return {0, 0}; }
+};
+
+} // Namespace std
 
 #endif // BOOST_CHARCONV_DETAIL_EMULATED256_HPP
