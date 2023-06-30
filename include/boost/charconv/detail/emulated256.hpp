@@ -50,7 +50,9 @@ struct uint256
     inline friend uint256 operator-(uint256 lhs, uint256 rhs) noexcept;
     inline uint256 &operator-=(uint256 v) noexcept;
     inline friend uint256 operator/(uint256 lhs, uint256 rhs) noexcept;
+    inline friend uint256 operator/(uint256 lhs, std::uint64_t rhs) noexcept;
     inline friend uint256 operator%(uint256 lhs, uint256 rhs) noexcept;
+    inline friend uint256 operator%(uint256 lhs, std::uint64_t rhs) noexcept;
 
 private:
     inline friend int high_bit(uint256 v) noexcept;
@@ -178,11 +180,33 @@ uint256 operator/(uint256 lhs, uint256 rhs) noexcept
     return quotient;
 }
 
+uint256 operator/(uint256 lhs, std::uint64_t rhs) noexcept
+{
+    uint256 quotient;
+    uint256 remainder;
+    uint256 big_rhs = {0, rhs};
+
+    div_impl(lhs, big_rhs, quotient, remainder);
+
+    return quotient;
+}
+
 uint256 operator%(uint256 lhs, uint256 rhs) noexcept
 {
     uint256 quotient;
     uint256 remainder;
     div_impl(lhs, rhs, quotient, remainder);
+
+    return remainder;
+}
+
+uint256 operator%(uint256 lhs, std::uint64_t rhs) noexcept
+{
+    uint256 quotient;
+    uint256 remainder;
+    uint256 big_rhs = {0, rhs};
+
+    div_impl(lhs, big_rhs, quotient, remainder);
 
     return remainder;
 }
