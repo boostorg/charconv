@@ -7,6 +7,7 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <boost/core/bit.hpp>
 #include <cstdint>
 
 namespace boost { namespace charconv { namespace detail {
@@ -17,7 +18,18 @@ struct uint256
     uint128 low;
 
     inline friend uint256 operator>>(uint256 lhs, int amount) noexcept;
+    inline uint256 &operator>>=(int amount) noexcept
+    {
+        *this = *this >> amount;
+        return *this;
+    }
+
     inline friend uint256 operator<<(uint256 lhs, int amount) noexcept;
+    inline uint256 &operator<<=(int amount) noexcept
+    {
+        *this = *this << amount;
+        return *this;
+    }
 
     inline friend bool operator==(uint256 lhs, uint256 rhs) noexcept;
     inline friend bool operator!=(uint256 lhs, uint256 rhs) noexcept;
@@ -32,6 +44,7 @@ struct uint256
     inline friend uint256 operator%(uint256 lhs, uint256 rhs) noexcept;
 
 private:
+    inline friend int high_bit(uint256 v) noexcept;
     inline friend void div_impl(uint256 lhs, uint256 rhs, uint256& quotient, uint256& remainder) noexcept;
 };
 
@@ -141,14 +154,44 @@ uint256 operator%(uint256 lhs, uint256 rhs) noexcept
     return remainder;
 }
 
+int high_bit(uint256 v) noexcept
+{
+    if (v.high != 0)
+    {
+        return high_bit(v.high);
+    }
+    else if (v.low != 0)
+    {
+        return high_bit(v.low);
+    }
+
+    return 0;
+}
+
 void div_impl(uint256 lhs, uint256 rhs, uint256 &quotient, uint256 &remainder) noexcept
 {
     uint256 one {0, 1};
 
     if (rhs > lhs)
     {
-
+        quotient = {0, 0};
+        remainder = {0, 0};
     }
+    else if (lhs == rhs)
+    {
+        quotient = {0, 1};
+        remainder = {0, 0};
+    }
+
+    uint256 denom = rhs;
+    quotient = {0, 0};
+
+    std::int32_t shift = high_bit(lhs) - high_bit(rhs);
+    if (shift < 0)
+    {
+        shift = 32 - shift;
+    }
+    denom <<= shift;
 }
 
 // Get the 256-bit result of multiplication of two 128-bit unsigned integers
