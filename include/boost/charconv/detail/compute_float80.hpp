@@ -220,7 +220,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     // 39 is the max number of digits in an uint128_t
     static constexpr auto smallest_power = -4951;
-    static constexpr auto largest_power = 4931;
+    static constexpr auto largest_power = 4932;
     static constexpr auto smallest_binary_power = -16444;
     static constexpr auto largest_binary_power = 16383;
     static const auto pow2to113 = (uint128(1) << 113);
@@ -317,14 +317,16 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     #endif
 
     // Step 8: Value of the most significant bit of z
-    const auto u = significant_bit<ResultType>(z);
+    const auto u = significant_bit<ResultType>(z) == m ? 0 : 1;
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
-    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(u));
-    std::cerr << "u: " << buffer << std::endl;
+    std::cerr << "u: " << u << std::endl;
     #endif
 
     // Step 9: Calculate the expected binary exponent
-    auto p = static_cast<std::int64_t>(((217706 * q) / 65536) + 127 - leading_zeros + u);
+    auto p = static_cast<std::int64_t>(((217706 * q) / 65536) + 63 - leading_zeros + u);
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    std::cerr << "p: " << p << std::endl;
+    #endif
 
     // Step 10: Check the boundaries of the binary exponent
     if (p < smallest_binary_power - 128)
