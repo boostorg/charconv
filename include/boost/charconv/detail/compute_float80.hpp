@@ -177,8 +177,9 @@ inline uint128 mask_mantissa(uint256 z) noexcept;
 template <typename T>
 inline uint128 mask_mantissa(uint256 z) noexcept
 {
-    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
-    return (z >> 113) & mask;
+    //static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
+    //return static_cast<uint128>((z >> 113) & mask);
+    return z.high;
 }
 #elif BOOST_CHARCONV_LDBL_BITS == 128
 
@@ -337,7 +338,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     #endif
 
     // Step 8: Value of the most significant bit of z
-    const auto u = significant_bit<ResultType>(z) == m ? 0 : 1;
+    const auto u = high_bit(z) == 255 ? 0 : 1;
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
     std::cerr << "u: " << u << std::endl;
     #endif

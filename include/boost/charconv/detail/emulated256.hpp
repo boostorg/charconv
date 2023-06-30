@@ -242,11 +242,11 @@ int high_bit(uint256 v) noexcept
 {
     if (v.high != 0)
     {
-        return high_bit(v.high);
+        return 255 - high_bit(v.high);
     }
     else if (v.low != 0)
     {
-        return high_bit(v.low);
+        return 127 - high_bit(v.low);
     }
 
     return 0;
