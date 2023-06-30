@@ -170,19 +170,20 @@ inline __float128 pow2top<__float128>(std::int64_t p) noexcept
 #endif
 
 template <typename T>
-inline uint128 mask_mantissa(uint128 z) noexcept;
+inline uint128 mask_mantissa(uint256 z) noexcept;
 
 #if BOOST_CHARCONV_LDBL_BITS == 80
 
 template <typename T>
-inline uint128 mask_mantissa(uint128 z) noexcept
+inline uint128 mask_mantissa(uint256 z) noexcept
 {
-    return static_cast<uint128>(static_cast<std::uint64_t>(z));
+    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
+    return (z >> 113) & mask;
 }
 #elif BOOST_CHARCONV_LDBL_BITS == 128
 
 template <typename T>
-inline uint128 mask_mantissa(uint128 z) noexcept
+inline uint128 mask_mantissa(uint256 z) noexcept
 {
     static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
     return (z >> 113) & mask;
@@ -192,7 +193,7 @@ inline uint128 mask_mantissa(uint128 z) noexcept
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 template <>
-inline uint128 mask_mantissa<__float128>(uint128 z) noexcept
+inline uint128 mask_mantissa<__float128>(uint256 z) noexcept
 {
     static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
     return (z >> 113) & mask;

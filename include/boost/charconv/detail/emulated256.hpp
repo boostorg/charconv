@@ -45,6 +45,9 @@ struct uint256
         return *this;
     }
 
+    inline friend uint256 operator&(uint256 lhs, uint256 rhs) noexcept;
+    inline friend uint256 operator&(uint256 lhs, uint128 rhs) noexcept;
+
     inline friend bool operator==(uint256 lhs, uint256 rhs) noexcept;
     inline friend bool operator==(uint256 lhs, std::uint64_t rhs) noexcept;
 
@@ -99,6 +102,16 @@ uint256 operator<<(uint256 lhs, int amount) noexcept
 uint256 operator|(uint256 lhs, uint256 rhs) noexcept
 {
     return {lhs.high | rhs.high, lhs.low | rhs.low};
+}
+
+uint256 operator&(uint256 lhs, uint256 rhs) noexcept
+{
+    return {lhs.high & rhs.high, lhs.low & rhs.low};
+}
+
+uint256 operator&(uint256 lhs, uint128 rhs) noexcept
+{
+    return {lhs.high, lhs.low & rhs.low};
 }
 
 bool operator==(uint256 lhs, uint256 rhs) noexcept
