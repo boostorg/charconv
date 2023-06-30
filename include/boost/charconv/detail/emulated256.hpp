@@ -18,8 +18,21 @@ struct uint256
 
     inline friend uint256 operator>>(uint256 lhs, int amount) noexcept;
     inline friend uint256 operator<<(uint256 lhs, int amount) noexcept;
+
+    inline friend bool operator==(uint256 lhs, uint256 rhs) noexcept;
+    inline friend bool operator!=(uint256 lhs, uint256 rhs) noexcept;
+    inline friend bool operator<(uint256 lhs, uint256 rhs) noexcept;
+    inline friend bool operator<=(uint256 lhs, uint256 rhs) noexcept;
+    inline friend bool operator>(uint256 lhs, uint256 rhs) noexcept;
+    inline friend bool operator>=(uint256 lhs, uint256 rhs) noexcept;
+
     inline friend uint256 operator+(uint256 lhs, uint256 rhs) noexcept;
     inline friend uint256 operator+(uint256 lhs, uint128 rhs) noexcept;
+    inline friend uint256 operator/(uint256 lhs, uint256 rhs) noexcept;
+    inline friend uint256 operator%(uint256 lhs, uint256 rhs) noexcept;
+
+private:
+    inline friend void div_impl(uint256 lhs, uint256 rhs, uint256& quotient, uint256& remainder) noexcept;
 };
 
 uint256 operator>>(uint256 lhs, int amount) noexcept
@@ -50,6 +63,41 @@ uint256 operator<<(uint256 lhs, int amount) noexcept
     return {(lhs.high << amount) | (lhs.low >> (128 - amount)), lhs.low << amount};
 }
 
+bool operator==(uint256 lhs, uint256 rhs) noexcept
+{
+    return lhs.high == rhs.high && lhs.low == rhs.low;
+}
+
+bool operator!=(uint256 lhs, uint256 rhs) noexcept
+{
+    return !(lhs.high == rhs.high && lhs.low == rhs.low);
+}
+
+bool operator<(uint256 lhs, uint256 rhs) noexcept
+{
+    if (lhs.high == rhs.high)
+    {
+        return lhs.low < rhs.low;
+    }
+
+    return lhs.high < rhs.high;
+}
+
+bool operator<=(uint256 lhs, uint256 rhs) noexcept
+{
+    return !(rhs < lhs);
+}
+
+bool operator>(uint256 lhs, uint256 rhs) noexcept
+{
+    return rhs < lhs;
+}
+
+bool operator>=(uint256 lhs, uint256 rhs) noexcept
+{
+    return !(lhs < rhs);
+}
+
 uint256 operator+(uint256 lhs, uint256 rhs) noexcept
 {
     const uint256 temp = {lhs.high + rhs.high, lhs.low + rhs.low};
@@ -73,6 +121,34 @@ uint256 operator+(uint256 lhs, uint128 rhs) noexcept
     }
 
     return temp;
+}
+
+uint256 operator/(uint256 lhs, uint256 rhs) noexcept
+{
+    uint256 quotient;
+    uint256 remainder;
+    div_impl(lhs, rhs, quotient, remainder);
+
+    return quotient;
+}
+
+uint256 operator%(uint256 lhs, uint256 rhs) noexcept
+{
+    uint256 quotient;
+    uint256 remainder;
+    div_impl(lhs, rhs, quotient, remainder);
+
+    return remainder;
+}
+
+void div_impl(uint256 lhs, uint256 rhs, uint256 &quotient, uint256 &remainder) noexcept
+{
+    uint256 one {0, 1};
+
+    if (rhs > lhs)
+    {
+
+    }
 }
 
 // Get the 256-bit result of multiplication of two 128-bit unsigned integers
@@ -127,6 +203,8 @@ inline uint256 umul512_high256(const uint256& x, const uint256& y) noexcept
 
     return ac + (intermediate >> 128) + (ad >> 128) + (bc >> 128);
 }
+
+
 
 }}} // Namespaces
 

@@ -177,8 +177,7 @@ inline uint128 mask_mantissa(uint128 z) noexcept;
 template <typename T>
 inline uint128 mask_mantissa(uint128 z) noexcept
 {
-    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
-    return (z >> 64) & mask;
+    return static_cast<uint128>(static_cast<std::uint64_t>(z));
 }
 #elif BOOST_CHARCONV_LDBL_BITS == 128
 
@@ -279,7 +278,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
     char buffer [50] {};
     to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(w));
-    std::cerr << "Inputs"
+    std::cerr << "\nInputs"
               << "\nMantissa: " << buffer
               << "\nPower: " << q
               << "\nSign: " << negative << std::endl;
@@ -310,14 +309,15 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication if
     // no more are required to represetent the number exactly
-    auto z = significand_256_high[q - smallest_power] * w / (UINT64_MAX);
+    auto z = umul256(significand_256_high[q - smallest_power], w) / (UINT64_MAX);
 
     // Step 5b: Some kind of branch to use the second table
 
     // Step 6: Abort if the number is unrepresentable
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    std::memset(buffer, '\0', sizeof(buffer));
     to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(z));
-    std::cerr << "z: " << buffer << std::endl;
+    std::cerr << "\nz: " << buffer << std::endl;
     #endif
 
     if (BOOST_UNLIKELY(z % UINT64_MAX == (UINT64_MAX - 1) && (q < -27 || q > 55)))
@@ -329,6 +329,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // Step 7: Capture the most significant bits (for the significand)
     auto m = mask_mantissa<ResultType>(z);
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    std::memset(buffer, '\0', sizeof(buffer));
     to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(m));
     std::cerr << "m: " << buffer << std::endl;
     #endif
@@ -374,6 +375,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     }
 
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    std::memset(buffer, '\0', sizeof(buffer));
     to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(m));
     std::cerr << "\nm`: " << buffer
               << "\np`: " << p << std::endl;
