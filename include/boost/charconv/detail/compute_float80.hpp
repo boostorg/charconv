@@ -153,6 +153,23 @@ inline __float128 pow2toneg113() noexcept
 #endif
 
 template <typename T>
+inline T pow2top(std::int64_t p) noexcept;
+
+template <>
+inline long double pow2top<long double>(std::int64_t p) noexcept
+{
+    return std::pow(2.0L, static_cast<long double>(p));
+}
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+inline __float128 pow2top<__float128>(std::int64_t p) noexcept
+{
+    return powq(2.0Q, static_cast<__float128>(p));
+}
+#endif
+
+template <typename T>
 inline uint128 mask_mantissa(uint128 z) noexcept;
 
 #if BOOST_CHARCONV_LDBL_BITS == 80
@@ -356,7 +373,13 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         ++p;
     }
 
-    // Step 13: if the exponent is out of range than return HUGE_VAL
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(m));
+    std::cerr << "\nm`: " << buffer
+              << "\np`: " << p << std::endl;
+    #endif
+
+    // Step 13: if the exponent is out of range than return correct HUGE_VAL
     if (p > largest_binary_power)
     {
         success = std::errc::result_out_of_range;
@@ -364,7 +387,14 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     }
 
     success = std::errc();
-    return static_cast<long double>(m) * static_cast<long double>(1 << p) * pow2toneg113<ResultType>();
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    std::cerr << "\nFinal components: "
+              << "\nm_ld: " << static_cast<long double>(m)
+              << "\n2^p: " << pow2top<ResultType>(p)
+              << "\n2^-113: " << pow2toneg113<ResultType>() << std::endl;
+    #endif
+
+    return static_cast<long double>(m) * pow2top<ResultType>(p) * pow2toneg113<ResultType>();
 
     /*
     // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication
