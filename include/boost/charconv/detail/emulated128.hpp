@@ -792,9 +792,9 @@ BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t
     
     #elif defined(BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS)
     
-    std::uint64_t high;
+    unsigned long long high;
     std::uint64_t low = _umul128(x, y, &high);
-    return {high, low};
+    return {static_cast<std::uint64_t>(high), low};
     
     // https://developer.arm.com/documentation/dui0802/a/A64-General-Instructions/UMULH
     #elif defined(__arm__)
