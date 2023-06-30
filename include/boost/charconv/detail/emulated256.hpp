@@ -47,6 +47,8 @@ struct uint256
 
     inline friend uint256 operator+(uint256 lhs, uint256 rhs) noexcept;
     inline friend uint256 operator+(uint256 lhs, uint128 rhs) noexcept;
+    inline friend uint256 operator-(uint256 lhs, uint256 rhs) noexcept;
+    inline uint256 &operator-=(uint256 v) noexcept;
     inline friend uint256 operator/(uint256 lhs, uint256 rhs) noexcept;
     inline friend uint256 operator%(uint256 lhs, uint256 rhs) noexcept;
 
@@ -148,6 +150,25 @@ uint256 operator+(uint256 lhs, uint128 rhs) noexcept
     return temp;
 }
 
+uint256 operator-(uint256 lhs, uint256 rhs) noexcept
+{
+    const uint256 temp {lhs.high - rhs.high, lhs.low - rhs.low};
+
+    // Check for carry
+    if (lhs.low < rhs.low)
+    {
+        return {temp.high - 1, temp.low};
+    }
+
+    return temp;
+}
+
+uint256 &uint256::operator-=(uint256 v) noexcept
+{
+    *this = *this - v;
+    return *this;
+}
+
 uint256 operator/(uint256 lhs, uint256 rhs) noexcept
 {
     uint256 quotient;
@@ -204,6 +225,20 @@ void div_impl(uint256 lhs, uint256 rhs, uint256 &quotient, uint256 &remainder) n
         shift = 32 - shift;
     }
     denom <<= shift;
+
+    for (std::int32_t i = 0; i <= shift; ++i)
+    {
+        quotient <<= 1;
+        if (lhs >= denom)
+        {
+            lhs -= denom;
+            quotient |= one;
+        }
+
+        denom >>= 1;
+    }
+
+    remainder = lhs;
 }
 
 // Get the 256-bit result of multiplication of two 128-bit unsigned integers
