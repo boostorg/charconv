@@ -9,6 +9,7 @@
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/core/bit.hpp>
 #include <cstdint>
+#include <cmath>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -16,6 +17,12 @@ struct uint256
 {
     uint128 high;
     uint128 low;
+
+    explicit operator uint128() const noexcept { return this->low; }
+    explicit operator long double() const noexcept
+    {
+        return std::ldexp(static_cast<long double>(high), 128) + static_cast<long double>(low);
+    }
 
     inline friend uint256 operator>>(uint256 lhs, int amount) noexcept;
     inline uint256 &operator>>=(int amount) noexcept
