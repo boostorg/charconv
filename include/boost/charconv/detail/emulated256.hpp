@@ -39,6 +39,8 @@ struct uint256
     }
 
     inline friend bool operator==(uint256 lhs, uint256 rhs) noexcept;
+    inline friend bool operator==(uint256 lhs, std::uint64_t rhs) noexcept;
+
     inline friend bool operator!=(uint256 lhs, uint256 rhs) noexcept;
     inline friend bool operator<(uint256 lhs, uint256 rhs) noexcept;
     inline friend bool operator<=(uint256 lhs, uint256 rhs) noexcept;
@@ -95,6 +97,11 @@ uint256 operator|(uint256 lhs, uint256 rhs) noexcept
 bool operator==(uint256 lhs, uint256 rhs) noexcept
 {
     return lhs.high == rhs.high && lhs.low == rhs.low;
+}
+
+bool operator==(uint256 lhs, std::uint64_t rhs) noexcept
+{
+    return lhs.high == 0 && rhs != 0 && lhs.low == rhs;
 }
 
 bool operator!=(uint256 lhs, uint256 rhs) noexcept

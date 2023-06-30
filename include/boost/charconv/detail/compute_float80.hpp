@@ -276,7 +276,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Steps 1 and 2: Return now if the number is unrepresentable
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
-    char buffer [50] {};
+    char buffer [100] {};
     to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(w));
     std::cerr << "\nInputs"
               << "\nMantissa: " << buffer
@@ -308,15 +308,16 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     w = (1 << leading_zeros) * w;
 
     // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication if
-    // no more are required to represetent the number exactly
-    auto z = umul256(significand_256_high[q - smallest_power], w) / uint256{0, UINT64_MAX};
+    // no more are required to represent the number exactly
+    auto z = umul256(significand_256_high[q - smallest_power], w) / UINT64_MAX;
 
     // Step 5b: Some kind of branch to use the second table
 
     // Step 6: Abort if the number is unrepresentable
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
     std::memset(buffer, '\0', sizeof(buffer));
-    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(z));
+    auto r = to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(z.high));
+    to_chars128(r.ptr, buffer+sizeof(buffer), static_cast<boost::uint128_type>(z.low));
     std::cerr << "\nz: " << buffer << std::endl;
     #endif
 
