@@ -177,17 +177,18 @@ inline uint128 mask_mantissa(uint256 z) noexcept;
 template <typename T>
 inline uint128 mask_mantissa(uint256 z) noexcept
 {
-    //static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
-    //return static_cast<uint128>((z >> 113) & mask);
-    return z.high;
+    static constexpr uint256 mask {0x1FFFFFFFFFFFF, (std::numeric_limits<uint128>::max)()};
+    auto temp = z >> 64 & mask;
+    return temp.high;
 }
 #elif BOOST_CHARCONV_LDBL_BITS == 128
 
 template <typename T>
 inline uint128 mask_mantissa(uint256 z) noexcept
 {
-    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
-    return (z >> 113) & mask;
+    static constexpr uint256 mask {0x1FFFFFFFFFFFF, (std::numeric_limits<uint128>::max)()};
+    auto temp = z >> 113 & mask;
+    return temp.high;
 }
 
 #endif
@@ -196,8 +197,9 @@ inline uint128 mask_mantissa(uint256 z) noexcept
 template <>
 inline uint128 mask_mantissa<__float128>(uint256 z) noexcept
 {
-    static constexpr uint128 mask {0x1FFFFFFFFFFFF, UINT64_MAX};
-    return (z >> 113) & mask;
+    static constexpr uint256 mask {0x1FFFFFFFFFFFF, (std::numeric_limits<uint128>::max)()};
+    auto temp = z >> 113 & mask;
+    return temp.high;
 }
 
 #endif
