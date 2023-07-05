@@ -306,12 +306,27 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Step 3: Compute the number of leading zeros of w and store as leading_zeros
     // UB when w is 0 but this has already been filtered out in step 1
-    auto leading_zeros = clz_u128(w);
+    const auto leading_zeros = clz_u128(w);
 
     // Step 4: Normalize the significand
-    w = (1 << leading_zeros) * w;
+    if (leading_zeros != 0)
+    {
+        w = (1 << leading_zeros) * w;
+    }
+    while (w < std::numeric_limits<uint128>::max() / 2)
+    {
+        w <<= 1;
+    }
 
-    // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication if
+    #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+    std::memset(buffer, '\0', sizeof(buffer));
+    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(w));
+    std::cerr << "\nw: " << buffer << std::endl;
+    BOOST_CHARCONV_ASSERT(w <= std::numeric_limits<uint128>::max());
+    BOOST_CHARCONV_ASSERT(w >= std::numeric_limits<uint128>::max() / 2);
+    #endif
+
+    // Step 5a: Compute the truncated 256-bit product stopping after  1 multiplication if
     // no more are required to represent the number exactly
     auto z = umul256(significand_256_high[q - smallest_power], w) / UINT64_MAX;
 
