@@ -280,7 +280,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Steps 1 and 2: Return now if the number is unrepresentable
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
-    char buffer [100] {};
+    char buffer [256] {};
     to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(w));
     std::cerr << "\nInputs"
               << "\nMantissa: " << buffer
@@ -364,8 +364,11 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     auto m = mask_mantissa<ResultType>(z);
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
     std::memset(buffer, '\0', sizeof(buffer));
-    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(m));
-    std::cerr << "m: " << buffer << std::endl;
+    r = to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(z.high), 2);
+    std::cerr << "Z_2: " << buffer << std::endl;
+    std::memset(buffer, '\0', sizeof(buffer));
+    to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(m), 2);
+    std::cerr << "m_2: " << buffer << std::endl;
     #endif
 
     // Step 8: Value of the most significant bit of z
@@ -412,7 +415,10 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     std::memset(buffer, '\0', sizeof(buffer));
     to_chars128(buffer, buffer+sizeof(buffer), static_cast<boost::uint128_type>(m));
     std::cerr << "\nm`: " << buffer
-              << "\np`: " << p << std::endl;
+              << "\np`: " << p;
+    std::memset(buffer, '\0', sizeof(buffer));
+    to_chars_int(buffer, buffer+sizeof(buffer), p, 2);
+    std::cerr << "\np`_2: " << buffer << std::endl;
     #endif
 
     // Step 13: if the exponent is out of range than return correct HUGE_VAL
