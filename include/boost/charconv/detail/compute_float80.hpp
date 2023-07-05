@@ -311,7 +311,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // Step 4: Normalize the significand
     if (leading_zeros != 0)
     {
-        w = (1 << leading_zeros) * w;
+        w <<= leading_zeros;
     }
     while (w < std::numeric_limits<uint128>::max() / 2)
     {
@@ -328,9 +328,23 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     // Step 5a: Compute the truncated 256-bit product stopping after  1 multiplication if
     // no more are required to represent the number exactly
-    auto z = umul256(significand_256_high[q - smallest_power], w) / UINT64_MAX;
+    auto z = umul256(significand_256_high[q - smallest_power], w);
 
-    // Step 5b: Some kind of branch to use the second table
+    // Step 5b: Need to include more digits using the second table
+    if (BOOST_UNLIKELY((z.high & uint128(0x1FFFF)) == uint128(0x1FFFF)) && (z.low + w < z.low))
+    {
+        const auto middle1 = z.low;
+        z = umul256(significand_256_low[q - smallest_power], w);
+        const auto middle2 = z.high;
+        const auto middle = middle1 + middle2;
+
+        if (middle < middle1)
+        {
+            ++z.high;
+        }
+
+        z.low = middle;
+    }
 
     // Step 6: Abort if the number is unrepresentable
     #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
