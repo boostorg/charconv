@@ -342,7 +342,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
     if (std::abs(return_val) == huge_val<__float128>())
     {
         success = std::errc::result_out_of_range;
-        return negative ? -0.0L : 0.0L;
+        return negative ? -0.0Q : 0.0Q;
     }
 
     return_val = negative ? -return_val : return_val;
@@ -442,6 +442,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         ++bits.mantissa_l;
         std::memcpy(&return_val, &bits, sizeof(return_val));
     }
+
     success = std::errc();
     return return_val;
 }

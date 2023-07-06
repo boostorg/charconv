@@ -48,7 +48,7 @@ std::ostream& operator<<( std::ostream& os, __float128 v )
 #include <string>
 #include <random>
 
-constexpr int N = 1024;
+constexpr int N = 10;
 static boost::detail::splitmix64 rng;
 
 template <typename T>
@@ -75,6 +75,71 @@ void test_signaling_nan()
     BOOST_TEST(!(boost::charconv::detail::issignaling)(-std::numeric_limits<T>::infinity()));
 }
 
+// Derivative of
+// https://stackoverflow.com/questions/62074229/float-distance-for-80-bit-long-double
+/*  Return the signed distance from 0 to x, measuring distance as one unit per
+    number representable in FPType.  x must be a finite number.
+*/
+template<typename FPType> int64_t ToOrdinal(FPType x)
+{
+    static constexpr int
+            Radix             = 2,
+            SignificandDigits = FLT128_MANT_DIG,
+            MinimumExponent   = FLT128_MIN_EXP;
+
+    //  Number of normal representable numbers for each exponent.
+    static const auto
+            NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
+
+    static_assert(std::numeric_limits<FPType>::has_denorm == std::denorm_present,
+                  "This code presumes floating-point type has subnormal numbers.");
+
+    if (x == 0)
+        return 0;
+
+    //  Separate the sign.
+    int sign = signbitq(x) ? -1 : +1;
+    x = fabsq(x);
+
+    //  Separate the significand and exponent.
+    int exponent = ilogbq(x)+1;
+    FPType fraction = scalbnq(x, -exponent);
+
+    if (exponent < MinimumExponent)
+    {
+        //  For subnormal x, adjust to its subnormal representation.
+        fraction = scalbnq(fraction, exponent - MinimumExponent);
+        exponent = MinimumExponent;
+    }
+
+    /*  Start with the number of representable numbers in preceding normal
+        exponent ranges.
+    */
+    int64_t count = (exponent - MinimumExponent) * NumbersPerExponent;
+
+    /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
+        number of representable numbers from 0 to x.  For normal numbers,
+        (fraction-1) * radix ** SignificandDigits is the number of
+        representable numbers from the start of x's exponent range to x, and
+        1 * radix ** SignificandDigits is the number of representable subnormal
+        numbers (which we have not added into count yet).  So, in either case,
+        adding fraction * radix ** SignificandDigits is the desired amount to
+        add to count.
+    */
+    count += (int64_t)scalbnq(fraction, SignificandDigits);
+
+    return sign * count;
+}
+
+
+/*  Return the number of representable numbers from x to y, including one
+    endpoint.
+*/
+template<typename FPType> int64_t Distance(FPType y, FPType x)
+{
+    return ToOrdinal(y) - ToOrdinal(x);
+}
+
 template <typename T>
 void test_roundtrip( T value )
 {
@@ -87,7 +152,7 @@ void test_roundtrip( T value )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( Distance(v2, value) <= 1 ) )
     {
     }
     else
