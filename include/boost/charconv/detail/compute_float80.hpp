@@ -27,6 +27,8 @@
 
 namespace boost { namespace charconv { namespace detail {
 
+#if BOOST_CHARCONV_LDBL_BITS > 64
+
 static constexpr long double powers_of_ten_ld[] = {
     1e0L,  1e1L,  1e2L,  1e3L,  1e4L,  1e5L,  1e6L,
     1e7L,  1e8L,  1e9L,  1e10L, 1e11L, 1e12L, 1e13L,
@@ -677,6 +679,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
 }
 */
+
+#endif // BOOST_CHARCONV_LDBL_BITS > 64
 
 }}} // Namespaces
 
