@@ -36,6 +36,27 @@ static constexpr long double powers_of_ten_ld[] = {
     1e42L, 1e43L, 1e44L, 1e45L, 1e46L, 1e47L, 1e48L
 };
 
+static constexpr long double big_powers_of_ten_ld[] = {
+    1e4932L, 1e4931L, 1e4930L, 1e4929L, 1e4928L, 1e4927L,
+    1e4926L, 1e4925L, 1e4924L, 1e4923L, 1e4922L, 1e4921L,
+    1e4920L, 1e4919L, 1e4918L, 1e4917L, 1e4916L, 1e4915L,
+    1e4914L, 1e4913L, 1e4912L, 1e4911L, 1e4910L, 1e4909L,
+    1e4908L, 1e4907L, 1e4906L, 1e4905L, 1e4904L, 1e4903L,
+    1e4902L, 1e4901L, 1e4900L, 1e4899L, 1e4898L, 1e4897L,
+    1e4896L, 1e4895L, 1e4894L, 1e4893L, 1e4892L, 1e4891L,
+    1e4890L, 1e4889L, 1e4888L, 1e4887L, 1e4886L, 1e4885L
+};
+
+static constexpr long double small_powers_of_ten_ld[] = {
+    0.0L, 1e-4950L, 1e-4949L, 1e-4948L, 1e-4947L, 1e-4946L,
+    1e-4945L, 1e-4944L, 1e-4943L, 1e-4942L, 1e-4941L, 1e-4940L,
+    1e-4939L, 1e-4938L, 1e-4937L, 1e-4936L, 1e-4935L, 1e-4934L,
+    1e-4933L, 1e-4932L, 1e-4931L, 1e-4930L, 1e-4929L, 1e-4928L,
+    1e-4927L, 1e-4926L, 1e-4925L, 1e-4924L, 1e-4923L, 1e-4922L,
+    1e-4921L, 1e-4920L, 1e-4919L, 1e-4918L, 1e-4917L, 1e-4916L,
+    1e-4915L, 1e-4914L, 1e-4913L, 1e-4912L, 1e-4911L, 1e-4910L
+};
+
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 static constexpr __float128 powers_of_tenq[] = {
     1e0Q,  1e1Q,  1e2Q,  1e3Q,  1e4Q,  1e5Q,  1e6Q,
@@ -236,6 +257,11 @@ inline uint128 significant_bit<__float128>(uint128 z) noexcept
 template <typename ResultType, typename Unsigned_Integer>
 inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
+    // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
+    // 39 is the max number of digits in an uint128_t
+    static constexpr auto smallest_power = -4951;
+    static constexpr auto largest_power = 4932;
+
     // We start with a fast path
     // It is an extension of what was described in Clinger WD.
     // How to read floating point numbers accurately.
@@ -248,7 +274,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         if (0 <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
         #else
         if (-clinger_max_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
-                #endif
+        #endif
         {
             success = std::errc();
             return fast_path<ResultType>(q, w, negative, powers_of_ten_ld);
@@ -269,8 +295,66 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     }
     #endif
 
-    success = std::errc::not_supported;
-    return ResultType(0);
+    if (w == 0)
+    {
+        success = std::errc();
+        return negative ? -0.0L : 0.0L;
+    }
+    else if (q > largest_power)
+    {
+        success = std::errc::result_out_of_range;
+        return negative ? -huge_val<ResultType>() : huge_val<ResultType>();
+    }
+    else if (q < smallest_power)
+    {
+        success = std::errc::result_out_of_range;
+        return negative ? -zero_val<ResultType>() : zero_val<ResultType>();
+    }
+    else if (q == smallest_power)
+    {
+        success = std::errc::not_supported;
+        return 0;
+    }
+
+
+    // If that does not work we calculate the power
+    // and use our 128-bit emulated representation of the mantissa
+    // which we know casts properly to long double
+    uint128 man = w;
+    auto return_val = static_cast<ResultType>(man);
+
+    if (q >= 4885)
+    {
+        return_val *= big_powers_of_ten_ld[largest_power - q];
+    }
+    else if (q <= -4910)
+    {
+        return_val *= small_powers_of_ten_ld[std::abs(smallest_power - q)];
+    }
+    else
+    {
+        return_val *= std::pow(10.0L, static_cast<long double>(q));
+    }
+
+    if (std::abs(return_val) == huge_val<ResultType>())
+    {
+        success = std::errc::result_out_of_range;
+        return negative ? -0.0L : 0.0L;
+    }
+
+    return_val = negative ? -return_val : return_val;
+
+    // Round to even if required
+    IEEEl2bits bits;
+    std::memcpy(&bits, &return_val, sizeof(return_val));
+    if ((man & 1) != (bits.mantissa_l & 1))
+    {
+        ++bits.mantissa_l;
+        std::memcpy(&return_val, &bits, sizeof(return_val));
+    }
+
+    success = std::errc();
+    return return_val;
 }
 
 /*
