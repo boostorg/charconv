@@ -238,10 +238,13 @@ template<class T> void test_roundtrip( T value )
     else
     {
         //#ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
-        std::cerr << std::setprecision(17)
+        std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )
-                  << "\nFrom chars: " << v2 << std::endl;
+                  << "\nFrom chars: " << v2 << std::endl
+                  << std::hexfloat
+                  << "\n     Value: " << value
+                  << "\nFrom chars: " << v2 << std::endl << std::scientific;
         //#else
         //std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
         //#endif
