@@ -68,7 +68,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <cfloat>
 #include <cmath>
 
-int const N = 10;
+int const N = 1024;
 
 static boost::detail::splitmix64 rng;
 
@@ -256,7 +256,7 @@ template<class T> void test_roundtrip( T value )
 /*  Return the signed distance from 0 to x, measuring distance as one unit per
     number representable in FPType.  x must be a finite number.
 */
-template<typename FPType> intmax_t ToOrdinal(FPType x)
+template<typename FPType> int64_t ToOrdinal(FPType x)
 {
     static constexpr int
             Radix             = std::numeric_limits<FPType>::radix,
@@ -265,7 +265,7 @@ template<typename FPType> intmax_t ToOrdinal(FPType x)
 
     //  Number of normal representable numbers for each exponent.
     static const auto
-            NumbersPerExponent = static_cast<intmax_t>(scalbn(Radix-1, SignificandDigits-1));
+            NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
 
     static_assert(std::numeric_limits<FPType>::has_denorm == std::denorm_present,
                   "This code presumes floating-point type has subnormal numbers.");
@@ -291,7 +291,7 @@ template<typename FPType> intmax_t ToOrdinal(FPType x)
     /*  Start with the number of representable numbers in preceding normal
         exponent ranges.
     */
-    intmax_t count = (exponent - MinimumExponent) * NumbersPerExponent;
+    int64_t count = (exponent - MinimumExponent) * NumbersPerExponent;
 
     /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
         number of representable numbers from 0 to x.  For normal numbers,
@@ -302,7 +302,7 @@ template<typename FPType> intmax_t ToOrdinal(FPType x)
         adding fraction * radix ** SignificandDigits is the desired amount to
         add to count.
     */
-    count += (intmax_t) std::scalbn(fraction, SignificandDigits);
+    count += (int64_t)std::scalbn(fraction, SignificandDigits);
 
     return sign * count;
 }
@@ -311,7 +311,7 @@ template<typename FPType> intmax_t ToOrdinal(FPType x)
 /*  Return the number of representable numbers from x to y, including one
     endpoint.
 */
-template<typename FPType> intmax_t Distance(FPType y, FPType x)
+template<typename FPType> int64_t Distance(FPType y, FPType x)
 {
     return ToOrdinal(y) - ToOrdinal(x);
 }
