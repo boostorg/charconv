@@ -21,6 +21,7 @@
 
 #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
 #include <iostream>
+#include <iomanip>
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #endif
 
@@ -54,7 +55,8 @@ static constexpr long double small_powers_of_ten_ld[] = {
     1e-4933L, 1e-4932L, 1e-4931L, 1e-4930L, 1e-4929L, 1e-4928L,
     1e-4927L, 1e-4926L, 1e-4925L, 1e-4924L, 1e-4923L, 1e-4922L,
     1e-4921L, 1e-4920L, 1e-4919L, 1e-4918L, 1e-4917L, 1e-4916L,
-    1e-4915L, 1e-4914L, 1e-4913L, 1e-4912L, 1e-4911L, 1e-4910L
+    1e-4915L, 1e-4914L, 1e-4913L, 1e-4912L, 1e-4911L, 1e-4910L,
+    1e-4909L, 1e-4908L, 1e-4907L, 1e-4906L, 1e-4905L, 1e-4904L
 };
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
@@ -327,7 +329,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     {
         return_val *= big_powers_of_ten_ld[largest_power - q];
     }
-    else if (q <= -4910)
+    else if (q <= -4904)
     {
         return_val *= small_powers_of_ten_ld[std::abs(smallest_power - q)];
     }
@@ -344,15 +346,22 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     return_val = negative ? -return_val : return_val;
 
-    // Round to even if required
-    IEEEl2bits bits;
+    // Do we need to round?
+    IEEEl2bits_oneman bits;
     std::memcpy(&bits, &return_val, sizeof(return_val));
-    if ((man & 1) != (bits.mantissa_l & 1))
+    if ((man & 1) != (bits.mantissa & 1))
     {
-        ++bits.mantissa_l;
+        // Yes we should round
+        if (bits.mantissa & 1)
+        {
+            ++bits.mantissa;
+        }
+        else
+        {
+            --bits.mantissa;
+        }
         std::memcpy(&return_val, &bits, sizeof(return_val));
     }
-
     success = std::errc();
     return return_val;
 }
