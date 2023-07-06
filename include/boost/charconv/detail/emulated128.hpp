@@ -135,6 +135,10 @@ struct uint128
     explicit constexpr operator boost::uint128_type() const noexcept { return (static_cast<boost::uint128_type>(high) << 64) + low; }
     #endif
 
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    explicit constexpr operator __float128() const noexcept { return ldexpq(static_cast<__float128>(high), 64) + static_cast<__float128>(low); }
+    #endif
+
     FLOAT_CONVERSION_OPERATOR(float)
     FLOAT_CONVERSION_OPERATOR(double)
     FLOAT_CONVERSION_OPERATOR(long double)
