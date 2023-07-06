@@ -85,7 +85,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     }
 
     std::errc success {};
-    auto return_val = boost::charconv::detail::compute_float80<long double>(exponent, significand, sign, success);
+    auto return_val = boost::charconv::detail::compute_float128(exponent, significand, sign, success);
     r.ec = static_cast<std::errc>(success);
 
     if (r.ec == std::errc())
