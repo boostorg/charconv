@@ -136,7 +136,7 @@ struct uint128
     #endif
 
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    explicit constexpr operator __float128() const noexcept { return ldexpq(static_cast<__float128>(high), 64) + static_cast<__float128>(low); }
+    explicit operator __float128() const noexcept { return ldexpq(static_cast<__float128>(high), 64) + static_cast<__float128>(low); }
     #endif
 
     FLOAT_CONVERSION_OPERATOR(float)
