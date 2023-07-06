@@ -233,7 +233,47 @@ inline uint128 significant_bit<__float128>(uint128 z) noexcept
 }
 #endif
 
+template <typename ResultType, typename Unsigned_Integer>
+inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
+{
+    // We start with a fast path
+    // It is an extension of what was described in Clinger WD.
+    // How to read floating point numbers accurately.
+    // ACM SIGPLAN Notices. 1990
+    // https://dl.acm.org/doi/pdf/10.1145/93542.93557
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<ResultType, long double>::value)
+    {
+        constexpr auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
+        #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
+        if (0 <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
+        #else
+        if (-clinger_max_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
+                #endif
+        {
+            success = std::errc();
+            return fast_path<ResultType>(q, w, negative, powers_of_ten_ld);
+        }
+    }
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    else
+    {
+        #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
+        if (0 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 64)
+        #else
+        if (-48 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 64)
+        #endif
+        {
+            success = std::errc();
+            return fast_path<ResultType>(q, w, negative, powers_of_tenq);
+        }
+    }
+    #endif
 
+    success = std::errc::not_supported;
+    return ResultType(0);
+}
+
+/*
 template <typename ResultType, typename Unsigned_Integer>
 inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
@@ -438,7 +478,6 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     return static_cast<long double>(m) * pow2top<ResultType>(p) * pow2toneg113<ResultType>();
 
-    /*
     // Step 5a: Compute the truncated 256-bit product stopping after 1 multiplication
     // if the result is exact
     const uint128 factor_significand = significand_256_high[q - smallest_power];
@@ -550,8 +589,9 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     success = std::errc();
 
     return res;
-    */
+
 }
+*/
 
 }}} // Namespaces
 
