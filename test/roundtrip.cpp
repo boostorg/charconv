@@ -67,6 +67,11 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <cfloat>
 #include <cmath>
 
+#if __cplusplus >= 201402L || _MSVC_LANG >= 201402L
+#  include <boost/math/special_functions/next.hpp>
+#  define BOOST_CHARCONV_HAS_FLOAT_DISTANCE
+#endif
+
 int const N = 10;
 
 static boost::detail::splitmix64 rng;
@@ -237,7 +242,7 @@ template<class T> void test_roundtrip( T value )
     }
     else
     {
-        //#ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
+        #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
         std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )
@@ -245,11 +250,47 @@ template<class T> void test_roundtrip( T value )
                   << std::hexfloat
                   << "\n     Value: " << value
                   << "\nFrom chars: " << v2 << std::endl << std::scientific;
-        //#else
-        //std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
-        //#endif
+        #else
+        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        #endif
     }
 }
+
+#ifndef BOOST_CHARCONV_HAS_FLOAT_DISTANCE
+template <> void test_roundtrip<long double>( long double )
+{
+}
+#else
+template <> void test_roundtrip<long double>(long double value)
+{
+    char buffer[ 256 ];
+
+    auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
+
+    BOOST_TEST( r.ec == std::errc() );
+
+    long double v2 = 0;
+    auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_LE( boost::math::float_distance(v2, value), 1 ) )
+    {
+    }
+    else
+    {
+        #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
+        std::cerr << std::setprecision(std::numeric_limits<long double>::digits10 + 1)
+                  << "     Value: " << value
+                  << "\n  To chars: " << std::string( buffer, r.ptr )
+                  << "\nFrom chars: " << v2 << std::endl
+                  << std::hexfloat
+                  << "\n     Value: " << value
+                  << "\nFrom chars: " << v2 << std::endl << std::scientific;
+        #else
+        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        #endif
+    }
+}
+#endif
 
 // floating point types, boundary values
 
