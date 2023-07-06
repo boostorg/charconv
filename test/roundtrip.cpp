@@ -63,14 +63,10 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <numeric>
 #include <cstdint>
 #include <cfloat>
 #include <cmath>
-
-#if __cplusplus >= 201402L || _MSVC_LANG >= 201402L
-#  include <boost/math/special_functions/next.hpp>
-#  define BOOST_CHARCONV_HAS_FLOAT_DISTANCE
-#endif
 
 int const N = 10;
 
@@ -256,11 +252,70 @@ template<class T> void test_roundtrip( T value )
     }
 }
 
-#ifndef BOOST_CHARCONV_HAS_FLOAT_DISTANCE
-template <> void test_roundtrip<long double>( long double )
+// https://stackoverflow.com/questions/62074229/float-distance-for-80-bit-long-double
+/*  Return the signed distance from 0 to x, measuring distance as one unit per
+    number representable in FPType.  x must be a finite number.
+*/
+template<typename FPType> intmax_t ToOrdinal(FPType x)
 {
+    static constexpr int
+            Radix             = std::numeric_limits<FPType>::radix,
+            SignificandDigits = std::numeric_limits<FPType>::digits,
+            MinimumExponent   = std::numeric_limits<FPType>::min_exponent;
+
+    //  Number of normal representable numbers for each exponent.
+    static const auto
+            NumbersPerExponent = static_cast<intmax_t>(scalbn(Radix-1, SignificandDigits-1));
+
+    static_assert(std::numeric_limits<FPType>::has_denorm == std::denorm_present,
+                  "This code presumes floating-point type has subnormal numbers.");
+
+    if (x == 0)
+        return 0;
+
+    //  Separate the sign.
+    int sign = std::signbit(x) ? -1 : +1;
+    x = std::fabs(x);
+
+    //  Separate the significand and exponent.
+    int exponent = std::ilogb(x)+1;
+    FPType fraction = std::scalbn(x, -exponent);
+
+    if (exponent < MinimumExponent)
+    {
+        //  For subnormal x, adjust to its subnormal representation.
+        fraction = std::scalbn(fraction, exponent - MinimumExponent);
+        exponent = MinimumExponent;
+    }
+
+    /*  Start with the number of representable numbers in preceding normal
+        exponent ranges.
+    */
+    intmax_t count = (exponent - MinimumExponent) * NumbersPerExponent;
+
+    /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
+        number of representable numbers from 0 to x.  For normal numbers,
+        (fraction-1) * radix ** SignificandDigits is the number of
+        representable numbers from the start of x's exponent range to x, and
+        1 * radix ** SignificandDigits is the number of representable subnormal
+        numbers (which we have not added into count yet).  So, in either case,
+        adding fraction * radix ** SignificandDigits is the desired amount to
+        add to count.
+    */
+    count += (intmax_t) std::scalbn(fraction, SignificandDigits);
+
+    return sign * count;
 }
-#else
+
+
+/*  Return the number of representable numbers from x to y, including one
+    endpoint.
+*/
+template<typename FPType> intmax_t Distance(FPType y, FPType x)
+{
+    return ToOrdinal(y) - ToOrdinal(x);
+}
+
 template <> void test_roundtrip<long double>(long double value)
 {
     char buffer[ 256 ];
@@ -272,7 +327,7 @@ template <> void test_roundtrip<long double>(long double value)
     long double v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_LE( boost::math::float_distance(v2, value), 1 ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_LE( Distance(v2, value), 1 ) )
     {
     }
     else
@@ -290,7 +345,6 @@ template <> void test_roundtrip<long double>(long double value)
         #endif
     }
 }
-#endif
 
 // floating point types, boundary values
 
