@@ -87,21 +87,6 @@ struct IEEEl2bits
 #endif
 };
 
-struct IEEEl2bits_oneman
-{
-#if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
-    std::uint64_t mantissa : 64;
-    std::uint32_t exponent : 15;
-    std::uint32_t sign : 1;
-    std::uint32_t pad : 32;
-#else // Big endian
-    std::uint32_t pad : 32;
-    std::uint32_t sign : 1;
-    std::uint32_t exponent : 15;
-    std::uint64_t mantissa : 64
-#endif
-};
-
 struct ieee754_binary80
 {
     static constexpr int significand_bits = 63;

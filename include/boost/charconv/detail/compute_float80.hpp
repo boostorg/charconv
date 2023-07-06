@@ -347,19 +347,11 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     return_val = negative ? -return_val : return_val;
 
     // Do we need to round?
-    IEEEl2bits_oneman bits;
-    std::memcpy(&bits, &return_val, sizeof(return_val));
-    if ((man & 1) != (bits.mantissa & 1))
+    if (!(man & 1))
     {
-        // Yes we should round
-        if (bits.mantissa & 1)
-        {
-            ++bits.mantissa;
-        }
-        else
-        {
-            --bits.mantissa;
-        }
+        IEEEl2bits bits;
+        std::memcpy(&bits, &return_val, sizeof(return_val));
+        ++bits.mantissa_l;
         std::memcpy(&return_val, &bits, sizeof(return_val));
     }
     success = std::errc();
