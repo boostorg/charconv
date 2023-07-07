@@ -162,7 +162,7 @@ void test_roundtrip( T value )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( Distance(v2, value) <= 1 ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( std::abs(Distance(v2, value)) <= 1 ) )
     {
     }
     else
@@ -170,7 +170,8 @@ void test_roundtrip( T value )
         std::cerr << std::setprecision(35)
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )
-                  << "\nFrom chars: " << v2 << std::endl;
+                  << "\nFrom chars: " << v2
+                  << "\nULP distance: " << Distance(v2, value) << std::endl;
     }
 }
 

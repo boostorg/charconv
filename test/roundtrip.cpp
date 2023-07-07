@@ -340,7 +340,7 @@ template <> void test_roundtrip<long double>(long double value)
     long double v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_LE( Distance(v2, value), 1 ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_LE( std::abs(Distance(v2, value)), 1 ) )
     {
     }
     else
@@ -354,7 +354,9 @@ template <> void test_roundtrip<long double>(long double value)
                   << "\n     Value: " << value
                   << "\nFrom chars: " << v2 << std::endl << std::scientific;
         #else
-        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        std::cerr << "... test failure for value=" << value
+                  << "; buffer='" << std::string( buffer, r.ptr ) << "'"
+                  << "; ulp distance= " << Distance(v2, value) << std::endl;
         #endif
     }
 }
