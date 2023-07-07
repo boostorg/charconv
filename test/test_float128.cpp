@@ -80,7 +80,11 @@ void test_signaling_nan()
 /*  Return the signed distance from 0 to x, measuring distance as one unit per
     number representable in FPType.  x must be a finite number.
 */
-template<typename FPType> int64_t ToOrdinal(FPType x)
+template<typename FPType>
+#ifndef BOOST_MSVC
+__attribute__((no_sanitize("undefined")))
+#endif
+int64_t ToOrdinal(FPType x)
 {
     static constexpr int
             Radix             = 2,
