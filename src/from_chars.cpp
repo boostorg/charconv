@@ -94,6 +94,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     else if (r.ec == std::errc::not_supported)
     {
         // Fallback routine
+        errno = 0;
         std::string temp (first, last); // zero termination
         char* ptr = nullptr;
         value = strtoflt128(temp.c_str(), &ptr);
@@ -209,6 +210,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     else if (r.ec == std::errc::not_supported)
     {
         // Fallback routine
+        errno = 0; // Set to zero, so we get a clean reading from strtold
         std::string temp (first, last); // zero termination
         char* ptr = nullptr;
         value = std::strtold(temp.c_str(), &ptr);
