@@ -48,7 +48,7 @@ std::ostream& operator<<( std::ostream& os, __float128 v )
 #include <string>
 #include <random>
 
-constexpr int N = 10;
+constexpr int N = 1024;
 static boost::detail::splitmix64 rng;
 
 template <typename T>
