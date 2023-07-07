@@ -80,7 +80,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != std::errc())
     {
-        value = 0.0Q;
         return r;
     }
 
@@ -99,7 +98,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
         char* ptr = nullptr;
         value = strtoflt128(temp.c_str(), &ptr);
         r.ptr = ptr;
-        r.ec = detail::errno_to_errc(errno);
+        r.ec = static_cast<std::errc>(errno);
     }
 
     return r;
@@ -196,7 +195,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
     if (r.ec != std::errc())
     {
-        value = 0.0L;
         return r;
     }
 
@@ -215,7 +213,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
         char* ptr = nullptr;
         value = std::strtold(temp.c_str(), &ptr);
         r.ptr = ptr;
-        r.ec = detail::errno_to_errc(errno);
+        r.ec = static_cast<std::errc>(errno);
     }
 
     return r;
