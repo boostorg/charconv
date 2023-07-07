@@ -286,7 +286,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     // 39 is the max number of digits in an uint128_t
-    static constexpr auto smallest_power = -4951;
+    static constexpr auto smallest_power = -4966; // Includes offset for the powers implicit in the mantissa
     static constexpr auto largest_power = 4932;
 
     #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
