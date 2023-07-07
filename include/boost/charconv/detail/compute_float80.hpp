@@ -339,7 +339,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
         return_val *= powq(10.0Q, static_cast<__float128>(q));
     }
 
-    if (std::abs(return_val) == huge_val<__float128>())
+    if (fabsq(return_val) == huge_val<__float128>())
     {
         success = std::errc::result_out_of_range;
         return negative ? -0.0Q : 0.0Q;
