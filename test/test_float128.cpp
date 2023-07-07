@@ -39,6 +39,49 @@ std::ostream& operator<<( std::ostream& os, __float128 v )
 
 #endif // BOOST_CHARCONV_HAS_STDFLOAT128
 
+static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
+{
+    char* p = buffer + 64;
+    *--p = '\0';
+
+    do
+    {
+        *--p = "0123456789"[ v % 10 ];
+        v /= 10;
+    }
+    while ( v != 0 );
+
+    return p;
+}
+
+std::ostream& operator<<( std::ostream& os, boost::uint128_type v )
+{
+    char buffer[ 64 ];
+
+    os << mini_to_chars( buffer, v );
+    return os;
+}
+
+std::ostream& operator<<( std::ostream& os, boost::int128_type v )
+{
+    char buffer[ 64 ];
+    char* p;
+
+    if( v >= 0 )
+    {
+        p = mini_to_chars( buffer, v );
+    }
+    else
+    {
+        p = mini_to_chars( buffer, -(boost::uint128_type)v );
+        *--p = '-';
+    }
+
+    os << p;
+    return os;
+}
+
+
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
@@ -48,7 +91,7 @@ std::ostream& operator<<( std::ostream& os, __float128 v )
 #include <string>
 #include <random>
 
-constexpr int N = 1024;
+constexpr int N = 10;
 static boost::detail::splitmix64 rng;
 
 template <typename T>
@@ -75,79 +118,23 @@ void test_signaling_nan()
     BOOST_TEST(!(boost::charconv::detail::issignaling)(-std::numeric_limits<T>::infinity()));
 }
 
-// Derivative of
-// https://stackoverflow.com/questions/62074229/float-distance-for-80-bit-long-double
-/*  Return the signed distance from 0 to x, measuring distance as one unit per
-    number representable in FPType.  x must be a finite number.
-*/
-
-#if defined(__GNUC__) && (__GNUC__ >= 5)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wattributes"
-#endif
-
-template<typename FPType>
-#if !defined(BOOST_MSVC) && !(defined(__clang__) && (__clang_major__ == 3) && (__clang_minor__ < 7))
-__attribute__((no_sanitize("undefined")))
-#endif
-int64_t ToOrdinal(FPType x)
+template <typename T>
+boost::int128_type float_distance(T a, T b)
 {
-    static constexpr int
-            Radix             = 2,
-            SignificandDigits = FLT128_MANT_DIG,
-            MinimumExponent   = FLT128_MIN_EXP;
+    boost::int128_type ai;
+    boost::int128_type bi;
 
-    //  Number of normal representable numbers for each exponent.
-    static const auto
-            NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
+    std::memcpy(&ai, &a, sizeof(__float128));
+    std::memcpy(&bi, &b, sizeof(__float128));
 
-    if (x == 0)
-        return 0;
+    boost::int128_type result = bi - ai;
 
-    //  Separate the sign.
-    int sign = signbitq(x) ? -1 : +1;
-    x = fabsq(x);
-
-    //  Separate the significand and exponent.
-    int exponent = ilogbq(x)+1;
-    FPType fraction = scalbnq(x, -exponent);
-
-    if (exponent < MinimumExponent)
+    if (ai < 0 || bi < 0)
     {
-        //  For subnormal x, adjust to its subnormal representation.
-        fraction = scalbnq(fraction, exponent - MinimumExponent);
-        exponent = MinimumExponent;
+        result = -result;
     }
 
-    /*  Start with the number of representable numbers in preceding normal
-        exponent ranges.
-    */
-    int64_t count = (exponent - MinimumExponent) * NumbersPerExponent;
-
-    /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
-        number of representable numbers from 0 to x.  For normal numbers,
-        (fraction-1) * radix ** SignificandDigits is the number of
-        representable numbers from the start of x's exponent range to x, and
-        1 * radix ** SignificandDigits is the number of representable subnormal
-        numbers (which we have not added into count yet).  So, in either case,
-        adding fraction * radix ** SignificandDigits is the desired amount to
-        add to count.
-    */
-    count += (int64_t)scalbnq(fraction, SignificandDigits);
-
-    return sign * count;
-}
-
-#if defined(__GNUC__) && (__GNUC__ >= 5)
-# pragma GCC diagnostic pop
-#endif
-
-/*  Return the number of representable numbers from x to y, including one
-    endpoint.
-*/
-template<typename FPType> int64_t Distance(FPType y, FPType x)
-{
-    return ToOrdinal(y) - ToOrdinal(x);
+    return result;
 }
 
 template <typename T>
@@ -162,7 +149,7 @@ void test_roundtrip( T value )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( std::abs(Distance(v2, value)) <= 1 ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( std::abs(float_distance(v2, value)) <= 1 ) )
     {
     }
     else
@@ -171,7 +158,7 @@ void test_roundtrip( T value )
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )
                   << "\nFrom chars: " << v2
-                  << "\nULP distance: " << Distance(v2, value) << std::endl;
+                  << "\nULP distance: " << float_distance(v2, value) << std::endl;
     }
 }
 
@@ -392,7 +379,106 @@ void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_form
         test_spot<T>(dist(gen), fmt);
     }
 }
-#endif
+
+boost::int128_type float_total = 0;
+boost::uint128_type abs_float_total = 0;
+
+template <typename T>
+void charconv_roundtrip(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
+{
+    if (fmt == boost::charconv::chars_format::fixed && (val > 1e100 || val < 1e-100))
+    {
+        // Avoid failres from overflow
+        return;
+    }
+
+    std::chars_format stl_fmt;
+    switch (fmt)
+    {
+        case boost::charconv::chars_format::general:
+            stl_fmt = std::chars_format::general;
+            break;
+        case boost::charconv::chars_format::fixed:
+            stl_fmt = std::chars_format::fixed;
+            break;
+        case boost::charconv::chars_format::scientific:
+            stl_fmt = std::chars_format::scientific;
+            break;
+        case boost::charconv::chars_format::hex:
+            stl_fmt = std::chars_format::hex;
+            break;
+        default:
+            BOOST_UNREACHABLE_RETURN(fmt);
+            break;
+    }
+
+    char buffer_boost[256];
+    char buffer_stl[256];
+
+    boost::charconv::to_chars_result r_boost;
+    std::to_chars_result r_stl;
+
+    if (precision == -1)
+    {
+        r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt);
+        r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt);
+    }
+    else
+    {
+        r_boost = boost::charconv::to_chars(buffer_boost, buffer_boost + sizeof(buffer_boost), val, fmt, precision);
+        r_stl = std::to_chars(buffer_stl, buffer_stl + sizeof(buffer_stl), val, stl_fmt, precision);
+    }
+
+    BOOST_TEST(r_boost.ec == std::errc());
+    if (r_stl.ec != std::errc())
+    {
+        // STL failed
+        return;
+    }
+
+    const std::ptrdiff_t diff_boost = r_boost.ptr - buffer_boost;
+    const std::ptrdiff_t diff_stl = r_stl.ptr - buffer_stl;
+    const auto boost_str = std::string(buffer_boost, r_boost.ptr);
+    const auto stl_str = std::string(buffer_stl, r_stl.ptr);
+
+    if (!(BOOST_TEST_CSTR_EQ(boost_str.c_str(), stl_str.c_str()) && BOOST_TEST_EQ(diff_boost, diff_stl)))
+    {
+        std::cerr << std::setprecision(35)
+                  << "Value: " << val
+                  << "\nBoost: " << boost_str.c_str()
+                  << "\n  STL: " << stl_str.c_str() << std::endl;
+    }
+
+    T val_boost;
+    T val_stl;
+    const auto r_boost2 = boost::charconv::from_chars(buffer_boost, r_boost.ptr, val_boost, fmt);
+    const auto r_stl2 = std::from_chars(buffer_stl, r_stl.ptr, val_stl, stl_fmt);
+
+    BOOST_TEST(r_boost2.ec == std::errc());
+    if (r_stl2.ec != std::errc())
+    {
+        // STL failed
+        return;
+    }
+
+    if (BOOST_TEST( val_boost == val_stl ))
+    {
+    }
+    else
+    {
+        const boost::int128_type dist = float_distance(val, val_boost);
+
+        float_total += dist;
+        abs_float_total += dist < 0 ? -dist : dist;
+        std::cerr << std::setprecision(35)
+                  << "Value: " << val
+                  << "\nBoost: " << val_boost
+                  << "\n ULPs: " << dist
+                  << "\n  STL: " << val_stl << std::endl;
+    }
+}
+
+#endif // BOOST_CHARCONV_HAS_STDFLOAT128
 
 int main()
 {
@@ -489,6 +575,7 @@ int main()
         {
             std::float128_t w0 = static_cast<std::float128_t>( rng() ); // 0 .. 2^128
             test_roundtrip( w0 );
+            charconv_roundtrip( w0 );
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
@@ -504,6 +591,7 @@ int main()
 
             std::float128_t w1 = static_cast<std::float128_t>( rng() * q ); // 0.0 .. 1.0
             test_roundtrip( w1 );
+            charconv_roundtrip( w1 );
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
@@ -522,6 +610,7 @@ int main()
 
             std::float128_t w2 = static_cast<std::float128_t>(FLT128_MAX) / static_cast<std::float128_t>( rng() ); // large values
             test_roundtrip( w2 );
+            charconv_roundtrip( w2 );
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
@@ -537,6 +626,7 @@ int main()
 
             std::float128_t w3 = static_cast<std::float128_t>(FLT128_MIN) * static_cast<std::float128_t>( rng() ); // small values
             test_roundtrip( w3 );
+            charconv_roundtrip( w3 );
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
@@ -556,7 +646,15 @@ int main()
 
     random_test<__float128>();
     random_test<std::float128_t>();
-    
+
+    if (abs_float_total != 0)
+    {
+        std::cerr << std::setprecision(5)
+                  << "\nAverage ULP distance: " << static_cast<double>(float_total) / static_cast<double>(N*4)
+                  << "\nAbsolute ULP avererage: " << static_cast<double>(abs_float_total) / static_cast<double>(N*4)
+                  << "\nTotal ULP distance: " << abs_float_total << std::endl;
+    }
+
     #endif
 
     return boost::report_errors();

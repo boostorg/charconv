@@ -159,7 +159,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
         success = std::errc::result_out_of_range;
         return negative ? -HUGE_VALQ : HUGE_VALQ;
     }
-    else if (q <= smallest_power)
+    else if (q <= -4914)
     {
         success = std::errc::not_supported;
         return 0;
