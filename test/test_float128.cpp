@@ -87,7 +87,7 @@ void test_signaling_nan()
 #endif
 
 template<typename FPType>
-#ifndef BOOST_MSVC
+#if !defined(BOOST_MSVC) && !(defined(__clang__) && (__clang_major__ == 3) && (__clang_minor__ < 7))
 __attribute__((no_sanitize("undefined")))
 #endif
 int64_t ToOrdinal(FPType x)
