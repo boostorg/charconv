@@ -80,6 +80,12 @@ void test_signaling_nan()
 /*  Return the signed distance from 0 to x, measuring distance as one unit per
     number representable in FPType.  x must be a finite number.
 */
+
+#if defined(__GNUC__) && (__GNUC__ >= 5)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 template<typename FPType>
 #ifndef BOOST_MSVC
 __attribute__((no_sanitize("undefined")))
@@ -135,6 +141,9 @@ int64_t ToOrdinal(FPType x)
     return sign * count;
 }
 
+#if defined(__GNUC__) && (__GNUC__ >= 5)
+# pragma GCC diagnostic pop
+#endif
 
 /*  Return the number of representable numbers from x to y, including one
     endpoint.
