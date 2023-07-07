@@ -136,7 +136,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     // 39 is the max number of digits in an uint128_t
-    static constexpr auto smallest_power = -4951;
+    // static constexpr auto smallest_power = -4951;
     static constexpr auto largest_power = 4932;
 
     #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
@@ -159,12 +159,11 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
         success = std::errc::result_out_of_range;
         return negative ? -HUGE_VALQ : HUGE_VALQ;
     }
-    else if (q <= -4914)
-    {
-        success = std::errc::not_supported;
-        return 0;
-    }
 
+    success = std::errc::not_supported;
+    return 0;
+
+    /*
     // If that does not work we calculate the power
     // and use our 128-bit emulated representation of the mantissa
     // which we know casts properly to long double
@@ -203,6 +202,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
 
     success = std::errc();
     return return_val;
+    */
 }
 #endif
 
@@ -245,13 +245,11 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
         success = std::errc::result_out_of_range;
         return negative ? -0.0L : 0.0L;
     }
-    else if (q == smallest_power)
-    {
-        success = std::errc::not_supported;
-        return 0;
-    }
 
+    success = std::errc::not_supported;
+    return 0;
 
+    /*
     // If that does not work we calculate the power
     // and use our 128-bit emulated representation of the mantissa
     // which we know casts properly to long double
@@ -290,6 +288,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     success = std::errc();
     return return_val;
+    */
 }
 
 #endif // BOOST_CHARCONV_LDBL_BITS > 64

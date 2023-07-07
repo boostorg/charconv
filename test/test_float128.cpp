@@ -91,7 +91,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <string>
 #include <random>
 
-constexpr int N = 10;
+constexpr int N = 1024;
 static boost::detail::splitmix64 rng;
 
 template <typename T>
@@ -478,6 +478,18 @@ void charconv_roundtrip(T val, boost::charconv::chars_format fmt = boost::charco
     }
 }
 
+template <typename T>
+void random_roundtrip(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    std::mt19937_64 gen(42);
+    std::uniform_real_distribution<T> dist(0, FLT128_MAX);
+
+    for (int i = 0; i < N; ++i)
+    {
+        charconv_roundtrip<T>(dist(gen), fmt);
+    }
+}
+
 #endif // BOOST_CHARCONV_HAS_STDFLOAT128
 
 int main()
@@ -646,6 +658,7 @@ int main()
 
     random_test<__float128>();
     random_test<std::float128_t>();
+    random_roundtrip<std::float128_t>();
 
     if (abs_float_total != 0)
     {
