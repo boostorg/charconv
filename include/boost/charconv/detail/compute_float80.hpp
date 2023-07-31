@@ -36,7 +36,8 @@ static constexpr long double powers_of_ten_ld[] = {
     1e21L, 1e22L, 1e23L, 1e24L, 1e25L, 1e26L, 1e27L,
     1e28L, 1e29L, 1e30L, 1e31L, 1e32L, 1e33L, 1e34L,
     1e35L, 1e36L, 1e37L, 1e38L, 1e39L, 1e40L, 1e41L,
-    1e42L, 1e43L, 1e44L, 1e45L, 1e46L, 1e47L, 1e48L
+    1e42L, 1e43L, 1e44L, 1e45L, 1e46L, 1e47L, 1e48L,
+    1e49L, 1e50L, 1e51L, 1e52L, 1e53L, 1e54L, 1e55L
 };
 
 static constexpr long double big_powers_of_ten_ld[] = {
@@ -69,7 +70,8 @@ static constexpr __float128 powers_of_tenq[] = {
     1e21Q, 1e22Q, 1e23Q, 1e24Q, 1e25Q, 1e26Q, 1e27Q,
     1e28Q, 1e29Q, 1e30Q, 1e31Q, 1e32Q, 1e33Q, 1e34Q,
     1e35Q, 1e36Q, 1e37Q, 1e38Q, 1e39Q, 1e40Q, 1e41Q,
-    1e42Q, 1e43Q, 1e44Q, 1e45Q, 1e46Q, 1e47Q, 1e48Q
+    1e42Q, 1e43Q, 1e44Q, 1e45Q, 1e46Q, 1e47Q, 1e48Q,
+    1e49Q, 1e50Q, 1e51Q, 1e52Q, 1e53Q, 1e54Q, 1e55Q
 };
 
 static constexpr __float128 big_powers_of_ten_q[] = {
@@ -220,10 +222,11 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // ACM SIGPLAN Notices. 1990
     // https://dl.acm.org/doi/pdf/10.1145/93542.93557
     constexpr auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
+    constexpr auto clinger_min_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? -34 : -55;
     #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
     if (0 <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
     #else
-    if (-clinger_max_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
+    if (clinger_min_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
     #endif
     {
         success = std::errc();
