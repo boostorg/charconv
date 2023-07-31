@@ -138,14 +138,14 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     // 39 is the max number of digits in an uint128_t
-    // static constexpr auto smallest_power = -4951;
+    static constexpr auto smallest_power = -4951 - 39;
     static constexpr auto largest_power = 4932;
 
     #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
-    if (0 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 64)
+    if (0 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 113)
     #else
-    if (-48 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 64)
-            #endif
+    if (-55 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 113)
+    #endif
     {
         success = std::errc();
         return fast_path<__float128>(q, w, negative, powers_of_tenq);
@@ -161,50 +161,14 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
         success = std::errc::result_out_of_range;
         return negative ? -HUGE_VALQ : HUGE_VALQ;
     }
-
-    success = std::errc::not_supported;
-    return 0;
-
-    /*
-    // If that does not work we calculate the power
-    // and use our 128-bit emulated representation of the mantissa
-    // which we know casts properly to long double
-    uint128 man = w;
-    auto return_val = static_cast<__float128>(man);
-
-    if (q >= 4885)
-    {
-        return_val *= big_powers_of_ten_q[largest_power - q];
-    }
-    else if (q <= -4904)
-    {
-        return_val *= small_powers_of_ten_q[std::abs(smallest_power - q)];
-    }
-    else
-    {
-        return_val *= powq(10.0Q, static_cast<__float128>(q));
-    }
-
-    if (fabsq(return_val) > FLT128_MAX)
+    else if (q < smallest_power)
     {
         success = std::errc::result_out_of_range;
         return negative ? -0.0Q : 0.0Q;
     }
 
-    return_val = negative ? -return_val : return_val;
-
-    // Do we need to round?
-    if (!(man & 1))
-    {
-        IEEEbinary128 bits;
-        std::memcpy(&bits, &return_val, sizeof(return_val));
-        ++bits.mantissa_l;
-        std::memcpy(&return_val, &bits, sizeof(return_val));
-    }
-
-    success = std::errc();
-    return return_val;
-    */
+    success = std::errc::not_supported;
+    return 0;
 }
 #endif
 
@@ -213,7 +177,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 {
     // GLIBC uses 2^-16444 but MPFR uses 2^-16445 as the smallest subnormal value for 80 bit
     // 39 is the max number of digits in an uint128_t
-    static constexpr auto smallest_power = -4951;
+    static constexpr auto smallest_power = -4951 - 39;
     static constexpr auto largest_power = 4932;
 
     // We start with a fast path
@@ -251,47 +215,6 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 
     success = std::errc::not_supported;
     return 0;
-
-    /*
-    // If that does not work we calculate the power
-    // and use our 128-bit emulated representation of the mantissa
-    // which we know casts properly to long double
-    uint128 man = w;
-    auto return_val = static_cast<ResultType>(man);
-
-    if (q >= 4885)
-    {
-        return_val *= big_powers_of_ten_ld[largest_power - q];
-    }
-    else if (q <= -4904)
-    {
-        return_val *= small_powers_of_ten_ld[std::abs(smallest_power - q)];
-    }
-    else
-    {
-        return_val *= std::pow(10.0L, static_cast<long double>(q));
-    }
-
-    if (std::abs(return_val) > (std::numeric_limits<long double>::max)())
-    {
-        success = std::errc::result_out_of_range;
-        return negative ? -0.0L : 0.0L;
-    }
-
-    return_val = negative ? -return_val : return_val;
-
-    // Do we need to round?
-    if (!(man & 1))
-    {
-        IEEEl2bits bits;
-        std::memcpy(&bits, &return_val, sizeof(return_val));
-        ++bits.mantissa_l;
-        std::memcpy(&return_val, &bits, sizeof(return_val));
-    }
-
-    success = std::errc();
-    return return_val;
-    */
 }
 
 #endif // BOOST_CHARCONV_LDBL_BITS > 64
