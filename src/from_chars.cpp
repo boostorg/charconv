@@ -31,19 +31,6 @@
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
-std::errc boost::charconv::detail::errno_to_errc(int errno_value) noexcept
-{
-    switch (errno_value)
-    {
-        case EINVAL:
-            return std::errc::invalid_argument;
-        case ERANGE:
-            return std::errc::result_out_of_range;
-        default:
-            return std::errc();
-    }
-}
-
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
 {
     if (fmt != boost::charconv::chars_format::hex)
