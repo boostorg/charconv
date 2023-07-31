@@ -141,11 +141,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
     static constexpr auto smallest_power = -4951 - 39;
     static constexpr auto largest_power = 4932;
 
-    #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
-    if (0 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 113)
-    #else
     if (-55 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 113)
-    #endif
     {
         success = std::errc();
         return fast_path<__float128>(q, w, negative, powers_of_tenq);
@@ -185,13 +181,10 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // How to read floating point numbers accurately.
     // ACM SIGPLAN Notices. 1990
     // https://dl.acm.org/doi/pdf/10.1145/93542.93557
-    constexpr auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
-    constexpr auto clinger_min_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? -34 : -55;
-    #if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
-    if (0 <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
-    #else
+    static constexpr auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
+    static constexpr auto clinger_min_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? -34 : -55;
+
     if (clinger_min_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
-    #endif
     {
         success = std::errc();
         return fast_path<ResultType>(q, w, negative, powers_of_ten_ld);
