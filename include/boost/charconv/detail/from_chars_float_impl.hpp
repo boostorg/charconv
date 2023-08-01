@@ -42,7 +42,12 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
     {
         return_value = std::strtof(buffer, &str_end);
+
+        #ifndef __INTEL_LLVM_COMPILER
         if (return_value == HUGE_VALF)
+        #else
+        if (return_value >= std::numeric_limits<T>::max())
+        #endif
         {
             return {last, std::errc::result_out_of_range};
         }
@@ -50,7 +55,12 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
     {
         return_value = std::strtod(buffer, &str_end);
+
+        #ifndef __INTEL_LLVM_COMPILER
         if (return_value == HUGE_VAL)
+        #else
+        if (return_value >= std::numeric_limits<T>::max())
+        #endif
         {
             return {last, std::errc::result_out_of_range};
         }
@@ -58,7 +68,12 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     else
     {
         return_value = std::strtold(buffer, &str_end);
+
+        #ifndef __INTEL_LLVM_COMPILER
         if (return_value == HUGE_VALL)
+        #else
+        if (return_value >= std::numeric_limits<T>::max())
+        #endif
         {
             return {last, std::errc::result_out_of_range};
         }
@@ -146,7 +161,11 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
         {
             BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
             {
+                #ifndef __INTEL_LLVM_COMPILER
                 if (return_val == HUGE_VALF || return_val == -HUGE_VALF)
+                #else
+                if (return_val >= std::numeric_limits<T>::max() || return_val <= std::numeric_limits<T>::lowest())
+                #endif
                 {
                     value = return_val;
                     r.ec = std::errc::result_out_of_range;
@@ -163,7 +182,11 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
             }
             else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
             {
+                #ifndef __INTEL_LLVM_COMPILER
                 if (return_val == HUGE_VAL || return_val == -HUGE_VAL)
+                #else
+                if (return_val >= std::numeric_limits<T>::max() || return_val <= std::numeric_limits<T>::lowest())
+                #endif
                 {
                     value = return_val;
                     r.ec = std::errc::result_out_of_range;
@@ -180,7 +203,11 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
             }
             else BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
             {
+                #ifndef __INTEL_LLVM_COMPILER
                 if (return_val == HUGE_VALL || return_val == -HUGE_VALL)
+                #else
+                if (return_val >= std::numeric_limits<T>::max() || return_val <= std::numeric_limits<T>::lowest())
+                #endif
                 {
                     value = return_val;
                     r.ec = std::errc::result_out_of_range;
