@@ -168,6 +168,8 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
+    static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
+
     bool sign {};
     std::int64_t exponent {};
 
