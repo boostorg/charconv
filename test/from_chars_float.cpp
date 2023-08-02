@@ -500,23 +500,20 @@ int main()
     odd_strings_test<float>();
     odd_strings_test<double>();
 
-    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     simple_integer_test<long double>();
     simple_hex_integer_test<long double>();
     simple_scientific_test<long double>();
     simple_hex_scientific_test<long double>();
-    #endif
 
     zero_test<float>();
     zero_test<double>();
+    zero_test<long double>();
 
     boost_json_test<double>();
 
     test_issue_37<float>();
     test_issue_37<double>();
-    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     test_issue_37<long double>();
-    #endif
 
     test_issue_45<double>(static_cast<double>(-4109895455460520.5), "-4109895455460520.513430", 19);
     test_issue_45<double>(1.035695536657502e-308, "1.0356955366575023e-3087", 23);
