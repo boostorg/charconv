@@ -69,12 +69,17 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     {
         return r;
     }
+    else if (significand == 0)
+    {
+        value = sign ? -0.0Q : 0.0Q;
+        return r;
+    }
 
     std::errc success {};
     auto return_val = boost::charconv::detail::compute_float128(exponent, significand, sign, success);
     r.ec = static_cast<std::errc>(success);
 
-    if (r.ec == std::errc())
+    if (r.ec == std::errc() || r.ec == std::errc::result_out_of_range)
     {
         value = return_val;
     }
@@ -187,12 +192,17 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     {
         return r;
     }
+    else if (significand == 0)
+    {
+        value = sign ? -0.0L : 0.0L;
+        return r;
+    }
 
     std::errc success {};
     auto return_val = boost::charconv::detail::compute_float80<long double>(exponent, significand, sign, success);
-    r.ec = static_cast<std::errc>(success);
+    r.ec = success;
 
-    if (r.ec == std::errc())
+    if (r.ec == std::errc() || r.ec == std::errc::result_out_of_range)
     {
         value = return_val;
     }
