@@ -138,6 +138,30 @@ boost::int128_type float_distance(T a, T b)
 }
 
 template <typename T>
+void overflow_spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    auto v = static_cast<T>(42.Q);
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+
+    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST(r.ec == std::errc::result_out_of_range)))
+    {
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+    }
+}
+
+template <typename T>
+void test_issue_37()
+{
+    overflow_spot_value("1e99999", HUGE_VALQ);
+    overflow_spot_value("-1e99999",-HUGE_VALQ);
+    overflow_spot_value("1.0e+99999", HUGE_VALQ);
+    overflow_spot_value("-1.0e+99999", -HUGE_VALQ);
+
+    overflow_spot_value("1e-99999", static_cast<T>(0.0Q));
+    overflow_spot_value("-1.0e-99999", static_cast<T>(-0.0Q));
+}
+
+template <typename T>
 void test_roundtrip( T value )
 {
     char buffer[ 256 ];
@@ -659,6 +683,9 @@ int main()
     random_test<__float128>();
     random_test<std::float128_t>();
     random_roundtrip<std::float128_t>();
+
+    test_issue_37<__float128>();
+    test_issue_37<std::float128_t>();
 
     if (abs_float_total != 0)
     {
