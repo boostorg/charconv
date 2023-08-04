@@ -6,6 +6,7 @@
 
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <limits>
 #include <cstring>
 #include <cstdio>
 #include <cstdint>
@@ -576,6 +577,8 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
+    static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
+
     if (first > last)
     {
         return {last, std::errc::invalid_argument};

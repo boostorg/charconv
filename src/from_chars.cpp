@@ -22,22 +22,14 @@
 #include <cstring>
 #include <limits>
 
+#if BOOST_CHARCONV_LDBL_BITS > 64
+#  include <boost/charconv/detail/compute_float80.hpp>
+#  include <boost/charconv/detail/emulated128.hpp>
+#endif
+
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
-
-std::errc boost::charconv::detail::errno_to_errc(int errno_value) noexcept
-{
-    switch (errno_value)
-    {
-        case EINVAL:
-            return std::errc::invalid_argument;
-        case ERANGE:
-            return std::errc::result_out_of_range;
-        default:
-            return std::errc();
-    }
-}
 
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -60,16 +52,47 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
 {
-    (void)fmt;
-    from_chars_result r = {};
+    bool sign {};
+    std::int64_t exponent {};
 
-    std::string tmp( first, last ); // zero termination
-    char* ptr = nullptr;
+    #if defined(BOOST_CHARCONV_HAS_INT128) && ((defined(__clang_major__) && __clang_major__ > 12 ) || \
+        (defined(BOOST_GCC) && BOOST_GCC > 100000))
 
-    value = strtoflt128( tmp.c_str(), &ptr );
+    boost::uint128_type significand {};
 
-    r.ptr = ptr;
-    r.ec = static_cast<std::errc>(errno);
+    #else
+    boost::charconv::detail::uint128 significand {};
+    #endif
+
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
+    if (r.ec != std::errc())
+    {
+        return r;
+    }
+    else if (significand == 0)
+    {
+        value = sign ? -0.0Q : 0.0Q;
+        return r;
+    }
+
+    std::errc success {};
+    auto return_val = boost::charconv::detail::compute_float128(exponent, significand, sign, success);
+    r.ec = static_cast<std::errc>(success);
+
+    if (r.ec == std::errc() || r.ec == std::errc::result_out_of_range)
+    {
+        value = return_val;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        // Fallback routine
+        errno = 0;
+        std::string temp (first, last); // zero termination
+        char* ptr = nullptr;
+        value = strtoflt128(temp.c_str(), &ptr);
+        r.ptr = ptr;
+        r.ec = static_cast<std::errc>(errno);
+    }
 
     return r;
 }
@@ -131,66 +154,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 }
 #endif
 
-/*
-#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(_WIN64) || defined(_WIN32)
-// Since long double is just a double we use the double implementation and cast into value
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
-{
-    double d;
-    auto r = boost::charconv::from_chars(first, last, d, fmt);
-    value = static_cast<long double>(d);
-    return r;
-}
-
-#elif BOOST_CHARCONV_LDBL_BITS == 80
-// https://en.wikipedia.org/wiki/Extended_precision#x86_extended_precision_format
-// 63 bit significand so we are still safe to use uint64_t to represent
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
-{
-    bool sign {};
-    std::uint64_t significand {};
-    std::int64_t  exponent {};
-
-    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != std::errc())
-    {
-        value = 0.0L;
-        return r;
-    }
-
-    bool success {};
-    auto return_val = boost::charconv::detail::compute_float80(exponent, significand, sign, success);
-    if (!success)
-    {
-        value = 0.0L;
-        r.ec = std::errc::result_out_of_range;
-    }
-    else
-    {
-        value = return_val;
-    }
-
-    return r;
-}
-#else
-
-boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
-{
-    (void)fmt;
-    from_chars_result r = {};
-
-    std::string tmp( first, last ); // zero termination
-    char* ptr = 0;
-
-    value = std::strtold( tmp.c_str(), &ptr );
-
-    r.ptr = ptr;
-    r.ec = errno;
-
-    return r;
-}
-*/
-
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
 
 // Since long double is just a double we use the double implementation and cast into value
@@ -210,16 +173,49 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
-    (void)fmt;
-    from_chars_result r = {};
+    static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
 
-    std::string tmp( first, last ); // zero termination
-    char* ptr = nullptr;
+    bool sign {};
+    std::int64_t exponent {};
 
-    value = std::strtold( tmp.c_str(), &ptr );
+    #if defined(BOOST_CHARCONV_HAS_INT128) && ((defined(__clang_major__) && __clang_major__ > 12 ) || \
+        (defined(BOOST_GCC) && BOOST_GCC > 100000))
 
-    r.ptr = ptr;
-    r.ec = detail::errno_to_errc(errno);
+    boost::uint128_type significand {};
+
+    #else
+    boost::charconv::detail::uint128 significand {};
+    #endif
+
+    auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
+    if (r.ec != std::errc())
+    {
+        return r;
+    }
+    else if (significand == 0)
+    {
+        value = sign ? -0.0L : 0.0L;
+        return r;
+    }
+
+    std::errc success {};
+    auto return_val = boost::charconv::detail::compute_float80<long double>(exponent, significand, sign, success);
+    r.ec = success;
+
+    if (r.ec == std::errc() || r.ec == std::errc::result_out_of_range)
+    {
+        value = return_val;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        // Fallback routine
+        errno = 0; // Set to zero, so we get a clean reading from strtold
+        std::string temp (first, last); // zero termination
+        char* ptr = nullptr;
+        value = std::strtold(temp.c_str(), &ptr);
+        r.ptr = ptr;
+        r.ec = static_cast<std::errc>(errno);
+    }
 
     return r;
 }

@@ -71,11 +71,11 @@ struct uint128
     UNSIGNED_CONSTRUCTOR(unsigned long long)
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    explicit constexpr uint128(boost::int128_type  v) noexcept :
+    constexpr uint128(boost::int128_type v) noexcept :
         high {static_cast<std::uint64_t>(v >> 64)},
          low {static_cast<std::uint64_t>(static_cast<boost::uint128_type>(v) & ~UINT64_C(0))} {}
 
-    explicit constexpr uint128(boost::uint128_type v) noexcept :
+    constexpr uint128(boost::uint128_type v) noexcept :
         high {static_cast<std::uint64_t>(v >> 64)},
          low {static_cast<std::uint64_t>(v & ~UINT64_C(0))} {}
     #endif
@@ -135,12 +135,20 @@ struct uint128
     explicit constexpr operator boost::uint128_type() const noexcept { return (static_cast<boost::uint128_type>(high) << 64) + low; }
     #endif
 
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    explicit operator __float128() const noexcept { return ldexpq(static_cast<__float128>(high), 64) + static_cast<__float128>(low); }
+    #endif
+
     FLOAT_CONVERSION_OPERATOR(float)
     FLOAT_CONVERSION_OPERATOR(double)
     FLOAT_CONVERSION_OPERATOR(long double)
 
     #undef INTEGER_CONVERSION_OPERATOR
     #undef FLOAT_CONVERSION_OPERATOR
+
+    // Unary Operators
+    constexpr friend uint128 operator-(uint128 val) noexcept;
+    constexpr friend uint128 operator+(uint128 val) noexcept;
 
     // Comparison Operators
 
@@ -355,6 +363,32 @@ struct uint128
 
     #undef INTEGER_BINARY_OPERATOR_AND
 
+    // Xor
+    #define INTEGER_BINARY_OPERATOR_XOR(expr) constexpr friend uint128 operator^(uint128 lhs, expr rhs) noexcept { return {lhs.high, lhs.low ^ static_cast<std::uint64_t>(rhs)}; }
+
+    INTEGER_BINARY_OPERATOR_XOR(char)
+    INTEGER_BINARY_OPERATOR_XOR(signed char)
+    INTEGER_BINARY_OPERATOR_XOR(short)
+    INTEGER_BINARY_OPERATOR_XOR(int)
+    INTEGER_BINARY_OPERATOR_XOR(long)
+    INTEGER_BINARY_OPERATOR_XOR(long long)
+    INTEGER_BINARY_OPERATOR_XOR(unsigned char)
+    INTEGER_BINARY_OPERATOR_XOR(unsigned short)
+    INTEGER_BINARY_OPERATOR_XOR(unsigned)
+    INTEGER_BINARY_OPERATOR_XOR(unsigned long)
+    INTEGER_BINARY_OPERATOR_XOR(unsigned long long)
+
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    constexpr friend uint128 operator^(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs ^ uint128(rhs); }
+    constexpr friend uint128 operator^(uint128 lhs, boost::uint128_type rhs) noexcept { return lhs ^ uint128(rhs); }
+    #endif
+
+    constexpr friend uint128 operator^(uint128 lhs, uint128 rhs) noexcept;
+
+    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator^=(uint128 v) noexcept;
+
+    #undef INTEGER_BINARY_OPERATOR_XOR
+
     // Left shift
     #define INTEGER_BINARY_OPERATOR_LEFT_SHIFT(expr)                                            \
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator<<(uint128 lhs, expr rhs) noexcept    \
@@ -493,6 +527,16 @@ private:
     div_impl(uint128 lhs, uint128 rhs, uint128 &quotient, uint128 &remainder) noexcept;
 };
 
+constexpr uint128 operator-(uint128 val) noexcept
+{
+    return {~val.high + static_cast<std::uint64_t>(val.low == 0), ~val.low + 1};
+}
+
+constexpr uint128 operator+(uint128 val) noexcept
+{
+    return val;
+}
+
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(const uint128& v) noexcept
 {
     low = v.low;
@@ -559,6 +603,17 @@ constexpr uint128 operator&(uint128 lhs, uint128 rhs) noexcept
 BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator&=(uint128 v) noexcept
 {
     *this = *this & v;
+    return *this;
+}
+
+constexpr uint128 operator^(uint128 lhs, uint128 rhs) noexcept
+{
+    return {lhs.high ^ rhs.high, lhs.low ^ rhs.low};
+}
+
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator^=(uint128 v) noexcept
+{
+    *this = *this ^ v;
     return *this;
 }
 

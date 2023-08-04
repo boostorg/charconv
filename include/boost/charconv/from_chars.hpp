@@ -79,12 +79,6 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 // Floating Point
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace detail {
-
-std::errc errno_to_errc(int errno_value) noexcept;
-
-} // Namespace detail
-
 // Only 64 bit long double overloads are fully implemented
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
 #define BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
