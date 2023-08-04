@@ -600,9 +600,13 @@ void test_all() {
     test_boost_spirit_karma("Boost.spirit.karma float", vec_flt);
     test_boost_spirit_karma("Boost.spirit.karma double", vec_dbl);
 
+    test_sprintf<RoundTrip::Lossy>("std::sprintf float plain shortest", vec_flt, "%.g");
+    test_sprintf<RoundTrip::Lossy>("std::sprintf double plain shortest", vec_dbl, "%.g");
+
+    /*
     test_sprintf<RoundTrip::Sci>("std::sprintf float scientific 8", vec_flt, "%.8e");
     test_sprintf<RoundTrip::Sci>("std::sprintf double scientific 16", vec_dbl, "%.16e");
-/*
+
     test_sprintf<RoundTrip::Lossy>("std::sprintf float fixed 6 (lossy)", vec_flt, "%f");
     test_sprintf<RoundTrip::Lossy>("std::sprintf double fixed 6 (lossy)", vec_dbl, "%f");
 
@@ -611,7 +615,7 @@ void test_all() {
 
     test_sprintf<RoundTrip::Hex>("std::sprintf float hex 6", vec_flt, "%.6a");
     test_sprintf<RoundTrip::Hex>("std::sprintf double hex 13", vec_dbl, "%.13a");
-*/
+    */
     #ifndef AVOID_CHARCONV
     test_STL_to_chars<RoundTrip::Gen>("std::to_chars float plain shortest", vec_flt);
     test_STL_to_chars<RoundTrip::Gen>("std::to_chars double plain shortest", vec_dbl);
