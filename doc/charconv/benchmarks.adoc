@@ -51,13 +51,13 @@ Data in tables 3 and 4 were run on Windows 11 x86_64 using MSVC 14.3.
 |std::printf
 |1.00 / 1.00
 |Boost.lexical_cast
-|0.XX / 0.XX
+|0.50 / 0.71
 |Boost.spirit.karma
-|0.XX / 0.XX
+|2.55 / 7.78
 |std::to_chars
-|0.XX / 0.XX
+|6.44 / 16.86
 |Boost.Charconv.to_chars
-|0.XX / 0.XX
+|6.37 / 17.40
 |===
 
 .from_chars with scientific formatting
@@ -67,11 +67,11 @@ Data in tables 3 and 4 were run on Windows 11 x86_64 using MSVC 14.3.
 |std::strto(f/d)
 |1.00 / 1.00
 |Boost.spirit.qi
-|0.XX / 0.XX
+|2.03 / 4.58
 |std::from_chars
-|0.XX / 0.XX
+|1.01 / 1.23
 |Boost.Charconv.from_chars
-|0.XX / 0.XX
+|2.06 / 5.21
 |===
 
 Special thanks to Stephan T. Lavavej for providing the benchmark file.
