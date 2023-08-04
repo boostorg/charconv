@@ -359,6 +359,37 @@ void test_from_chars(const char* const str, const vector<Floating>& original, co
 }
 
 template <int base, typename Integer>
+void test_strtox_integer(const char* const str, const vector<Integer>& original, const vector<char>& strings) {
+
+    //const char* const last = strings.data() + strings.size();
+
+    vector<Integer> round_trip(N);
+
+    const auto start = steady_clock::now();
+
+    for (size_t k = 0; k < K; ++k) {
+        const char* first = strings.data();
+        char* end = nullptr;
+        for (size_t n = 0; n < N; ++n) {
+            if constexpr (std::is_same_v<Integer, uint32_t>) {
+                round_trip[n] = std::strtoul(first, &end, base);
+            }
+            else if constexpr (std::is_same_v<Integer, uint64_t>) {
+                round_trip[n] = std::strtoull(first, &end, base);
+            }
+
+            first = end + 1; // Advance past the null terminator
+        }
+    }
+
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    verify(round_trip == original);
+}
+
+template <int base, typename Integer>
 void test_from_chars_integer(const char* const str, const vector<Integer>& original, const vector<char>& strings) {
     
     const char* const last = strings.data() + strings.size();
@@ -674,6 +705,7 @@ void test_all() {
     const vector<char> strings_hex_flt = prepare_strings<RoundTrip::Hex>(vec_flt);
     const vector<char> strings_hex_dbl = prepare_strings<RoundTrip::Hex>(vec_dbl);
 
+    const vector<char> strings_u32 = prepare_strings<RoundTrip::u32>(vec_u32);
     const vector<char> strings_u64 = prepare_strings<RoundTrip::u64>(vec_u64);
 
     test_strtox("std::strtof float scientific", vec_flt, strings_sci_flt);
@@ -694,13 +726,19 @@ void test_all() {
     //test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser float scientific", vec_flt, strings_sci_flt);
     //test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser double scientific", vec_dbl, strings_sci_dbl);
 
-    test_from_chars_integer<10>("std::from_chars uint64_t", vec_u64, strings_u64);
-    test_boost_from_chars_integer<10>("Boost.Charconv::from_chars uint64_t", vec_u64, strings_u64);
-
     //test_from_chars<RoundTrip::Hex>("std::from_chars float hex", vec_flt, erase_0x(strings_hex_flt));
     //test_from_chars<RoundTrip::Hex>("std::from_chars double hex", vec_dbl, erase_0x(strings_hex_dbl));
     //test_boost_from_chars<RoundTrip::Hex>("Boost.Charconv::from_chars float hex", vec_flt, erase_0x(strings_hex_flt));
     //test_boost_from_chars<RoundTrip::Hex>("Boost.Charconv::from_chars double hex", vec_dbl, erase_0x(strings_hex_dbl));
+
+    test_strtox_integer<10>("std::strtoul uint32_t", vec_u32, strings_u32);
+    test_strtox_integer<10>("std::strtoull uint64_t", vec_u64, strings_u64);
+
+    test_from_chars_integer<10>("std::from_chars uint64_t", vec_u64, strings_u64);
+    test_from_chars_integer<10>("std::from_chars uint32_t", vec_u32, strings_u32);
+    
+    test_boost_from_chars_integer<10>("Boost.Charconv::from_chars uint64_t", vec_u64, strings_u64);
+    test_boost_from_chars_integer<10>("Boost.Charconv::from_chars uint32_t", vec_u32, strings_u32);
 
     printf("global_dummy: %u\n", global_dummy);
 }
