@@ -398,9 +398,16 @@ void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_form
     std::mt19937_64 gen(42);
     std::uniform_real_distribution<T> dist(0, FLT128_MAX);
 
-    for (int i = 0; i < N; ++i)
+    for (int i = 0; i < N/2; ++i)
     {
         test_spot<T>(dist(gen), fmt);
+    }
+
+    // Test small values
+    std::uniform_real_distribution<T> small_dist(0, 1);
+    for (int i = 0; i < N/2; ++i)
+    {
+        test_spot<T>(small_dist(gen), fmt);
     }
 }
 
