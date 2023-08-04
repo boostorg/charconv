@@ -4,7 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
-#define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP//
+#define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 
 #include <boost/charconv/detail/ryu/generic_128.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
@@ -328,15 +328,7 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
     return (int)fd.sign + 3;
 }
 
-// Converts the given decimal floating point number to a string, writing to result, and returning
-// the number characters written. Does not terminate the buffer with a 0. In the worst case, this
-// function can write up to 53 characters.
-//
-// Maximal char buffer requirement:
-// sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
-// = 1 + 39 + 1 + 1 + 1 + 10 = 53
-static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
-                                   chars_format fmt = chars_format::general, int precision = -1) noexcept
+static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -351,7 +343,109 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     }
 
     unsigned_128_type output = v.mantissa;
+    const auto r = to_chars_128integer_impl(result, result + result_size, output);
+    if (r.ec != std::errc())
+    {
+        return -static_cast<int>(r.ec);
+    }
+
+    auto current_len = static_cast<int>(r.ptr - result);
+
+    #ifdef BOOST_CHARCONV_DEBUG
+    char* man_print = s(v.mantissa);
+    std::cerr << "Exp: " << v.exponent
+              << "\nMantissa: " << man_print
+              << "\nMan len: " << current_len << std::endl;
+    free(man_print);
+    #endif
+
+    if (v.exponent == 0)
+    {
+        // Option 1: We need to do nothing
+        return current_len;
+    }
+    else if (v.exponent > 0)
+    {
+        // Option 2: Append 0s to the end of the number until we get the proper output
+        if (current_len + v.exponent > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
+        memset(r.ptr, '0', v.exponent);
+        current_len += v.exponent;
+    }
+    else if ((-v.exponent) < current_len)
+    {
+        // Option 3: Insert a decimal point into the middle of the existing number
+        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, -v.exponent);
+        memcpy(result + current_len + v.exponent, ".", 1);
+        ++current_len;
+    }
+    else
+    {
+        // Option 4: Leading 0s
+        if (-v.exponent + 2 > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
+        memmove(result - v.exponent - current_len + 2, result, current_len);
+        memcpy(result, "0.", 2);
+        memset(result + 2, '0', 0 - v.exponent - current_len);
+        current_len = -v.exponent + 2;
+    }
+
+    if (current_len < precision)
+    {
+        memset(result + current_len, '0', precision - current_len);
+        current_len = precision;
+    }
+
+    return current_len;
+}
+
+// Converts the given decimal floating point number to a string, writing to result, and returning
+// the number characters written. Does not terminate the buffer with a 0. In the worst case, this
+// function can write up to 53 characters.
+//
+// Maximal char buffer requirement:
+// sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
+// = 1 + 39 + 1 + 1 + 1 + 10 = 53
+static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
+                                   chars_format fmt = chars_format::general, int precision = -1) noexcept
+{
+    unsigned_128_type output = v.mantissa;
     const uint32_t olength = num_digits(output);
+
+    #ifdef BOOST_CHARCONV_DEBUG
+    printf("DIGITS=%s\n", s(v.mantissa));
+    printf("OLEN=%u\n", olength);
+    printf("EXP=%u\n", v.exponent + olength);
+    #endif
+
+    // See: https://github.com/cppalliance/charconv/issues/64
+    if (fmt == chars_format::general)
+    {
+        const int32_t exp = v.exponent + (int32_t)olength;
+        if (exp <= 0 && exp >= -4)
+        {
+            return generic_to_chars_fixed(v, result, result_size, precision);
+        }
+    }
+
+    if (v.exponent == fd128_exceptional_exponent)
+    {
+        return copy_special_str(result, v);
+    }
+
+    // Step 5: Print the decimal representation.
+    size_t index = 0;
+    if (v.sign)
+    {
+        result[index++] = '-';
+    }
+
     if (index + olength > (size_t)result_size)
     {
         return -static_cast<int>(std::errc::result_out_of_range);
@@ -361,15 +455,9 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         return -1; // Something has gone horribly wrong
     }
 
-    #ifdef BOOST_CHARCONV_DEBUG
-    printf("DIGITS=%s\n", s(v.mantissa));
-    printf("OLEN=%u\n", olength);
-    printf("EXP=%u\n", v.exponent + olength);
-    #endif
-
     for (uint32_t i = 0; i < olength - 1; ++i)
     {
-        const uint32_t c = (uint32_t) (output % 10);
+        const auto c = (uint32_t) (output % 10);
         output /= 10;
         result[index + olength - i] = (char) ('0' + c);
     }
@@ -471,83 +559,6 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     }
     index += elength;
     return index;
-}
-
-static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
-{
-    if (v.exponent == fd128_exceptional_exponent)
-    {
-        return copy_special_str(result, v);
-    }
-
-    // Step 5: Print the decimal representation.
-    size_t index = 0;
-    if (v.sign)
-    {
-        result[index++] = '-';
-    }
-
-    unsigned_128_type output = v.mantissa;
-    const auto r = to_chars_128integer_impl(result, result + result_size, output);
-    if (r.ec != std::errc())
-    {
-        return -static_cast<int>(r.ec);
-    }
-
-    auto current_len = r.ptr - result;
-
-    #ifdef BOOST_CHARCONV_DEBUG
-    char* man_print = s(v.mantissa);
-    std::cerr << "Exp: " << v.exponent
-              << "\nMantissa: " << man_print
-              << "\nMan len: " << current_len << std::endl;
-    free(man_print);
-    #endif
-
-    if (v.exponent == 0)
-    {
-        // Option 1: We need to do nothing
-        return current_len;
-    }
-    else if (v.exponent > 0)
-    {
-        // Option 2: Append 0s to the end of the number until we get the proper output
-        if (current_len + v.exponent > result_size)
-        {
-            return -static_cast<int>(std::errc::result_out_of_range);
-        }
-
-        memset(r.ptr, '0', v.exponent);
-        current_len += v.exponent;
-    }
-    else if ((-v.exponent) < current_len)
-    {
-        // Option 3: Insert a decimal point into the middle of the existing number
-        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, -v.exponent);
-        memcpy(result + current_len + v.exponent, ".", 1);
-        ++current_len;
-    }
-    else
-    {
-        // Option 4: Leading 0s
-        if (-v.exponent + 2 > result_size)
-        {
-            return -static_cast<int>(std::errc::result_out_of_range);
-        }
-
-        memmove(result - v.exponent - current_len + 2, result, current_len);
-        memcpy(result, "0.", 2);
-        memset(result + 2, '0', 0 - v.exponent - current_len);
-        current_len = -v.exponent + 2;
-    }
-
-    if (current_len < precision)
-    {
-        memset(result + current_len, '0', precision - current_len);
-        current_len = precision;
-    }
-
-    return current_len;
 }
 
 static inline struct floating_decimal_128 float_to_fd128(float f) noexcept
