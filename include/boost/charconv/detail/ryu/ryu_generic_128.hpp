@@ -415,6 +415,11 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
                                    chars_format fmt = chars_format::general, int precision = -1) noexcept
 {
+    if (v.exponent == fd128_exceptional_exponent)
+    {
+        return copy_special_str(result, v);
+    }
+
     unsigned_128_type output = v.mantissa;
     const uint32_t olength = num_digits(output);
 
@@ -432,11 +437,6 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         {
             return generic_to_chars_fixed(v, result, result_size, precision);
         }
-    }
-
-    if (v.exponent == fd128_exceptional_exponent)
-    {
-        return copy_special_str(result, v);
     }
 
     // Step 5: Print the decimal representation.
