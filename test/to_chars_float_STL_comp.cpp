@@ -187,18 +187,21 @@ int main()
     // General format
     random_test<float>();
     random_test<double>();
+    random_test<long double>();
     test_spot<double>(0.0);
     test_spot<double>(-0.0);
 
     // Scientific
     random_test<float>(boost::charconv::chars_format::scientific);
     random_test<double>(boost::charconv::chars_format::scientific);
+    random_test<long double>(boost::charconv::chars_format::scientific);
     test_spot<double>(0.0, boost::charconv::chars_format::scientific);
     test_spot<double>(-0.0, boost::charconv::chars_format::scientific);
 
     // Hex
     random_test<float>(boost::charconv::chars_format::hex);
     random_test<double>(boost::charconv::chars_format::hex);
+    random_test<long double>(boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e+306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e-306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e+305, boost::charconv::chars_format::hex);
@@ -215,10 +218,13 @@ int main()
     // Various non-finite values
     non_finite_test<float>();
     non_finite_test<double>();
+    non_finite_test<long double>();
     non_finite_test<float>(boost::charconv::chars_format::scientific);
     non_finite_test<double>(boost::charconv::chars_format::scientific);
+    non_finite_test<long double>(boost::charconv::chars_format::scientific);
     non_finite_test<float>(boost::charconv::chars_format::hex);
     non_finite_test<double>(boost::charconv::chars_format::hex);
+    non_finite_test<long double>(boost::charconv::chars_format::hex);
 
     #if (defined(__GNUC__) && __GNUC__ >= 11) || (defined(_MSC_VER) && _MSC_VER >= 1924)
     // Selected additional values

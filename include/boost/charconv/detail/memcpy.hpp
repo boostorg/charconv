@@ -6,7 +6,6 @@
 #define BOOST_CHARCONV_DETAIL_MEMCPY_HPP
 
 #include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/is_constant_evaluated.hpp>
 #include <cstring>
 #include <cstdint>
 

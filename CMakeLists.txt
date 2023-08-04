@@ -38,6 +38,7 @@ endif()
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
 
+  target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_CMAKE_TESTING)
   add_subdirectory(test)
 
 endif()

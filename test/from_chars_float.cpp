@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
@@ -18,11 +19,17 @@ template <typename T>
 void spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
     T v;
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     BOOST_TEST(r.ec == std::errc());
-    if (!BOOST_TEST_EQ(v, expected_value))
+    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(buffer.c_str() + buffer.size(), r.ptr)))
     {
+        #if __GNUC__ >= 5
+        std::cerr << std::hexfloat
+                  << "Test failure for: " << expected_value
+                  << "\n             Got: " << v << std::endl;
+        #else
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+        #endif
     }
 }
 
@@ -378,6 +385,12 @@ void boost_json_test()
        "00000000000000000000000000000000000000000000000000"
        "00000000000000000000000000000000000000000000000000" // 500 zeroes
     );
+
+    // Reported on slack
+    // https://cpplang.slack.com/archives/C04NBCS69U7/p1685363266630429
+    fc("25188282901709339043e-252");
+    fc("308984926168550152811e-052");
+    fc("6372891218502368041059e064");
 }
 
 template <typename T>
@@ -487,23 +500,20 @@ int main()
     odd_strings_test<float>();
     odd_strings_test<double>();
 
-    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     simple_integer_test<long double>();
     simple_hex_integer_test<long double>();
     simple_scientific_test<long double>();
     simple_hex_scientific_test<long double>();
-    #endif
 
     zero_test<float>();
     zero_test<double>();
+    zero_test<long double>();
 
     boost_json_test<double>();
 
     test_issue_37<float>();
     test_issue_37<double>();
-    #ifdef BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
     test_issue_37<long double>();
-    #endif
 
     test_issue_45<double>(static_cast<double>(-4109895455460520.5), "-4109895455460520.513430", 19);
     test_issue_45<double>(1.035695536657502e-308, "1.0356955366575023e-3087", 23);
@@ -514,6 +524,15 @@ int main()
     // Value from Lemire's comments
     spot_check<double>(7.3177701707893310e+15, "7.3177701707893310e+15", boost::charconv::chars_format::scientific);
 
+    // From GCC 13 Excess Precision Support was implemented and made standard and causes these hard value tests to be off by 1 ULP
+    //
+    // Excess precision support (which has been available in C since GCC 4.5) has been implemented for C++ as well.
+    // It is enabled by default in strict standard modes like -std=c++17, where it defaults to -fexcess-precision=standard,
+    // while in GNU standard modes like -std=gnu++20 it defaults to -fexcess-precision=fast.
+    // The option mainly affects IA-32/x86-64 using x87 math and in some cases on Motorola 68000,
+    // where float and double expressions are evaluated in long double precision and S/390, System z,
+    // IBM z Systems where float expressions are evaluated in double precision.
+    //
     // Values from testbase report: https://www.icir.org/vern/papers/testbase-report.pdf
     // Table 1
     spot_check<double>(9e-265, "9e-265", boost::charconv::chars_format::scientific);
@@ -596,6 +615,12 @@ int main()
     test_issue_48(-1.398276, "-1.398276;5.396485", 9);
     test_issue_48(-1.398276, "-1.398276\t5.396485", 9);
     test_issue_48(-1.398276, "-1.398276\n5.396485", 9);
+
+    // Pointers did not match
+    // See: https://github.com/cppalliance/charconv/issues/55
+    spot_value<double>("0e0", 0e0);
+    spot_value<double>("0e00000000000", 0e00000000000);
+    spot_value<double>("0e1", 0e1);
 
     // Value in range with 20 million digits. Malloc should max out at 16'711'568 bytes
     test_strtod_routines<double>(1.982645139827653964857196,

@@ -722,23 +722,7 @@ bool only_two_neg_k_can_be_integer(int k, int exp2_base,
 
 inline void print_1_digit(std::uint32_t n, char* buffer) noexcept 
 {
-    BOOST_IF_CONSTEXPR ('1' == '0' + 1 && '2' == '0' + 2 && '3' == '0' + 3 && '4' == '0' + 4 &&
-                        '5' == '0' + 5 && '6' == '0' + 6 && '7' == '0' + 7 && '8' == '0' + 8 &&
-                        '9' == '0' + 9) 
-    {
-        BOOST_IF_CONSTEXPR (('0' & 0xf) == 0) 
-        {
-            *buffer = char('0' | n);
-        }
-        else 
-        {
-            *buffer = char('0' + n);
-        }
-    }
-    else 
-    {
-        std::memcpy(buffer, additional_static_data_holder::radix_100_table + n * 2 + 1, 1);
-    }
+    *buffer = char('0' + n);
 }
 
 inline void print_2_digits(std::uint32_t n, char* buffer) noexcept
@@ -853,7 +837,7 @@ struct main_cache_compressed
                 recovered_cache = uint128{(recovered_cache.low >> alpha) | high_to_middle, ((middle_low.low >> alpha) | middle_to_low)};
 
                 BOOST_CHARCONV_ASSERT(recovered_cache.low + 1 != 0);
-                recovered_cache = {recovered_cache.high, recovered_cache.low + 1};
+                recovered_cache = uint128(recovered_cache.high, recovered_cache.low + 1);
 
                 return recovered_cache;
             }
@@ -1372,14 +1356,14 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             {
                 if (precision == 0) 
                 {
-                    std::memcpy(buffer, "0e0", 3);
+                    std::memcpy(buffer, "0e+00", 3);
                     return buffer + 3;
                 }
                 else 
                 {
                     std::memcpy(buffer, "0.", 2);
                     std::memset(buffer + 2, '0', precision);
-                    std::memcpy(buffer + 2 + precision, "e0", 2);
+                    std::memcpy(buffer + 2 + precision, "e+00", 2);
                     return buffer + precision + 4;
                 }
             }
