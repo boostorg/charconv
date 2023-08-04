@@ -694,6 +694,36 @@ int main()
     test_issue_37<__float128>();
     test_issue_37<std::float128_t>();
 
+    // Issue 64
+    test_spot<std::float128_t>(1e-01F128);
+    test_spot<std::float128_t>(1e-02F128);
+    test_spot<std::float128_t>(1e-03F128);
+    test_spot<std::float128_t>(1e-04F128);
+    test_spot<std::float128_t>(1.01e-01F128);
+    test_spot<std::float128_t>(1.001e-01F128);
+    test_spot<std::float128_t>(1.0001e-01F128);
+    test_spot<std::float128_t>(1.00001e-01F128);
+    test_spot<std::float128_t>(1.000001e-01F128);
+    test_spot<std::float128_t>(1.0000001e-01F128);
+    test_spot<std::float128_t>(1.01e-02F128);
+    test_spot<std::float128_t>(1.001e-02F128);
+    test_spot<std::float128_t>(1.0001e-02F128);
+    test_spot<std::float128_t>(1.00001e-02F128);
+    test_spot<std::float128_t>(1.000001e-02F128);
+    test_spot<std::float128_t>(1.0000001e-02F128);
+    test_spot<std::float128_t>(1.01e-03F128);
+    test_spot<std::float128_t>(1.001e-03F128);
+    test_spot<std::float128_t>(1.0001e-03F128);
+    test_spot<std::float128_t>(1.00001e-03F128);
+    test_spot<std::float128_t>(1.000001e-03F128);
+    test_spot<std::float128_t>(1.0000001e-03F128);
+    test_spot<std::float128_t>(1.01e-04F128);
+    test_spot<std::float128_t>(1.001e-04F128);
+    test_spot<std::float128_t>(1.0001e-04F128);
+    test_spot<std::float128_t>(1.00001e-04F128);
+    test_spot<std::float128_t>(1.000001e-04F128);
+    test_spot<std::float128_t>(1.0000001e-04F128);
+
     if (abs_float_total != 0)
     {
         std::cerr << std::setprecision(5)
