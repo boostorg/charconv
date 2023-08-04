@@ -21,6 +21,7 @@ include::charconv/chars_format.adoc[]
 include::charconv/from_chars.adoc[]
 include::charconv/to_chars.adoc[]
 include::charconv/reference.adoc[]
+include::charconv/benchmarks.adoc[]
 include::charconv/sources.adoc[]
 include::charconv/copyright.adoc[]
 
