@@ -6,6 +6,8 @@
 //
 //  Derived from mailing list post: https://lists.boost.org/Archives/boost/2023/05/254660.php
 
+#ifdef BOOST_CHARCONV_RUN_BENCHMARKS
+
 #ifndef _MSC_VER
 #define AVOID_SPRINTF_S
 #endif // _MSC_VER
@@ -702,8 +704,6 @@ void test_all() {
 
     printf("global_dummy: %u\n", global_dummy);
 }
-
-#ifdef BOOST_CHARCONV_RUN_BENCHMARKS
 
 int main()
 {

@@ -7,9 +7,10 @@ https://www.boost.org/LICENSE_1_0.txt
 = benchmarks
 :idprefix: benchmarks
 
-The benchmarks below were run on x86_64 using GCC 13.1 with libstdc++.
 The values are relative to the performance of `std::printf` and `std::stroto(f/d)`.
 Larger numbers are more performant (e.g. 2.00 means twice as fast).
+
+Data in tables 1 and 2 were run on Ubuntu 23.04 x86_64 using GCC 13.1 with libstdc++.
 
 .to_chars shortest representation
 |===
@@ -33,8 +34,6 @@ Larger numbers are more performant (e.g. 2.00 means twice as fast).
 
 |std::strto(f/d)
 |1.00 / 1.00
-|Boost.lexical_cast
-|0.00 / 0.00
 |Boost.spirit.qi
 |2.58 / 3.33
 |std::from_chars
@@ -42,3 +41,38 @@ Larger numbers are more performant (e.g. 2.00 means twice as fast).
 |Boost.Charconv.from_chars
 |3.26 / 5.80
 |===
+
+Data in tables 3 and 4 were run on Windows 11 x86_64 using MSVC 14.3.
+
+.to_chars shortest representation
+|===
+|Function|Relative Performance (float / double)
+
+|std::printf
+|1.00 / 1.00
+|Boost.lexical_cast
+|0.XX / 0.XX
+|Boost.spirit.karma
+|0.XX / 0.XX
+|std::to_chars
+|0.XX / 0.XX
+|Boost.Charconv.to_chars
+|0.XX / 0.XX
+|===
+
+.from_chars with scientific formatting
+|===
+|Function|Relative Performance (float / double)
+
+|std::strto(f/d)
+|1.00 / 1.00
+|Boost.spirit.qi
+|0.XX / 0.XX
+|std::from_chars
+|0.XX / 0.XX
+|Boost.Charconv.from_chars
+|0.XX / 0.XX
+|===
+
+Special thanks to Stephan T. Lavavej for providing the benchmark file.
+
