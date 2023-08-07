@@ -566,18 +566,46 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
     return r;
 }
 
-template <typename Floating>
-void test_boost_spirit_qi(const char* const str, const vector<Floating>& /*original*/, const vector<char>& strings) {
+template <typename T>
+void test_boost_spirit_qi(const char* const str, const vector<T>& /*original*/, const vector<char>& strings) {
 
     const char* const last = strings.data() + strings.size();
 
-    vector<Floating> round_trip(N);
+    vector<T> round_trip(N);
 
     const auto start = steady_clock::now();
     for (size_t k = 0; k < K; ++k) {
         const char* first = strings.data();
         string test_str(first, static_cast<std::ptrdiff_t>(last - first));
         parse_numbers(test_str.begin(), test_str.end(), round_trip);
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    // verify(round_trip == original);
+}
+
+template <typename T>
+void test_boost_lexical_cast_parse(const char* const str, const vector<T>& original, const vector<char>& strings) {
+
+    //const char* const last = strings.data() + strings.size();
+
+    vector<T> round_trip(N);
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k)
+    {
+        const char* first = strings.data();
+        for (size_t n = 0; n < N; ++n)
+        {
+            const auto len = strlen(first);
+            if constexpr (std::is_same_v<T, uint32_t>)
+                round_trip[n] = boost::lexical_cast<unsigned long>(first, len);
+            else if constexpr (std::is_same_v<T, uint64_t>)
+                round_trip[n] = boost::lexical_cast<unsigned long long>(first, len);
+            first += len + 1;
+        }
     }
     const auto finish = steady_clock::now();
 
@@ -811,6 +839,9 @@ void test_all() {
 
     test_strtox_integer<10>("std::strtoul uint32_t", vec_u32, strings_u32);
     test_strtox_integer<10>("std::strtoull uint64_t", vec_u64, strings_u64);
+
+    test_boost_lexical_cast_parse("Boost.lexical_cast uint32_t", vec_u32, strings_u32);
+    test_boost_lexical_cast_parse("Boost.lexical_cast uint64_t", vec_u64, strings_u64);
 
     test_boost_spirit_qi("Boost.Spirit.Qi uint32_t", vec_u32, strings_u32);
     test_boost_spirit_qi("Boost.Spirit.Qi uint64_t", vec_u64, strings_u64);
