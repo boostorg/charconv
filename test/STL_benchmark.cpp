@@ -600,7 +600,9 @@ void test_boost_lexical_cast_parse(const char* const str, const vector<T>& origi
         for (size_t n = 0; n < N; ++n)
         {
             const auto len = strlen(first);
-            if constexpr (std::is_same_v<T, uint32_t>)
+            if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>)
+                round_trip[n] = boost::lexical_cast<T>(first, len);
+            else if constexpr (std::is_same_v<T, uint32_t>)
                 round_trip[n] = boost::lexical_cast<unsigned long>(first, len);
             else if constexpr (std::is_same_v<T, uint64_t>)
                 round_trip[n] = boost::lexical_cast<unsigned long long>(first, len);
@@ -815,8 +817,11 @@ void test_all() {
     test_strtox("std::strtof float scientific", vec_flt, strings_sci_flt);
     test_strtox("std::strtod double scientific", vec_dbl, strings_sci_dbl);
 
-    //test_strtox("std::strtof float hex", vec_flt, strings_hex_flt);
-    //test_strtox("std::strtod double hex", vec_dbl, strings_hex_dbl);
+    test_boost_lexical_cast_parse("Boost.lexical_cast float scientific", vec_flt, strings_sci_flt);
+    test_boost_lexical_cast_parse("Boost.lexical_cast double scientific", vec_dbl, strings_sci_dbl);
+
+    test_boost_spirit_qi<float>("Boost.Spirit.Qi float scientific", vec_flt, strings_sci_flt);
+    test_boost_spirit_qi<double>("Boost.Spirit.Qi double scientific", vec_dbl, strings_sci_dbl);
 
     test_from_chars<RoundTrip::Sci>("std::from_chars float scientific", vec_flt, strings_sci_flt);
     test_from_chars<RoundTrip::Sci>("std::from_chars double scientific", vec_dbl, strings_sci_dbl);
@@ -824,8 +829,8 @@ void test_all() {
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars float scientific", vec_flt, strings_sci_flt);
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars double scientific", vec_dbl, strings_sci_dbl);
 
-    test_boost_spirit_qi<float>("Boost.Spirit.Qi float scientific", vec_flt, strings_sci_flt);
-    test_boost_spirit_qi<double>("Boost.Spirit.Qi double scientific", vec_dbl, strings_sci_dbl);
+    //test_strtox("std::strtof float hex", vec_flt, strings_hex_flt);
+    //test_strtox("std::strtod double hex", vec_dbl, strings_hex_dbl);
 
     //test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser float scientific", vec_flt, strings_sci_flt);
     //test_boost_from_chars_parser<RoundTrip::Sci>("Boost.Charconv::from_chars::parser double scientific", vec_dbl, strings_sci_dbl);
