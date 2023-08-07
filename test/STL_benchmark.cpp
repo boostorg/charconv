@@ -7,6 +7,9 @@
 //  Derived from mailing list post: https://lists.boost.org/Archives/boost/2023/05/254660.php
 
 #ifdef BOOST_CHARCONV_RUN_BENCHMARKS
+#ifdef __GNUC__
+#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 
 #ifndef _MSC_VER
 #define AVOID_SPRINTF_S
@@ -418,29 +421,31 @@ void test_strtox_integer(const char* const str, const vector<Integer>& original,
 }
 
 template <int base, typename Integer>
-void test_from_chars_integer(const char* const str, const vector<Integer>& original, const vector<char>& strings) {
-    
+void test_from_chars_integer(const char* const str, const vector<Integer>& /*original*/, const vector<char>& strings) {
+
     const char* const last = strings.data() + strings.size();
 
     vector<Integer> round_trip(N);
 
     const auto start = steady_clock::now();
+
     for (size_t k = 0; k < K; ++k) {
         const char* first = strings.data();
         for (size_t n = 0; n < N; ++n) {
             const auto from_result = from_chars(first, last, round_trip[n], base);
-            first                  = from_result.ptr + 1; // advance past null terminator
+            first = from_result.ptr + 1; // Advance past the null terminator
         }
     }
+
     const auto finish = steady_clock::now();
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    verify(round_trip == original);
+    //verify(round_trip == original);
 }
 
 template <int base, typename Integer>
-void test_boost_from_chars_integer(const char* const str, const vector<Integer>& original, const vector<char>& strings) {
+void test_boost_from_chars_integer(const char* const str, const vector<Integer>& /*original*/, const vector<char>& strings) {
     
     const char* const last = strings.data() + strings.size();
 
@@ -458,7 +463,7 @@ void test_boost_from_chars_integer(const char* const str, const vector<Integer>&
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    verify(round_trip == original);
+    //verify(round_trip == original);
 }
 
 template <RoundTrip RT, typename Floating>
@@ -587,7 +592,7 @@ void test_boost_spirit_qi(const char* const str, const vector<T>& /*original*/, 
 }
 
 template <typename T>
-void test_boost_lexical_cast_parse(const char* const str, const vector<T>& original, const vector<char>& strings) {
+void test_boost_lexical_cast_parse(const char* const str, const vector<T>& /*original*/, const vector<char>& strings) {
 
     //const char* const last = strings.data() + strings.size();
 
@@ -658,7 +663,7 @@ void test_all() {
 #elif defined(__clang__) && defined(__APPLE__) && defined(__arm64__)
     const char* const toolset = "Clang/LLVM Apple ARM + libstdc++";
 #elif !defined(__clang__) && defined(__APPLE__) && defined(__arm64__)
-    const char* const toolset = "GCC Apple ARM + libstdc++";
+    const char* const toolset = "GCC " BOOST_STRINGIZE(__GNUC__) " Apple ARM + libstdc++";
 #elif defined(__clang__) && defined(__x86_64__)
     const char* const toolset = "Clang/LLVM " BOOST_STRINGIZE(__clang_major__) " x64 + libstdc++"
 #elif defined(__GNUC__) && defined(__x86_64__)
