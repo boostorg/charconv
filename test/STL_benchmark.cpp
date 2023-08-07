@@ -483,8 +483,8 @@ void test_boost_from_chars(const char* const str, const vector<Floating>& origin
     verify(round_trip == original);
 }
 
-template <typename Floating, typename Iterator>
-bool parse_numbers(Iterator first, Iterator last, std::vector<Floating>& v)
+template <typename T, typename Iterator>
+bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
 {
     namespace qi = boost::spirit::qi;
     namespace ascii = boost::spirit::ascii;
@@ -495,10 +495,13 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<Floating>& v)
     using qi::_1;
     using ascii::space;
     using phoenix::push_back;
+    using qi::ulong_;
+    using qi::ulong_long;
+    using boost::spirit::qi::uint_parser;
 
     bool r = false;
     
-    if constexpr (std::is_same_v<Floating, float>)
+    if constexpr (std::is_same_v<T, float>)
     {
         r = phrase_parse(first, last,
 
@@ -512,10 +515,8 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<Floating>& v)
 
             space);
     }
-    else
+    else if constexpr (std::is_same_v<T, double>)
     {
-        static_assert(std::is_same_v<Floating, double>);
-        
         r = phrase_parse(first, last,
 
             //  Begin grammar
@@ -527,6 +528,34 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<Floating>& v)
             //  End grammar
 
             space);
+    }
+    else if constexpr (std::is_same_v<T, uint32_t>)
+    {
+        r = phrase_parse(first, last,
+
+            //  Begin grammar
+             (
+                 ulong_[push_back(phoenix::ref(v), _1)]
+                     >> *('\0' >> ulong_[push_back(phoenix::ref(v), _1)])
+             )
+            ,
+            //  End grammar
+
+            space);
+    }
+    else if (std::is_same_v<T, uint64_t>)
+    {
+        r = phrase_parse(first, last,
+
+                //  Begin grammar
+                         (
+                                 ulong_long[push_back(phoenix::ref(v), _1)]
+                                         >> *('\0' >> ulong_long[push_back(phoenix::ref(v), _1)])
+                         )
+                ,
+                //  End grammar
+
+                         space);
     }
 
     if (first != last) // fail if we did not get a full match
@@ -745,7 +774,7 @@ void test_all() {
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars uint64_t", vec_u64, 10);
 
     puts("\n----from_chars float----");
-    
+
     const vector<char> strings_sci_flt = prepare_strings<RoundTrip::Sci>(vec_flt);
     const vector<char> strings_sci_dbl = prepare_strings<RoundTrip::Sci>(vec_dbl);
 
@@ -782,6 +811,9 @@ void test_all() {
 
     test_strtox_integer<10>("std::strtoul uint32_t", vec_u32, strings_u32);
     test_strtox_integer<10>("std::strtoull uint64_t", vec_u64, strings_u64);
+
+    test_boost_spirit_qi("Boost.Spirit.Qi uint32_t", vec_u32, strings_u32);
+    test_boost_spirit_qi("Boost.Spirit.Qi uint64_t", vec_u64, strings_u64);
 
     test_from_chars_integer<10>("std::from_chars uint32_t", vec_u32, strings_u32);
     test_from_chars_integer<10>("std::from_chars uint64_t", vec_u64, strings_u64);
