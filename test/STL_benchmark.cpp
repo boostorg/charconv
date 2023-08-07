@@ -104,15 +104,21 @@ int sprintf_wrapper(char (&buf)[BufSize], const char* const fmt, const Floating 
 #endif // AVOID_SPRINTF_S
 }
 
-template <RoundTrip RT, typename Floating>
-void test_sprintf(const char* const str, const vector<Floating>& vec, const char* const fmt) {
+template <RoundTrip RT, typename T>
+void test_sprintf(const char* const str, const vector<T>& vec, const char* const fmt) {
 
     char buf[BufSize];
 
     const auto start = steady_clock::now();
     for (size_t k = 0; k < K; ++k) {
         for (const auto& elem : vec) {
-            const int ret = sprintf_wrapper(buf, fmt, elem);
+            int ret;
+            if constexpr (std::is_same_v<T, uint32_t>)
+                ret = sprintf_wrapper(buf, fmt, (unsigned long)elem);
+            else if constexpr (std::is_same_v<T, uint64_t>)
+                ret = sprintf_wrapper(buf, fmt, (unsigned long long)elem);
+            else
+                ret = sprintf_wrapper(buf, fmt, elem);
 
             global_dummy += static_cast<unsigned int>(ret);
             global_dummy += static_cast<unsigned int>(buf[0]);
@@ -123,14 +129,23 @@ void test_sprintf(const char* const str, const vector<Floating>& vec, const char
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
     for (const auto& elem : vec) {
-        verify(sprintf_wrapper(buf, fmt, elem) != -1);
+        if constexpr (std::is_same_v<T, uint32_t>)
+            verify(sprintf_wrapper(buf, fmt, (unsigned long)elem) != -1);
+        else if constexpr (std::is_same_v<T, uint64_t>)
+            verify(sprintf_wrapper(buf, fmt, (unsigned long long)elem) != -1);
+        else
+            verify(sprintf_wrapper(buf, fmt, elem) != -1);
 
         if constexpr (RT == RoundTrip::Lossy) {
             // skip lossy conversions
-        } else if constexpr (is_same_v<Floating, float>) {
+        } else if constexpr (is_same_v<T, float>) {
             verify(strtof(buf, nullptr) == elem);
-        } else {
+        } else if constexpr (is_same_v<T, double>) {
             verify(strtod(buf, nullptr) == elem);
+        } else if constexpr (is_same_v<T, uint32_t>) {
+            verify(strtoul(buf, nullptr, 10) == (unsigned long)elem);
+        } else if constexpr (is_same_v<T, uint64_t>) {
+            verify(strtoull(buf, nullptr, 10) == (unsigned long long)elem);
         }
     }
 }
@@ -696,6 +711,9 @@ void test_all() {
     test_boost_to_chars<RoundTrip::Hex>("Boost.Charconv::to_chars double hex 13", vec_dbl, chars_format::hex, 13);
 */
     #endif // AVOID_CHARCONV
+
+    test_sprintf<RoundTrip::Gen>("std::sprintf uint32_t", vec_u32, "%lu");
+    test_sprintf<RoundTrip::Gen>("std::sprintf uint64_t", vec_u64, "%llu");
 
     puts("----------");
 
