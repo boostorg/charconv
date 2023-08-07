@@ -123,7 +123,7 @@ Data in tables 5 - 8 were run on MacOS Ventura 13.5 with M1 Pro architecture usi
 |std::to_chars
 |6.05 / 3.72
 |Boost.Charconv.to_chars
-|6.13 / 3.69
+|6.13 / 3.73
 |===
 
 .from_chars base 10
