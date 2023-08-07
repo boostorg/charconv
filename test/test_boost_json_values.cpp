@@ -173,30 +173,6 @@ void check_accuracy(const char* nm, int max_ulp)
     T y {};
     boost::charconv::from_chars(nm, nm + std::strlen(nm), y, boost::charconv::chars_format::scientific);
 
-    // TODO(mborland): This is tied to https://github.com/cppalliance/charconv/issues/37. Remove handling when complete.
-    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
-    {
-        if (x == HUGE_VALF && y == 0)
-        {
-            return;
-        }
-    }
-    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
-    {
-        if (x == HUGE_VAL && y == 0)
-        {
-            return;
-        }
-    }
-    else
-    {
-        if (x == HUGE_VALL && y == 0)
-        {
-            return;
-        }
-
-    }
-
     Unsigned_Integer bx;
     Unsigned_Integer by;
     std::memcpy( &bx, &x, sizeof(x) );
