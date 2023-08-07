@@ -185,8 +185,8 @@ constexpr boost::charconv::chars_format boost_chars_format_from_RoundTrip(const 
     }
 }
 
-template <RoundTrip RT, typename Floating, typename... Args>
-void test_STL_to_chars(const char* const str, const vector<Floating>& vec, const Args&... args) {
+template <RoundTrip RT, typename T, typename... Args>
+void test_STL_to_chars(const char* const str, const vector<T>& vec, const Args&... args) {
 
     char buf[BufSize];
 
@@ -210,8 +210,12 @@ void test_STL_to_chars(const char* const str, const vector<Floating>& vec, const
         if constexpr (RT == RoundTrip::Lossy) {
             // skip lossy conversions
         } else {
-            Floating round_trip;
-            const auto from_result = std::from_chars(buf, result.ptr, round_trip, chars_format_from_RoundTrip(RT));
+            T round_trip;
+            from_chars_result from_result;
+            if constexpr (std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>)
+                from_result = std::from_chars(buf, result.ptr, round_trip, args...);
+            else
+                from_result = std::from_chars(buf, result.ptr, round_trip, chars_format_from_RoundTrip(RT));
             verify(from_result.ec == errc{});
             verify(from_result.ptr == result.ptr);
             verify(round_trip == elem);
@@ -219,8 +223,8 @@ void test_STL_to_chars(const char* const str, const vector<Floating>& vec, const
     }
 }
 
-template <RoundTrip RT, typename Floating, typename... Args>
-void test_boost_to_chars(const char* const str, const vector<Floating>& vec, const Args&... args) {
+template <RoundTrip RT, typename T, typename... Args>
+void test_boost_to_chars(const char* const str, const vector<T>& vec, const Args&... args) {
 
     char buf[BufSize] {};
 
@@ -248,11 +252,16 @@ void test_boost_to_chars(const char* const str, const vector<Floating>& vec, con
         if constexpr (RT == RoundTrip::Lossy) {
             // skip lossy conversions
         } else {
-            Floating round_trip;
-            const auto from_result = boost::charconv::from_chars(buf, result.ptr, round_trip, boost_chars_format_from_RoundTrip(RT));
+            T round_trip;
+            boost::charconv::from_chars_result from_result;
+            if constexpr (std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t>)
+                from_result = boost::charconv::from_chars(buf, result.ptr, round_trip, args...);
+            else
+                from_result = boost::charconv::from_chars(buf, result.ptr, round_trip, boost_chars_format_from_RoundTrip(RT));
+
             if (from_result.ec != errc() || from_result.ptr != result.ptr || round_trip != elem)
             {
-                std::cerr << std::setprecision(std::numeric_limits<Floating>::digits10 + 1)
+                std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
                           << "Roundtrip failure with: " << elem
                           << "\n          to_chars val: " << buf
                           << "\n        from_chars val: " << round_trip
@@ -714,6 +723,12 @@ void test_all() {
 
     test_sprintf<RoundTrip::Gen>("std::sprintf uint32_t", vec_u32, "%lu");
     test_sprintf<RoundTrip::Gen>("std::sprintf uint64_t", vec_u64, "%llu");
+
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars uint32_t", vec_u32, 10);
+    test_STL_to_chars<RoundTrip::Gen>("std::to_chars uint64_t", vec_u64, 10);
+
+    test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars uint32_t", vec_u32, 10);
+    test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars uint64_t", vec_u64, 10);
 
     puts("----------");
 
