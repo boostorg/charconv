@@ -59,8 +59,8 @@ constexpr size_t BufSize = 2'000; // more than enough
 
 unsigned int global_dummy = 0;
 
-template <typename Floating>
-void test_boost_spirit_karma(const char* const str, const vector<Floating>& vec) {
+template <typename T>
+void test_boost_spirit_karma(const char* const str, const vector<T>& vec) {
     namespace karma = boost::spirit::karma;
     
     const auto start = steady_clock::now();
@@ -69,10 +69,14 @@ void test_boost_spirit_karma(const char* const str, const vector<Floating>& vec)
             char buffer[BufSize];
             char* it = buffer;
             
-            if constexpr (std::is_same_v<Floating, float>) {
+            if constexpr (std::is_same_v<T, float>) {
                 karma::generate(it, karma::float_, elem);
-            } else {
+            } else if constexpr (std::is_same_v<T, double>) {
                 karma::generate(it, karma::double_, elem);
+            } else if constexpr (std::is_same_v<T, uint32_t>) {
+                karma::generate(it, karma::ulong_, (unsigned long)elem);
+            } else if constexpr (std::is_same_v<T, uint64_t>) {
+                karma::generate(it, karma::ulong_long, (unsigned long long)elem);
             }
         }
     }
@@ -651,14 +655,16 @@ void test_all() {
         }
     }
 
+    puts("\n-----to_chars float-----");
+
+    test_sprintf<RoundTrip::Lossy>("std::sprintf float plain shortest", vec_flt, "%.g");
+    test_sprintf<RoundTrip::Lossy>("std::sprintf double plain shortest", vec_dbl, "%.g");
+
     test_lexical_cast("Boost.lexical_cast float", vec_flt);
     test_lexical_cast("Boost.lexical_cast double", vec_dbl);
 
     test_boost_spirit_karma("Boost.spirit.karma float", vec_flt);
     test_boost_spirit_karma("Boost.spirit.karma double", vec_dbl);
-
-    test_sprintf<RoundTrip::Lossy>("std::sprintf float plain shortest", vec_flt, "%.g");
-    test_sprintf<RoundTrip::Lossy>("std::sprintf double plain shortest", vec_dbl, "%.g");
 
     /*
     test_sprintf<RoundTrip::Sci>("std::sprintf float scientific 8", vec_flt, "%.8e");
@@ -721,8 +727,16 @@ void test_all() {
 */
     #endif // AVOID_CHARCONV
 
+    puts("\n------to_chars int------");
+
     test_sprintf<RoundTrip::Gen>("std::sprintf uint32_t", vec_u32, "%lu");
     test_sprintf<RoundTrip::Gen>("std::sprintf uint64_t", vec_u64, "%llu");
+
+    test_lexical_cast("Boost.lexical_cast uint32_t", vec_u32);
+    test_lexical_cast("Boost.lexical_cast uint64_t", vec_u64);
+
+    test_boost_spirit_karma("Boost.spirit.karma uint32_t", vec_u32);
+    test_boost_spirit_karma("Boost.spirit.karma uint64_t", vec_u64);
 
     test_STL_to_chars<RoundTrip::Gen>("std::to_chars uint32_t", vec_u32, 10);
     test_STL_to_chars<RoundTrip::Gen>("std::to_chars uint64_t", vec_u64, 10);
@@ -730,8 +744,8 @@ void test_all() {
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars uint32_t", vec_u32, 10);
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars uint64_t", vec_u64, 10);
 
-    puts("----------");
-
+    puts("\n----from_chars float----");
+    
     const vector<char> strings_sci_flt = prepare_strings<RoundTrip::Sci>(vec_flt);
     const vector<char> strings_sci_dbl = prepare_strings<RoundTrip::Sci>(vec_dbl);
 
@@ -764,14 +778,16 @@ void test_all() {
     //test_boost_from_chars<RoundTrip::Hex>("Boost.Charconv::from_chars float hex", vec_flt, erase_0x(strings_hex_flt));
     //test_boost_from_chars<RoundTrip::Hex>("Boost.Charconv::from_chars double hex", vec_dbl, erase_0x(strings_hex_dbl));
 
+    puts("\n-----from_chars int-----");
+
     test_strtox_integer<10>("std::strtoul uint32_t", vec_u32, strings_u32);
     test_strtox_integer<10>("std::strtoull uint64_t", vec_u64, strings_u64);
 
-    test_from_chars_integer<10>("std::from_chars uint64_t", vec_u64, strings_u64);
     test_from_chars_integer<10>("std::from_chars uint32_t", vec_u32, strings_u32);
-    
-    test_boost_from_chars_integer<10>("Boost.Charconv::from_chars uint64_t", vec_u64, strings_u64);
+    test_from_chars_integer<10>("std::from_chars uint64_t", vec_u64, strings_u64);
+
     test_boost_from_chars_integer<10>("Boost.Charconv::from_chars uint32_t", vec_u32, strings_u32);
+    test_boost_from_chars_integer<10>("Boost.Charconv::from_chars uint64_t", vec_u64, strings_u64);
 
     printf("global_dummy: %u\n", global_dummy);
 }
