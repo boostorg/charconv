@@ -79,7 +79,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         return {first, std::errc::invalid_argument};
     }
 
-    Unsigned_Integer unsigned_base = static_cast<Unsigned_Integer>(base);
+    const auto unsigned_base = static_cast<Unsigned_Integer>(base);
 
     // Strip sign if the type is signed
     // Negative sign will be appended at the end of parsing
