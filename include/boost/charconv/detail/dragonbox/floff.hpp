@@ -534,7 +534,7 @@ struct cache_block_count_t<true, max_cache_blocks>
 template <unsigned n>
 struct uconst
 {
-    constexpr uconst() = default;
+    constexpr uconst() {}; // NOLINT : Clang 3.x does not support = default
     static constexpr unsigned value = n;
 };
 
