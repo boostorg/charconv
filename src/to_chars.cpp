@@ -22,28 +22,6 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     // These "//"'s are to prevent clang-format to ruin this nice alignment.
     // Thanks to reddit user u/mcmcc:
     // https://www.reddit.com/r/cpp/comments/so3wx9/dragonbox_110_is_released_a_fast_floattostring/hw8z26r/?context=3
-    static constexpr char radix_100_table[] = {
-        '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', //
-        '0', '5', '0', '6', '0', '7', '0', '8', '0', '9', //
-        '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', //
-        '1', '5', '1', '6', '1', '7', '1', '8', '1', '9', //
-        '2', '0', '2', '1', '2', '2', '2', '3', '2', '4', //
-        '2', '5', '2', '6', '2', '7', '2', '8', '2', '9', //
-        '3', '0', '3', '1', '3', '2', '3', '3', '3', '4', //
-        '3', '5', '3', '6', '3', '7', '3', '8', '3', '9', //
-        '4', '0', '4', '1', '4', '2', '4', '3', '4', '4', //
-        '4', '5', '4', '6', '4', '7', '4', '8', '4', '9', //
-        '5', '0', '5', '1', '5', '2', '5', '3', '5', '4', //
-        '5', '5', '5', '6', '5', '7', '5', '8', '5', '9', //
-        '6', '0', '6', '1', '6', '2', '6', '3', '6', '4', //
-        '6', '5', '6', '6', '6', '7', '6', '8', '6', '9', //
-        '7', '0', '7', '1', '7', '2', '7', '3', '7', '4', //
-        '7', '5', '7', '6', '7', '7', '7', '8', '7', '9', //
-        '8', '0', '8', '1', '8', '2', '8', '3', '8', '4', //
-        '8', '5', '8', '6', '8', '7', '8', '8', '8', '9', //
-        '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', //
-        '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'  //
-    };
     static constexpr char radix_100_head_table[] = {
         '0', '.', '1', '.', '2', '.', '3', '.', '4', '.', //
         '5', '.', '6', '.', '7', '.', '8', '.', '9', '.', //
@@ -74,7 +52,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
     static void print_2_digits(std::uint32_t n, char* buffer) noexcept 
     {
-        std::memcpy(buffer, radix_100_table + n * 2, 2);
+        std::memcpy(buffer, radix_table + n * 2, 2);
     }
 
     // These digit generation routines are inspired by James Anhalt's itoa algorithm:
@@ -132,7 +110,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             // Write the first digit and the decimal point.
             std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
             // This third character may be overwritten later but we don't care.
-            buffer[2] = radix_100_table[head_digits * 2 + 1];
+            buffer[2] = radix_table[head_digits * 2 + 1];
 
             // Remaining 6 digits are all zero?
             if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 1000000)) 
@@ -198,7 +176,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             // Write the first digit and the decimal point.
             std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
             // This third character may be overwritten later but we don't care.
-            buffer[2] = radix_100_table[head_digits * 2 + 1];
+            buffer[2] = radix_table[head_digits * 2 + 1];
 
             // Remaining 4 digits are all zero?
             if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 10000)) 
@@ -246,7 +224,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             // Write the first digit and the decimal point.
             std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
             // This third character may be overwritten later but we don't care.
-            buffer[2] = radix_100_table[head_digits * 2 + 1];
+            buffer[2] = radix_table[head_digits * 2 + 1];
 
             // Remaining 2 digits are all zero?
             if (std::uint32_t(prod) <= std::uint32_t((std::uint64_t(1) << 32) / 100))
@@ -277,7 +255,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             // Write the first digit and the decimal point.
             std::memcpy(buffer, radix_100_head_table + s32 * 2, 2);
             // This third character may be overwritten later but we don't care.
-            buffer[2] = radix_100_table[s32 * 2 + 1];
+            buffer[2] = radix_table[s32 * 2 + 1];
 
             // The number of characters actually written is 1 or 3, similarly to the case of
             // 7 or 8 digits.
@@ -392,7 +370,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     const auto head_digits = std::uint32_t(prod >> 32);
 
                     std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                    buffer[2] = radix_100_table[head_digits * 2 + 1];
+                    buffer[2] = radix_table[head_digits * 2 + 1];
 
                     exponent += (6 + unsigned(head_digits >= 10));
                     buffer += unsigned(head_digits >= 10);
@@ -415,7 +393,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     const auto head_digits = std::uint32_t(prod >> 32);
 
                     std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                    buffer[2] = radix_100_table[head_digits * 2 + 1];
+                    buffer[2] = radix_table[head_digits * 2 + 1];
 
                     exponent += (4 + unsigned(head_digits >= 10));
                     buffer += unsigned(head_digits >= 10);
@@ -436,7 +414,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     const auto head_digits = std::uint32_t(prod >> 32);
 
                     std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-                    buffer[2] = radix_100_table[head_digits * 2 + 1];
+                    buffer[2] = radix_table[head_digits * 2 + 1];
 
                     exponent += (2 + unsigned(head_digits >= 10));
                     buffer += unsigned(head_digits >= 10);
@@ -451,7 +429,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 {
                     // 1 or 2 digits.
                     std::memcpy(buffer, radix_100_head_table + first_block * 2, 2);
-                    buffer[2] = radix_100_table[first_block * 2 + 1];
+                    buffer[2] = radix_table[first_block * 2 + 1];
 
                     exponent += unsigned(first_block >= 10);
                     buffer += (2 + unsigned(first_block >= 10));
