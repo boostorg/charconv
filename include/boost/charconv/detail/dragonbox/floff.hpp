@@ -27,7 +27,7 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/detail/dragonbox_common.hpp>
+#include <boost/charconv/detail/dragonbox/dragonbox_common.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/core/bit.hpp>
 #include <type_traits>
@@ -93,7 +93,7 @@ struct fixed_point_calculator
                 return mul_result.high;
 
             default:
-                BOOST_UNREACHABLE_RETURN(carry);
+                BOOST_UNREACHABLE_RETURN(carry); // NOLINT : Macro for unreachable can expand to be empty
             }
         }
 
@@ -146,7 +146,7 @@ struct fixed_point_calculator
                 blocks_ptr[number_of_blocks - 1] = mul_result.low;
                 auto carry = mul_result.high;
 
-                for (std::uint8_t i = 2; i < number_of_blocks; ++i) 
+                for (std::size_t i = 2; i < number_of_blocks; ++i)
                 {
                     mul_result = umul128(multiplier, blocks_ptr[number_of_blocks - i]);
                     mul_result += carry;
@@ -192,7 +192,7 @@ struct fixed_point_calculator
                 return static_cast<MultiplierType>(mul_result.high);
 
             default:
-                BOOST_UNREACHABLE_RETURN(carry);
+                BOOST_UNREACHABLE_RETURN(carry); // NOLINT
             }
         }
 
@@ -437,7 +437,7 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
             case 0:
                 break;
             default:
-                BOOST_UNREACHABLE_RETURN(dst_ptr);
+                BOOST_UNREACHABLE_RETURN(dst_ptr); // NOLINT
             }
         }
         else 
@@ -470,7 +470,7 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
             case 0:
                 break;
             default:
-                BOOST_UNREACHABLE_RETURN(dst_ptr);
+                BOOST_UNREACHABLE_RETURN(dst_ptr); // NOLINT
             }
         }
         else 
@@ -511,7 +511,7 @@ struct cache_block_count_t<false, max_cache_blocks>
 {
     std::uint8_t value;
     
-    operator std::uint8_t() const noexcept { return value; }
+    operator std::uint8_t() const noexcept { return value; } // NOLINT : implicit conversions are ok for block count
     cache_block_count_t& operator=(std::uint8_t new_value) noexcept
     {
         value = new_value;
@@ -523,7 +523,7 @@ template <std::uint8_t max_cache_blocks>
 struct cache_block_count_t<true, max_cache_blocks>
 {
     static constexpr std::uint8_t value = max_cache_blocks;
-    operator std::uint8_t() const noexcept { return value; }
+    operator std::uint8_t() const noexcept { return value; } // NOLINT : implicit conversions are ok for block count
     cache_block_count_t& operator=(std::uint8_t) noexcept
     {
         // Don't do anything.
@@ -534,7 +534,7 @@ struct cache_block_count_t<true, max_cache_blocks>
 template <unsigned n>
 struct uconst
 {
-    constexpr uconst() {}
+    constexpr uconst() {}; // NOLINT : Clang 3.x does not support = default
     static constexpr unsigned value = n;
 };
 
@@ -1269,11 +1269,11 @@ bool compute_has_further_digits(unsigned remaining_subsegment_pairs, std::uint64
                                         BOOST_CHARCONV_252_HAS_FURTHER_DIGITS(14);
 
                                     default:
-                                        BOOST_UNREACHABLE_RETURN(remaining_subsegment_pairs);
+                                        BOOST_UNREACHABLE_RETURN(remaining_subsegment_pairs); // NOLINT
                                     }
     #undef BOOST_CHARCONV_252_HAS_FURTHER_DIGITS
 
-    BOOST_UNREACHABLE_RETURN(false);
+    BOOST_UNREACHABLE_RETURN(false); // NOLINT
 }
 
 #ifdef BOOST_MSVC
@@ -1305,7 +1305,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
 
         if (significand == 0) 
         {
-            std::memcpy(buffer, "inf", 3);
+            std::memcpy(buffer, "inf", 3); // NOLINT : Specifically not null-terminating
             return buffer + 3;
         }
         else 
@@ -1318,18 +1318,18 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             {
                 if (!is_negative)
                 {
-                    std::memcpy(buffer, "nan", 3);
+                    std::memcpy(buffer, "nan", 3); // NOLINT : Specifically not null-terminating
                     return buffer + 3;
                 }
                 else
                 {
-                    std::memcpy(buffer, "nan(ind)", 8);
+                    std::memcpy(buffer, "nan(ind)", 8); // NOLINT : Specifically not null-terminating
                     return buffer + 8;
                 }
             }
             else
             {
-                std::memcpy(buffer, "nan(snan)", 9);
+                std::memcpy(buffer, "nan(snan)", 9); // NOLINT : Specifically not null-terminating
                 return buffer + 9;
             }
         }
@@ -1361,9 +1361,9 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                 }
                 else 
                 {
-                    std::memcpy(buffer, "0.", 2);
-                    std::memset(buffer + 2, '0', precision);
-                    std::memcpy(buffer + 2 + precision, "e+00", 2);
+                    std::memcpy(buffer, "0.", 2); // NOLINT : Specifically not null-terminating
+                    std::memset(buffer + 2, '0', precision); // NOLINT : Specifically not null-terminating
+                    std::memcpy(buffer + 2 + precision, "e+00", 2); // NOLINT : Specifically not null-terminating
                     return buffer + precision + 4;
                 }
             }
@@ -1579,7 +1579,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                         {
                             if (++current_digits == 100) 
                             {
-                                std::memcpy(buffer, "1.0", 3);
+                                std::memcpy(buffer, "1.0", 3); // NOLINT : Specifically not null-terminating
                                 buffer += 3;
                                 ++decimal_exponent;
                                 goto print_exponent_and_return;
@@ -1620,7 +1620,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                 {
                     if (++current_digits32 == 100)
                     {
-                        std::memcpy(buffer, "1.0", 3);
+                        std::memcpy(buffer, "1.0", 3); // NOLINT : Specifically not null-terminating
                         buffer += 3;
                         ++decimal_exponent;
                         goto print_exponent_and_return;
@@ -1975,7 +1975,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                 }
 
                 // Otherwise, for performing the rounding, we have to wait until the next
-                // segment becomes available. This state can be detected afterwards by
+                // segment becomes available. This state can be detected afterward by
                 // inspecting if remaining_digits == 0.
                 remaining_digits = 0;
                 current_digits = third_subsegment;
@@ -2193,7 +2193,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                             goto second_segment22_more_than_16_digits_first_subsegment_no_rounding_even_remaining;
 
                         default:
-                            BOOST_UNREACHABLE_RETURN(prod);
+                            BOOST_UNREACHABLE_RETURN(prod); // NOLINT
                         }
 
                     second_segment22_more_than_16_digits_first_subsegment_no_rounding_odd_remaining
@@ -3287,7 +3287,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                 {
                     std::uint64_t first_second_subsegments = fixed_point_calculator<ExtendedCache::max_cache_blocks>::generate(power_of_10[16], blocks, cache_block_count);
 
-                    const std::uint32_t first_subsegment =
+                    const auto first_subsegment =
                         static_cast<std::uint32_t>(boost::charconv::detail::umul128_upper64(first_second_subsegments, UINT64_C(3022314549036573)) >> 14);
                     
                     const std::uint32_t second_subsegment = static_cast<std::uint32_t>(first_second_subsegments) - UINT32_C(100000000) * first_subsegment;
@@ -3758,11 +3758,11 @@ print_exponent_and_return:
     
     if (decimal_exponent >= 0)
     {
-        std::memcpy(buffer, "e+", 2);
+        std::memcpy(buffer, "e+", 2); // NOLINT : Specifically not null-terminating
     }
     else 
     {
-        std::memcpy(buffer, "e-", 2);
+        std::memcpy(buffer, "e-", 2); // NOLINT : Specifically not null-terminating
         decimal_exponent = -decimal_exponent;
     }
 
@@ -3863,8 +3863,10 @@ round_up_all_9s:
     // first_9_pos == buffer_starting_pos + 1 means every digit we wrote
     // so far are all 9's. In this case, we have to shift the whole thing by 1.
     ++decimal_exponent;
-    std::memcpy(buffer_starting_pos, "1.", 2);
-    std::memset(buffer_starting_pos + 2, '0', buffer - buffer_starting_pos - 2);
+
+    // Nolint is applied to the following two calls since we know they are not supposed to be null terminated
+    std::memcpy(buffer_starting_pos, "1.", 2); // NOLINT
+    std::memset(buffer_starting_pos + 2, '0', buffer - buffer_starting_pos - 2); // NOLINT
 
     goto print_exponent_and_return;
 }

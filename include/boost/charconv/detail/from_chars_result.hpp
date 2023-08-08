@@ -29,7 +29,7 @@ struct from_chars_result_t
 
     friend constexpr bool operator!=(const from_chars_result_t<UC>& lhs, const from_chars_result_t<UC>& rhs) noexcept
     {
-        return !(lhs == rhs);
+        return !(lhs == rhs); // NOLINT : Expression can not be simplified since this is the definition
     }
 };
 using from_chars_result = from_chars_result_t<char>;

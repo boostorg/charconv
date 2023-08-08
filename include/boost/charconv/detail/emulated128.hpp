@@ -2,8 +2,8 @@
 // Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-
-// If the architecture (e.g. ARM) does not have __int128 we need to emulate it
+//
+// If the architecture (e.g. Apple ARM) does not have __int128 we need to emulate it
 
 #ifndef BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 #define BOOST_CHARCONV_DETAIL_EMULATED128_HPP
@@ -36,6 +36,7 @@ struct trivial_uint128
     #endif
 };
 
+// Macro replacement lists can not be enclosed in parentheses
 struct uint128
 {
     std::uint64_t high;
@@ -50,32 +51,32 @@ struct uint128
 
     constexpr uint128(std::uint64_t high_, std::uint64_t low_) noexcept : high {high_}, low {low_} {}
 
-    constexpr uint128(const trivial_uint128& v) noexcept : high {v.high}, low {v.low} {}
+    constexpr uint128(const trivial_uint128& v) noexcept : high {v.high}, low {v.low} {} // NOLINT
 
-    constexpr uint128(trivial_uint128&& v) noexcept : high {v.high}, low {v.low} {}
+    constexpr uint128(trivial_uint128&& v) noexcept : high {v.high}, low {v.low} {} // NOLINT
 
-    #define SIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {v < 0 ? UINT64_MAX : UINT64_C(0)}, low {static_cast<std::uint64_t>(v)} {}
-    #define UNSIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {}, low {static_cast<std::uint64_t>(v)} {}
+    #define SIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {v < 0 ? UINT64_MAX : UINT64_C(0)}, low {static_cast<std::uint64_t>(v)} {} // NOLINT
+    #define UNSIGNED_CONSTRUCTOR(expr) constexpr uint128(expr v) noexcept : high {}, low {static_cast<std::uint64_t>(v)} {} // NOLINT
 
-    SIGNED_CONSTRUCTOR(char)
-    SIGNED_CONSTRUCTOR(signed char)
-    SIGNED_CONSTRUCTOR(short)
-    SIGNED_CONSTRUCTOR(int)
-    SIGNED_CONSTRUCTOR(long)
-    SIGNED_CONSTRUCTOR(long long)
+    SIGNED_CONSTRUCTOR(char)                    // NOLINT
+    SIGNED_CONSTRUCTOR(signed char)             // NOLINT
+    SIGNED_CONSTRUCTOR(short)                   // NOLINT
+    SIGNED_CONSTRUCTOR(int)                     // NOLINT
+    SIGNED_CONSTRUCTOR(long)                    // NOLINT
+    SIGNED_CONSTRUCTOR(long long)               // NOLINT
 
-    UNSIGNED_CONSTRUCTOR(unsigned char)
-    UNSIGNED_CONSTRUCTOR(unsigned short)
-    UNSIGNED_CONSTRUCTOR(unsigned)
-    UNSIGNED_CONSTRUCTOR(unsigned long)
-    UNSIGNED_CONSTRUCTOR(unsigned long long)
+    UNSIGNED_CONSTRUCTOR(unsigned char)         // NOLINT
+    UNSIGNED_CONSTRUCTOR(unsigned short)        // NOLINT
+    UNSIGNED_CONSTRUCTOR(unsigned)              // NOLINT
+    UNSIGNED_CONSTRUCTOR(unsigned long)         // NOLINT
+    UNSIGNED_CONSTRUCTOR(unsigned long long)    // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
-    constexpr uint128(boost::int128_type v) noexcept :
+    constexpr uint128(boost::int128_type v) noexcept :  // NOLINT : Allow implicit conversions
         high {static_cast<std::uint64_t>(v >> 64)},
          low {static_cast<std::uint64_t>(static_cast<boost::uint128_type>(v) & ~UINT64_C(0))} {}
 
-    constexpr uint128(boost::uint128_type v) noexcept :
+    constexpr uint128(boost::uint128_type v) noexcept : // NOLINT : Allow implicit conversions
         high {static_cast<std::uint64_t>(v >> 64)},
          low {static_cast<std::uint64_t>(v & ~UINT64_C(0))} {}
     #endif
@@ -84,21 +85,21 @@ struct uint128
     #undef UNSIGNED_CONSTRUCTOR
 
     // Assignment Operators
-    #define SIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const expr& v) noexcept { high = v < 0 ? UINT64_MAX : UINT64_C(0); low = static_cast<std::uint64_t>(v); return *this; }
-    #define UNSIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const expr& v) noexcept { high = 0U; low = static_cast<std::uint64_t>(v); return *this; }
+    #define SIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const expr& v) noexcept { high = v < 0 ? UINT64_MAX : UINT64_C(0); low = static_cast<std::uint64_t>(v); return *this; } // NOLINT
+    #define UNSIGNED_ASSIGNMENT_OPERATOR(expr) BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const expr& v) noexcept { high = 0U; low = static_cast<std::uint64_t>(v); return *this; } // NOLINT
 
-    SIGNED_ASSIGNMENT_OPERATOR(char)
-    SIGNED_ASSIGNMENT_OPERATOR(signed char)
-    SIGNED_ASSIGNMENT_OPERATOR(short)
-    SIGNED_ASSIGNMENT_OPERATOR(int)
-    SIGNED_ASSIGNMENT_OPERATOR(long)
-    SIGNED_ASSIGNMENT_OPERATOR(long long)
+    SIGNED_ASSIGNMENT_OPERATOR(char)                    // NOLINT
+    SIGNED_ASSIGNMENT_OPERATOR(signed char)             // NOLINT
+    SIGNED_ASSIGNMENT_OPERATOR(short)                   // NOLINT
+    SIGNED_ASSIGNMENT_OPERATOR(int)                     // NOLINT
+    SIGNED_ASSIGNMENT_OPERATOR(long)                    // NOLINT
+    SIGNED_ASSIGNMENT_OPERATOR(long long)               // NOLINT
 
-    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned char)
-    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned short)
-    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned)
-    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long)
-    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long long)
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned char)         // NOLINT
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned short)        // NOLINT
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned)              // NOLINT
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long)         // NOLINT
+    UNSIGNED_ASSIGNMENT_OPERATOR(unsigned long long)    // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator=(const boost::int128_type&  v) noexcept { *this = uint128(v); return *this; }
@@ -113,20 +114,20 @@ struct uint128
     #undef UNSIGNED_ASSIGNMENT_OPERATOR
 
     // Conversion Operators
-    #define INTEGER_CONVERSION_OPERATOR(expr) explicit constexpr operator expr() const noexcept { return static_cast<expr>(low); }
-    #define FLOAT_CONVERSION_OPERATOR(expr) explicit operator expr() const noexcept { return std::ldexp(static_cast<expr>(high), 64) + static_cast<expr>(low); }
+    #define INTEGER_CONVERSION_OPERATOR(expr) explicit constexpr operator expr() const noexcept { return static_cast<expr>(low); } // NOLINT
+    #define FLOAT_CONVERSION_OPERATOR(expr) explicit operator expr() const noexcept { return std::ldexp(static_cast<expr>(high), 64) + static_cast<expr>(low); } // NOLINT
 
-    INTEGER_CONVERSION_OPERATOR(char)
-    INTEGER_CONVERSION_OPERATOR(signed char)
-    INTEGER_CONVERSION_OPERATOR(short)
-    INTEGER_CONVERSION_OPERATOR(int)
-    INTEGER_CONVERSION_OPERATOR(long)
-    INTEGER_CONVERSION_OPERATOR(long long)
-    INTEGER_CONVERSION_OPERATOR(unsigned char)
-    INTEGER_CONVERSION_OPERATOR(unsigned short)
-    INTEGER_CONVERSION_OPERATOR(unsigned)
-    INTEGER_CONVERSION_OPERATOR(unsigned long)
-    INTEGER_CONVERSION_OPERATOR(unsigned long long)
+    INTEGER_CONVERSION_OPERATOR(char)                   // NOLINT
+    INTEGER_CONVERSION_OPERATOR(signed char)            // NOLINT
+    INTEGER_CONVERSION_OPERATOR(short)                  // NOLINT
+    INTEGER_CONVERSION_OPERATOR(int)                    // NOLINT
+    INTEGER_CONVERSION_OPERATOR(long)                   // NOLINT
+    INTEGER_CONVERSION_OPERATOR(long long)              // NOLINT
+    INTEGER_CONVERSION_OPERATOR(unsigned char)          // NOLINT
+    INTEGER_CONVERSION_OPERATOR(unsigned short)         // NOLINT
+    INTEGER_CONVERSION_OPERATOR(unsigned)               // NOLINT
+    INTEGER_CONVERSION_OPERATOR(unsigned long)          // NOLINT
+    INTEGER_CONVERSION_OPERATOR(unsigned long long)     // NOLINT
 
     explicit constexpr operator bool() const noexcept { return high || low; }
 
@@ -139,9 +140,9 @@ struct uint128
     explicit operator __float128() const noexcept { return ldexpq(static_cast<__float128>(high), 64) + static_cast<__float128>(low); }
     #endif
 
-    FLOAT_CONVERSION_OPERATOR(float)
-    FLOAT_CONVERSION_OPERATOR(double)
-    FLOAT_CONVERSION_OPERATOR(long double)
+    FLOAT_CONVERSION_OPERATOR(float)        // NOLINT
+    FLOAT_CONVERSION_OPERATOR(double)       // NOLINT
+    FLOAT_CONVERSION_OPERATOR(long double)  // NOLINT
 
     #undef INTEGER_CONVERSION_OPERATOR
     #undef FLOAT_CONVERSION_OPERATOR
@@ -153,20 +154,20 @@ struct uint128
     // Comparison Operators
 
     // Equality
-    #define INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && rhs >= 0 && lhs.low == static_cast<std::uint64_t>(rhs); }
-    #define UNSIGNED_INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && lhs.low == static_cast<std::uint64_t>(rhs); }
+    #define INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && rhs >= 0 && lhs.low == static_cast<std::uint64_t>(rhs); } // NOLINT
+    #define UNSIGNED_INTEGER_OPERATOR_EQUAL(expr) constexpr friend bool operator==(uint128 lhs, expr rhs) noexcept { return lhs.high == 0 && lhs.low == static_cast<std::uint64_t>(rhs); } // NOLINT
 
-    INTEGER_OPERATOR_EQUAL(char)
-    INTEGER_OPERATOR_EQUAL(signed char)
-    INTEGER_OPERATOR_EQUAL(short)
-    INTEGER_OPERATOR_EQUAL(int)
-    INTEGER_OPERATOR_EQUAL(long)
-    INTEGER_OPERATOR_EQUAL(long long)
-    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned char)
-    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned short)
-    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned)
-    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned long)
-    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned long long)
+    INTEGER_OPERATOR_EQUAL(char)                        // NOLINT
+    INTEGER_OPERATOR_EQUAL(signed char)                 // NOLINT
+    INTEGER_OPERATOR_EQUAL(short)                       // NOLINT
+    INTEGER_OPERATOR_EQUAL(int)                         // NOLINT
+    INTEGER_OPERATOR_EQUAL(long)                        // NOLINT
+    INTEGER_OPERATOR_EQUAL(long long)                   // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned char)      // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned short)     // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned)           // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned long)      // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_EQUAL(unsigned long long) // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     constexpr friend bool operator==(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs == uint128(rhs); }
@@ -179,19 +180,19 @@ struct uint128
     #undef UNSIGNED_INTEGER_OPERATOR_EQUAL
 
     // Inequality
-    #define INTEGER_OPERATOR_NOTEQUAL(expr) constexpr friend bool operator!=(uint128 lhs, expr rhs) noexcept { return !(lhs == rhs); }
+    #define INTEGER_OPERATOR_NOTEQUAL(expr) constexpr friend bool operator!=(uint128 lhs, expr rhs) noexcept { return !(lhs == rhs); } // NOLINT
 
-    INTEGER_OPERATOR_NOTEQUAL(char)
-    INTEGER_OPERATOR_NOTEQUAL(signed char)
-    INTEGER_OPERATOR_NOTEQUAL(short)
-    INTEGER_OPERATOR_NOTEQUAL(int)
-    INTEGER_OPERATOR_NOTEQUAL(long)
-    INTEGER_OPERATOR_NOTEQUAL(long long)
-    INTEGER_OPERATOR_NOTEQUAL(unsigned char)
-    INTEGER_OPERATOR_NOTEQUAL(unsigned short)
-    INTEGER_OPERATOR_NOTEQUAL(unsigned)
-    INTEGER_OPERATOR_NOTEQUAL(unsigned long)
-    INTEGER_OPERATOR_NOTEQUAL(unsigned long long)
+    INTEGER_OPERATOR_NOTEQUAL(char)                 // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(signed char)          // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(short)                // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(int)                  // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(long)                 // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(long long)            // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(unsigned char)        // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(unsigned short)       // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(unsigned)             // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(unsigned long)        // NOLINT
+    INTEGER_OPERATOR_NOTEQUAL(unsigned long long)   // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     constexpr friend bool operator!=(uint128 lhs, boost::int128_type  rhs) noexcept { return !(lhs == rhs); }
@@ -203,20 +204,20 @@ struct uint128
     #undef INTEGER_OPERATOR_NOTEQUAL
 
     // Less than
-    #define INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs > 0 && lhs.low < static_cast<std::uint64_t>(rhs); }
-    #define UNSIGNED_INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && lhs.low < static_cast<std::uint64_t>(rhs); }
+    #define INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs > 0 && lhs.low < static_cast<std::uint64_t>(rhs); } // NOLINT
+    #define UNSIGNED_INTEGER_OPERATOR_LESS_THAN(expr) constexpr friend bool operator<(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && lhs.low < static_cast<std::uint64_t>(rhs); } // NOLINT
 
-    INTEGER_OPERATOR_LESS_THAN(char)
-    INTEGER_OPERATOR_LESS_THAN(signed char)
-    INTEGER_OPERATOR_LESS_THAN(short)
-    INTEGER_OPERATOR_LESS_THAN(int)
-    INTEGER_OPERATOR_LESS_THAN(long)
-    INTEGER_OPERATOR_LESS_THAN(long long)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned char)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned short)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned long)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned long long)
+    INTEGER_OPERATOR_LESS_THAN(char)                            // NOLINT
+    INTEGER_OPERATOR_LESS_THAN(signed char)                     // NOLINT
+    INTEGER_OPERATOR_LESS_THAN(short)                           // NOLINT
+    INTEGER_OPERATOR_LESS_THAN(int)                             // NOLINT
+    INTEGER_OPERATOR_LESS_THAN(long)                            // NOLINT
+    INTEGER_OPERATOR_LESS_THAN(long long)                       // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned char)          // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned short)         // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned)               // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned long)          // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN(unsigned long long)     // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator<(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs < uint128(rhs); }
@@ -229,20 +230,20 @@ struct uint128
     #undef UNSIGNED_INTEGER_OPERATOR_LESS_THAN
 
     // Less than or equal to
-    #define INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs >= 0 && lhs.low <= static_cast<std::uint64_t>(rhs); }
-    #define UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && lhs.low <= static_cast<std::uint64_t>(rhs); }
+    #define INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && rhs >= 0 && lhs.low <= static_cast<std::uint64_t>(rhs); } // NOLINT
+    #define UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator<=(uint128 lhs, expr rhs) noexcept { return lhs.high == 0U && lhs.low <= static_cast<std::uint64_t>(rhs); } // NOLINT
 
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(char)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(signed char)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(short)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(int)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long)
-    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long long)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned char)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned short)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long)
-    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long long)
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(char)                            // NOLINT
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(signed char)                     // NOLINT
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(short)                           // NOLINT
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(int)                             // NOLINT
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long)                            // NOLINT
+    INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(long long)                       // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned char)          // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned short)         // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned)               // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long)          // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO(unsigned long long)     // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator<=(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs <= uint128(rhs); }
@@ -255,20 +256,20 @@ struct uint128
     #undef UNSIGNED_INTEGER_OPERATOR_LESS_THAN_OR_EQUAL_TO
 
     // Greater than
-    #define INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low > static_cast<std::uint64_t>(rhs); }
-    #define UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || lhs.low > static_cast<std::uint64_t>(rhs); }
+    #define INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low > static_cast<std::uint64_t>(rhs); } // NOLINT
+    #define UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(expr) constexpr friend bool operator>(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || lhs.low > static_cast<std::uint64_t>(rhs); } // NOLINT
 
-    INTEGER_OPERATOR_GREATER_THAN(char)
-    INTEGER_OPERATOR_GREATER_THAN(signed char)
-    INTEGER_OPERATOR_GREATER_THAN(short)
-    INTEGER_OPERATOR_GREATER_THAN(int)
-    INTEGER_OPERATOR_GREATER_THAN(long)
-    INTEGER_OPERATOR_GREATER_THAN(long long)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned char)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned short)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned long)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned long long)
+    INTEGER_OPERATOR_GREATER_THAN(char)                             // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN(signed char)                      // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN(short)                            // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN(int)                              // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN(long)                             // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN(long long)                        // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned char)           // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned short)          // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned)                // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned long)           // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN(unsigned long long)      // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator>(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs > uint128(rhs); }
@@ -281,20 +282,20 @@ struct uint128
     #undef UNSIGNED_INTEGER_OPERATOR_GREATER_THAN
 
     // Greater than or equal to
-    #define INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low >= static_cast<std::uint64_t>(rhs); }
-    #define UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || lhs.low >= static_cast<std::uint64_t>(rhs); }
+    #define INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || rhs < 0 || lhs.low >= static_cast<std::uint64_t>(rhs); } // NOLINT
+    #define UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(expr) constexpr friend bool operator>=(uint128 lhs, expr rhs) noexcept { return lhs.high > 0U || lhs.low >= static_cast<std::uint64_t>(rhs); } // NOLINT
 
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(char)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(signed char)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(short)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(int)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long)
-    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long long)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned char)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned short)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long)
-    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long long)
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(char)                             // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(signed char)                      // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(short)                            // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(int)                              // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long)                             // NOLINT
+    INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(long long)                        // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned char)           // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned short)          // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned)                // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long)           // NOLINT
+    UNSIGNED_INTEGER_OPERATOR_GREATER_THAN_OR_EQUAL_TO(unsigned long long)      // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     BOOST_CHARCONV_CXX14_CONSTEXPR friend bool operator>=(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs >= uint128(rhs); }
@@ -312,19 +313,19 @@ struct uint128
     constexpr friend uint128 operator~(uint128 v) noexcept;
 
     // Or
-    #define INTEGER_BINARY_OPERATOR_OR(expr) constexpr friend uint128 operator|(uint128 lhs, expr rhs) noexcept { return {lhs.high, lhs.low | static_cast<std::uint64_t>(rhs)}; }
+    #define INTEGER_BINARY_OPERATOR_OR(expr) constexpr friend uint128 operator|(uint128 lhs, expr rhs) noexcept { return {lhs.high, lhs.low | static_cast<std::uint64_t>(rhs)}; } // NOLINT
 
-    INTEGER_BINARY_OPERATOR_OR(char)
-    INTEGER_BINARY_OPERATOR_OR(signed char)
-    INTEGER_BINARY_OPERATOR_OR(short)
-    INTEGER_BINARY_OPERATOR_OR(int)
-    INTEGER_BINARY_OPERATOR_OR(long)
-    INTEGER_BINARY_OPERATOR_OR(long long)
-    INTEGER_BINARY_OPERATOR_OR(unsigned char)
-    INTEGER_BINARY_OPERATOR_OR(unsigned short)
-    INTEGER_BINARY_OPERATOR_OR(unsigned)
-    INTEGER_BINARY_OPERATOR_OR(unsigned long)
-    INTEGER_BINARY_OPERATOR_OR(unsigned long long)
+    INTEGER_BINARY_OPERATOR_OR(char)                // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(signed char)         // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(short)               // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(int)                 // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(long)                // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(long long)           // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(unsigned char)       // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(unsigned short)      // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(unsigned)            // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(unsigned long)       // NOLINT
+    INTEGER_BINARY_OPERATOR_OR(unsigned long long)  // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     constexpr friend uint128 operator|(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs | uint128(rhs); }
@@ -338,19 +339,19 @@ struct uint128
     #undef INTEGER_BINARY_OPERATOR_OR
 
     // And
-    #define INTEGER_BINARY_OPERATOR_AND(expr) constexpr friend uint128 operator&(uint128 lhs, expr rhs) noexcept { return {lhs.high, lhs.low & static_cast<std::uint64_t>(rhs)}; }
+    #define INTEGER_BINARY_OPERATOR_AND(expr) constexpr friend uint128 operator&(uint128 lhs, expr rhs) noexcept { return {lhs.high, lhs.low & static_cast<std::uint64_t>(rhs)}; } // NOLINT
 
-    INTEGER_BINARY_OPERATOR_AND(char)
-    INTEGER_BINARY_OPERATOR_AND(signed char)
-    INTEGER_BINARY_OPERATOR_AND(short)
-    INTEGER_BINARY_OPERATOR_AND(int)
-    INTEGER_BINARY_OPERATOR_AND(long)
-    INTEGER_BINARY_OPERATOR_AND(long long)
-    INTEGER_BINARY_OPERATOR_AND(unsigned char)
-    INTEGER_BINARY_OPERATOR_AND(unsigned short)
-    INTEGER_BINARY_OPERATOR_AND(unsigned)
-    INTEGER_BINARY_OPERATOR_AND(unsigned long)
-    INTEGER_BINARY_OPERATOR_AND(unsigned long long)
+    INTEGER_BINARY_OPERATOR_AND(char)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(signed char)            // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(short)                  // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(int)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(long)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(long long)              // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(unsigned char)          // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(unsigned short)         // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(unsigned)               // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(unsigned long)          // NOLINT
+    INTEGER_BINARY_OPERATOR_AND(unsigned long long)     // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     constexpr friend uint128 operator&(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs & uint128(rhs); }
@@ -364,19 +365,19 @@ struct uint128
     #undef INTEGER_BINARY_OPERATOR_AND
 
     // Xor
-    #define INTEGER_BINARY_OPERATOR_XOR(expr) constexpr friend uint128 operator^(uint128 lhs, expr rhs) noexcept { return {lhs.high, lhs.low ^ static_cast<std::uint64_t>(rhs)}; }
+    #define INTEGER_BINARY_OPERATOR_XOR(expr) constexpr friend uint128 operator^(uint128 lhs, expr rhs) noexcept { return {lhs.high, lhs.low ^ static_cast<std::uint64_t>(rhs)}; } // NOLINT
 
-    INTEGER_BINARY_OPERATOR_XOR(char)
-    INTEGER_BINARY_OPERATOR_XOR(signed char)
-    INTEGER_BINARY_OPERATOR_XOR(short)
-    INTEGER_BINARY_OPERATOR_XOR(int)
-    INTEGER_BINARY_OPERATOR_XOR(long)
-    INTEGER_BINARY_OPERATOR_XOR(long long)
-    INTEGER_BINARY_OPERATOR_XOR(unsigned char)
-    INTEGER_BINARY_OPERATOR_XOR(unsigned short)
-    INTEGER_BINARY_OPERATOR_XOR(unsigned)
-    INTEGER_BINARY_OPERATOR_XOR(unsigned long)
-    INTEGER_BINARY_OPERATOR_XOR(unsigned long long)
+    INTEGER_BINARY_OPERATOR_XOR(char)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(signed char)            // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(short)                  // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(int)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(long)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(long long)              // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(unsigned char)          // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(unsigned short)         // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(unsigned)               // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(unsigned long)          // NOLINT
+    INTEGER_BINARY_OPERATOR_XOR(unsigned long long)     // NOLINT
 
     #ifdef BOOST_CHARCONV_HAS_INT128
     constexpr friend uint128 operator^(uint128 lhs, boost::int128_type  rhs) noexcept { return lhs ^ uint128(rhs); }
@@ -403,38 +404,38 @@ struct uint128
         }                                                                                       \
                                                                                                 \
         return {(lhs.high << rhs) | (lhs.low >> (64 - rhs)), lhs.low << rhs};                   \
-    }
+    } // NOLINT
 
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(char)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(signed char)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(short)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(int)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(long)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(long long)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned char)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned short)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned long)
-    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned long long)
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(char)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(signed char)             // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(short)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(int)                     // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(long)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(long long)               // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned char)           // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned short)          // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned)                // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned long)           // NOLINT
+    INTEGER_BINARY_OPERATOR_LEFT_SHIFT(unsigned long long)      // NOLINT
 
     #define INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(expr)                     \
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator<<=(expr amount) noexcept   \
     {                                                                           \
         *this = *this << amount;                                                \
         return *this;                                                           \
-    }
+    } // NOLINT
 
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(char)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(signed char)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(short)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(int)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(long)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(long long)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned char)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned short)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned long)
-    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned long long)
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(char)                     // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(signed char)              // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(short)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(int)                      // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(long)                     // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(long long)                // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned char)            // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned short)           // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned)                 // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned long)            // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT(unsigned long long)       // NOLINT
 
     #undef INTEGER_BINARY_OPERATOR_LEFT_SHIFT
     #undef INTEGER_BINARY_OPERATOR_EQUALS_LEFT_SHIFT
@@ -453,38 +454,38 @@ struct uint128
         }                                                                                           \
                                                                                                     \
         return {lhs.high >> amount, (lhs.low >> amount) | (lhs.high << (64 - amount))};             \
-    }
+    } // NOLINT
 
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(char)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(signed char)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(short)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(int)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(long)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(long long)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned char)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned short)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned long)
-    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned long long)
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(char)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(signed char)            // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(short)                  // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(int)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(long)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(long long)              // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned char)          // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned short)         // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned)               // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned long)          // NOLINT
+    INTEGER_BINARY_OPERATOR_RIGHT_SHIFT(unsigned long long)     // NOLINT
 
     #define INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(expr)                        \
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator>>=(expr amount) noexcept       \
     {                                                                               \
         *this = *this >> amount;                                                    \
         return *this;                                                               \
-    }
+    } // NOLINT
 
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(char)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(signed char)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(short)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(int)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(long)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(long long)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned char)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned short)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long)
-    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long long)
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(char)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(signed char)             // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(short)                   // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(int)                     // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(long)                    // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(long long)               // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned char)           // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned short)          // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned)                // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long)           // NOLINT
+    INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT(unsigned long long)      // NOLINT
 
     #undef INTEGER_BINARY_OPERATOR_RIGHT_SHIFT
     #undef INTEGER_BINARY_OPERATOR_EQUALS_RIGHT_SHIFT
@@ -498,7 +499,7 @@ struct uint128
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator++() noexcept;
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator++(int) noexcept;
+    BOOST_CHARCONV_CXX14_CONSTEXPR const uint128 operator++(int) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator-(uint128 lhs, uint128 rhs) noexcept;
 
@@ -506,7 +507,7 @@ struct uint128
 
     BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator--() noexcept;
 
-    BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &operator--(int) noexcept;
+    BOOST_CHARCONV_CXX14_CONSTEXPR const uint128 operator--(int) noexcept;
 
     BOOST_CHARCONV_CXX14_CONSTEXPR friend uint128 operator*(uint128 lhs, uint128 rhs) noexcept;
 
@@ -537,7 +538,7 @@ constexpr uint128 operator+(uint128 val) noexcept
     return val;
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(const uint128& v) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator=(const uint128& v) noexcept // NOLINT : User defined for older compilers
 {
     low = v.low;
     high = v.high;
@@ -682,7 +683,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator++() noexcept
     return *this;
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator++(int) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR const uint128 uint128::operator++(int) noexcept
 {
     return ++(*this);
 }
@@ -713,7 +714,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator--() noexcept
         this->low = UINT64_MAX;
         --this->high;
 	}
-    else
+    else // NOLINT
     {
         --this->low;
     }
@@ -721,7 +722,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator--() noexcept
     return *this;
 }
 
-BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator--(int) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR const uint128 uint128::operator--(int) noexcept
 {
     return --(*this);
 }
@@ -963,40 +964,40 @@ template <>
 struct numeric_limits<boost::charconv::detail::uint128>
 {
     // Member constants
-    static constexpr bool is_specialized = true;
-    static constexpr bool is_signed = false;
-    static constexpr bool is_integer = true;
-    static constexpr bool is_exact = true;
-    static constexpr bool has_infinity = false;
-    static constexpr bool has_quiet_NaN = false;
-    static constexpr bool has_signaling_NaN = false;
-    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
-    static constexpr bool has_denorm_loss = false;
-    static constexpr std::float_round_style round_style = std::round_toward_zero;
-    static constexpr bool is_iec559 = false;
-    static constexpr bool is_bounded = true;
-    static constexpr bool is_modulo = true;
-    static constexpr int digits = 128;
-    static constexpr int digits10 = 38;
-    static constexpr int max_digits10 = 0;
-    static constexpr int radix = 2;
-    static constexpr int min_exponent = 0;
-    static constexpr int min_exponent10 = 0;
-    static constexpr int max_exponent = 0;
-    static constexpr int max_exponent10 = 0;
-    static constexpr bool traps = std::numeric_limits<std::uint64_t>::traps;
-    static constexpr bool tinyness_before = false;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool is_specialized = true;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool is_signed = false;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool is_integer = true;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool is_exact = true;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool has_infinity = false;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool has_quiet_NaN = false;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool has_signaling_NaN = false;
+    BOOST_ATTRIBUTE_UNUSED static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool has_denorm_loss = false;
+    BOOST_ATTRIBUTE_UNUSED static constexpr std::float_round_style round_style = std::round_toward_zero;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool is_iec559 = false;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool is_bounded = true;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool is_modulo = true;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int digits = 128;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int digits10 = 38;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_digits10 = 0;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int radix = 2;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int min_exponent = 0;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int min_exponent10 = 0;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_exponent = 0;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_exponent10 = 0;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool traps = std::numeric_limits<std::uint64_t>::traps;
+    BOOST_ATTRIBUTE_UNUSED static constexpr bool tinyness_before = false;
 
     // Member functions
-    static constexpr boost::charconv::detail::uint128 (min)() { return 0; }
-    static constexpr boost::charconv::detail::uint128 lowest() { return 0; }
-    static constexpr boost::charconv::detail::uint128 (max)() { return {UINT64_MAX, UINT64_MAX}; }
-    static constexpr boost::charconv::detail::uint128 epsilon() { return 0; }
-    static constexpr boost::charconv::detail::uint128 round_error() { return 0; }
-    static constexpr boost::charconv::detail::uint128 infinity() { return 0; }
-    static constexpr boost::charconv::detail::uint128 quiet_NaN() { return 0; }
-    static constexpr boost::charconv::detail::uint128 signaling_NaN() { return 0; }
-    static constexpr boost::charconv::detail::uint128 denorm_min() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 (min)() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 lowest() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 (max)() { return {UINT64_MAX, UINT64_MAX}; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 epsilon() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 round_error() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 infinity() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 quiet_NaN() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 signaling_NaN() { return 0; }
+    BOOST_ATTRIBUTE_UNUSED static constexpr boost::charconv::detail::uint128 denorm_min() { return 0; }
 };
 
 } // Namespace std

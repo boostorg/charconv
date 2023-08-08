@@ -15,19 +15,6 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-struct IEEEf2bits
-{
-#if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
-    std::uint32_t mantissa : 23;
-    std::uint32_t exponent : 8;
-    std::uint32_t sign : 1;
-#else // Big endian
-    std::uint32_t sign : 1;
-    std::uint32_t exponent : 8;
-    std::uint32_t mantissa : 23;
-#endif 
-};
-
 struct ieee754_binary32 
 {
     static constexpr int significand_bits = 23;
@@ -36,23 +23,6 @@ struct ieee754_binary32
     static constexpr int max_exponent = 127;
     static constexpr int exponent_bias = -127;
     static constexpr int decimal_digits = 9;
-
-    static constexpr std::uint32_t denorm_mask = (UINT32_C(1) << (significand_bits)) - 1;
-};
-
-struct IEEEd2bits
-{
-#if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
-    std::uint32_t mantissa_l : 32;
-    std::uint32_t mantissa_h : 20;
-    std::uint32_t exponent : 11;
-    std::uint32_t sign : 1;
-#else // Big endian
-    std::uint32_t sign : 1;
-    std::uint32_t exponent : 11;
-    std::uint32_t mantissa_h : 20;
-    std::uint32_t mantissa_l : 32;
-#endif
 };
 
 struct ieee754_binary64 
@@ -63,8 +33,6 @@ struct ieee754_binary64
     static constexpr int max_exponent = 1023;
     static constexpr int exponent_bias = -1023;
     static constexpr int decimal_digits = 17;
-    
-    static constexpr std::uint64_t denorm_mask = (UINT64_C(1) << (significand_bits)) - 1;
 };
 
 // 80 bit long double (e.g. x86-64)
