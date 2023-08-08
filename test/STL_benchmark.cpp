@@ -389,10 +389,30 @@ void test_from_chars(const char* const str, const vector<Floating>& original, co
     verify(round_trip == original);
 }
 
+template <RoundTrip RT, typename Floating>
+void test_boost_from_chars(const char* const str, const vector<Floating>& original, const vector<char>& strings) {
+
+    const char* const last = strings.data() + strings.size();
+
+    vector<Floating> round_trip(N);
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        const char* first = strings.data();
+        for (size_t n = 0; n < N; ++n) {
+            const auto from_result = boost::charconv::from_chars(first, last, round_trip[n], boost_chars_format_from_RoundTrip(RT));
+            first                  = from_result.ptr + 1; // advance past null terminator
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    verify(round_trip == original);
+}
+
 template <int base, typename Integer>
 void test_strtox_integer(const char* const str, const vector<Integer>& original, const vector<char>& strings) {
-
-    //const char* const last = strings.data() + strings.size();
 
     vector<Integer> round_trip(N);
 
@@ -421,7 +441,7 @@ void test_strtox_integer(const char* const str, const vector<Integer>& original,
 }
 
 template <int base, typename Integer>
-void test_from_chars_integer(const char* const str, const vector<Integer>& /*original*/, const vector<char>& strings) {
+void test_from_chars_integer(const char* const str, [[maybe_unused]] const vector<Integer>& original, const vector<char>& strings) {
 
     const char* const last = strings.data() + strings.size();
 
@@ -441,11 +461,12 @@ void test_from_chars_integer(const char* const str, const vector<Integer>& /*ori
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    //verify(round_trip == original);
+    if constexpr (std::is_same_v<Integer, uint64_t>)
+        verify(round_trip == original);
 }
 
 template <int base, typename Integer>
-void test_boost_from_chars_integer(const char* const str, const vector<Integer>& /*original*/, const vector<char>& strings) {
+void test_boost_from_chars_integer(const char* const str, [[maybe_unused]] const vector<Integer>& original, const vector<char>& strings) {
     
     const char* const last = strings.data() + strings.size();
 
@@ -463,29 +484,8 @@ void test_boost_from_chars_integer(const char* const str, const vector<Integer>&
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    //verify(round_trip == original);
-}
-
-template <RoundTrip RT, typename Floating>
-void test_boost_from_chars(const char* const str, const vector<Floating>& original, const vector<char>& strings) {
-
-    const char* const last = strings.data() + strings.size();
-
-    vector<Floating> round_trip(N);
-
-    const auto start = steady_clock::now();
-    for (size_t k = 0; k < K; ++k) {
-        const char* first = strings.data();
-        for (size_t n = 0; n < N; ++n) {
-            const auto from_result = boost::charconv::from_chars(first, last, round_trip[n], boost_chars_format_from_RoundTrip(RT));
-            first                  = from_result.ptr + 1; // advance past null terminator
-        }
-    }
-    const auto finish = steady_clock::now();
-
-    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
-
-    verify(round_trip == original);
+    if constexpr (std::is_same_v<Integer, uint64_t>)
+        verify(round_trip == original);
 }
 
 template <typename T, typename Iterator>
