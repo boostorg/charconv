@@ -127,8 +127,8 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     // How to read floating point numbers accurately.
     // ACM SIGPLAN Notices. 1990
     // https://dl.acm.org/doi/pdf/10.1145/93542.93557
-    static constexpr auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;
-    static constexpr auto clinger_min_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? -34 : -55;
+    static constexpr auto clinger_max_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? 27 : 48;   // NOLINT : Only changes by platform
+    static constexpr auto clinger_min_exp = BOOST_CHARCONV_LDBL_BITS == 80 ? -34 : -55; // NOLINT
 
     if (clinger_min_exp <= q && q <= clinger_max_exp && w <= static_cast<Unsigned_Integer>(1) << 113)
     {
