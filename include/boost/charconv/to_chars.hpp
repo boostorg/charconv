@@ -197,7 +197,7 @@ Unsigned_Integer convert_value(Real value) noexcept
 template <typename Unsigned_Integer, typename Real, typename std::enable_if<std::is_same<Unsigned_Integer, uint128>::value, bool>::type = true>
 Unsigned_Integer convert_value(Real value) noexcept
 {
-    trivial_uint128 trivial_bits;
+    trivial_uint128 trivial_bits; // NOLINT : Does not need to be init since we memcpy the next step
     std::memcpy(&trivial_bits, &value, sizeof(Real));
     Unsigned_Integer temp {trivial_bits};
     return temp;
@@ -512,8 +512,11 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
             {
                 *first++ = '-';
             }
-            std::memcpy(first, "0p+0", 4);
+            std::memcpy(first, "0p+0", 4); // NOLINT : No null terminator is purposeful
             return {first + 4, std::errc()};
+        default:
+            // Do nothing
+            (void)ptr;
     }
 
     // Hex handles both cases already
@@ -538,7 +541,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     // v % + . + num_digits(INT_MAX) + specifier + null terminator
     // 1 + 1 + 10 + 1 + 1
     char format[14] {};
-    std::memcpy(&format, "%", 1);
+    std::memcpy(&format, "%", 1); // NOLINT : No null terminator is purposeful
     std::size_t pos = 1;
 
     // precision of -1 is unspecified
@@ -566,7 +569,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     else if (fmt == chars_format::fixed)
     {
         // Force 0 decimal places
-        std::memcpy(&format, ".0", 2);
+        std::memcpy(&format, ".0", 2); // NOLINT : No null terminator is purposeful
         pos += 2;
     }
 
