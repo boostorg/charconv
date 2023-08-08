@@ -76,8 +76,8 @@ template<typename T> struct limits
 
 // Definitions of in-class constexpr members are allowed but deprecated in C++17
 
-template<typename T> constexpr int limits<T>::max_chars10;
-template<typename T> constexpr int limits<T>::max_chars;
+template<typename T> BOOST_ATTRIBUTE_UNUSED constexpr int limits<T>::max_chars10;
+template<typename T> BOOST_ATTRIBUTE_UNUSED constexpr int limits<T>::max_chars;
 
 #endif // defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
