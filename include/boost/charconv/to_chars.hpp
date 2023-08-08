@@ -11,9 +11,9 @@
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/floff.hpp>
+#include <boost/charconv/detail/dragonbox/floff.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/charconv/detail/dragonbox.hpp>
+#include <boost/charconv/detail/dragonbox/dragonbox.hpp>
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
