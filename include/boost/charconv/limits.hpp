@@ -43,7 +43,7 @@ template<class T> struct is_uint128: std::false_type {};
 
 template<typename T> struct limits
 {
-    static constexpr int max_chars10 =
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars10 =
 
         // int128_t
         detail::is_int128<T>::value? 38+2: // digits10 + 1 + sign
@@ -57,7 +57,7 @@ template<typename T> struct limits
         // floating point
         std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // -1.(max_digits10)e+(max_exp)
 
-    static constexpr int max_chars =
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars =
 
         // int128_t
         detail::is_int128<T>::value? 127+2: // digits + 1 + sign
