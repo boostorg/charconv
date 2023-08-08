@@ -581,8 +581,7 @@ void test_boost_spirit_qi(const char* const str, const vector<T>& /*original*/, 
     const auto start = steady_clock::now();
     for (size_t k = 0; k < K; ++k) {
         const char* first = strings.data();
-        string test_str(first, static_cast<std::ptrdiff_t>(last - first));
-        parse_numbers(test_str.begin(), test_str.end(), round_trip);
+        parse_numbers(first, last, round_trip);
     }
     const auto finish = steady_clock::now();
 
@@ -592,7 +591,7 @@ void test_boost_spirit_qi(const char* const str, const vector<T>& /*original*/, 
 }
 
 template <typename T>
-void test_boost_lexical_cast_parse(const char* const str, const vector<T>& /*original*/, const vector<char>& strings) {
+void test_boost_lexical_cast_parse(const char* const str, const vector<T>& original, const vector<char>& strings) {
 
     //const char* const last = strings.data() + strings.size();
 
