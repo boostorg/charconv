@@ -2426,7 +2426,7 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
             auto two_fc = dragonbox_signed_significand_bits.remove_sign_bit_and_shift();
             auto exponent = int(exponent_bits);
 
-            BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::to_nearest) {
+            BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::to_nearest) { // NOLINT: if constexpr not always false
                 // Is the input a normal number?
                 if (exponent != 0) {
                     exponent += format::exponent_bias - format::significand_bits;
@@ -2494,7 +2494,7 @@ to_decimal(dragonbox_signed_significand_bits<Float, FloatTraits> dragonbox_signe
                                 typename policy_holder::cache_policy>(two_fc, exponent, additional_args);
                     });
             }
-            else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed) 
+            else BOOST_IF_CONSTEXPR (tag == decimal_to_binary_rounding::tag_t::left_closed_directed)  // NOLINT: if constexpr not always false
             {
                 // Is the input a normal number?
                 if (exponent != 0) {
@@ -2590,11 +2590,11 @@ namespace to_chars_detail {
             {
                 if (fmt != chars_format::scientific)
                 {
-                    std::memcpy(buffer, "0", 1);
+                    std::memcpy(buffer, "0", 1); // NOLINT: Specifically not null-terminated
                     return buffer + 1;
                 }
 
-                std::memcpy(buffer, "0e+00", 5);
+                std::memcpy(buffer, "0e+00", 5); // NOLINT: Specifically not null-terminated
                 return buffer + 5;
             }
         }
@@ -2608,7 +2608,7 @@ namespace to_chars_detail {
 
             if (s.has_all_zero_significand_bits())
             {
-                std::memcpy(buffer, "inf", 3);
+                std::memcpy(buffer, "inf", 3); // NOLINT: Specifically not null-terminated
                 return buffer + 3;
             }
             else 
@@ -2650,18 +2650,18 @@ namespace to_chars_detail {
                 {
                     if (!s.is_negative())
                     {
-                        std::memcpy(buffer, "nan", 3);
+                        std::memcpy(buffer, "nan", 3); // NOLINT: Specifically not null-terminated
                         return buffer + 3;
                     }
                     else
                     {
-                        std::memcpy(buffer, "nan(ind)", 8);
+                        std::memcpy(buffer, "nan(ind)", 8); // NOLINT: Specifically not null-terminated
                         return buffer + 8;
                     }
                 }
                 else
                 {
-                    std::memcpy(buffer, "nan(snan)", 9);
+                    std::memcpy(buffer, "nan(snan)", 9); // NOLINT: Specifically not null-terminated
                     return buffer + 9;
                 }
             }
