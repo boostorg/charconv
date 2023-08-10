@@ -10,8 +10,6 @@ https://www.boost.org/LICENSE_1_0.txt
 The values are relative to the performance of `std::printf` and `std::strtoX`.
 Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 means it takes twice as long).
 
-== Floating Point
-
 Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 13.1.0 with libstdc++.
 
 .to_chars floating point with the shortest representation
@@ -28,6 +26,8 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 
 |3.53 / 4.87
 |Boost.Charconv.to_chars
 |3.64 / 4.92
+|Google double-conversion
+|1.19 / 1.85
 |===
 
 .to_chars base 10 integers
@@ -76,6 +76,8 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 
 |1.97 / 1.68
 |Boost.Charconv.from_chars
 |2.54 / 1.78
+|Google double-conversion
+|1.11 / 1.27
 |===
 
 Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 14.3 (V17.7.0).
