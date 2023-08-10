@@ -534,19 +534,26 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
 
             space);
     }
-    else if constexpr (std::is_same_v<T, uint32_t>)
+    else if (std::is_same_v<T, uint32_t>)
     {
-        r = phrase_parse(first, last,
+        uint_parser<uint32_t, 10, 1, 10> max_uint;
 
-            //  Begin grammar
-             (
-                 ulong_[push_back(phoenix::ref(v), _1)]
-                     >> *('\0' >> ulong_[push_back(phoenix::ref(v), _1)])
-             )
-            ,
-            //  End grammar
+        if (qi::parse(first, last, max_uint))
+        {
+            uint64_t n;
+            auto iter = first;
+            size_t i = 0;
 
-            space);
+            while (qi::parse(iter, last, '\0') && qi::parse(iter, last, max_uint, n))
+            {
+                v[i] = n;
+                ++i;
+                first = iter + 1; // Skip null terminator
+            }
+
+            return true;
+        }
+        return false;
     }
     else if (std::is_same_v<T, uint64_t>)
     {
@@ -594,7 +601,7 @@ void test_boost_spirit_qi(const char* const str, BOOST_ATTRIBUTE_UNUSED const ve
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    if constexpr (std::is_same_v<T, uint64_t>)
+    if constexpr (std::is_same_v<T, uint64_t> || std::is_same_v<T, uint32_t>)
     {
         for (size_t n = 1; n < N; ++n)
         {
