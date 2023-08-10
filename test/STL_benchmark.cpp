@@ -378,6 +378,36 @@ void test_strtox(const char* const str, const vector<Floating>& original, const 
     verify(round_trip == original);
 }
 
+template <typename Floating>
+void test_google_double_conversion_from_chars(const char* const str, const vector<Floating>& /*original*/, const vector<char>& strings) {
+
+    using namespace double_conversion;
+
+    const char* const last = strings.data() + strings.size();
+
+    vector<Floating> round_trip(N);
+
+    const int flags = 0;
+    int processed;
+
+    auto converter = StringToDoubleConverter(flags, 0.0, 0.0, "inf", "nan");
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        const char* ptr = strings.data();
+        size_t i = 0;
+        while (ptr != last)
+        {
+            const auto len = strlen(ptr);
+            round_trip[i] = converter.StringToDouble(ptr, len, &processed);
+            ptr += processed + 1;
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+}
+
 #ifndef AVOID_CHARCONV
 vector<char> erase_0x(const vector<char>& strings) {
     vector<char> output;
@@ -861,6 +891,9 @@ void test_all() {
 
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars float scientific", vec_flt, strings_sci_flt);
     test_boost_from_chars<RoundTrip::Sci>("Boost.Charconv::from_chars double scientific", vec_dbl, strings_sci_dbl);
+
+    test_google_double_conversion_from_chars("double-conversion float scientific", vec_flt, strings_sci_flt);
+    test_google_double_conversion_from_chars("double-conversion double scientific", vec_dbl, strings_sci_dbl);
 
     //test_strtox("std::strtof float hex", vec_flt, strings_hex_flt);
     //test_strtox("std::strtod double hex", vec_dbl, strings_hex_dbl);
