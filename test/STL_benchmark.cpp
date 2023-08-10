@@ -36,6 +36,7 @@
 #include <limits>
 #include <string>
 
+#include <double-conversion/double-conversion.h>
 #include <boost/spirit/include/karma.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/phoenix/core.hpp>
@@ -280,6 +281,39 @@ void test_boost_to_chars(const char* const str, const vector<T>& vec, const Args
         }
     }
 }
+
+template <typename T>
+void test_google_double_conversion_to_string(const char* const str, const vector<T>& values)
+{
+    using namespace double_conversion;
+
+    const int kBufferSize = 2000;
+    char buffer[kBufferSize];
+    StringBuilder builder(buffer, kBufferSize);
+    const int flags = DoubleToStringConverter::NO_FLAGS;
+    DoubleToStringConverter dc(flags, "inf", "nan", 'e', -6, 21, 0, 0, 2);
+
+    vector<char*> converted_values(N);
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        for (const auto& elem : values) {
+            if constexpr (std::is_same_v<T, double>) {
+                dc.ToShortest(elem, &builder);
+            } else {
+                dc.ToShortestSingle(elem, &builder);
+            }
+
+            converted_values.push_back(builder.Finalize());
+            builder.Reset();
+        }
+    }
+
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+}
+
 #endif // AVOID_CHARCONV
 
 template <RoundTrip RT, typename T>
@@ -739,6 +773,9 @@ void test_all() {
     test_STL_to_chars<RoundTrip::Gen>("std::to_chars double plain shortest", vec_dbl);
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars float plain shortest", vec_flt);
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars double plain shortest", vec_dbl);
+
+    test_google_double_conversion_to_string("double-conversion float plain shortest", vec_flt);
+    test_google_double_conversion_to_string("double-conversion double plain shortest", vec_dbl);
 /*
     test_STL_to_chars<RoundTrip::Sci>("std::to_chars float scientific shortest", vec_flt, chars_format::scientific);
     test_STL_to_chars<RoundTrip::Sci>("std::to_chars double scientific shortest", vec_dbl, chars_format::scientific);
