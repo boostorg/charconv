@@ -7,7 +7,7 @@ https://www.boost.org/LICENSE_1_0.txt
 = Benchmarks
 :idprefix: benchmarks
 
-The values are relative to the performance of `std::printf` and `std::stroto(f/d)`.
+The values are relative to the performance of `std::printf` and `std::strtoX`.
 Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 means it takes twice as long).
 
 == Floating Point
@@ -64,7 +64,7 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 
 
 .from_chars base 10 integers
 |===
-|Function|Relative Performance (float / double)
+|Function|Relative Performance (uint32_t / uint64_t)
 
 |std::strto(ul,ull)
 |1.00 / 1.00
@@ -130,7 +130,7 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 
 .from_chars base 10 integers
 |===
-|Function|Relative Performance (float / double)
+|Function|Relative Performance (uint32_t / uint64_t)
 
 |std::strto(ul,ull)
 |1.00 / 1.00
@@ -144,9 +144,9 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 |2.68 / 2.27
 |===
 
-Data in tables 5 - 8 were run on MacOS Ventura 13.5 with M1 Pro architecture using Homebrew GCC 13.1 with libstdc++.
+Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture using Homebrew GCC 13.1.0 with libstdc++.
 
-.to_chars shortest representation
+.to_chars floating point with the shortest representation
 |===
 |Function|Relative Performance (float / double)
 
@@ -162,7 +162,23 @@ Data in tables 5 - 8 were run on MacOS Ventura 13.5 with M1 Pro architecture usi
 |3.03 / 2.96
 |===
 
-.from_chars with scientific formatting
+.to_chars base 10 integers
+|===
+|Function|Relative Performance (uint32_t / uint64_t)
+
+|std::printf
+|1.00 / 1.00
+|Boost.lexical_cast
+|2.08 / 1.75
+|Boost.spirit.karma
+|4.17 / 2.06
+|std::to_chars
+|6.25 / 4.12
+|Boost.Charconv.to_chars
+|6.25 / 4.12
+|===
+
+.from_chars floating point with scientific formatting
 |===
 |Function|Relative Performance (float / double)
 
@@ -176,38 +192,20 @@ Data in tables 5 - 8 were run on MacOS Ventura 13.5 with M1 Pro architecture usi
 |1.28 / 1.63
 |===
 
-== Integers
-
-.to_chars base 10
+.from_chars base 10 integers
 |===
 |Function|Relative Performance (uint32_t / uint64_t)
 
-|std::printf
+|std::strto(ul,ull)
 |1.00 / 1.00
 |Boost.lexical_cast
-|2.37 / 1.75
-|Boost.spirit.karma
-|3.90 / 1.86
-|std::to_chars
-|6.05 / 3.72
-|Boost.Charconv.to_chars
-|6.13 / 3.73
-|===
-
-.from_chars base 10
-|===
-|Function|Relative Performance (uint32_t / uint64_t)
-
-|std::strtou(l/ll)
-|1.00 / 1.00
-|Boost.lexical_cast
-|0.57 / 0.52
+|0.56 / 0.54
 |Boost.spirit.qi
-|1.37 / 1.22
+|1.39 / 1.33
 |std::from_chars
-|2.09 / 1.58
+|1.92 / 1.65
 |Boost.Charconv.from_chars
-|2.61 / 1.64
+|2.27 / 1.65
 |===
 
 Special thanks to Stephan T. Lavavej for providing the basis for the benchmarks.
