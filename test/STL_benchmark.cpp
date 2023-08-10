@@ -503,36 +503,52 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
     using qi::ulong_;
     using qi::ulong_long;
     using boost::spirit::qi::uint_parser;
+    using boost::spirit::qi::real_parser;
+    using boost::spirit::qi::real_policies;
 
     bool r = false;
     
     if constexpr (std::is_same_v<T, float>)
     {
-        r = phrase_parse(first, last,
+        real_parser<float, qi::strict_real_policies<float>> float_parser;
 
-            //  Begin grammar
-            (
-                float_[push_back(phoenix::ref(v), _1)]
-                    >> *('\0' >> float_[push_back(phoenix::ref(v), _1)])
-            )
-            ,
-            //  End grammar
+        if (qi::parse(first, last, float_parser))
+        {
+            float n;
+            auto iter = first;
+            size_t i = 0;
 
-            space);
+            while (qi::parse(iter, last, '\0') && qi::parse(iter, last, float_parser, n))
+            {
+                v[i] = n;
+                ++i;
+                first = iter + 1; // Skip null terminator
+            }
+
+            return true;
+        }
+        return false;
     }
     else if constexpr (std::is_same_v<T, double>)
     {
-        r = phrase_parse(first, last,
+        real_parser<double, qi::strict_real_policies<double>> double_parser;
 
-            //  Begin grammar
-            (
-                double_[push_back(phoenix::ref(v), _1)]
-                    >> *('\0' >> double_[push_back(phoenix::ref(v), _1)])
-            )
-            ,
-            //  End grammar
+        if (qi::parse(first, last, double_parser))
+        {
+            double n;
+            auto iter = first;
+            size_t i = 0;
 
-            space);
+            while (qi::parse(iter, last, '\0') && qi::parse(iter, last, double_parser, n))
+            {
+                v[i] = n;
+                ++i;
+                first = iter + 1; // Skip null terminator
+            }
+
+            return true;
+        }
+        return false;
     }
     else if (std::is_same_v<T, uint32_t>)
     {
@@ -540,7 +556,7 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
 
         if (qi::parse(first, last, max_uint))
         {
-            uint64_t n;
+            uint32_t n;
             auto iter = first;
             size_t i = 0;
 
@@ -574,11 +590,6 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
 
             return true;
         }
-        return false;
-    }
-
-    if (first != last) // fail if we did not get a full match
-    {
         return false;
     }
 
