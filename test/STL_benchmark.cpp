@@ -550,17 +550,24 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
     }
     else if (std::is_same_v<T, uint64_t>)
     {
-        r = phrase_parse(first, last,
+        uint_parser<uint64_t, 10, 1, 20> max_uint;
 
-                //  Begin grammar
-                         (
-                                 ulong_long[push_back(phoenix::ref(v), _1)]
-                                         >> *('\0' >> ulong_long[push_back(phoenix::ref(v), _1)])
-                         )
-                ,
-                //  End grammar
+        if (qi::parse(first, last, max_uint))
+        {
+            uint64_t n;
+            auto iter = first;
+            size_t i = 0;
 
-                         space);
+            while (qi::parse(iter, last, '\0') && qi::parse(iter, last, max_uint, n))
+            {
+                v[i] = n;
+                ++i;
+                first = iter + 1; // Skip null terminator
+            }
+
+            return true;
+        }
+        return false;
     }
 
     if (first != last) // fail if we did not get a full match
@@ -572,7 +579,7 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
 }
 
 template <typename T>
-void test_boost_spirit_qi(const char* const str, const vector<T>& /*original*/, const vector<char>& strings) {
+void test_boost_spirit_qi(const char* const str, BOOST_ATTRIBUTE_UNUSED const vector<T>& original, const vector<char>& strings) {
 
     const char* const last = strings.data() + strings.size();
 
@@ -587,7 +594,13 @@ void test_boost_spirit_qi(const char* const str, const vector<T>& /*original*/, 
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    // verify(round_trip == original);
+    if constexpr (std::is_same_v<T, uint64_t>)
+    {
+        for (size_t n = 1; n < N; ++n)
+        {
+            verify(original[n] == round_trip[n - 1]);
+        }
+    }
 }
 
 template <typename T>
