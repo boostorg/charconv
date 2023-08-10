@@ -6,6 +6,8 @@
 //
 //  Derived from mailing list post: https://lists.boost.org/Archives/boost/2023/05/254660.php
 
+#include <iostream>
+
 #ifdef BOOST_CHARCONV_RUN_BENCHMARKS
 #ifdef __GNUC__
 #  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -913,7 +915,8 @@ int main()
 
 int main()
 {
-    return 0;
+    std::cerr << "Benchmarks not run" << std::endl;
+    return 1;
 }
 
 #endif

@@ -8,13 +8,13 @@ https://www.boost.org/LICENSE_1_0.txt
 :idprefix: benchmarks
 
 The values are relative to the performance of `std::printf` and `std::stroto(f/d)`.
-Larger numbers are more performant (e.g. 2.00 means twice as fast).
+Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 means it takes twice as long).
 
 == Floating Point
 
-Data in tables 1 and 2 were run on Ubuntu 23.04 with x86_6 architecture using GCC 13.1 with libstdc++.
+Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 13.1.0 with libstdc++.
 
-.to_chars shortest representation
+.to_chars floating point with the shortest representation
 |===
 |Function|Relative Performance (float / double)
 
@@ -23,25 +23,59 @@ Data in tables 1 and 2 were run on Ubuntu 23.04 with x86_6 architecture using GC
 |Boost.lexical_cast
 |0.55 / 0.46
 |Boost.spirit.karma
-|1.81 / 2.61
+|1.80 / 2.62
 |std::to_chars
-|3.58 / 4.86
+|3.53 / 4.87
 |Boost.Charconv.to_chars
-|3.64 / 4.89
+|3.64 / 4.92
 |===
 
-.from_chars with scientific formatting
+.to_chars base 10 integers
+|===
+|Function|Relative Performance (uint32_t / uint64_t)
+
+|std::printf
+|1.00 / 1.00
+|Boost.lexical_cast
+|1.77 / 1.41
+|Boost.spirit.karma
+|2.55 / 1.47
+|std::to_chars
+|3.86 / 2.25
+|Boost.Charconv.to_chars
+|3.81 / 2.25
+|===
+
+.from_chars floating point with scientific formatting
 |===
 |Function|Relative Performance (float / double)
 
 |std::strto(f/d)
 |1.00 / 1.00
+|Boost.lexical_cast
+|0.33 / 0.42
 |Boost.spirit.qi
-|2.58 / 3.33
+|3.17 / 4.65
 |std::from_chars
-|3.18 / 5.80
+|3.23 / 5.77
 |Boost.Charconv.from_chars
-|3.26 / 5.80
+|3.28 / 5.75
+|===
+
+.from_chars base 10 integers
+|===
+|Function|Relative Performance (float / double)
+
+|std::strto(ul,ull)
+|1.00 / 1.00
+|Boost.lexical_cast
+|0.53 / 0.52
+|Boost.spirit.qi
+|2.24 / 1.49
+|std::from_chars
+|1.97 / 1.68
+|Boost.Charconv.from_chars
+|2.54 / 1.78
 |===
 
 Data in tables 3 and 4 were run on Windows 11 with x86_64 architecture using MSVC 14.3.
