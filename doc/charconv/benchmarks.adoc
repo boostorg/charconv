@@ -10,6 +10,18 @@ https://www.boost.org/LICENSE_1_0.txt
 The values are relative to the performance of `std::printf` and `std::strtoX`.
 Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 means it takes twice as long).
 
+== How to run the Benchmarks
+
+To run the benchmarks yourself navigate to the test folder, and define `BOOST_CHARCONV_RUN_BENCHMARKS` when running the tests.
+An example on linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark -a` .
+
+Additionally, you will need the following:
+
+* A compiler with full `<charconv>` support:
+** GCC 11 or newer
+** MSVC 19.24 or newer
+* https://github.com/google/double-conversion[libdouble-conversion]
+
 == x86_64 Linux
 
 Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 13.1.0 with libstdc++.
