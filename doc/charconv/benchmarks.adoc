@@ -24,7 +24,7 @@ Additionally, you will need the following:
 
 == x86_64 Linux
 
-Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 13.1.0 with libstdc++.
+Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_64 architecture using GCC 13.1.0 with libstdc++.
 
 === Floating Point
 
