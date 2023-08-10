@@ -510,13 +510,13 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
 
     bool r = false;
     
-    if constexpr (std::is_same_v<T, float>)
+    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>)
     {
-        real_parser<float, qi::strict_real_policies<float>> float_parser;
+        real_parser<T, qi::strict_real_policies<T>> float_parser;
 
         if (qi::parse(first, last, float_parser))
         {
-            float n;
+            T n;
             auto iter = first;
             size_t i = 0;
 
@@ -531,49 +531,7 @@ bool parse_numbers(Iterator first, Iterator last, std::vector<T>& v)
         }
         return false;
     }
-    else if constexpr (std::is_same_v<T, double>)
-    {
-        real_parser<double, qi::strict_real_policies<double>> double_parser;
-
-        if (qi::parse(first, last, double_parser))
-        {
-            double n;
-            auto iter = first;
-            size_t i = 0;
-
-            while (qi::parse(iter, last, '\0') && qi::parse(iter, last, double_parser, n))
-            {
-                v[i] = n;
-                ++i;
-                first = iter + 1; // Skip null terminator
-            }
-
-            return true;
-        }
-        return false;
-    }
-    else if (std::is_same_v<T, uint32_t>)
-    {
-        uint_parser<uint32_t, 10, 1, 10> max_uint;
-
-        if (qi::parse(first, last, max_uint))
-        {
-            uint32_t n;
-            auto iter = first;
-            size_t i = 0;
-
-            while (qi::parse(iter, last, '\0') && qi::parse(iter, last, max_uint, n))
-            {
-                v[i] = n;
-                ++i;
-                first = iter + 1; // Skip null terminator
-            }
-
-            return true;
-        }
-        return false;
-    }
-    else if (std::is_same_v<T, uint64_t>)
+    else
     {
         uint_parser<uint64_t, 10, 1, 20> max_uint;
 
