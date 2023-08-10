@@ -10,7 +10,11 @@ https://www.boost.org/LICENSE_1_0.txt
 The values are relative to the performance of `std::printf` and `std::strtoX`.
 Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 means it takes twice as long).
 
+== x86_64 Linux
+
 Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 13.1.0 with libstdc++.
+
+=== Floating Point
 
 .to_chars floating point with the shortest representation
 |===
@@ -30,22 +34,6 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 
 |1.19 / 1.85
 |===
 
-.to_chars base 10 integers
-|===
-|Function|Relative Performance (uint32_t / uint64_t)
-
-|std::printf
-|1.00 / 1.00
-|Boost.lexical_cast
-|1.77 / 1.41
-|Boost.spirit.karma
-|2.55 / 1.47
-|std::to_chars
-|3.86 / 2.25
-|Boost.Charconv.to_chars
-|3.81 / 2.25
-|===
-
 .from_chars floating point with scientific formatting
 |===
 |Function|Relative Performance (float / double)
@@ -60,6 +48,24 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 
 |3.23 / 5.77
 |Boost.Charconv.from_chars
 |3.28 / 5.75
+|===
+
+=== Integral
+
+.to_chars base 10 integers
+|===
+|Function|Relative Performance (uint32_t / uint64_t)
+
+|std::printf
+|1.00 / 1.00
+|Boost.lexical_cast
+|1.77 / 1.41
+|Boost.spirit.karma
+|2.55 / 1.47
+|std::to_chars
+|3.86 / 2.25
+|Boost.Charconv.to_chars
+|3.81 / 2.25
 |===
 
 .from_chars base 10 integers
@@ -80,7 +86,11 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_6 architecture using GCC 
 |1.11 / 1.27
 |===
 
+== x86_64 Windows
+
 Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 14.3 (V17.7.0).
+
+=== Floating Point
 
 .to_chars floating point with the shortest representation
 |===
@@ -96,22 +106,6 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 |5.58 / 15.77
 |Boost.Charconv.to_chars
 |5.62 / 15.26
-|===
-
-.to_chars base 10 integers
-|===
-|Function|Relative Performance (uint32_t / uint64_t)
-
-|std::printf
-|1.00 / 1.00
-|Boost.lexical_cast
-|0.68 / 0.68
-|Boost.spirit.karma
-|2.75 / 1.67
-|std::to_chars
-|2.75 / 2.10
-|Boost.Charconv.to_chars
-|2.75 / 2.06
 |===
 
 .from_chars floating point with scientific formatting
@@ -130,6 +124,24 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 |2.06 / 5.21
 |===
 
+=== Integral
+
+.to_chars base 10 integers
+|===
+|Function|Relative Performance (uint32_t / uint64_t)
+
+|std::printf
+|1.00 / 1.00
+|Boost.lexical_cast
+|0.68 / 0.68
+|Boost.spirit.karma
+|2.75 / 1.67
+|std::to_chars
+|2.75 / 2.10
+|Boost.Charconv.to_chars
+|2.75 / 2.06
+|===
+
 .from_chars base 10 integers
 |===
 |Function|Relative Performance (uint32_t / uint64_t)
@@ -146,7 +158,11 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 |2.68 / 2.27
 |===
 
+== ARM MacOS
+
 Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture using Homebrew GCC 13.1.0 with libstdc++.
+
+=== Floating Point
 
 .to_chars floating point with the shortest representation
 |===
@@ -164,6 +180,22 @@ Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture usin
 |3.03 / 2.96
 |===
 
+.from_chars floating point with scientific formatting
+|===
+|Function|Relative Performance (float / double)
+
+|std::strto(f/d)
+|1.00 / 1.00
+|Boost.spirit.qi
+|1.12 / 1.06
+|std::from_chars
+|1.32 / 1.65
+|Boost.Charconv.from_chars
+|1.28 / 1.63
+|===
+
+=== Integral
+
 .to_chars base 10 integers
 |===
 |Function|Relative Performance (uint32_t / uint64_t)
@@ -178,20 +210,6 @@ Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture usin
 |6.25 / 4.12
 |Boost.Charconv.to_chars
 |6.25 / 4.12
-|===
-
-.from_chars floating point with scientific formatting
-|===
-|Function|Relative Performance (float / double)
-
-|std::strto(f/d)
-|1.00 / 1.00
-|Boost.spirit.qi
-|1.12 / 1.06
-|std::from_chars
-|1.32 / 1.65
-|Boost.Charconv.from_chars
-|1.28 / 1.63
 |===
 
 .from_chars base 10 integers
