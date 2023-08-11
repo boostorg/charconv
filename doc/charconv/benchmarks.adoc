@@ -60,6 +60,8 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_64 architecture using GCC
 |3.23 / 5.77
 |Boost.Charconv.from_chars
 |3.28 / 5.75
+|Google double-conversion
+|1.16 / 1.30
 |===
 
 === Integral
@@ -94,8 +96,6 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_64 architecture using GCC
 |1.97 / 1.68
 |Boost.Charconv.from_chars
 |2.54 / 1.78
-|Google double-conversion
-|1.11 / 1.27
 |===
 
 == x86_64 Windows
