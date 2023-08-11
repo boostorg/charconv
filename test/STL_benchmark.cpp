@@ -63,6 +63,7 @@ void verify_fp(T x, T y, int tol = 10) {
     {
         puts("VERIFICATION FAILURE");
         exit(EXIT_FAILURE);
+        // cerr << "Float distance between: " << x << " and " << y << " is " << abs(boost::math::float_distance(x, y)) << endl;
     }
 }
 
@@ -397,7 +398,7 @@ void test_strtox(const char* const str, const vector<Floating>& original, const 
 }
 
 template <typename Floating>
-void test_google_double_conversion_from_chars(const char* const str, const vector<Floating>& /*original*/, const vector<char>& strings) {
+void test_google_double_conversion_from_chars(const char* const str, const vector<Floating>& original, const vector<char>& strings) {
 
     using namespace double_conversion;
 
@@ -405,7 +406,7 @@ void test_google_double_conversion_from_chars(const char* const str, const vecto
 
     vector<Floating> round_trip(N);
 
-    const int flags = 0;
+    const int flags = StringToDoubleConverter::ALLOW_CASE_INSENSITIVITY;
     int processed;
 
     auto converter = StringToDoubleConverter(flags, 0.0, 0.0, "inf", "nan");
@@ -419,11 +420,17 @@ void test_google_double_conversion_from_chars(const char* const str, const vecto
             const auto len = strlen(ptr);
             round_trip[i] = converter.StringToDouble(ptr, len, &processed);
             ptr += processed + 1;
+            ++i;
         }
     }
     const auto finish = steady_clock::now();
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    for (size_t n = 0; n < N; ++n)
+    {
+        verify_fp(original[n], round_trip[n], 1);
+    }
 }
 
 #ifndef AVOID_CHARCONV
