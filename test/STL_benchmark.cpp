@@ -676,11 +676,13 @@ void test_boost_spirit_qi(const char* const str, BOOST_ATTRIBUTE_UNUSED const ve
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    if constexpr (std::is_same_v<T, uint64_t> || std::is_same_v<T, uint32_t>)
-    {
-        for (size_t n = 1; n < N; ++n)
-        {
+    if constexpr (std::is_same_v<T, uint64_t> || std::is_same_v<T, uint32_t>) {
+        for (size_t n = 1; n < N; ++n) {
             verify(original[n] == round_trip[n - 1]);
+        }
+    } else {
+        for (size_t n = 1; n < N; ++n) {
+            verify_fp(original[n], round_trip[n - 1], 2);
         }
     }
 }
