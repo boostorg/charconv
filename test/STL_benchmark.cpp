@@ -714,8 +714,13 @@ void test_boost_lexical_cast_parse(const char* const str, const vector<T>& origi
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    if constexpr (std::is_same_v<T, uint64_t>)
+    if constexpr (std::is_same_v<T, uint64_t>) {
         verify(round_trip == original);
+    } else if constexpr (std::is_floating_point_v<T>) {
+        for (size_t n = 0; n < N; ++n) {
+            verify_fp(round_trip[n], original[n], 2);
+        }
+    }
 }
 
 /*
