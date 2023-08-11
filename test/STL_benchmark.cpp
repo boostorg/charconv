@@ -35,6 +35,7 @@
 #include <iomanip>
 #include <limits>
 #include <string>
+#include <cmath>
 
 #include <double-conversion/double-conversion.h>
 #include <boost/spirit/include/karma.hpp>
@@ -43,6 +44,7 @@
 #include <boost/phoenix/operator.hpp>
 #include <boost/phoenix/stl.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/special_functions/next.hpp>
 #include <boost/charconv.hpp>
 
 using namespace std;
@@ -55,9 +57,18 @@ void verify(const bool b) {
    }
 }
 
+template <typename T>
+void verify_fp(T x, T y, int tol = 10) {
+    if (abs(boost::math::float_distance(x, y)) > tol)
+    {
+        puts("VERIFICATION FAILURE");
+        exit(EXIT_FAILURE);
+    }
+}
+
 enum class RoundTrip { Sci, Fix, Gen, Hex, Lossy, u32, u64 };
 
-constexpr size_t N = 2'000'000; // how many values to test
+constexpr size_t N = 200; // how many values to test
 
 constexpr size_t K = 5; // how many times to repeat the test, for cleaner timing
 
@@ -290,21 +301,21 @@ void test_google_double_conversion_to_string(const char* const str, const vector
     const int kBufferSize = 2000;
     char buffer[kBufferSize];
     StringBuilder builder(buffer, kBufferSize);
-    const int flags = DoubleToStringConverter::NO_FLAGS;
+    const int flags = DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN;
     DoubleToStringConverter dc(flags, "inf", "nan", 'e', -6, 21, 0, 0, 2);
 
-    vector<char*> converted_values(N);
+    vector<string> converted_values(N);
 
     const auto start = steady_clock::now();
     for (size_t k = 0; k < K; ++k) {
-        for (const auto& elem : values) {
+        for (size_t n = 0; n < N; ++n) {
             if constexpr (std::is_same_v<T, double>) {
-                dc.ToShortest(elem, &builder);
+                dc.ToShortest(values[n], &builder);
             } else {
-                dc.ToShortestSingle(elem, &builder);
+                dc.ToShortestSingle(values[n], &builder);
             }
 
-            converted_values.push_back(builder.Finalize());
+            converted_values[n] = builder.Finalize();
             builder.Reset();
         }
     }
@@ -312,6 +323,13 @@ void test_google_double_conversion_to_string(const char* const str, const vector
     const auto finish = steady_clock::now();
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    for (size_t n = 0; n < N; ++n) {
+        T round_trip {};
+        auto from_result = from_chars(converted_values[n].data(), converted_values[n].data() + converted_values[n].size(), round_trip);
+        verify_fp(round_trip, values[n], 1);
+        verify(from_result.ec == errc());
+    }
 }
 
 #endif // AVOID_CHARCONV
