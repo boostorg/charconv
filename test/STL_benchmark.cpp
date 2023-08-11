@@ -73,24 +73,44 @@ constexpr size_t N = 200; // how many values to test
 
 constexpr size_t K = 5; // how many times to repeat the test, for cleaner timing
 
-constexpr size_t BufSize = 2'000; // more than enough
+constexpr size_t BufSize = 2'000'000; // more than enough
 
 unsigned int global_dummy = 0;
+
+template <typename Num>
+struct scientific_policy : boost::spirit::karma::real_policies<Num>
+{
+    static bool trailing_zeros(Num)
+    {
+        return true;
+    }
+
+    static unsigned precision(Num)
+    {
+        return std::numeric_limits<Num>::digits10 + 1;
+    }
+};
 
 template <typename T>
 void test_boost_spirit_karma(const char* const str, const vector<T>& vec) {
     namespace karma = boost::spirit::karma;
-    
+
+    using science_type_double = karma::real_generator<double, scientific_policy<double>>;
+    science_type_double const scientific_double = science_type_double();
+    using science_type_float = karma::real_generator<float, scientific_policy<float>>;
+    science_type_float const scientific_float = science_type_float();
+
     const auto start = steady_clock::now();
+
     for (size_t k = 0; k < K; ++k) {
         for (const auto& elem : vec) {
             char buffer[BufSize];
             char* it = buffer;
             
             if constexpr (std::is_same_v<T, float>) {
-                karma::generate(it, karma::float_, elem);
+                karma::generate(it, scientific_float, elem);
             } else if constexpr (std::is_same_v<T, double>) {
-                karma::generate(it, karma::double_, elem);
+                karma::generate(it, scientific_double, elem);
             } else if constexpr (std::is_same_v<T, uint32_t>) {
                 karma::generate(it, karma::ulong_, (unsigned long)elem);
             } else if constexpr (std::is_same_v<T, uint64_t>) {
@@ -100,7 +120,39 @@ void test_boost_spirit_karma(const char* const str, const vector<T>& vec) {
     }
     const auto finish = steady_clock::now();
 
-    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);    
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    for (const auto& elem : vec) {
+        char buffer[BufSize] {};
+        char* it = buffer;
+
+        if constexpr (std::is_same_v<T, float>) {
+            karma::generate(it, scientific_float, elem);
+        } else if constexpr (std::is_same_v<T, double>) {
+            karma::generate(it, scientific_double, elem);
+        } else if constexpr (std::is_same_v<T, uint32_t>) {
+            karma::generate(it, karma::ulong_, (unsigned long)elem);
+        } else if constexpr (std::is_same_v<T, uint64_t>) {
+            karma::generate(it, karma::ulong_long, (unsigned long long)elem);
+        }
+
+        T round_trip;
+        auto r = from_chars(buffer, buffer + BufSize, round_trip);
+        verify(r.ec == std::errc());
+
+        if constexpr (std::is_integral_v<T>) {
+            verify(round_trip == elem);
+        } else {
+            // Have to set a loose tolerance,
+            // because even with the user specified policy rounding errors can be large
+            //
+            // Float distance between: -0.0036966 and -0.00369657 is 149
+            // Float distance between: 0.002663 and 0.00266298 is 88
+            // Float distance between: -0.0025576 and -0.00255758 is 107
+            verify_fp(round_trip, elem, 500);
+        }
+
+    }
 }
 
 template <typename T>
