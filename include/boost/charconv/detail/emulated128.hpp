@@ -831,11 +831,16 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator%=(uint128 v) noexcept
 
 static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
 {
-#if defined(BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS)
+    // __emulu is not available on ARM https://learn.microsoft.com/en-us/cpp/intrinsics/emul-emulu?view=msvc-170
+    #if defined(BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS) && !defined(_M_ARM64)
+
     return __emulu(x, y);
-#else
+
+    #else
+
     return x * static_cast<std::uint64_t>(y);
-#endif
+
+    #endif
 }
 
 // Get 128-bit result of multiplication of two 64-bit unsigned integers.
@@ -845,8 +850,9 @@ BOOST_CHARCONV_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t
     
     auto result = static_cast<boost::uint128_type>(x) * static_cast<boost::uint128_type>(y);
     return {static_cast<std::uint64_t>(result >> 64), static_cast<std::uint64_t>(result)};
-    
-    #elif defined(BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS)
+
+    // _umul128 is x64 only https://learn.microsoft.com/en-us/cpp/intrinsics/umul128?view=msvc-170
+    #elif defined(BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS) && !defined(_M_ARM64)
     
     unsigned long long high;
     std::uint64_t low = _umul128(x, y, &high);
