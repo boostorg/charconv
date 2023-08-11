@@ -13,7 +13,7 @@ Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 mean
 == How to run the Benchmarks
 
 To run the benchmarks yourself navigate to the test folder, and define `BOOST_CHARCONV_RUN_BENCHMARKS` when running the tests.
-An example on linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark -a` .
+An example on linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark -a release` .
 
 Additionally, you will need the following:
 
@@ -190,6 +190,8 @@ Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture usin
 |3.01 / 2.96
 |Boost.Charconv.to_chars
 |3.03 / 2.96
+|Google double-conversion
+|1.22 / 1.16
 |===
 
 .from_chars floating point with scientific formatting
@@ -198,12 +200,17 @@ Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture usin
 
 |std::strto(f/d)
 |1.00 / 1.00
+|Boost.lexical_cast
+|0.06 / 0.06
 |Boost.spirit.qi
 |1.12 / 1.06
 |std::from_chars
 |1.32 / 1.65
 |Boost.Charconv.from_chars
 |1.28 / 1.63
+|Google double-conversion
+|0.45 / 0.32
+
 |===
 
 === Integral
