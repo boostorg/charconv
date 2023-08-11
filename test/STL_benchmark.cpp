@@ -103,8 +103,8 @@ void test_boost_spirit_karma(const char* const str, const vector<T>& vec) {
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);    
 }
 
-template <typename Floating>
-void test_lexical_cast(const char* const str, const vector<Floating>& vec) {
+template <typename T>
+void test_lexical_cast(const char* const str, const vector<T>& vec) {
     const auto start = steady_clock::now();
     for (size_t k = 0; k < K; ++k) {
         for (const auto& elem : vec) {
@@ -115,6 +115,21 @@ void test_lexical_cast(const char* const str, const vector<Floating>& vec) {
     const auto finish = steady_clock::now();
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    for (const auto& elem : vec) {
+        const auto ret = boost::lexical_cast<array<char, 25>>(elem);
+
+        T round_trip;
+        auto r = from_chars(ret.data(), ret.data() + ret.size(), round_trip);
+        verify(r.ec == std::errc());
+
+        if constexpr (std::is_integral_v<T>) {
+            verify(round_trip == elem);
+        } else {
+            verify_fp(round_trip, elem, 2);
+        }
+
+    }
 }
 
 template <typename Floating>
