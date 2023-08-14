@@ -219,7 +219,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         if (dot_position != 0 || fractional)
         {
-            exponent = static_cast<Integer>(dot_position) - i + extra_zeros + leading_zero_powers;
+            exponent = static_cast<Integer>(dot_position - i) + extra_zeros + leading_zero_powers;
         }
         else
         {
@@ -252,7 +252,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             return {first, std::errc::invalid_argument};
         }
 
-        exponent = i - 1;
+        exponent = static_cast<Integer>(i - 1);
         std::size_t offset = i;
         bool round = false;
         // If more digits are present than representable in the significand of the target type
@@ -303,7 +303,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     // Finally we get the exponent
     constexpr std::size_t exponent_buffer_size = 6; // Float128 min exp is −16382
     char exponent_buffer[exponent_buffer_size] {};
-    Integer significand_digits = i;
+    const auto significand_digits = i;
     i = 0;
 
     // Get the sign first
@@ -343,7 +343,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     {
         if (fractional)
         {
-            exponent = static_cast<Integer>(dot_position) - significand_digits;
+            exponent = static_cast<Integer>(dot_position - significand_digits);
         }
         else
         {
@@ -371,17 +371,18 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                 if (fmt == chars_format::hex)
                 {
                     // In hex the number of digits parsed is possibly less than the number of digits in base10
-                    exponent -= num_digits(significand) - dot_position;
+                    exponent -= num_digits(significand) - static_cast<Integer>(dot_position);
                 }
                 else
                 {
-                    exponent -= significand_digits - dot_position;
+                    exponent -= static_cast<Integer>(significand_digits - dot_position);
                 }
             }
             else
             {
                 exponent += extra_zeros;
             }
+
             return {next, std::errc()};
     }
 }
