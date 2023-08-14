@@ -619,8 +619,7 @@ void test_from_chars_integer(const char* const str, [[maybe_unused]] const vecto
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    if constexpr (std::is_same_v<Integer, uint64_t>)
-        verify(round_trip == original);
+    verify(round_trip == original);
 }
 
 template <int base, typename Integer>
@@ -642,8 +641,7 @@ void test_boost_from_chars_integer(const char* const str, [[maybe_unused]] const
 
     printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
 
-    if constexpr (std::is_same_v<Integer, uint64_t>)
-        verify(round_trip == original);
+    verify(round_trip == original);
 }
 
 template <typename T, typename Iterator>
