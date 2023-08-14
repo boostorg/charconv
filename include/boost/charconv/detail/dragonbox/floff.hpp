@@ -545,6 +545,17 @@ BOOST_INLINE_VARIABLE constexpr uconst<9>  uconst9;
 BOOST_INLINE_VARIABLE constexpr uconst<14> uconst14;
 BOOST_INLINE_VARIABLE constexpr uconst<16> uconst16;
 
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+#elif defined(BOOST_MSVC)
+#  pragma warning(push)
+#  pragma warning(disable: 4365 4267)
+#endif
+
 template <unsigned digits, bool dummy = (digits <= 9)>
 struct uint_with_known_number_of_digits;
 
@@ -646,6 +657,14 @@ static BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_
     return next_subsegment.value == power_of_10[decltype(next_subsegment)::digits] / 2 &&
                                     ((current_digits & 1) != 0 || has_further_digits(args...));
 }
+
+#ifdef __clang__
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#elif defined(BOOST_MSVC)
+#  pragma warning(pop)
+#endif
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
