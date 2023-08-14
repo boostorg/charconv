@@ -404,7 +404,7 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
     // If the request window goes further than the right boundary of the source window,
     if (end_bit_index > src_end_bit_index)
     {
-        const auto number_of_trailing_zero_blocks = 
+        const std::uint8_t number_of_trailing_zero_blocks =
             static_cast<std::uint8_t>(end_bit_index - src_end_bit_index) / ExtendedCache::cache_bits_unit;
         excessive_bits_to_right = static_cast<std::uint32_t>(end_bit_index - src_end_bit_index) %
                                     static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
