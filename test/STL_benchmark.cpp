@@ -82,7 +82,7 @@ struct scientific_policy : boost::spirit::karma::real_policies<Num>
 {
     static bool trailing_zeros(Num)
     {
-        return true;
+        return false;
     }
 
     static unsigned precision(Num)
