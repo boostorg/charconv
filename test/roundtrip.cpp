@@ -42,7 +42,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 
     if( v >= 0 )
     {
-        p = mini_to_chars( buffer, v );
+        p = mini_to_chars( buffer, static_cast<boost::uint128_type>(v) );
     }
     else
     {
@@ -125,7 +125,7 @@ template<class T> void test_roundtrip_int16( int base )
 
     for( int i = 0; i < N; ++i )
     {
-        std::int16_t w = static_cast<std::uint16_t>( rng() );
+        std::int16_t w = static_cast<std::int16_t>( rng() );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -147,7 +147,7 @@ template<class T> void test_roundtrip_int32( int base )
 
     for( int i = 0; i < N; ++i )
     {
-        std::int32_t w = static_cast<std::uint32_t>( rng() );
+        std::int32_t w = static_cast<std::int32_t>( rng() );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -169,7 +169,7 @@ template<class T> void test_roundtrip_int64( int base )
 
     for( int i = 0; i < N; ++i )
     {
-        std::int64_t w = static_cast<std::uint64_t>( rng() );
+        std::int64_t w = static_cast<std::int64_t>( rng() );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -196,7 +196,7 @@ template<class T> void test_roundtrip_int128( int base )
 {
     for( int i = 0; i < N; ++i )
     {
-        boost::int128_type w = static_cast<boost::uint128_type>( concatenate(rng(), rng()) );
+        boost::int128_type w = static_cast<boost::int128_type>( concatenate(rng(), rng()) );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -301,7 +301,7 @@ int64_t ToOrdinal(FPType x)
     /*  Start with the number of representable numbers in preceding normal
         exponent ranges.
     */
-    int64_t count = (exponent - MinimumExponent) * NumbersPerExponent;
+    auto count = static_cast<int64_t>(static_cast<uint64_t>(exponent - MinimumExponent) * NumbersPerExponent);
 
     /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
         number of representable numbers from 0 to x.  For normal numbers,

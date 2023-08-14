@@ -176,18 +176,18 @@ struct fixed_point_calculator
             switch (number_of_blocks) 
             {
             case 3:
-                mul_result = umul128(blocks_ptr[2], multiplier);
+                mul_result = umul128(blocks_ptr[2], static_cast<std::uint64_t>(multiplier));
                 carry = mul_result.high;
                 BOOST_FALLTHROUGH;
 
             case 2:
-                mul_result = umul128(blocks_ptr[1], multiplier);
+                mul_result = umul128(blocks_ptr[1], static_cast<std::uint64_t>(multiplier));
                 mul_result += carry;
                 carry = mul_result.high;
                 BOOST_FALLTHROUGH;
 
             case 1:
-                mul_result = umul128(blocks_ptr[0], multiplier);
+                mul_result = umul128(blocks_ptr[0], static_cast<std::uint64_t>(multiplier));
                 mul_result += carry;
                 return static_cast<MultiplierType>(mul_result.high);
 
@@ -196,11 +196,11 @@ struct fixed_point_calculator
             }
         }
 
-        auto mul_result = umul128(blocks_ptr[number_of_blocks - 1], multiplier);
+        auto mul_result = umul128(blocks_ptr[number_of_blocks - 1], static_cast<std::uint64_t>(multiplier));
         auto carry = mul_result.high;
         for (std::size_t i = 1; i < number_of_blocks; ++i)
         {
-            mul_result = umul128(blocks_ptr[number_of_blocks - i - 1], multiplier);
+            mul_result = umul128(blocks_ptr[number_of_blocks - i - 1], static_cast<std::uint64_t>(multiplier));
             mul_result += carry;
             carry = mul_result.high;
         }
@@ -361,7 +361,7 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
             std::memset(blocks_ptr, 0, number_of_leading_zero_blocks * sizeof(CacheBlockType));
         }
 
-        start_bit_index += number_of_leading_zero_blocks * static_cast<int>(ExtendedCache::cache_bits_unit);
+        start_bit_index += static_cast<int>(number_of_leading_zero_blocks * ExtendedCache::cache_bits_unit);
 
         const auto src_start_block_index =
             static_cast<int>(static_cast<std::uint32_t>(src_start_bit_index) /
@@ -370,7 +370,7 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
         const auto src_start_block_bit_index =
             src_start_block_index * static_cast<int>(ExtendedCache::cache_bits_unit);
 
-        first_cache_block_index = src_start_block_index;
+        first_cache_block_index = static_cast<std::uint32_t>(src_start_block_index);
 
         if (start_bit_index < src_start_block_bit_index)
         {
@@ -404,8 +404,8 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
     // If the request window goes further than the right boundary of the source window,
     if (end_bit_index > src_end_bit_index)
     {
-        const auto number_of_trailing_zero_blocks = 
-            static_cast<std::uint8_t>(end_bit_index - src_end_bit_index / ExtendedCache::cache_bits_unit);
+        const std::uint8_t number_of_trailing_zero_blocks =
+            static_cast<std::uint8_t>(end_bit_index - src_end_bit_index) / ExtendedCache::cache_bits_unit;
         excessive_bits_to_right = static_cast<std::uint32_t>(end_bit_index - src_end_bit_index) %
                                     static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
 
@@ -493,8 +493,8 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
     // To compute ceil(2^Q * x / D), we need to check if
     // 2^Q * x / D = 2^(Q + e + k - eta - 1) * 5^(k - eta) is an integer or not.
     if (k < ExtendedCache::segment_length ||
-        e + k + cache_block_count * static_cast<int>(ExtendedCache::cache_bits_unit) -
-                excessive_bits_to_right <
+        e + k + static_cast<int>(cache_block_count * ExtendedCache::cache_bits_unit) -
+                static_cast<int>(excessive_bits_to_right) <
             ExtendedCache::segment_length + 1) {
         blocks_ptr[cache_block_count - 1] += (CacheBlockType(1) << excessive_bits_to_right);
         BOOST_CHARCONV_ASSERT(blocks_ptr[cache_block_count - 1] != 0);
@@ -544,6 +544,17 @@ BOOST_INLINE_VARIABLE constexpr uconst<6>  uconst6;
 BOOST_INLINE_VARIABLE constexpr uconst<9>  uconst9;
 BOOST_INLINE_VARIABLE constexpr uconst<14> uconst14;
 BOOST_INLINE_VARIABLE constexpr uconst<16> uconst16;
+
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+#elif defined(BOOST_MSVC)
+#  pragma warning(push)
+#  pragma warning(disable: 4365 4267)
+#endif
 
 template <unsigned digits, bool dummy = (digits <= 9)>
 struct uint_with_known_number_of_digits;
@@ -646,6 +657,14 @@ static BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_
     return next_subsegment.value == power_of_10[decltype(next_subsegment)::digits] / 2 &&
                                     ((current_digits & 1) != 0 || has_further_digits(args...));
 }
+
+#ifdef __clang__
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#elif defined(BOOST_MSVC)
+#  pragma warning(pop)
+#endif
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
@@ -1362,7 +1381,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                 else 
                 {
                     std::memcpy(buffer, "0.", 2); // NOLINT : Specifically not null-terminating
-                    std::memset(buffer + 2, '0', precision); // NOLINT : Specifically not null-terminating
+                    std::memset(buffer + 2, '0', static_cast<std::size_t>(precision)); // NOLINT : Specifically not null-terminating
                     std::memcpy(buffer + 2 + precision, "e+00", 2); // NOLINT : Specifically not null-terminating
                     return buffer + precision + 4;
                 }
@@ -2240,7 +2259,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                             // Convert subsegment into fixed-point fractional form where the
                             // integer part is of one digit. The integer part is ignored.
                             // 42949673 = ceil(2^32/10^2)
-                            auto prod = subsegment * UINT64_C(42949673);
+                            auto prod = static_cast<std::uint64_t>(subsegment) * UINT64_C(42949673);
 
                             if (remaining_digits == 1)
                             {
@@ -2278,7 +2297,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
                             // Convert subsegment into fixed-point fractional form where the
                             // integer part is of two digits. The integer part is ignored.
                             // 429496730 = ceil(2^32/10^1)
-                            auto prod = subsegment * UINT64_C(429496730);
+                            auto prod = static_cast<std::uint64_t>(subsegment) * UINT64_C(429496730);
                             prod = static_cast<std::uint32_t>(prod) * UINT64_C(10);
                             const auto next_digits = static_cast<std::uint32_t>(prod >> 32);
 
@@ -3736,7 +3755,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
 fill_remaining_digits_with_0s:
     if (fmt != boost::charconv::chars_format::general)
     {
-        std::memset(buffer, '0', remaining_digits);
+        std::memset(buffer, '0', static_cast<std::size_t>(remaining_digits));
         buffer += remaining_digits;
     }
 
@@ -3773,7 +3792,7 @@ print_exponent_and_return:
         // 6554 = ceil(2^16 / 10)
         auto prod = static_cast<std::uint32_t>(decimal_exponent) * UINT32_C(6554);
         auto d1 = prod >> 16;
-        prod = static_cast<std::uint16_t>(prod) * UINT32_C(5); // * 10
+        prod = static_cast<std::uint16_t>(prod) * UINT16_C(5); // * 10
         auto d2 = prod >> 15;                                  // >> 16
         print_2_digits(d1, buffer);
         print_1_digit(d2, buffer + 2);
@@ -3781,7 +3800,7 @@ print_exponent_and_return:
     }
     else
     {
-        print_2_digits(decimal_exponent, buffer);
+        print_2_digits(static_cast<std::uint32_t>(decimal_exponent), buffer);
         buffer += 2;
     }
 
@@ -3852,7 +3871,7 @@ round_up_all_9s:
             }
 
             ++*(first_9_pos - 1);
-            std::memset(first_9_pos, '0', buffer - first_9_pos);
+            std::memset(first_9_pos, '0', static_cast<std::size_t>(buffer - first_9_pos));
 
             goto insert_decimal_dot;
         }
@@ -3866,7 +3885,7 @@ round_up_all_9s:
 
     // Nolint is applied to the following two calls since we know they are not supposed to be null terminated
     std::memcpy(buffer_starting_pos, "1.", 2); // NOLINT
-    std::memset(buffer_starting_pos + 2, '0', buffer - buffer_starting_pos - 2); // NOLINT
+    std::memset(buffer_starting_pos + 2, '0', static_cast<std::size_t>(buffer - buffer_starting_pos - 2)); // NOLINT
 
     goto print_exponent_and_return;
 }

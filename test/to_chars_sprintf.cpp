@@ -408,7 +408,7 @@ template<class T> void test_sprintf_int16()
 
     for( int i = 0; i < N; ++i )
     {
-        std::int16_t w = static_cast<std::uint16_t>( rng() );
+        std::int16_t w = static_cast<std::int16_t>( rng() );
         test_sprintf( static_cast<T>( w ) );
     }
 }
@@ -430,7 +430,7 @@ template<class T> void test_sprintf_int32()
 
     for( int i = 0; i < N; ++i )
     {
-        std::int32_t w = static_cast<std::uint32_t>( rng() );
+        std::int32_t w = static_cast<std::int32_t>( rng() );
         test_sprintf( static_cast<T>( w ) );
     }
 }
@@ -452,7 +452,7 @@ template<class T> void test_sprintf_int64()
 
     for( int i = 0; i < N; ++i )
     {
-        std::int64_t w = static_cast<std::uint64_t>( rng() );
+        std::int64_t w = static_cast<std::int64_t>( rng() );
         test_sprintf( static_cast<T>( w ) );
     }
 }

@@ -177,7 +177,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     }
 
     significand &= ~(UINT64_C(1) << 52);
-    const std::uint64_t real_exponent = exponent - leading_zeros;
+    const auto real_exponent = static_cast<std::uint64_t>(exponent - leading_zeros);
 
     // We have to check that real_exponent is in range, otherwise fail
     if (BOOST_UNLIKELY((real_exponent < 1) || (real_exponent > 2046)))
