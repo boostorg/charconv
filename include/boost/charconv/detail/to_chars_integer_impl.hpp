@@ -111,7 +111,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     }
     else
     {
-        unsigned_value = value;
+        unsigned_value = static_cast<Unsigned_Integer>(value);
     }
 
     // If the type is less than 32 bits we can use this without change
