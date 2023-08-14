@@ -227,7 +227,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     {
         if (is_negative)
         {
-            value = -(static_cast<Unsigned_Integer>(value));
+            value = static_cast<Integer>(-(static_cast<Unsigned_Integer>(value)));
         }
     }
 

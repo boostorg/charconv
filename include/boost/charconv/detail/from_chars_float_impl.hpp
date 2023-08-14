@@ -101,7 +101,7 @@ inline from_chars_result from_chars_strtod(const char* first, const char* last, 
     // If the string to be parsed does not fit into the 1024 byte static buffer than we have to allocate a buffer.
     // malloc is used here because it does not throw on allocation failure.
 
-    char* buffer = static_cast<char*>(std::malloc(last - first + 1));
+    char* buffer = static_cast<char*>(std::malloc(static_cast<std::size_t>(last - first + 1)));
     if (buffer == nullptr)
     {
         return {first, std::errc::not_enough_memory};

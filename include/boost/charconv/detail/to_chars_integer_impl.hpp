@@ -106,7 +106,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         }
         else
         {
-            unsigned_value = value;
+            unsigned_value = static_cast<Unsigned_Integer>(value);
         }
     }
     else
@@ -139,7 +139,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             *first++ = '-';
         }
 
-        boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - converted_value_digits), converted_value_digits);
+        boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - static_cast<unsigned>(converted_value_digits)),
+                                        static_cast<std::size_t>(converted_value_digits));
     }
     else if (std::numeric_limits<Integer>::digits <= std::numeric_limits<std::uint64_t>::digits ||
              static_cast<std::uint64_t>(unsigned_value) <= (std::numeric_limits<std::uint64_t>::max)())
@@ -165,7 +166,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             const int first_value_chars = num_digits(x);
 
             decompose32(x, buffer);
-            boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - first_value_chars), first_value_chars);
+            boost::charconv::detail::memcpy(first, buffer + (sizeof(buffer) - static_cast<unsigned>(first_value_chars)),
+                                            static_cast<std::size_t>(first_value_chars));
 
             decompose32(y, buffer);
             boost::charconv::detail::memcpy(first + first_value_chars, buffer + 1, sizeof(buffer) - 1);
@@ -240,13 +242,13 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         }
         else
         {
-            unsigned_value = value;
+            unsigned_value = static_cast<Unsigned_Integer>(value);
         }
     }
     else
     #endif
     {
-        unsigned_value = value;
+        unsigned_value = static_cast<Unsigned_Integer>(value);
     }
 
     auto converted_value = static_cast<Unsigned_Integer>(unsigned_value);
@@ -284,8 +286,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     }
 
     --i;
-    boost::charconv::detail::memcpy(first, buffer[i] + 10 - num_chars[i], num_chars[i]);
-    std::size_t offset = num_chars[i];
+    auto offset = static_cast<std::size_t>(num_chars[i]);
+    boost::charconv::detail::memcpy(first, buffer[i] + 10 - offset, offset);
 
     while (i > 0)
     {
@@ -327,12 +329,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         }
         else
         {
-            unsigned_value = value;
+            unsigned_value = static_cast<Unsigned_Integer>(value);
         }
     }
     else
     {
-        unsigned_value = value;
+        unsigned_value = static_cast<Unsigned_Integer>(value);
     }
 
     constexpr Unsigned_Integer zero = 48U; // Char for '0'
@@ -400,7 +402,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         return {last, std::errc::result_out_of_range};
     }
 
-    boost::charconv::detail::memcpy(first, buffer + (buffer_size - num_chars), num_chars);
+    boost::charconv::detail::memcpy(first, buffer + (buffer_size - static_cast<unsigned long>(num_chars)),
+                                    static_cast<std::size_t>(num_chars));
 
     return {first + num_chars, std::errc()};
 }

@@ -105,11 +105,11 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             const auto head_digits = std::uint32_t(prod >> 32);
             // If s32 is of 8 digits, increase the exponent by 7.
             // Otherwise, increase it by 6.
-            exponent += (6 + unsigned(head_digits >= 10));
+            exponent += static_cast<int>(6 + unsigned(head_digits >= 10));
 
             // Write the first digit and the decimal point.
             std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
-            // This third character may be overwritten later but we don't care.
+            // This third character may be overwritten later, but we don't care.
             buffer[2] = radix_table[head_digits * 2 + 1];
 
             // Remaining 6 digits are all zero?
@@ -171,7 +171,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
             // If s32 is of 6 digits, increase the exponent by 5.
             // Otherwise, increase it by 4.
-            exponent += (4 + unsigned(head_digits >= 10));
+            exponent += static_cast<int>(4 + unsigned(head_digits >= 10));
 
             // Write the first digit and the decimal point.
             std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
@@ -372,7 +372,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
                     buffer[2] = radix_table[head_digits * 2 + 1];
 
-                    exponent += (6 + unsigned(head_digits >= 10));
+                    exponent += static_cast<int>(6 + unsigned(head_digits >= 10));
                     buffer += unsigned(head_digits >= 10);
 
                     // Print remaining 6 digits.
@@ -395,7 +395,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
                     buffer[2] = radix_table[head_digits * 2 + 1];
 
-                    exponent += (4 + unsigned(head_digits >= 10));
+                    exponent += static_cast<int>(4 + unsigned(head_digits >= 10));
                     buffer += unsigned(head_digits >= 10);
 
                     // Print remaining 4 digits.
@@ -416,7 +416,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     std::memcpy(buffer, radix_100_head_table + head_digits * 2, 2);
                     buffer[2] = radix_table[head_digits * 2 + 1];
 
-                    exponent += (2 + unsigned(head_digits >= 10));
+                    exponent += static_cast<int>(2 + unsigned(head_digits >= 10));
                     buffer += unsigned(head_digits >= 10);
 
                     // Print remaining 2 digits.
@@ -431,7 +431,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                     std::memcpy(buffer, radix_100_head_table + first_block * 2, 2);
                     buffer[2] = radix_table[first_block * 2 + 1];
 
-                    exponent += unsigned(first_block >= 10);
+                    exponent += (first_block >= 10);
                     buffer += (2 + unsigned(first_block >= 10));
                 }
 

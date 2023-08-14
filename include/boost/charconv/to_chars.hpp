@@ -455,7 +455,8 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
                 // Bounds check
                 if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
                 {
-                    std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent, -value_struct.exponent);
+                    std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent,
+                                 static_cast<std::size_t>(-value_struct.exponent));
                     std::memset(r.ptr + value_struct.exponent, '.', 1);
                     ++r.ptr;
                 }
