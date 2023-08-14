@@ -302,9 +302,11 @@ struct signed_significand_bits
 // Some simple utilities for constexpr computation.
 ////////////////////////////////////////////////////////////////////////////////////////
 
-template <class Int>
-BOOST_CHARCONV_CXX14_CONSTEXPR Int compute_power(Int a, unsigned exp) noexcept 
+template <class Int, class Int2>
+BOOST_CHARCONV_CXX14_CONSTEXPR Int compute_power(Int a, Int2 exp) noexcept
 {
+    BOOST_CHARCONV_ASSERT(exp >= 0);
+
     Int res = 1;
     while (exp > 0)
     {
