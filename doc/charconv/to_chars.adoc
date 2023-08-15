@@ -10,6 +10,8 @@ https://www.boost.org/LICENSE_1_0.txt
 == to_chars overview
 [source, c++]
 ----
+namespace boost { namespace charconv {
+
 struct to_chars_result
 {
     char* ptr;
@@ -27,6 +29,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last,
 
 template <typename Real>
 to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision) noexcept;
+
+}} // Namespace boost::charconv
 ----
 
 == to_chars_result

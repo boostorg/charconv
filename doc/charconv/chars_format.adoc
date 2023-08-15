@@ -10,6 +10,8 @@ https://www.boost.org/LICENSE_1_0.txt
 == chars_format overview
 [source, c++]
 ----
+namespace boost { namespace charconv {
+
 enum class chars_format : unsigned
 {
     scientific = 1 << 0,
@@ -17,6 +19,8 @@ enum class chars_format : unsigned
     hex = 1 << 2,
     general = fixed | scientific
 };
+
+}} // Namespace boost::charconv
 ----
 `boost::charconv::chars_format` is used to specify the format of floating point types with `from_chars` and `to_chars`.
 
