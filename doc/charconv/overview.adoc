@@ -35,7 +35,7 @@ assert(!strncmp(buffer, "123456", 6)); // Strncmp returns 0 on match
 
 == Supported Compilers
 
-* GCC 4.8 or later
+* GCC 5 or later
 * Clang 3.7 or later
 * Visual Studio 2015 (14.0) or later
 

@@ -26,7 +26,8 @@ The integer part will be between 0 and 9 inclusive. The fraction and exponent wi
 The exponent will always have a minimum of 2 digits.
 
 === Fixed Format
-Fixed format will be of the form `2.30` or `3090`. An exponent will not appear with this format. If the precision of `to_chars` exceeds that of the type (e.g. std::numeric_limits<double>::chars10), 0s will be appended to the end.
+Fixed format will be of the form `2.30` or `3090`. An exponent will not appear with this format.
+If the precision of `to_chars` exceeds that of the type (e.g. `std::numeric_limits<double>::chars10`), 0s will be appended to the end.
 
 === Hex Format
 Hex format will be of the form `1.0ep+5`. The integer part will always be 0 or 1. The exponent will be with a p instead of an e like in base 10 formats, because e is a valid hex value.
