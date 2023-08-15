@@ -35,7 +35,7 @@ template<class T> void zero_extend_test()
             {
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::snprintf( buffer, sizeof( buffer ), "%llu%se-%d", v, std::string( j, '0' ).c_str(), j );
+                    std::snprintf( buffer, sizeof( buffer ), "%llu%se-%d", v, std::string( (size_t)j, '0' ).c_str(), j );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
@@ -52,7 +52,7 @@ template<class T> void zero_extend_test()
 
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::snprintf( buffer, sizeof( buffer ), "%llu0e-%s1", v, std::string( j, '0' ).c_str() );
+                    std::snprintf( buffer, sizeof( buffer ), "%llu0e-%s1", v, std::string( (size_t)j, '0' ).c_str() );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
@@ -86,7 +86,7 @@ template<class T> void zero_extend_test()
             {
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::snprintf( buffer, sizeof( buffer ), "0.%s%llue%d", std::string( j, '0' ).c_str(), v, j );
+                    std::snprintf( buffer, sizeof( buffer ), "0.%s%llue%d", std::string( (size_t)j, '0' ).c_str(), v, j );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );

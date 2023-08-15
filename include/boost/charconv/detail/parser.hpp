@@ -45,6 +45,23 @@ inline bool is_delimiter(char c, chars_format fmt) noexcept
     return !is_hex_char(c) && c != 'p' && c != 'P';
 }
 
+inline from_chars_result from_chars_dispatch(const char* first, const char* last, std::uint64_t& value, int base) noexcept
+{
+    return boost::charconv::detail::from_chars(first, last, value, base);
+}
+
+inline from_chars_result from_chars_dispatch(const char* first, const char* last, uint128& value, int base) noexcept
+{
+    return boost::charconv::detail::from_chars128(first, last, value, base);
+}
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+inline from_chars_result from_chars_dispatch(const char* first, const char* last, boost::uint128_type& value, int base) noexcept
+{
+    return boost::charconv::detail::from_chars128(first, last, value, base);
+}
+#endif
+
 template <typename Unsigned_Integer, typename Integer>
 inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
@@ -128,7 +145,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         exponent = 0;
         std::size_t offset = i;
 
-        from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
+        from_chars_result r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, base);
         switch (r.ec)
         {
             case std::errc::invalid_argument:
@@ -202,7 +219,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         if (dot_position != 0 || fractional)
         {
-            exponent = static_cast<Integer>(dot_position) - i + extra_zeros + leading_zero_powers;
+            exponent = static_cast<Integer>(dot_position - i) + extra_zeros + leading_zero_powers;
         }
         else
         {
@@ -210,7 +227,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         std::size_t offset = i;
         
-        from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
+        from_chars_result r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, base);
         switch (r.ec)
         {
             case std::errc::invalid_argument:
@@ -235,7 +252,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             return {first, std::errc::invalid_argument};
         }
 
-        exponent = i - 1;
+        exponent = static_cast<Integer>(i - 1);
         std::size_t offset = i;
         bool round = false;
         // If more digits are present than representable in the significand of the target type
@@ -261,7 +278,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // See GitHub issue #29: https://github.com/cppalliance/charconv/issues/29
         if (offset != 0)
         {
-            from_chars_result r = from_chars(significand_buffer, significand_buffer + offset, significand, base);
+            from_chars_result r = from_chars_dispatch(significand_buffer, significand_buffer + offset, significand, base);
             switch (r.ec)
             {
                 case std::errc::invalid_argument:
@@ -286,7 +303,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     // Finally we get the exponent
     constexpr std::size_t exponent_buffer_size = 6; // Float128 min exp is −16382
     char exponent_buffer[exponent_buffer_size] {};
-    Integer significand_digits = i;
+    const auto significand_digits = i;
     i = 0;
 
     // Get the sign first
@@ -326,7 +343,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     {
         if (fractional)
         {
-            exponent = static_cast<Integer>(dot_position) - significand_digits;
+            exponent = static_cast<Integer>(dot_position - significand_digits);
         }
         else
         {
@@ -354,17 +371,18 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                 if (fmt == chars_format::hex)
                 {
                     // In hex the number of digits parsed is possibly less than the number of digits in base10
-                    exponent -= num_digits(significand) - dot_position;
+                    exponent -= num_digits(significand) - static_cast<Integer>(dot_position);
                 }
                 else
                 {
-                    exponent -= significand_digits - dot_position;
+                    exponent -= static_cast<Integer>(significand_digits - dot_position);
                 }
             }
             else
             {
                 exponent += extra_zeros;
             }
+
             return {next, std::errc()};
     }
 }

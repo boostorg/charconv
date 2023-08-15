@@ -9,7 +9,6 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
-#include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
@@ -80,20 +79,30 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 // Floating Point
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace detail {
-
-std::errc errno_to_errc(int errno_value) noexcept;
-
-} // Namespace detail
-
-// Only 64 bit long double overloads are fully implemented
-#if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
-#define BOOST_CHARCONV_FULL_LONG_DOUBLE_IMPL
-#endif
-
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, float& value, chars_format fmt = chars_format::general) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
 BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, __float128& value, chars_format fmt = chars_format::general) noexcept;
+#endif
+
+// <stdfloat> types
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, std::float16_t& value, chars_format fmt = chars_format::general) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, std::float32_t& value, chars_format fmt = chars_format::general) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, std::float64_t& value, chars_format fmt = chars_format::general) noexcept;
+#endif
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, std::float128_t& value, chars_format fmt = chars_format::general) noexcept;
+#endif
+#ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, std::bfloat16_t& value, chars_format fmt = chars_format::general) noexcept;
+#endif
 
 } // namespace charconv
 } // namespace boost

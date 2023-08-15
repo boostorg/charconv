@@ -43,7 +43,7 @@ template<class T> struct is_uint128: std::false_type {};
 
 template<typename T> struct limits
 {
-    static constexpr int max_chars10 =
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars10 =
 
         // int128_t
         detail::is_int128<T>::value? 38+2: // digits10 + 1 + sign
@@ -57,7 +57,7 @@ template<typename T> struct limits
         // floating point
         std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // -1.(max_digits10)e+(max_exp)
 
-    static constexpr int max_chars =
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars =
 
         // int128_t
         detail::is_int128<T>::value? 127+2: // digits + 1 + sign
@@ -76,8 +76,8 @@ template<typename T> struct limits
 
 // Definitions of in-class constexpr members are allowed but deprecated in C++17
 
-template<typename T> constexpr int limits<T>::max_chars10;
-template<typename T> constexpr int limits<T>::max_chars;
+template<typename T> BOOST_ATTRIBUTE_UNUSED constexpr int limits<T>::max_chars10;
+template<typename T> BOOST_ATTRIBUTE_UNUSED constexpr int limits<T>::max_chars;
 
 #endif // defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 

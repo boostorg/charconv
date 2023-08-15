@@ -42,7 +42,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 
     if( v >= 0 )
     {
-        p = mini_to_chars( buffer, v );
+        p = mini_to_chars( buffer, static_cast<boost::uint128_type>(v) );
     }
     else
     {
@@ -63,6 +63,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <numeric>
 #include <cstdint>
 #include <cfloat>
 #include <cmath>
@@ -73,7 +74,7 @@ static boost::detail::splitmix64 rng;
 
 // integral types, random values
 
-#if defined(__GNUC__) && (__GNUC__ == 12)
+#if defined(__GNUC__) && (__GNUC__ >= 12)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
@@ -124,7 +125,7 @@ template<class T> void test_roundtrip_int16( int base )
 
     for( int i = 0; i < N; ++i )
     {
-        std::int16_t w = static_cast<std::uint16_t>( rng() );
+        std::int16_t w = static_cast<std::int16_t>( rng() );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -146,7 +147,7 @@ template<class T> void test_roundtrip_int32( int base )
 
     for( int i = 0; i < N; ++i )
     {
-        std::int32_t w = static_cast<std::uint32_t>( rng() );
+        std::int32_t w = static_cast<std::int32_t>( rng() );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -168,7 +169,7 @@ template<class T> void test_roundtrip_int64( int base )
 
     for( int i = 0; i < N; ++i )
     {
-        std::int64_t w = static_cast<std::uint64_t>( rng() );
+        std::int64_t w = static_cast<std::int64_t>( rng() );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -195,7 +196,7 @@ template<class T> void test_roundtrip_int128( int base )
 {
     for( int i = 0; i < N; ++i )
     {
-        boost::int128_type w = static_cast<boost::uint128_type>( concatenate(rng(), rng()) );
+        boost::int128_type w = static_cast<boost::int128_type>( concatenate(rng(), rng()) );
         test_roundtrip( static_cast<T>( w ), base );
     }
 }
@@ -237,13 +238,126 @@ template<class T> void test_roundtrip( T value )
     }
     else
     {
-        #ifdef BOOST_CHARCONV_DEBUG
-        std::cerr << std::setprecision(17)
+        #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
+        std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
                   << "     Value: " << value
                   << "\n  To chars: " << std::string( buffer, r.ptr )
-                  << "\nFrom chars: " << v2 << std::endl;
+                  << "\nFrom chars: " << v2 << std::endl
+                  << std::hexfloat
+                  << "\n     Value: " << value
+                  << "\nFrom chars: " << v2 << std::endl << std::scientific;
         #else
         std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        #endif
+    }
+}
+
+// https://stackoverflow.com/questions/62074229/float-distance-for-80-bit-long-double
+/*  Return the signed distance from 0 to x, measuring distance as one unit per
+    number representable in FPType.  x must be a finite number.
+*/
+
+#if defined(__GNUC__) && (__GNUC__ >= 5)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
+template<typename FPType>
+#if !defined(BOOST_MSVC) && !(defined(__clang__) && (__clang_major__ == 3) && (__clang_minor__ < 7))
+__attribute__((no_sanitize("undefined")))
+#endif
+int64_t ToOrdinal(FPType x)
+{
+    static constexpr int
+            Radix             = std::numeric_limits<FPType>::radix,
+            SignificandDigits = std::numeric_limits<FPType>::digits,
+            MinimumExponent   = std::numeric_limits<FPType>::min_exponent;
+
+    //  Number of normal representable numbers for each exponent.
+    static const auto
+            NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
+
+    static_assert(std::numeric_limits<FPType>::has_denorm == std::denorm_present,
+                  "This code presumes floating-point type has subnormal numbers.");
+
+    if (x == 0)
+        return 0;
+
+    //  Separate the sign.
+    int sign = std::signbit(x) ? -1 : +1;
+    x = std::fabs(x);
+
+    //  Separate the significand and exponent.
+    int exponent = std::ilogb(x)+1;
+    FPType fraction = std::scalbn(x, -exponent);
+
+    if (exponent < MinimumExponent)
+    {
+        //  For subnormal x, adjust to its subnormal representation.
+        fraction = std::scalbn(fraction, exponent - MinimumExponent);
+        exponent = MinimumExponent;
+    }
+
+    /*  Start with the number of representable numbers in preceding normal
+        exponent ranges.
+    */
+    auto count = static_cast<int64_t>(static_cast<uint64_t>(exponent - MinimumExponent) * NumbersPerExponent);
+
+    /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
+        number of representable numbers from 0 to x.  For normal numbers,
+        (fraction-1) * radix ** SignificandDigits is the number of
+        representable numbers from the start of x's exponent range to x, and
+        1 * radix ** SignificandDigits is the number of representable subnormal
+        numbers (which we have not added into count yet).  So, in either case,
+        adding fraction * radix ** SignificandDigits is the desired amount to
+        add to count.
+    */
+    count += (int64_t)std::scalbn(fraction, SignificandDigits);
+
+    return sign * count;
+}
+
+#if defined(__GNUC__) && (__GNUC__ >= 5)
+# pragma GCC diagnostic pop
+#endif
+
+/*  Return the number of representable numbers from x to y, including one
+    endpoint.
+*/
+template<typename FPType> int64_t Distance(FPType y, FPType x)
+{
+    return ToOrdinal(y) - ToOrdinal(x);
+}
+
+template <> void test_roundtrip<long double>(long double value)
+{
+    char buffer[ 256 ];
+
+    auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
+
+    BOOST_TEST( r.ec == std::errc() );
+
+    long double v2 = 0;
+    auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( std::abs(Distance(v2, value)) < INT64_C(1) ) )
+    {
+    }
+    else
+    {
+        #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
+        std::cerr << std::setprecision(std::numeric_limits<long double>::digits10 + 1)
+                  << "     Value: " << value
+                  << "\n  To chars: " << std::string( buffer, r.ptr )
+                  << "\nFrom chars: " << v2 << std::endl
+                  << std::hexfloat
+                  << "\n     Value: " << value
+                  << "\nFrom chars: " << v2 << std::endl << std::scientific;
+        #else
+        std::cerr << "... test failure for value=" << value
+                  << "; buffer='" << std::string( buffer, r.ptr ) << "'"
+                  << "; ulp distance=" << Distance(v2, value)
+                  << "; error code=" << static_cast<int>(r2.ec) << std::endl;
         #endif
     }
 }
@@ -332,14 +446,53 @@ int main()
 #endif
     }
 
-#if !defined(__CYGWIN__) && !defined(__s390x__) && !((defined(__arm__) || defined(__aarch64__))  && !defined(__APPLE__)) && !(defined(__APPLE__) && (__clang_major__ == 12))
-
-    // the stub implementations fail under Cygwin, s390x, linux ARM, and Apple Clang w/Xcode 12.2;
-    // re-enable these when we have real ones
-
-    // float
+    // 16-bit types
 
     double const q = std::pow( 1.0, -64 );
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float16_t w0 = static_cast<std::float16_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float16_t w1 = static_cast<std::float16_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float16_t w2 = (std::numeric_limits<std::float16_t>::max)() / static_cast<std::float16_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float16_t w3 = (std::numeric_limits<std::float16_t>::min)() * static_cast<std::float16_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float16_t>();
+    }
+    #endif
+
+    #ifdef BOOST_CHARCONV_HAS_BFLOAT16
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::bfloat16_t w0 = static_cast<std::bfloat16_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::bfloat16_t w2 = (std::numeric_limits<std::bfloat16_t>::max)() / static_cast<std::bfloat16_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::bfloat16_t w3 = (std::numeric_limits<std::bfloat16_t>::min)() * static_cast<std::bfloat16_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::bfloat16_t>();
+    }
+    #endif
+
+    // float
 
     {
         for( int i = 0; i < N; ++i )
@@ -359,6 +512,27 @@ int main()
 
         test_roundtrip_bv<float>();
     }
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT32
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float32_t w0 = static_cast<std::float32_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float32_t w1 = static_cast<std::float32_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float32_t w2 = (std::numeric_limits<std::float32_t>::max)() / static_cast<std::float32_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float32_t w3 = (std::numeric_limits<std::float32_t>::min)() * static_cast<std::float32_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float32_t>();
+    }
+    #endif
 
     // double
 
@@ -381,7 +555,29 @@ int main()
         test_roundtrip_bv<double>();
     }
 
+    #ifdef BOOST_CHARCONV_HAS_FLOAT64
+    {
+        for( int i = 0; i < N; ++i )
+        {
+            std::float64_t w0 = static_cast<std::float64_t>( rng() ); // 0 .. 2^64
+            test_roundtrip( w0 );
+
+            std::float64_t w1 = static_cast<std::float64_t>( rng() * q ); // 0.0 .. 1.0
+            test_roundtrip( w1 );
+
+            std::float64_t w2 = (std::numeric_limits<std::float64_t>::max)() / static_cast<std::float64_t>( rng() ); // large values
+            test_roundtrip( w2 );
+
+            std::float64_t w3 = (std::numeric_limits<std::float64_t>::min)() * static_cast<std::float64_t>( rng() ); // small values
+            test_roundtrip( w3 );
+        }
+
+        test_roundtrip_bv<std::float64_t>();
+    }
+    #endif
+
     // long double
+    #if !(BOOST_CHARCONV_LDBL_BITS == 128)
 
     {
         long double const ql = std::pow( 1.0L, -64 );
@@ -404,6 +600,8 @@ int main()
         test_roundtrip_bv<long double>();
     }
 
+    #endif
+
     // Selected additional values
     //
     test_roundtrip<double>(1.10393929655481808e+308);
@@ -420,7 +618,6 @@ int main()
 
     test_extreme_values<float>();
     test_extreme_values<double>();
-#endif // Broken platforms
 
     return boost::report_errors();
 }

@@ -35,7 +35,7 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, c
 ** std::errc::invalid_argument - invalid argument (e.g. parsing a negative number into an unsigned type)
 ** std::errc::result_out_of_range - result out of range (e.g. overflow)
 * operator== - compares the values of ptr and ec for equality
-* operator!- - compares the value of ptr and ec for inequality
+* operator! - compares the value of ptr and ec for inequality
 
 == from_chars
 * first, last - valid range to parse
@@ -52,6 +52,9 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, c
 === from_chars for floating point types
 * On std::errc::result_out_of_range we return ±0 for small values (e.g. 1.0e-99999) or ±HUGE_VAL for large values (e.g. 1.0e+99999) to match the handling of `std::strtod`.
 This is a divergence from the standard which states we should return the `value` argument unmodified.
+* These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
+** Long doubles can be either 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported format is `ibm128`.
+** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
 
 == Examples
 

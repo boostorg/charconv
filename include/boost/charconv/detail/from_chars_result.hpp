@@ -11,9 +11,10 @@ namespace boost { namespace charconv {
 
 // 22.13.3, Primitive numerical input conversion
 
-struct from_chars_result
+template <typename UC>
+struct from_chars_result_t
 {
-    const char* ptr;
+    const UC* ptr;
 
     // Values:
     // 0 = no error
@@ -21,16 +22,17 @@ struct from_chars_result
     // ERANGE = result_out_of_range
     std::errc ec;
 
-    friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+    friend constexpr bool operator==(const from_chars_result_t<UC>& lhs, const from_chars_result_t<UC>& rhs) noexcept
     {
         return lhs.ptr == rhs.ptr && lhs.ec == rhs.ec;
     }
 
-    friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+    friend constexpr bool operator!=(const from_chars_result_t<UC>& lhs, const from_chars_result_t<UC>& rhs) noexcept
     {
-        return !(lhs == rhs);
+        return !(lhs == rhs); // NOLINT : Expression can not be simplified since this is the definition
     }
 };
+using from_chars_result = from_chars_result_t<char>;
 
 }} // Namespaces
 

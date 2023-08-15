@@ -8,6 +8,7 @@
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <system_error>
@@ -43,7 +44,7 @@ static_assert(sizeof(uchar_values) == 256, "uchar_values should represent all 25
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
 constexpr unsigned char digit_from_char(char val) noexcept
 {
-    return uchar_values[static_cast<std::size_t>(val)];
+    return uchar_values[static_cast<unsigned char>(val)];
 }
 
 #ifdef BOOST_MSVC
@@ -59,7 +60,7 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
 
-#elif defined(__GNUC__) && (__GNUC__ >= 9)
+#elif defined(__GNUC__) && (__GNUC__ >= 7)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 
@@ -78,7 +79,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         return {first, std::errc::invalid_argument};
     }
 
-    Unsigned_Integer unsigned_base = static_cast<Unsigned_Integer>(base);
+    const auto unsigned_base = static_cast<Unsigned_Integer>(base);
 
     // Strip sign if the type is signed
     // Negative sign will be appended at the end of parsing
@@ -165,26 +166,49 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     }
 
     bool overflowed = false;
-    while (next != last)
+
+    std::ptrdiff_t nc = last - next;
+    constexpr std::ptrdiff_t nd = std::numeric_limits<Integer>::digits10;
+
     {
-        const unsigned char current_digit = digit_from_char(*next);
+        std::ptrdiff_t i = 0;
 
-        if (current_digit >= unsigned_base)
+        for( ; i < nd && i < nc; ++i )
         {
-            break;
-        }
+            // overflow is not possible in the first nd characters
 
-        if (result < overflow_value || (result == overflow_value && current_digit <= max_digit))
-        {
+            const unsigned char current_digit = digit_from_char(*next);
+
+            if (current_digit >= unsigned_base)
+            {
+                break;
+            }
+
             result = static_cast<Unsigned_Integer>(result * unsigned_base + current_digit);
-        }
-        else
-        {
-            // Required to keep updating the value of next, but the result is garbage
-            overflowed = true;
+            ++next;
         }
 
-        ++next;
+        for( ; i < nc; ++i )
+        {
+            const unsigned char current_digit = digit_from_char(*next);
+
+            if (current_digit >= unsigned_base)
+            {
+                break;
+            }
+
+            if (result < overflow_value || (result == overflow_value && current_digit <= max_digit))
+            {
+                result = static_cast<Unsigned_Integer>(result * unsigned_base + current_digit);
+            }
+            else
+            {
+                // Required to keep updating the value of next, but the result is garbage
+                overflowed = true;
+            }
+
+            ++next;
+        }
     }
 
     // Return the parsed value, adding the sign back if applicable
@@ -203,7 +227,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     {
         if (is_negative)
         {
-            value = -(static_cast<Unsigned_Integer>(value));
+            value = static_cast<Integer>(-(static_cast<Unsigned_Integer>(value)));
         }
     }
 
@@ -214,7 +238,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 # pragma warning(pop)
 #elif defined(__clang__) && defined(__APPLE__)
 # pragma clang diagnostic pop
-#elif defined(__GNUC__) && (__GNUC__ < 7 || __GNUC__ >= 9)
+#elif defined(__GNUC__)
 # pragma GCC diagnostic pop
 #endif
 
@@ -226,7 +250,7 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
     return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 
-#ifdef BOOST_HAS_INT128
+#ifdef BOOST_CHARCONV_HAS_INT128
 template <typename Integer>
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, Integer& value, int base = 10) noexcept
 {
@@ -234,6 +258,11 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first,
     return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
 #endif
+
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, uint128& value, int base = 10) noexcept
+{
+    return from_chars_integer_impl<uint128, uint128>(first, last, value, base);
+}
 
 }}} // Namespaces
 
