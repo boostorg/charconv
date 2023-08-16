@@ -9,6 +9,8 @@ This library is not an official boost library, and is under active development.
 Charconv is a collection of parsing functions that are locale-independent, non-allocating, and non-throwing.
 
 ````
+namespace boost { namespace charconv {
+
 enum class chars_format : unsigned
 {
     scientific = 1 << 0,
@@ -51,6 +53,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last,
 
 template <typename Real>
 to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision) noexcept;
+
+}} // Namespace boost::charconv
 ````
 
 ## Notes
