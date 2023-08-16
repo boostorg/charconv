@@ -355,7 +355,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         *first++ = '-';
     }
 
-    // Print the leading hexit and then mask away
+    // Print the integral part
     const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
     *first++ = static_cast<char>('0' + leading_nibble);
     aligned_significand &= hex_mask;
