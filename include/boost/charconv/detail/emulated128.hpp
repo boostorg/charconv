@@ -832,7 +832,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator%=(uint128 v) noexcept
 static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
 {
     // __emulu is not available on ARM https://learn.microsoft.com/en-us/cpp/intrinsics/emul-emulu?view=msvc-170
-    #if defined(BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS) && !defined(_M_ARM64)
+    #if defined(BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS) && !defined(_M_ARM)
 
     return __emulu(x, y);
 
