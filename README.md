@@ -2,7 +2,38 @@
 This library is a C++11 compatible implementation of `<charconv>`. The full documentation can be found here: https://develop.charconv.cpp.al
 
 # Notice
-This library is not an official boost library, and is under active development.
+This library is not an official boost library.
+
+# How to build the library
+
+## B2
+
+````
+git clone https://github.com/boostorg/boost
+cd boost
+git submodule update --init
+cd libs
+git clone https://github.com/cppalliance/charconv
+cd ..
+./bootstrap
+./b2 cxxstd=11
+````
+
+This sets up a complete boost development and allows the tests to be run. To install the development environment run:
+
+````
+sudo ./b2 install cxxstd=11
+````
+
+## vcpkg
+
+````
+git clone https://github.com/cppalliance/charconv
+cd charconv
+vcpkg install charconv --overlay-ports=ports/charconv 
+````
+
+This will install charconv and all the required boost packages if they do not already exist. 
 
 # Synopsis
 
