@@ -1,0 +1,7 @@
+{
+  "name": "charconv",
+  "version": "1.83.0",
+  "description": "A C++11 implementation of <charconv>",
+  "homepage": "https://github.com/cppalliance/charconv",
+  "dependencies": [ "boost-config", "boost-assert", "boost-core" ]
+}
