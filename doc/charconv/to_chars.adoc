@@ -47,7 +47,7 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 * value - the value to be parsed into the buffer
 * base (integer only) - the integer base to use. Must be between 2 and 36 inclusive
 * fmt (float only) - the floating point format to use.
-See xref:chars_format.adoc[chars_format overview] for description.
+See <<chars_format overview>> for description.
 * precision (float only) - the number of decimal places required
 
 === to_chars for integral types

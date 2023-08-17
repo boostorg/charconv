@@ -45,4 +45,4 @@ Tested on https://github.com/cppalliance/charconv/actions[Github Actions] and ht
 
 Currently only https://en.cppreference.com/w/cpp/compiler_support/17[GCC 11+ and MSVC 19.24+] support both integer and floating-point conversions in their implementation of `<charconv>`.
 In the event that you have access to either of these Boost.Charconv is at least as performant, but can be up to several times faster.
-See: xref:benchmarks.adoc[Benchmarks]
+See: <<Benchmarks>>
