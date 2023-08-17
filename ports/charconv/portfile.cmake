@@ -12,23 +12,16 @@ vcpkg_from_github(
         HEAD_REF develop
 )
 
-vcpkg_configure_cmake(
+vcpkg_replace_string("${SOURCE_PATH}/build/Jamfile"
+        "import ../../config/checks/config"
+        "import ../config/checks/config"
+)
+
+file(COPY "${CURRENT_INSTALLED_DIR}/share/boost-config/checks" DESTINATION "${SOURCE_PATH}/config")
+include(${CURRENT_HOST_INSTALLED_DIR}/share/boost-build/boost-modular-build.cmake)
+boost_modular_build(
         SOURCE_PATH ${SOURCE_PATH}
-        PREFER_NINJA
-        OPTIONS
-        -DBUILD_TESTING=OFF
+        BOOST_CMAKE_FRAGMENT "${CMAKE_CURRENT_LIST_DIR}/b2-options.cmake"
 )
-
-vcpkg_install_cmake()
-vcpkg_fixup_cmake_targets()
-
-file(
-        INSTALL
-        ${SOURCE_PATH}/LICENSE
-
-        DESTINATION
-        ${CURRENT_PACKAGES_DIR}/share/${PORT}
-
-        RENAME
-        copyright
-)
+include(${CURRENT_INSTALLED_DIR}/share/boost-vcpkg-helpers/boost-modular-headers.cmake)
+boost_modular_headers(SOURCE_PATH ${SOURCE_PATH})
