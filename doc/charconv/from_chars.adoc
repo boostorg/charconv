@@ -57,7 +57,7 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, c
 * On std::errc::result_out_of_range we return ±0 for small values (e.g. 1.0e-99999) or ±HUGE_VAL for large values (e.g. 1.0e+99999) to match the handling of `std::strtod`.
 This is a divergence from the standard which states we should return the `value` argument unmodified.
 * These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
-** Long doubles can be either 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported format is `__ibm128`.
+** Long doubles can be 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported, format is `__ibm128`.
 ** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
 
 == Examples
@@ -117,7 +117,7 @@ double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, boost::charconv::chars_format::fixed);
 assert(r.ec == std::errc::invalid_argument);
 ----
-Note: In the event of std::errc::invalid_argument v is not modified by `from_chars`
+Note: In the event of std::errc::invalid_argument, v is not modified by `from_chars`
 
 === std::errc::result_out_of_range
 [source, c++]
@@ -128,4 +128,4 @@ auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == std::errc::result_out_of_range);
 assert(v == 0)
 ----
-Note: In the event of std::errc::result_out_of_range v is not modified by `from_chars`
+Note: In the event of std::errc::result_out_of_range, v is not modified by `from_chars`
