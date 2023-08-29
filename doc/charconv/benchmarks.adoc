@@ -12,8 +12,8 @@ Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 mean
 
 == How to run the Benchmarks
 
-To run the benchmarks yourself navigate to the test folder, and define `BOOST_CHARCONV_RUN_BENCHMARKS` when running the tests.
-An example on linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark -a release` .
+To run the benchmarks yourself, navigate to the test folder and define `BOOST_CHARCONV_RUN_BENCHMARKS` when running the tests.
+An example on Linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark -a release` .
 
 Additionally, you will need the following:
 

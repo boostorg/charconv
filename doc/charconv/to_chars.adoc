@@ -47,12 +47,14 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 * value - the value to be parsed into the buffer
 * base (integer only) - the integer base to use. Must be between 2 and 36 inclusive
 * fmt (float only) - the floating point format to use.
-See xref:chars_format.adoc[chars_format overview] for description.
+See <<chars_format overview>> for description.
 * precision (float only) - the number of decimal places required
 
 === to_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
-* from_chars for integral type is constexpr (BOOST_CHARCONV_CONSTEXPR is defined) when compiled using `-std=c++14` or newer and a compiler with `\__builtin_ is_constant_evaluated`
+* from_chars for integral type is constexpr (BOOST_CHARCONV_CONSTEXPR is defined) when:
+** compiled using `-std=c++14` or newer 
+** using a compiler with `\__builtin_ is_constant_evaluated`
 * These functions have been tested to support `\__int128` and `unsigned __int128`
 
 === to_chars for floating point types
@@ -62,7 +64,7 @@ See xref:chars_format.adoc[chars_format overview] for description.
 ** +sNaN returns "nan(snan)"
 ** -sNaN returns "-nan(snan)"
 * These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
-** Long doubles can be either 64, 80, or 128-bit but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported format is `ibm128`.
+** Long doubles can be 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported, format is `ibm128`.
 ** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
 
 == Examples
@@ -136,4 +138,4 @@ auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
 assert(r.ec == std::errc::result_out_of_range);
 ----
 
-In the event of std::errc::result_out_of_range to_chars_result.ptr is equal to first
+In the event of std::errc::result_out_of_range, to_chars_result.ptr is equal to first
