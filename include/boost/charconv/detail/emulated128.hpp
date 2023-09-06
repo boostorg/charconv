@@ -977,8 +977,6 @@ struct numeric_limits<boost::charconv::detail::uint128>
     BOOST_ATTRIBUTE_UNUSED static constexpr bool has_infinity = false;
     BOOST_ATTRIBUTE_UNUSED static constexpr bool has_quiet_NaN = false;
     BOOST_ATTRIBUTE_UNUSED static constexpr bool has_signaling_NaN = false;
-    BOOST_ATTRIBUTE_UNUSED static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
-    BOOST_ATTRIBUTE_UNUSED static constexpr bool has_denorm_loss = false;
     BOOST_ATTRIBUTE_UNUSED static constexpr std::float_round_style round_style = std::round_toward_zero;
     BOOST_ATTRIBUTE_UNUSED static constexpr bool is_iec559 = false;
     BOOST_ATTRIBUTE_UNUSED static constexpr bool is_bounded = true;
