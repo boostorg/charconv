@@ -1,0 +1,141 @@
+////
+Copyright 2023 Matt Borland
+Distributed under the Boost Software License, Version 1.0.
+https://www.boost.org/LICENSE_1_0.txt
+////
+
+= to_chars
+:idprefix: to_chars_
+
+== to_chars overview
+[source, c++]
+----
+namespace boost { namespace charconv {
+
+struct to_chars_result
+{
+    char* ptr;
+    std::errc ec;
+
+    friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
+    friend constexpr bool operator!=(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
+};
+
+template <typename Integral>
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integral value, int base = 10) noexcept;
+
+template <typename Integral>
+BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, Integral value, int base) noexcept = delete;
+
+template <typename Real>
+to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision) noexcept;
+
+}} // Namespace boost::charconv
+----
+
+== to_chars_result
+* ptr - points to the first character
+* ec - the error code. Valid values from are:
+** 0 - successful parsing
+** std::errc::invalid_argument - invalid argument
+** std::errc::result_out_of_range - result out of range (e.g. overflow)
+* operator== - compares the value of ptr and ec for equality
+* operator!= - compares the value of ptr and ec for inequality
+
+== to_chars
+* first, last - pointers to the character buffer
+* value - the value to be parsed into the buffer
+* base (integer only) - the integer base to use. Must be between 2 and 36 inclusive
+* fmt (float only) - the floating point format to use.
+See <<chars_format overview>> for description.
+* precision (float only) - the number of decimal places required
+
+=== to_chars for integral types
+* All built-in integral types are allowed except bool which is deleted
+* from_chars for integral type is constexpr (BOOST_CHARCONV_CONSTEXPR is defined) when:
+** compiled using `-std=c++14` or newer 
+** using a compiler with `\__builtin_ is_constant_evaluated`
+* These functions have been tested to support `\__int128` and `unsigned __int128`
+
+=== to_chars for floating point types
+* The following will be returned when handling different values of `NaN`
+** +qNaN returns "nan"
+** -qNaN returns "-nan(ind)"
+** +sNaN returns "nan(snan)"
+** -sNaN returns "-nan(snan)"
+* These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
+** Long doubles can be 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported, format is `ibm128`.
+** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
+
+== Examples
+
+=== Basic Usage
+==== Integral
+[source, c++]
+----
+char buffer[64] {};
+int v = 42;
+to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
+assert(r.ec == std::errc());
+assert(!strcmp(buffer, "42")); // strcmp returns 0 on match
+----
+==== Floating Point
+[source, c++]
+----
+char buffer[64] {};
+double v = 1e300;
+to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
+assert(r.ec == std::errc());
+assert(!strcmp(buffer, "1e+300"));
+----
+
+=== Hexadecimal
+==== Integral
+[source, c++]
+----
+char buffer[64] {};
+int v = 42;
+to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, 16);
+assert(r.ec == std::errc());
+assert(!strcmp(buffer, "2a")); // strcmp returns 0 on match
+----
+==== Floating Point
+[source, c++]
+----
+char buffer_u[64] {};
+double u = -1.08260383390082950e+20;
+
+char buffer_v[64] {};
+double v = -1.08260383390082946e+20;
+
+to_chars(buffer_u, buffer_u + sizeof(buffer_u) - 1, u, chars_format::hex);
+to_chars(buffer_v, buffer_v + sizeof(buffer_v) - 1, v, chars_format::hex);
+
+std::cout << "U: " << buffer_u << "\nV: " << buffer_v << std::endl;
+
+// U: -1.779a8946bb5fap+66
+// V: -1.779a8946bb5f9p+66
+//
+// With hexfloats we can see the ULP distance between U and V is a - 9 == 1.
+
+----
+
+=== std::errc::result_out_of_range
+==== Integral
+[source, c++]
+----
+char buffer[3] {};
+int v = -1234;
+to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, 16);
+assert(r.ec == std::errc::result_out_of_range);
+----
+==== Floating Point
+[source, c++]
+----
+char buffer[3] {};
+double v = 1.2345;
+auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
+assert(r.ec == std::errc::result_out_of_range);
+----
+
+In the event of std::errc::result_out_of_range, to_chars_result.ptr is equal to first

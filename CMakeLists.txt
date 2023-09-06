@@ -19,6 +19,8 @@ target_include_directories(boost_charconv PUBLIC include)
 target_link_libraries(boost_charconv
   PUBLIC
     Boost::config
+    Boost::assert
+    Boost::core
 )
 
 target_compile_features(boost_charconv PUBLIC cxx_std_11)
@@ -36,6 +38,7 @@ endif()
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
 
+  target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_CMAKE_TESTING)
   add_subdirectory(test)
 
 endif()

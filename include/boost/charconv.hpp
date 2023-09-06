@@ -7,5 +7,6 @@
 
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/to_chars.hpp>
+#include <boost/charconv/limits.hpp>
 
 #endif // #ifndef BOOST_CHARCONV_HPP_INCLUDED
