@@ -277,9 +277,6 @@ int64_t ToOrdinal(FPType x)
     static const auto
             NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
 
-    static_assert(std::numeric_limits<FPType>::has_denorm == std::denorm_present,
-                  "This code presumes floating-point type has subnormal numbers.");
-
     if (x == 0)
         return 0;
 
