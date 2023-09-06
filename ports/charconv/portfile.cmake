@@ -7,9 +7,9 @@
 vcpkg_from_github(
         OUT_SOURCE_PATH SOURCE_PATH
         REPO cppalliance/charconv
-        REF e709ea5705e88faefb1dba9f12108b341f3e44c2
-        SHA512 3d6f0fdc7447366e2fa135ff31138db2ce6309fb066240a37529f1ea87ad0c1ed79a1c22d38ceeb6f1f7e7353bc928a0e8702d615c20e12f27f6c336f6a83ad6
-        HEAD_REF develop
+        REF v1.0.0
+        SHA512 ced9e5ca45df285709e19ac0a142b58447bcff91d5a14ffcc3b7d6686120dca631497aa145508fd1f2c4ffea4d7b6bf50397fb86f3eafec7ab281014aee8f6b5
+        HEAD_REF master
 )
 
 vcpkg_replace_string("${SOURCE_PATH}/build/Jamfile"
