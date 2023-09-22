@@ -13,7 +13,7 @@ Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 mean
 == How to run the Benchmarks
 
 To run the benchmarks yourself, navigate to the test folder and define `BOOST_CHARCONV_RUN_BENCHMARKS` when running the tests.
-An example on Linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark -a release` .
+An example on Linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark linkflags="-lfmt" -a release` .
 
 Additionally, you will need the following:
 
@@ -21,6 +21,7 @@ Additionally, you will need the following:
 ** GCC 11 or newer
 ** MSVC 19.24 or newer
 * https://github.com/google/double-conversion[libdouble-conversion]
+* https://github.com/fmtlib/fmt[{fmt}]
 
 == x86_64 Linux
 
@@ -172,7 +173,7 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 
 == ARM MacOS
 
-Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture using Homebrew GCC 13.1.0 with libstdc++.
+Data in tables 9-12 were run on MacOS Ventura 13.5.2 with M1 Pro architecture using Homebrew GCC 13.2.0 with libstdc++.
 
 === Floating Point
 
@@ -183,15 +184,17 @@ Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture usin
 |std::printf
 |1.00 / 1.00
 |Boost.lexical_cast
-|0.52 / 0.12
+|0.58 / 0.16
 |Boost.spirit.karma
-|1.40 / 1.40
+|1.39 / 1.22
 |std::to_chars
-|3.01 / 2.96
+|6.78 / 6.47
 |Boost.Charconv.to_chars
-|3.03 / 2.96
+|7.25 / 6.86
 |Google double-conversion
-|1.22 / 1.16
+|2.26 / 2.16
+|{fmt}
+|3.78 / 3.38
 |===
 
 .from_chars floating point with scientific formatting
@@ -229,6 +232,8 @@ Data in tables 9-12 were run on MacOS Ventura 13.5 with M1 Pro architecture usin
 |6.25 / 4.12
 |Boost.Charconv.to_chars
 |6.25 / 4.12
+|{fmt}
+|5.29 / 3.47
 |===
 
 .from_chars base 10 integers
