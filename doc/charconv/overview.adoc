@@ -21,13 +21,13 @@ This library requires a minimum of C++11.
 
 const char* buffer = "42";
 int v = 0;
-auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
+boost::charconv::from_chars_result r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == std::errc());
 assert(v == 42);
 
 char buffer[64];
 int v = 123456;
-auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
+boost::charconv:to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
 assert(r.ec == std::errc());
 assert(!strncmp(buffer, "123456", 6)); // Strncmp returns 0 on match
 
