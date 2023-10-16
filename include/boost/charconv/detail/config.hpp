@@ -19,7 +19,7 @@
 #  define BOOST_CHARCONV_DEBUG_ASSERT(expr)
 #endif
 
-// Use 128 bit integers and supress warnings for using extensions
+// Use 128-bit integers and suppress warnings for using extensions
 #if defined(BOOST_HAS_INT128)
 #  define BOOST_CHARCONV_HAS_INT128
 #  define BOOST_CHARCONV_INT128_MAX  (boost::int128_type)(((boost::uint128_type) 1 << 127) - 1)
