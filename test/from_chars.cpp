@@ -24,7 +24,19 @@ void test_128bit_int()
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
     BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST(v1 == test_value);
+
+    #ifdef __GLIBCXX_TYPE_INT_N_0
     BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+    #else
+    BOOST_IF_CONSTEXPR (std::is_same<T, boost::int128_type>::value)
+    {
+        BOOST_TEST(BOOST_CHARCONV_INT128_MAX > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+    }
+    else
+    {
+        BOOST_TEST(BOOST_CHARCONV_UINT128_MAX > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+    }
+    #endif
 }
 
 template <typename T>
