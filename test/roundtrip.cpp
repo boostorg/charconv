@@ -220,6 +220,20 @@ template<class T> void test_roundtrip_bv( int base )
     test_roundtrip( std::numeric_limits<T>::max(), base );
 }
 
+#ifdef BOOST_CHARCONV_HAS_INT128
+template <> void test_roundtrip_bv<boost::int128_type>(int base)
+{
+    test_roundtrip( BOOST_CHARCONV_INT128_MIN, base );
+    test_roundtrip( BOOST_CHARCONV_INT128_MAX, base );
+}
+
+template <> void test_roundtrip_bv<boost::uint128_type>(int base)
+{
+    test_roundtrip( 0, base );
+    test_roundtrip( BOOST_CHARCONV_UINT128_MAX, base );
+}
+#endif
+
 // floating point types, random values
 
 template<class T> void test_roundtrip( T value )

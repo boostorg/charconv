@@ -13,7 +13,7 @@
 #include <cerrno>
 #include <utility>
 
-#ifdef __GLIBCXX_TYPE_INT_N_0
+#ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>
 void test_128bit_int()
 {
@@ -26,6 +26,38 @@ void test_128bit_int()
     BOOST_TEST(v1 == test_value);
     BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
 }
+
+template <typename T>
+void test_128bit_overflow();
+
+template <>
+void test_128bit_overflow<boost::int128_type>()
+{
+    const char* buffer1 = "170141183460469231731687303715884105728"; // max + 1
+    boost::int128_type v1 = 1000;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+
+    const char* buffer2 = "-170141183460469231731687303715884105729"; // min - 1
+    boost::int128_type v2 = 1000;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST(r2.ec == std::errc::result_out_of_range);
+}
+
+template <>
+void test_128bit_overflow<boost::uint128_type>()
+{
+    const char* buffer1 = "340282366920938463463374607431768211457"; // max + 1
+    boost::int128_type v1 = 1000;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+
+    const char* buffer2 = "-1"; // min - 1
+    boost::int128_type v2 = 1000;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST(r2.ec == std::errc::invalid_argument);
+}
+
 #endif // 128-bit testing
 
 #ifndef BOOST_NO_CXX14_CONSTEXPR
@@ -221,10 +253,12 @@ int main()
     #   endif
     #endif
 
-    // Only compiles using cxxstd-dialect=gnu or equivalent
-    #ifdef __GLIBCXX_TYPE_INT_N_0
-    test_128bit_int<__int128>();
-    test_128bit_int<unsigned __int128>();
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    test_128bit_int<boost::int128_type>();
+    test_128bit_int<boost::uint128_type>();
+
+    test_128bit_overflow<boost::int128_type>();
+    test_128bit_overflow<boost::uint128_type>();
     #endif
 
     extended_ascii_codes<int>();
