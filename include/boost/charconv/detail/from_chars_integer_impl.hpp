@@ -148,7 +148,10 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         overflow_value /= unsigned_base;
         max_digit %= unsigned_base;
         #ifndef __GLIBCXX_TYPE_INT_N_0
-        overflow_value *= 2; // Overflow value would cause INT128_MIN in non-base10 to fail
+        if (base != 10)
+        {
+            overflow_value *= 2; // Overflow value would cause INT128_MIN in non-base10 to fail
+        }
         #endif
     }
     else
@@ -167,7 +170,15 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     bool overflowed = false;
 
     const std::ptrdiff_t nc = last - next;
+
+    // In non-GNU mode on GCC numeric limits may not be specialized
+    #if defined(BOOST_CHARCONV_HAS_INT128) && !defined(__GLIBCXX_TYPE_INT_N_0)
+    constexpr std::ptrdiff_t nd = std::is_same<Integer, boost::int128_type>::value ? 38 :
+                                  std::is_same<Integer, boost::uint128_type>::value ? 38 :
+                                  std::numeric_limits<Integer>::digits10;
+    #else
     constexpr std::ptrdiff_t nd = std::numeric_limits<Integer>::digits10;
+    #endif
 
     {
         std::ptrdiff_t i = 0;
