@@ -48,12 +48,12 @@ template <>
 void test_128bit_overflow<boost::uint128_type>()
 {
     const char* buffer1 = "340282366920938463463374607431768211457"; // max + 1
-    boost::int128_type v1 = 1000;
+    boost::uint128_type v1 = 1000;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
     BOOST_TEST(r1.ec == std::errc::result_out_of_range);
 
     const char* buffer2 = "-1"; // min - 1
-    boost::int128_type v2 = 1000;
+    boost::uint128_type v2 = 1000;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
     BOOST_TEST(r2.ec == std::errc::invalid_argument);
 }

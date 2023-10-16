@@ -9,6 +9,7 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/type_traits.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <system_error>
@@ -86,11 +87,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     auto next = first;
 
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value || std::is_signed<Integer>::value)
-    #else
-    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
-    #endif
+    BOOST_CHARCONV_IF_CONSTEXPR (is_signed<Integer>::value)
     {
         if (next != last)
         {
