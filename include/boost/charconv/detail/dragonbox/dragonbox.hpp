@@ -485,7 +485,7 @@ using signed_decimal_fp = decimal_fp<UInt, true, false>;
 // Computed cache entries.
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#if BOOST_MSVC != 1900
+#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 template <bool b>
 struct cache_holder_ieee754_binary32_impl
 #else
@@ -519,7 +519,7 @@ struct cache_holder_ieee754_binary32
         0xb35dbf821ae4f38c, 0xe0352f62a19e306f};
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && BOOST_MSVC != 1900
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 
 template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::cache_bits;
 template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::min_k;
@@ -528,11 +528,11 @@ template <bool b> constexpr typename cache_holder_ieee754_binary32_impl<b>::cach
 
 #endif
 
-#if BOOST_MSVC != 1900
+#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 using cache_holder_ieee754_binary32 = cache_holder_ieee754_binary32_impl<true>;
 #endif
 
-#if BOOST_MSVC != 1900
+#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 template <bool b>
 struct cache_holder_ieee754_binary64_impl
 #else
@@ -856,7 +856,7 @@ struct cache_holder_ieee754_binary64
         {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && BOOST_MSVC != 1900
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 
 template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::cache_bits;
 template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::min_k;
@@ -865,7 +865,7 @@ template <bool b> constexpr typename cache_holder_ieee754_binary64_impl<b>::cach
 
 #endif
 
-#if BOOST_MSVC != 1900
+#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 using cache_holder_ieee754_binary64 = cache_holder_ieee754_binary64_impl<true>;
 #endif
 

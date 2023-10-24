@@ -11,6 +11,7 @@
 #include <boost/charconv/detail/parser.hpp>
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/charconv/detail/compute_float64.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
 #include <cstdlib>

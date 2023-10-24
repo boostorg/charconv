@@ -23,7 +23,7 @@ struct is_signed<boost::uint128_type> { static constexpr bool value = false; };
 
 #endif
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && BOOST_MSVC != 1900
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 
 template <typename T>
 constexpr bool is_signed<T>::value;

@@ -110,7 +110,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #endif
 
 // Workaround for errors in MSVC 14.3 with gotos in if constexpr blocks
-#if BOOST_MSVC == 1933 || BOOST_MSVC == 1934
+#if defined(BOOST_MSVC) && (BOOST_MSVC == 1933 || BOOST_MSVC == 1934)
 #  define BOOST_CHARCONV_IF_CONSTEXPR if 
 #else
 #  define BOOST_CHARCONV_IF_CONSTEXPR BOOST_IF_CONSTEXPR 
