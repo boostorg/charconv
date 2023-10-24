@@ -153,6 +153,13 @@ void issue_599_test()
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4244) // Conversion from double to T with BOOST_IF_CONSTEXPR expansion pre-C++17
+#elif defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+# pragma GCC diagnostic ignored "-Wimplicit-float-conversion"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wimplicit-float-conversion"
 #endif
 
 template <typename T>
@@ -188,6 +195,10 @@ void check_accuracy(const char* nm, int max_ulp)
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
+#elif defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
 #endif
 
 template <typename T>

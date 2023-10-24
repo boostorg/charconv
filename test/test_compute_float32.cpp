@@ -21,7 +21,7 @@ inline void simple_test()
 
     // out of range
     BOOST_TEST_EQ(compute_float32(310, 5, false, success), HUGE_VALF);
-    BOOST_TEST_EQ(compute_float32(-325, 5, false, success), 0);
+    BOOST_TEST_EQ(compute_float32(-325, 5, false, success), 0.0F);
 
     // Composite
     BOOST_TEST_EQ(compute_float32(10, 123456789, false, success), 123456789e10F);
