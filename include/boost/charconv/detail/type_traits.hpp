@@ -30,6 +30,38 @@ constexpr bool is_signed<T>::value;
 
 #endif
 
+template <typename T>
+struct make_unsigned { using type = typename std::make_unsigned<T>::type; };
+
+template <>
+struct make_unsigned<uint128> { using type = uint128; };
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+
+template <>
+struct make_unsigned<boost::int128_type> { using type = boost::int128_type; };
+
+template <>
+struct make_unsigned<boost::uint128_type> { using type = boost::uint128_type; };
+
+#endif
+
+template <typename T>
+using make_unsigned_t = typename make_unsigned<T>::type;
+
+template <typename T>
+struct make_signed { using type = typename std::make_signed<T>::type; };
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+
+template <>
+struct make_signed<boost::int128_type> { using type = boost::int128_type; };
+
+template <>
+struct make_signed<boost::uint128_type> { using type = boost::int128_type; };
+
+#endif
+
 }}} // Namespaces
 
 #endif //BOOST_CHARCONV_DETAIL_TYPE_TRAITS_HPP

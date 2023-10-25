@@ -6,6 +6,8 @@
 #define BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 
 #include <boost/config.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/type_traits.hpp>
 #include <type_traits>
 
 #ifdef BOOST_MSVC
@@ -15,14 +17,14 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-template <typename Integer, typename Unsigned_Integer = typename std::make_unsigned<Integer>::type, 
-          typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
+template <typename Integer, typename Unsigned_Integer = detail::make_unsigned_t<Integer>,
+          typename std::enable_if<detail::is_signed<Integer>::value, bool>::type = true>
 constexpr Unsigned_Integer apply_sign(Integer val) noexcept
 {
     return -(static_cast<Unsigned_Integer>(val));
 }
 
-template <typename Unsigned_Integer, typename std::enable_if<std::is_unsigned<Unsigned_Integer>::value, bool>::type = true>
+template <typename Unsigned_Integer, typename std::enable_if<!detail::is_signed<Unsigned_Integer>::value, bool>::type = true>
 constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 {
     return val;
