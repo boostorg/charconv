@@ -509,7 +509,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                     else
                     {
                         continue_rounding = false;
-                        result[current_index] = result[current_index] + static_cast<char>(1);
+                        result[current_index] = static_cast<char>(result[current_index] + static_cast<char>(1));
                     }
                 } while (continue_rounding && current_index > 2);
             }
@@ -532,7 +532,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     // Print the exponent.
     result[index++] = 'e';
-    int32_t exp = v.exponent + olength - 1;
+    int32_t exp = v.exponent + static_cast<int32_t>(olength) - 1;
     if (exp < 0)
     {
         result[index++] = '-';
@@ -543,7 +543,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         result[index++] = '+';
     }
 
-    uint32_t elength = num_digits(exp);
+    uint32_t elength = static_cast<uint32_t>(num_digits(exp));
     for (uint32_t i = 0; i < elength; ++i)
     {
         // Always print a minimum of 2 characters in the exponent field
@@ -553,12 +553,12 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
             ++index;
         }
 
-        const uint32_t c = exp % 10;
+        const uint32_t c = static_cast<uint32_t>(exp % 10);
         exp /= 10;
         result[index + elength - 1 - i] = static_cast<char>('0' + c);
     }
     index += elength;
-    return index;
+    return static_cast<int>(index);
 }
 
 static inline struct floating_decimal_128 float_to_fd128(float f) noexcept

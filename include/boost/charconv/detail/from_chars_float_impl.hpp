@@ -25,7 +25,7 @@ namespace boost { namespace charconv { namespace detail {
 #elif defined(__GNUC__) && __GNUC__ >= 5
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-# pragma GCC diagnostic ignored "-Wimplicit-float-conversion"
+# pragma GCC diagnostic ignored "-Wfloat-conversion"
 #elif defined(__clang__) && __clang_major__ >= 7
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wimplicit-float-conversion"

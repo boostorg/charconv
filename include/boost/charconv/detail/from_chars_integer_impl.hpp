@@ -150,7 +150,8 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         #ifndef __GLIBCXX_TYPE_INT_N_0
         if (base != 10)
         {
-            overflow_value *= 2; // Overflow value would cause INT128_MIN in non-base10 to fail
+            // Overflow value would cause INT128_MIN in non-base10 to fail
+            overflow_value *= static_cast<Unsigned_Integer>(2);
         }
         #endif
     }
