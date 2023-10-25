@@ -372,14 +372,14 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             return -static_cast<int>(std::errc::result_out_of_range);
         }
 
-        memset(r.ptr, '0', v.exponent);
+        memset(r.ptr, '0', static_cast<std::size_t>(v.exponent));
         current_len += v.exponent;
     }
     else if ((-v.exponent) < current_len)
     {
         // Option 3: Insert a decimal point into the middle of the existing number
-        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, -v.exponent);
-        memcpy(result + current_len + v.exponent, ".", 1);
+        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
+        memcpy(result + current_len + v.exponent, ".", 1U);
         ++current_len;
     }
     else
@@ -390,15 +390,15 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             return -static_cast<int>(std::errc::result_out_of_range);
         }
 
-        memmove(result - v.exponent - current_len + 2, result, current_len);
-        memcpy(result, "0.", 2);
-        memset(result + 2, '0', 0 - v.exponent - current_len);
+        memmove(result - v.exponent - current_len + 2, result, static_cast<std::size_t>(current_len));
+        memcpy(result, "0.", 2U);
+        memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
     }
 
     if (current_len < precision)
     {
-        memset(result + current_len, '0', precision - current_len);
+        memset(result + current_len, '0', static_cast<std::size_t>(precision - current_len));
         current_len = precision;
     }
 
