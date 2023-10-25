@@ -372,14 +372,14 @@ void mul_128_256_shift(
 {
     BOOST_CHARCONV_ASSERT(shift > 0);
     BOOST_CHARCONV_ASSERT(shift < 256);
-    const unsigned_128_type b00 = ((unsigned_128_type) a[0]) * b[0]; // 0
-    const unsigned_128_type b01 = ((unsigned_128_type) a[0]) * b[1]; // 64
-    const unsigned_128_type b02 = ((unsigned_128_type) a[0]) * b[2]; // 128
-    const unsigned_128_type b03 = ((unsigned_128_type) a[0]) * b[3]; // 196
-    const unsigned_128_type b10 = ((unsigned_128_type) a[1]) * b[0]; // 64
-    const unsigned_128_type b11 = ((unsigned_128_type) a[1]) * b[1]; // 128
-    const unsigned_128_type b12 = ((unsigned_128_type) a[1]) * b[2]; // 196
-    const unsigned_128_type b13 = ((unsigned_128_type) a[1]) * b[3]; // 256
+    const unsigned_128_type b00 = static_cast<unsigned_128_type>(a[0]) * b[0]; // 0
+    const unsigned_128_type b01 = static_cast<unsigned_128_type>(a[0]) * b[1]; // 64
+    const unsigned_128_type b02 = static_cast<unsigned_128_type>(a[0]) * b[2]; // 128
+    const unsigned_128_type b03 = static_cast<unsigned_128_type>(a[0]) * b[3]; // 196
+    const unsigned_128_type b10 = static_cast<unsigned_128_type>(a[1]) * b[0]; // 64
+    const unsigned_128_type b11 = static_cast<unsigned_128_type>(a[1]) * b[1]; // 128
+    const unsigned_128_type b12 = static_cast<unsigned_128_type>(a[1]) * b[2]; // 196
+    const unsigned_128_type b13 = static_cast<unsigned_128_type>(a[1]) * b[3]; // 256
 
     const unsigned_128_type s0 = b00;       // 0   x
     const unsigned_128_type s1 = b01 + b10; // 64  x
@@ -401,28 +401,28 @@ void mul_128_256_shift(
     {
         const unsigned_128_type r0 = corr + ((p0 >> shift) | (p1 << (128 - shift)));
         const unsigned_128_type r1 = ((p1 >> shift) | (p2 << (128 - shift))) + (r0 < corr);
-        result[0] = (uint64_t) r0;
-        result[1] = (uint64_t) (r0 >> 64);
-        result[2] = (uint64_t) r1;
-        result[3] = (uint64_t) (r1 >> 64);
+        result[0] = static_cast<uint64_t>(r0);
+        result[1] = static_cast<uint64_t>(r0 >> 64);
+        result[2] = static_cast<uint64_t>(r1);
+        result[3] = static_cast<uint64_t>(r1 >> 64);
     }
     else if (shift == 128)
     {
         const unsigned_128_type r0 = corr + p1;
         const unsigned_128_type r1 = p2 + (r0 < corr);
-        result[0] = (uint64_t) r0;
-        result[1] = (uint64_t) (r0 >> 64);
-        result[2] = (uint64_t) r1;
-        result[3] = (uint64_t) (r1 >> 64);
+        result[0] = static_cast<uint64_t>(r0);
+        result[1] = static_cast<uint64_t>(r0 >> 64);
+        result[2] = static_cast<uint64_t>(r1);
+        result[3] = static_cast<uint64_t>(r1 >> 64);
     }
     else
     {
         const unsigned_128_type r0 = corr + ((p1 >> (shift - 128)) | (p2 << (256 - shift)));
         const unsigned_128_type r1 = (p2 >> (shift - 128)) + (r0 < corr);
-        result[0] = (uint64_t) r0;
-        result[1] = (uint64_t) (r0 >> 64);
-        result[2] = (uint64_t) r1;
-        result[3] = (uint64_t) (r1 >> 64);
+        result[0] = static_cast<uint64_t>(r0);
+        result[1] = static_cast<uint64_t>(r0 >> 64);
+        result[2] = static_cast<uint64_t>(r1);
+        result[3] = static_cast<uint64_t>(r1 >> 64);
     }
 }
 
@@ -444,7 +444,7 @@ static BOOST_CXX14_CONSTEXPR void generic_computePow5(const uint32_t i, uint64_t
         const uint32_t offset = i - base2;
         const uint64_t* const m = GENERIC_POW5_TABLE[offset];
         const uint32_t delta = pow5bits(i) - pow5bits(base2);
-        const uint32_t corr = (uint32_t) ((POW5_ERRORS[i / 32] >> (2 * (i % 32))) & 3);
+        const uint32_t corr = static_cast<uint32_t>((POW5_ERRORS[i / 32] >> (2 * (i % 32))) & 3);
         mul_128_256_shift(m, mul, delta, corr, result);
     }
 }
@@ -467,7 +467,7 @@ static BOOST_CXX14_CONSTEXPR void generic_computeInvPow5(const uint32_t i, uint6
         const uint32_t offset = base2 - i;
         const uint64_t* const m = GENERIC_POW5_TABLE[offset]; // 5^offset
         const uint32_t delta = pow5bits(base2) - pow5bits(i);
-        const uint32_t corr = (uint32_t) ((POW5_INV_ERRORS[i / 32] >> (2 * (i % 32))) & 3) + 1;
+        const uint32_t corr = static_cast<uint32_t>((POW5_INV_ERRORS[i / 32] >> (2 * (i % 32))) & 3) + UINT32_C(1);
         mul_128_256_shift(m, mul, delta, corr, result);
     }
 }
@@ -495,7 +495,7 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf5(const unsigned_128
 // Returns true if value is divisible by 2^p.
 static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf2(const unsigned_128_type value, const uint32_t p) noexcept
 {
-    return (value & ((((unsigned_128_type) 1) << p) - 1)) == 0;
+    return (value & ((static_cast<unsigned_128_type>(1) << p) - 1)) == 0;
 }
 
 static BOOST_CHARCONV_CXX14_CONSTEXPR
@@ -503,11 +503,11 @@ unsigned_128_type mulShift(const unsigned_128_type m, const uint64_t* const mul,
 {
     BOOST_CHARCONV_ASSERT(j > 128);
     uint64_t a[2] {};
-    a[0] = (uint64_t) m;
-    a[1] = (uint64_t) (m >> 64);
+    a[0] = static_cast<uint64_t>(m);
+    a[1] = static_cast<uint64_t>(m >> 64);
     uint64_t result[4] {};
     mul_128_256_shift(a, mul, j, 0, result);
-    return (((unsigned_128_type) result[1]) << 64) | result[0];
+    return (static_cast<unsigned_128_type>(result[1]) << 64) | result[0];
 }
 
 // Returns floor(log_10(2^e)).
@@ -516,7 +516,7 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow2(const int32_t e) noexce
     // The first value this approximation fails for is 2^1651 which is just greater than 10^297.
     BOOST_CHARCONV_ASSERT(e >= 0);
     BOOST_CHARCONV_ASSERT(e <= 1 << 15);
-    return (uint32_t) ((((uint64_t) e) * UINT64_C(169464822037455)) >> 49);
+    return static_cast<uint32_t>((static_cast<uint64_t>(e) * UINT64_C(169464822037455)) >> 49);
 }
 
 // Returns floor(log_10(5^e)).
@@ -525,7 +525,7 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow5(const int32_t e) noexce
     // The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
     assert(e >= 0);
     assert(e <= 1 << 15);
-    return (uint32_t) ((((uint64_t) e) * UINT64_C(196742565691928)) >> 48);
+    return static_cast<uint32_t>((static_cast<uint64_t>(e) * UINT64_C(196742565691928)) >> 48);
 }
 
 }}}} // Namespaces
