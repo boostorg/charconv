@@ -506,7 +506,7 @@ unsigned_128_type mulShift(const unsigned_128_type m, const uint64_t* const mul,
     a[0] = static_cast<uint64_t>(m);
     a[1] = static_cast<uint64_t>(m >> 64);
     uint64_t result[4] {};
-    mul_128_256_shift(a, mul, j, 0, result);
+    mul_128_256_shift(a, mul, static_cast<uint32_t>(j), 0, result);
     return (static_cast<unsigned_128_type>(result[1]) << 64) | result[0];
 }
 
