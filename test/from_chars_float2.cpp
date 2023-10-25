@@ -27,7 +27,7 @@ template<class T> void zero_extend_test()
 
             auto r1 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), ref );
 
-            if( !BOOST_TEST_EQ( (int)r1.ec, 0 ) )
+            if( !BOOST_TEST_EQ( static_cast<int>(r1.ec), 0 ) )
             {
                 std::fprintf( stderr, "Test failure for '%s': got error at position %ld\n", buffer, static_cast<long>( r1.ptr - buffer ) );
             }
@@ -35,12 +35,12 @@ template<class T> void zero_extend_test()
             {
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::snprintf( buffer, sizeof( buffer ), "%llu%se-%d", v, std::string( (size_t)j, '0' ).c_str(), j );
+                    std::snprintf( buffer, sizeof( buffer ), "%llu%se-%d", v, std::string( static_cast<std::size_t>(j), '0' ).c_str(), j );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
 
-                    if( !BOOST_TEST_EQ( (int)r2.ec, 0 ) )
+                    if( !BOOST_TEST_EQ( static_cast<int>(r2.ec), 0 ) )
                     {
                         std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) );
                     }
@@ -52,12 +52,12 @@ template<class T> void zero_extend_test()
 
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::snprintf( buffer, sizeof( buffer ), "%llu0e-%s1", v, std::string( (size_t)j, '0' ).c_str() );
+                    std::snprintf( buffer, sizeof( buffer ), "%llu0e-%s1", v, std::string( static_cast<std::size_t>(j), '0' ).c_str() );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
 
-                    if( !BOOST_TEST_EQ( (int)r2.ec, 0 ) )
+                    if( !BOOST_TEST_EQ( static_cast<int>(r2.ec), 0 ) )
                     {
                         std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) );
                     }
@@ -78,7 +78,7 @@ template<class T> void zero_extend_test()
 
             auto r1 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), ref );
 
-            if( !BOOST_TEST_EQ( (int)r1.ec, 0 ) )
+            if( !BOOST_TEST_EQ( static_cast<int>(r1.ec), 0 ) )
             {
                 std::fprintf( stderr, "Test failure for '%s': got error at position %ld\n", buffer, static_cast<long>( r1.ptr - buffer ) );
             }
@@ -86,12 +86,12 @@ template<class T> void zero_extend_test()
             {
                 for( int j = 1; j <= N; ++j )
                 {
-                    std::snprintf( buffer, sizeof( buffer ), "0.%s%llue%d", std::string( (size_t)j, '0' ).c_str(), v, j );
+                    std::snprintf( buffer, sizeof( buffer ), "0.%s%llue%d", std::string( static_cast<std::size_t>(j), '0' ).c_str(), v, j );
 
                     T w;
                     auto r2 = boost::charconv::from_chars( buffer, buffer + std::strlen( buffer ), w );
 
-                    if( !BOOST_TEST_EQ( (int)r2.ec, 0 ) )
+                    if( !BOOST_TEST_EQ( static_cast<int>(r2.ec), 0 ) )
                     {
                         std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) );
                     }

@@ -46,7 +46,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
     }
     else
     {
-        p = mini_to_chars( buffer, -(boost::uint128_type)v );
+        p = mini_to_chars( buffer, -static_cast<boost::uint128_type>(v) );
         *--p = '-';
     }
 
@@ -323,7 +323,7 @@ int64_t ToOrdinal(FPType x)
         adding fraction * radix ** SignificandDigits is the desired amount to
         add to count.
     */
-    count += (int64_t)std::scalbn(fraction, SignificandDigits);
+    count += static_cast<int64_t>(std::scalbn(fraction, SignificandDigits));
 
     return sign * count;
 }
