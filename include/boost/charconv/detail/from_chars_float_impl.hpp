@@ -29,7 +29,7 @@ namespace boost { namespace charconv { namespace detail {
 #elif defined(__clang__) && __clang_major__ > 7
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wimplicit-float-conversion"
-#elif defined(__clang__) && __clang_major__ < 7
+#elif defined(__clang__) && __clang_major__ <= 7
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wconversion"
 #endif

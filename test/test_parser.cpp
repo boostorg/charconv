@@ -22,7 +22,7 @@ void test_integer()
     auto r1 = boost::charconv::detail::parser(val1, val1 + std::strlen(val1), sign, significand, exponent);
     BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
-    BOOST_TEST_EQ(significand, 12);
+    BOOST_TEST_EQ(significand, UINT64_C(12));
     BOOST_TEST_EQ(exponent, 0);
 
     significand = 0;
@@ -34,7 +34,7 @@ void test_integer()
     BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(exponent, 0);
-    BOOST_TEST_EQ(significand, 123456789);
+    BOOST_TEST_EQ(significand, UINT64_C(123456789));
 
     auto r3 = boost::charconv::detail::parser(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);
     BOOST_TEST(r3.ec == std::errc::invalid_argument);
@@ -51,7 +51,7 @@ void test_scientifc()
     auto r1 = boost::charconv::detail::parser(val1, val1 + std::strlen(val1), sign, significand, exponent);
     BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_EQ(sign, true);
-    BOOST_TEST_EQ(significand, 1);
+    BOOST_TEST_EQ(significand, UINT64_C(1));
     BOOST_TEST_EQ(exponent, 1);
 
     significand = 0;
@@ -63,7 +63,7 @@ void test_scientifc()
     BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(exponent, 10);
-    BOOST_TEST_EQ(significand, 123456789);
+    BOOST_TEST_EQ(significand, UINT64_C(123456789));
 
     significand = 0;
     exponent = 0;
@@ -74,14 +74,14 @@ void test_scientifc()
     BOOST_TEST(r3.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(exponent, 2);
-    BOOST_TEST_EQ(significand, 123456789);
+    BOOST_TEST_EQ(significand, UINT64_C(123456789));
 
     const char* val4 = "1.23456789e-10";
     auto r4 = boost::charconv::detail::parser(val4, val4 + std::strlen(val4), sign, significand, exponent);
     BOOST_TEST(r4.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(exponent, -18);
-    BOOST_TEST_EQ(significand, 123456789);
+    BOOST_TEST_EQ(significand, UINT64_C(123456789));
 
     auto r5 = boost::charconv::detail::parser(val4, val4 + std::strlen(val4), sign, significand, exponent, boost::charconv::chars_format::fixed);
     BOOST_TEST(r5.ec == std::errc::invalid_argument);
@@ -91,14 +91,14 @@ void test_scientifc()
     BOOST_TEST(r6.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(exponent, 10);
-    BOOST_TEST_EQ(significand, 987654321);
+    BOOST_TEST_EQ(significand, UINT64_C(987654321));
 
     const char* val7 = "1.23456789E+10";
     auto r7 = boost::charconv::detail::parser(val7, val7 + std::strlen(val7), sign, significand, exponent);
     BOOST_TEST(r7.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
     BOOST_TEST_EQ(exponent, 2);
-    BOOST_TEST_EQ(significand, 123456789);
+    BOOST_TEST_EQ(significand, UINT64_C(123456789));
 
 }
 
@@ -113,7 +113,7 @@ void test_hex_integer()
     auto r1 = boost::charconv::detail::parser(val1, val1 + std::strlen(val1), sign, significand, exponent, boost::charconv::chars_format::hex);
     BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
-    BOOST_TEST_EQ(significand, 42);
+    BOOST_TEST_EQ(significand, UINT64_C(42));
     BOOST_TEST_EQ(exponent, 0);
 
     significand = 0;
@@ -125,7 +125,7 @@ void test_hex_integer()
     BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_EQ(sign, true);
     BOOST_TEST_EQ(exponent, 0);
-    BOOST_TEST_EQ(significand, 7041566681);
+    BOOST_TEST_EQ(significand, UINT64_C(7041566681));
 
     auto r3 = boost::charconv::detail::parser(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);
     BOOST_TEST(r3.ec == std::errc::invalid_argument);
@@ -142,7 +142,7 @@ void test_hex_scientific()
     auto r1 = boost::charconv::detail::parser(val1, val1 + std::strlen(val1), sign, significand, exponent, boost::charconv::chars_format::hex);
     BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_EQ(sign, false);
-    BOOST_TEST_EQ(significand, 42);
+    BOOST_TEST_EQ(significand, UINT64_C(42));
     BOOST_TEST_EQ(exponent, 5);
 
     significand = 0;
@@ -154,7 +154,7 @@ void test_hex_scientific()
     BOOST_TEST(r2.ec == std::errc());
     BOOST_TEST_EQ(sign, true);
     BOOST_TEST_EQ(exponent, -14);
-    BOOST_TEST_EQ(significand, 80427);
+    BOOST_TEST_EQ(significand, UINT64_C(80427));
 
     auto r3 = boost::charconv::detail::parser(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);
     BOOST_TEST(r3.ec == std::errc::invalid_argument);
@@ -164,7 +164,7 @@ void test_hex_scientific()
     BOOST_TEST(r4.ec == std::errc());
     BOOST_TEST_EQ(sign, true);
     BOOST_TEST_EQ(exponent, -14);
-    BOOST_TEST_EQ(significand, 80427);
+    BOOST_TEST_EQ(significand, UINT64_C(80427));
 }
 
 int main()

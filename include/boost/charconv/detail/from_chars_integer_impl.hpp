@@ -61,6 +61,7 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
 # pragma GCC diagnostic ignored "-Wconversion"
+# pragma GCC diagnostic ignored "-Wsign-conversion"
 
 #elif defined(__GNUC__) && (__GNUC__ >= 7)
 # pragma GCC diagnostic push

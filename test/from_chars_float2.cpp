@@ -16,7 +16,7 @@ template<class T> void zero_extend_test()
 
     for( int i = 0; i < M; ++i )
     {
-        char buffer[ N + 128 ];
+        char buffer[ static_cast<std::size_t>(N + 128) ];
 
         {
             unsigned long long v = static_cast<unsigned long long>( rng() );
