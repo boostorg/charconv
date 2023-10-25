@@ -631,7 +631,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
         if (issignaling(value))
         {
             std::memcpy(first, "nan(snan)", 9);
-            return { first + 9 + (int)is_negative, std::errc() };
+            return { first + 9 + static_cast<int>(is_negative), std::errc() };
         }
         else
         {

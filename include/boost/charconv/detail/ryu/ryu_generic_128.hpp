@@ -478,15 +478,15 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     // Reset the index to where the required precision should be
     if (precision != -1)
     {
-        if ((size_t)precision < index)
+        if (static_cast<size_t>(precision) < index)
         {
             if (fmt != chars_format::scientific)
             {
-                index = (size_t) precision + 1; // Precision is number of characters not just the decimal portion
+                index = static_cast<size_t>(precision) + 1; // Precision is number of characters not just the decimal portion
             }
             else
             {
-                index = (size_t) precision + 2; // In scientific format the precision is just the decimal places
+                index = static_cast<size_t>(precision) + 2; // In scientific format the precision is just the decimal places
             }
 
             // Now we need to see if we need to round
@@ -523,7 +523,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                 }
             }
         }
-        else if ((size_t)precision > index)
+        else if (static_cast<size_t>(precision) > index)
         {
             // Use our fallback routine that will capture more of the precision
             return -1;

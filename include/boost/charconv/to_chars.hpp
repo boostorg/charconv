@@ -64,10 +64,10 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
             *first++ = '-';
         }
 
-        if (is_signaling && buffer_size >= (9 + (int)is_negative))
+        if (is_signaling && buffer_size >= (9 + static_cast<int>(is_negative)))
         {
             std::memcpy(first, "nan(snan)", 9);
-            offset = 9 + (int)is_negative;
+            offset = 9 + static_cast<int>(is_negative);
         }
         else if (is_negative && buffer_size >= 9)
         {
@@ -136,10 +136,10 @@ inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, _
             *first++ = '-';
         }
 
-        if (is_signaling && buffer_size >= (9 + (int)is_negative))
+        if (is_signaling && buffer_size >= (9 + static_cast<int>(is_negative)))
         {
             std::memcpy(first, "nan(snan)", 9);
-            offset = 9 + (int)is_negative;
+            offset = 9 + static_cast<int>(is_negative);
         }
         else if (is_negative && buffer_size >= 9)
         {
