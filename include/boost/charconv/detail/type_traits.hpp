@@ -39,7 +39,7 @@ struct make_unsigned<uint128> { using type = uint128; };
 #ifdef BOOST_CHARCONV_HAS_INT128
 
 template <>
-struct make_unsigned<boost::int128_type> { using type = boost::int128_type; };
+struct make_unsigned<boost::int128_type> { using type = boost::uint128_type; };
 
 template <>
 struct make_unsigned<boost::uint128_type> { using type = boost::uint128_type; };
