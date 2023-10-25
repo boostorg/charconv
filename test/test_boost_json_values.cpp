@@ -160,6 +160,7 @@ void issue_599_test()
 #elif defined(__clang__)
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wfloat-conversion"
+# pragma clang diagnostic ignored "-Wconversion"
 # if __clang_major__ >= 7
 #   pragma clang diagnostic ignored "-Wimplicit-float-conversion"
 # endif

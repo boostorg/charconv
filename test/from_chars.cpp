@@ -134,7 +134,7 @@ void overflow_test()
     }
     else
     {
-        BOOST_TEST(r1.ec == std::errc()) && BOOST_TEST_EQ(v1, static_cast<T>(1234));
+        BOOST_TEST(r1.ec == std::errc()) && BOOST_TEST_EQ(v1, 1234);
     }
 
     const char* buffer2 = "123456789123456789123456789";
