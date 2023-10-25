@@ -40,6 +40,11 @@ void test128()
 # pragma GCC diagnostic pop
 #endif
 
+#if defined(__GNUC__) && (__GNUC__ >= 5)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
 // Tests the generic, u32, and u64 impls
 template <typename T>
 void test()
@@ -52,11 +57,15 @@ void test()
     {
         BOOST_TEST_EQ(boost::charconv::detail::num_digits(val), i);
         ++i;
-        val *= 10;
+        val *= static_cast<T>(10);
     }
 
     BOOST_TEST_EQ(boost::charconv::detail::num_digits(val), std::numeric_limits<T>::digits10 + 1);
 }
+
+#if defined(__GNUC__) && (__GNUC__ >= 5)
+# pragma GCC diagnostic pop
+#endif
 
 void test_emulated128()
 {

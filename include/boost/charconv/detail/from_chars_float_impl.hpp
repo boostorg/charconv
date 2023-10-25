@@ -29,6 +29,9 @@ namespace boost { namespace charconv { namespace detail {
 #elif defined(__clang__) && __clang_major__ >= 7
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wimplicit-float-conversion"
+#elif defined(__clang__) && __clang_major__ < 7
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wconversion"
 #endif
 
 template <typename T>
@@ -246,7 +249,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
 # pragma warning(pop)
 #elif defined(__GNUC__) && __GNUC__ >= 5
 # pragma GCC diagnostic pop
-#elif defined(__clang__) && __clang_major__ >= 7
+#elif defined(__clang__)
 # pragma clang diagnostic pop
 #endif
 
