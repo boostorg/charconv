@@ -531,7 +531,7 @@ int main()
             std::float32_t w0 = static_cast<std::float32_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::float32_t w1 = static_cast<std::float32_t>( rng() * q ); // 0.0 .. 1.0
+            std::float32_t w1 = static_cast<std::float32_t>( rng() ) *  static_cast<std::float32_t>(q) ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::float32_t w2 = (std::numeric_limits<std::float32_t>::max)() / static_cast<std::float32_t>( rng() ); // large values
@@ -573,7 +573,7 @@ int main()
             std::float64_t w0 = static_cast<std::float64_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::float64_t w1 = static_cast<std::float64_t>( rng() * q ); // 0.0 .. 1.0
+            std::float64_t w1 = static_cast<std::float64_t>( rng() ) * static_cast<std::float64_t>(q) ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::float64_t w2 = (std::numeric_limits<std::float64_t>::max)() / static_cast<std::float64_t>( rng() ); // large values
