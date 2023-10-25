@@ -299,6 +299,15 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     return {first + converted_value_digits, std::errc()};
 }
 
+// Conversion warning from shift operators with unsigned char
+#if defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wconversion"
+#endif
+
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
 template <typename Integer, typename Unsigned_Integer>
@@ -325,7 +334,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         if (value < 0)
         {
             *first++ = '-';
-            unsigned_value = detail::apply_sign(value);
+            unsigned_value = static_cast<Unsigned_Integer>(detail::apply_sign(value));
         }
         else
         {
@@ -407,6 +416,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
     return {first + num_chars, std::errc()};
 }
+
+#if defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
