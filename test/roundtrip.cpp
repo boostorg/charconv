@@ -484,7 +484,7 @@ int main()
     }
     #endif
 
-    #ifdef BOOST_CHARCONV_HAS_BFLOAT16
+    #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
     {
         std::bfloat16_t const small_q = std::pow(1.0BF16, -16.0BF16);
 
