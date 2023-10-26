@@ -46,7 +46,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
     }
     else
     {
-        p = mini_to_chars( buffer, -(boost::uint128_type)v );
+        p = mini_to_chars( buffer, -static_cast<boost::uint128_type>(v) );
         *--p = '-';
     }
 
@@ -323,7 +323,7 @@ int64_t ToOrdinal(FPType x)
         adding fraction * radix ** SignificandDigits is the desired amount to
         add to count.
     */
-    count += (int64_t)std::scalbn(fraction, SignificandDigits);
+    count += static_cast<int64_t>(std::scalbn(fraction, SignificandDigits));
 
     return sign * count;
 }
@@ -463,12 +463,14 @@ int main()
 
     #ifdef BOOST_CHARCONV_HAS_FLOAT16
     {
+        std::float16_t const small_q = std::pow(1.0F16, -16.0F16);
+
         for( int i = 0; i < N; ++i )
         {
             std::float16_t w0 = static_cast<std::float16_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::float16_t w1 = static_cast<std::float16_t>( rng() * q ); // 0.0 .. 1.0
+            std::float16_t w1 = static_cast<std::float16_t>( rng() ) * small_q ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::float16_t w2 = (std::numeric_limits<std::float16_t>::max)() / static_cast<std::float16_t>( rng() ); // large values
@@ -484,12 +486,14 @@ int main()
 
     #ifdef BOOST_CHARCONV_HAS_BFLOAT16
     {
+        std::bfloat16_t const small_q = std::pow(1.0BF16, -16.0BF16);
+
         for( int i = 0; i < N; ++i )
         {
             std::bfloat16_t w0 = static_cast<std::bfloat16_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() * q ); // 0.0 .. 1.0
+            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() ) * small_q ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::bfloat16_t w2 = (std::numeric_limits<std::bfloat16_t>::max)() / static_cast<std::bfloat16_t>( rng() ); // large values
@@ -511,7 +515,7 @@ int main()
             float w0 = static_cast<float>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            float w1 = static_cast<float>( rng() * q ); // 0.0 .. 1.0
+            float w1 = static_cast<float>( rng() ) * static_cast<float>( q ); // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             float w2 = FLT_MAX / static_cast<float>( rng() ); // large values
@@ -531,7 +535,7 @@ int main()
             std::float32_t w0 = static_cast<std::float32_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::float32_t w1 = static_cast<std::float32_t>( rng() * q ); // 0.0 .. 1.0
+            std::float32_t w1 = static_cast<std::float32_t>( rng() ) *  static_cast<std::float32_t>(q) ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::float32_t w2 = (std::numeric_limits<std::float32_t>::max)() / static_cast<std::float32_t>( rng() ); // large values
@@ -550,16 +554,16 @@ int main()
     {
         for( int i = 0; i < N; ++i )
         {
-            double w0 = rng() * 1.0; // 0 .. 2^64
+            double w0 = static_cast<double>( rng() ) * 1.0; // 0 .. 2^64
             test_roundtrip( w0 );
 
-            double w1 = rng() * q; // 0.0 .. 1.0
+            double w1 = static_cast<double>( rng() ) * q; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
-            double w2 = DBL_MAX / rng(); // large values
+            double w2 = DBL_MAX / static_cast<double>( rng() ); // large values
             test_roundtrip( w2 );
 
-            double w3 = DBL_MIN * rng(); // small values
+            double w3 = DBL_MIN * static_cast<double>( rng() ); // small values
             test_roundtrip( w3 );
         }
 
@@ -573,7 +577,7 @@ int main()
             std::float64_t w0 = static_cast<std::float64_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::float64_t w1 = static_cast<std::float64_t>( rng() * q ); // 0.0 .. 1.0
+            std::float64_t w1 = static_cast<std::float64_t>( rng() ) * static_cast<std::float64_t>(q) ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::float64_t w2 = (std::numeric_limits<std::float64_t>::max)() / static_cast<std::float64_t>( rng() ); // large values
@@ -595,16 +599,16 @@ int main()
 
         for( int i = 0; i < N; ++i )
         {
-            long double w0 = rng() * 1.0L; // 0 .. 2^64
+            long double w0 = static_cast<long double>( rng() ) * 1.0L; // 0 .. 2^64
             test_roundtrip( w0 );
 
-            long double w1 = rng() * ql; // 0.0 .. 1.0
+            long double w1 = static_cast<long double>( rng() ) * ql; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
-            long double w2 = LDBL_MAX / rng(); // large values
+            long double w2 = LDBL_MAX / static_cast<long double>( rng() ); // large values
             test_roundtrip( w2 );
 
-            long double w3 = LDBL_MIN * rng(); // small values
+            long double w3 = LDBL_MIN * static_cast<long double>( rng() ); // small values
             test_roundtrip( w3 );
         }
 

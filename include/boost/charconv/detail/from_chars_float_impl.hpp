@@ -22,9 +22,16 @@ namespace boost { namespace charconv { namespace detail {
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4244) // Implict converion when BOOST_IF_CONSTEXPR expands to if
-#elif defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+#elif defined(__GNUC__) && __GNUC__ >= 5
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+# pragma GCC diagnostic ignored "-Wfloat-conversion"
+#elif defined(__clang__) && __clang_major__ > 7
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wimplicit-float-conversion"
+#elif defined(__clang__) && __clang_major__ <= 7
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wconversion"
 #endif
 
 template <typename T>
@@ -240,8 +247,10 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
-#elif defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+#elif defined(__GNUC__) && __GNUC__ >= 5
 # pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
 #endif
 
 }}} // Namespace boost::charconv::detail

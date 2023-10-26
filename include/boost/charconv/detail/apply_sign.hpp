@@ -6,23 +6,32 @@
 #define BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 
 #include <boost/config.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/type_traits.hpp>
 #include <type_traits>
 
+// We are purposefully converting values here
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4146)
+#elif defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wconversion"
 #endif
 
 namespace boost { namespace charconv { namespace detail {
 
-template <typename Integer, typename Unsigned_Integer = typename std::make_unsigned<Integer>::type, 
-          typename std::enable_if<std::is_signed<Integer>::value, bool>::type = true>
+template <typename Integer, typename Unsigned_Integer = detail::make_unsigned_t<Integer>,
+          typename std::enable_if<detail::is_signed<Integer>::value, bool>::type = true>
 constexpr Unsigned_Integer apply_sign(Integer val) noexcept
 {
     return -(static_cast<Unsigned_Integer>(val));
 }
 
-template <typename Unsigned_Integer, typename std::enable_if<std::is_unsigned<Unsigned_Integer>::value, bool>::type = true>
+template <typename Unsigned_Integer, typename std::enable_if<!detail::is_signed<Unsigned_Integer>::value, bool>::type = true>
 constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 {
     return val;
@@ -32,6 +41,10 @@ constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
+#elif defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
 #endif
 
 #endif // BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP

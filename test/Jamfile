@@ -8,13 +8,23 @@ import ../../config/checks/config : requires ;
 
 project : requirements
 
-  <library>/boost/charconv//boost_charconv
+    <library>/boost/charconv//boost_charconv
 
-  <warnings>extra
+    <warnings>extra
 
-  <toolset>msvc:<warnings-as-errors>on
-  <toolset>clang:<warnings-as-errors>on
-  <toolset>gcc:<warnings-as-errors>on ;
+    <toolset>gcc:<cxxflags>-Wsign-conversion
+    <toolset>gcc:<cxxflags>-Wconversion
+    <toolset>gcc:<cxxflags>-Wundef
+    <toolset>gcc:<cxxflags>-Wold-style-cast
+
+    <toolset>clang:<cxxflags>-Wsign-conversion
+    <toolset>clang:<cxxflags>-Wconversion
+    <toolset>clang:<cxxflags>-Wundef
+    <toolset>clang:<cxxflags>-Wold-style-cast
+
+    <toolset>msvc:<warnings-as-errors>on
+    <toolset>clang:<warnings-as-errors>on
+    <toolset>gcc:<warnings-as-errors>on ;
 
 lib quadmath ;
 lib double-conversion ;

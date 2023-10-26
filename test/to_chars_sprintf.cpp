@@ -545,7 +545,7 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::hex );
             #endif
 
-            float w1 = static_cast<float>( rng() * q ); // 0.0 .. 1.0
+            float w1 = static_cast<float>( static_cast<double>(rng()) * q ); // 0.0 .. 1.0
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
@@ -581,7 +581,7 @@ int main()
     {
         for( int i = 0; i < N; ++i )
         {
-            double w0 = rng() * 1.0; // 0 .. 2^64
+            double w0 = static_cast<double>(rng()) * 1.0; // 0 .. 2^64
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
@@ -589,7 +589,7 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::hex );
             #endif
 
-            double w1 = rng() * q; // 0.0 .. 1.0
+            double w1 = static_cast<double>(rng()) * q; // 0.0 .. 1.0
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
@@ -597,7 +597,7 @@ int main()
             test_sprintf_float( w1, boost::charconv::chars_format::hex );
             #endif
 
-            double w2 = DBL_MAX / rng(); // large values
+            double w2 = DBL_MAX / static_cast<double>(rng()); // large values
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
@@ -605,7 +605,7 @@ int main()
             test_sprintf_float( w2, boost::charconv::chars_format::hex );
             #endif
 
-            double w3 = DBL_MIN * rng(); // small values
+            double w3 = DBL_MIN * static_cast<double>(rng()); // small values
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
@@ -622,7 +622,7 @@ int main()
     {
         for( int i = 0; i < N; ++i )
         {
-            long double w0 = rng() * 1.0; // 0 .. 2^64
+            long double w0 = static_cast<long double>(rng()) * 1.0L; // 0 .. 2^64
             test_sprintf_float( w0, boost::charconv::chars_format::general );
             test_sprintf_float( w0, boost::charconv::chars_format::scientific );
             test_sprintf_float( w0, boost::charconv::chars_format::fixed );
@@ -630,7 +630,7 @@ int main()
             test_sprintf_float( w0, boost::charconv::chars_format::hex );
             #endif
 
-            long double w1 = rng() * q; // 0.0 .. 1.0
+            long double w1 = static_cast<long double>(rng()) * static_cast<long double>(q); // 0.0 .. 1.0
             test_sprintf_float( w1, boost::charconv::chars_format::general );
             test_sprintf_float( w1, boost::charconv::chars_format::scientific );
             test_sprintf_float( w1, boost::charconv::chars_format::fixed );
@@ -638,7 +638,7 @@ int main()
             test_sprintf_float( w1, boost::charconv::chars_format::hex );
             #endif
 
-            long double w2 = LDBL_MAX / rng(); // large values
+            long double w2 = LDBL_MAX / static_cast<long double>(rng()); // large values
             test_sprintf_float( w2, boost::charconv::chars_format::general );
             test_sprintf_float( w2, boost::charconv::chars_format::scientific );
             test_sprintf_float( w2, boost::charconv::chars_format::fixed );
@@ -646,7 +646,7 @@ int main()
             test_sprintf_float( w2, boost::charconv::chars_format::hex );
             #endif
 
-            long double w3 = LDBL_MIN * rng(); // small values
+            long double w3 = LDBL_MIN * static_cast<long double>(rng()); // small values
             test_sprintf_float( w3, boost::charconv::chars_format::general );
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );

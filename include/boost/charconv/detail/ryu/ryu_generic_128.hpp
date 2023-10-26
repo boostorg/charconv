@@ -34,11 +34,11 @@ struct floating_decimal_128
 #ifdef BOOST_CHARCONV_DEBUG
 static char* s(unsigned_128_type v) {
   int len = num_digits(v);
-  char* b = (char*) malloc((len + 1) * sizeof(char));
+  char* b = static_cast<char*>(malloc((len + 1) * sizeof(char)));
   for (int i = 0; i < len; i++) {
-    const uint32_t c = (uint32_t) (v % 10);
+    const uint32_t c = static_cast<uint32_t>(v % 10);
     v /= 10;
-    b[len - 1 - i] = (char) ('0' + c);
+    b[len - 1 - i] = static_cast<char>('0' + c);
   }
   b[len] = 0;
   return b;
@@ -53,7 +53,7 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     printf("IN=");
     for (int32_t bit = 127; bit >= 0; --bit)
     {
-        printf("%u", (uint32_t) ((bits >> bit) & 1));
+        printf("%u", static_cast<uint32_t>((bits >> bit) & 1));
     }
     printf("\n");
     #endif
@@ -61,7 +61,7 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     const uint32_t bias = (1u << (exponentBits - 1)) - 1;
     const bool ieeeSign = ((bits >> (mantissaBits + exponentBits)) & 1) != 0;
     const unsigned_128_type ieeeMantissa = bits & ((one << mantissaBits) - 1);
-    const uint32_t ieeeExponent = (uint32_t) ((bits >> mantissaBits) & ((one << exponentBits) - 1u));
+    const uint32_t ieeeExponent = static_cast<uint32_t>((bits >> mantissaBits) & ((one << exponentBits) - 1u));
 
     if (ieeeExponent == 0 && ieeeMantissa == 0)
     {
@@ -85,11 +85,11 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
         // mantissaBits includes the explicit leading bit, so we need to correct for that here.
         if (ieeeExponent == 0)
         {
-            e2 = (int32_t)(1 - bias - mantissaBits + 1 - 2);
+            e2 = static_cast<int32_t>(1 - bias - mantissaBits + 1 - 2);
         }
         else
         {
-            e2 = (int32_t)(ieeeExponent - bias - mantissaBits + 1 - 2);
+            e2 = static_cast<int32_t>(ieeeExponent - bias - mantissaBits + 1 - 2);
         }
         m2 = ieeeMantissa;
     }
@@ -97,11 +97,11 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     {
         if (ieeeExponent == 0)
         {
-            e2 = (int32_t)(1 - bias - mantissaBits - 2);
+            e2 = static_cast<int32_t>(1 - bias - mantissaBits - 2);
             m2 = ieeeMantissa;
         } else
         {
-            e2 = ieeeExponent - bias - mantissaBits - 2;
+            e2 = static_cast<int32_t>(ieeeExponent - bias - mantissaBits - 2U);
             m2 = (one << mantissaBits) | ieeeMantissa;
         }
     }
@@ -131,9 +131,9 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
         // I tried special-casing q == 0, but there was no effect on performance.
         // This expression is slightly faster than max(0, log10Pow2(e2) - 1).
         const uint32_t q = log10Pow2(e2) - (e2 > 3);
-        e10 = (int32_t)q;
-        const int32_t k = BOOST_CHARCONV_POW5_INV_BITCOUNT + pow5bits(q) - 1;
-        const int32_t i = (int32_t)(-e2 + q + k);
+        e10 = static_cast<int32_t>(q);
+        const int32_t k = BOOST_CHARCONV_POW5_INV_BITCOUNT + static_cast<int32_t>(pow5bits(q)) - 1;
+        const int32_t i = -e2 + static_cast<int32_t>(q) + k;
         uint64_t pow5[4];
         generic_computeInvPow5(q, pow5);
         vr = mulShift(4 * m2, pow5, i);
@@ -170,13 +170,13 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     else
     {
         // This expression is slightly faster than max(0, log10Pow5(-e2) - 1).
-        const uint32_t q = log10Pow5(-e2) - (int32_t)(-e2 > 1);
-        e10 = (int32_t)q + e2;
-        const int32_t i = (int32_t)(-e2 - q);
-        const int32_t k = (int32_t)pow5bits(i) - BOOST_CHARCONV_POW5_BITCOUNT;
-        const int32_t j = (int32_t)q - k;
+        const uint32_t q = log10Pow5(-e2) - static_cast<uint32_t>(-e2 > 1);
+        e10 = static_cast<int32_t>(q) + e2;
+        const int32_t i = -e2 - static_cast<int32_t>(q);
+        const int32_t k = static_cast<int32_t>(pow5bits(static_cast<uint32_t>(i))) - BOOST_CHARCONV_POW5_BITCOUNT;
+        const int32_t j = static_cast<int32_t>(q) - k;
         uint64_t pow5[4];
-        generic_computePow5(i, pow5);
+        generic_computePow5(static_cast<uint32_t>(i), pow5);
         vr = mulShift(4 * m2, pow5, j);
         vp = mulShift(4 * m2 + 2, pow5, j);
         vm = mulShift(4 * m2 - 1 - mmShift, pow5, j);
@@ -234,7 +234,7 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     {
         vmIsTrailingZeros &= vm % 10 == 0;
         vrIsTrailingZeros &= lastRemovedDigit == 0;
-        lastRemovedDigit = (uint8_t) (vr % 10);
+        lastRemovedDigit = static_cast<uint8_t>(vr % 10);
         vr /= 10;
         vp /= 10;
         vm /= 10;
@@ -251,7 +251,7 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
         while (vm % 10 == 0)
         {
             vrIsTrailingZeros &= lastRemovedDigit == 0;
-            lastRemovedDigit = (uint8_t) (vr % 10);
+            lastRemovedDigit = static_cast<uint8_t>(vr % 10);
             vr /= 10;
             vp /= 10;
             vm /= 10;
@@ -270,8 +270,8 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
         lastRemovedDigit = 4;
     }
     // We need to take vr+1 if vr is outside bounds, or we need to round up.
-    output = vr + (unsigned_128_type)((vr == vm && (!acceptBounds || !vmIsTrailingZeros)) || (lastRemovedDigit >= 5));
-    const int32_t exp = e10 + removed;
+    output = vr + static_cast<unsigned_128_type>((vr == vm && (!acceptBounds || !vmIsTrailingZeros)) || (lastRemovedDigit >= 5));
+    const int32_t exp = e10 + static_cast<int32_t>(removed);
 
     #ifdef BOOST_CHARCONV_DEBUG
     printf("V+=%s\nV =%s\nV-=%s\n", s(vp), s(vr), s(vm));
@@ -294,9 +294,9 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
     {
         if (fd.sign)
         {
-            if (fd.mantissa == (unsigned_128_type)2305843009213693952 ||
-                fd.mantissa == (unsigned_128_type)6917529027641081856 ||
-                fd.mantissa == (unsigned_128_type)1 << 110) // 2^110
+            if (fd.mantissa == static_cast<unsigned_128_type>(2305843009213693952) ||
+                fd.mantissa == static_cast<unsigned_128_type>(6917529027641081856) ||
+                fd.mantissa == static_cast<unsigned_128_type>(1) << 110) // 2^110
             {
                 std::memcpy(result, "nan(snan)", 9);
                 return 10;
@@ -309,9 +309,9 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
         }
         else
         {
-            if (fd.mantissa == (unsigned_128_type)2305843009213693952 ||
-                fd.mantissa == (unsigned_128_type)6917529027641081856 ||
-                fd.mantissa == (unsigned_128_type)1 << 110) // 2^110
+            if (fd.mantissa == static_cast<unsigned_128_type>(2305843009213693952) ||
+                fd.mantissa == static_cast<unsigned_128_type>(6917529027641081856) ||
+                fd.mantissa == static_cast<unsigned_128_type>(1) << 110) // 2^110
             {
                 std::memcpy(result, "nan(snan)", 9);
                 return 9;
@@ -325,7 +325,7 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
     }
 
     memcpy(result, "inf", 3);
-    return (int)fd.sign + 3;
+    return static_cast<int>(fd.sign) + 3;
 }
 
 static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
@@ -372,14 +372,14 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             return -static_cast<int>(std::errc::result_out_of_range);
         }
 
-        memset(r.ptr, '0', v.exponent);
+        memset(r.ptr, '0', static_cast<std::size_t>(v.exponent));
         current_len += v.exponent;
     }
     else if ((-v.exponent) < current_len)
     {
         // Option 3: Insert a decimal point into the middle of the existing number
-        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, -v.exponent);
-        memcpy(result + current_len + v.exponent, ".", 1);
+        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
+        memcpy(result + current_len + v.exponent, ".", 1U);
         ++current_len;
     }
     else
@@ -390,15 +390,15 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             return -static_cast<int>(std::errc::result_out_of_range);
         }
 
-        memmove(result - v.exponent - current_len + 2, result, current_len);
-        memcpy(result, "0.", 2);
-        memset(result + 2, '0', 0 - v.exponent - current_len);
+        memmove(result - v.exponent - current_len + 2, result, static_cast<std::size_t>(current_len));
+        memcpy(result, "0.", 2U);
+        memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
     }
 
     if (current_len < precision)
     {
-        memset(result + current_len, '0', precision - current_len);
+        memset(result + current_len, '0', static_cast<std::size_t>(precision - current_len));
         current_len = precision;
     }
 
@@ -421,7 +421,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     }
 
     unsigned_128_type output = v.mantissa;
-    const uint32_t olength = num_digits(output);
+    const uint32_t olength = static_cast<uint32_t>(num_digits(output));
 
     #ifdef BOOST_CHARCONV_DEBUG
     printf("DIGITS=%s\n", s(v.mantissa));
@@ -432,7 +432,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     // See: https://github.com/cppalliance/charconv/issues/64
     if (fmt == chars_format::general)
     {
-        const int64_t exp = v.exponent + (int64_t)olength;
+        const int64_t exp = v.exponent + static_cast<int64_t>(olength);
         if (exp <= 0 && exp >= -4)
         {
             return generic_to_chars_fixed(v, result, result_size, precision);
@@ -446,7 +446,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         result[index++] = '-';
     }
 
-    if (index + olength > (size_t)result_size)
+    if (index + olength > static_cast<size_t>(result_size))
     {
         return -static_cast<int>(std::errc::result_out_of_range);
     }
@@ -457,12 +457,12 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     for (uint32_t i = 0; i < olength - 1; ++i)
     {
-        const auto c = (uint32_t) (output % 10);
+        const auto c = static_cast<uint32_t>(output % 10);
         output /= 10;
-        result[index + olength - i] = (char) ('0' + c);
+        result[index + olength - i] = static_cast<char>('0' + c);
     }
     BOOST_CHARCONV_ASSERT(output < 10);
-    result[index] = (char)('0' + (uint32_t)(output % 10)); // output should be < 10 by now.
+    result[index] = static_cast<char>('0' + static_cast<uint32_t>(output % 10)); // output should be < 10 by now.
 
     // Print decimal point if needed.
     if (olength > 1)
@@ -478,15 +478,15 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     // Reset the index to where the required precision should be
     if (precision != -1)
     {
-        if ((size_t)precision < index)
+        if (static_cast<size_t>(precision) < index)
         {
             if (fmt != chars_format::scientific)
             {
-                index = (size_t) precision + 1; // Precision is number of characters not just the decimal portion
+                index = static_cast<size_t>(precision) + 1; // Precision is number of characters not just the decimal portion
             }
             else
             {
-                index = (size_t) precision + 2; // In scientific format the precision is just the decimal places
+                index = static_cast<size_t>(precision) + 2; // In scientific format the precision is just the decimal places
             }
 
             // Now we need to see if we need to round
@@ -509,7 +509,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                     else
                     {
                         continue_rounding = false;
-                        result[current_index] = result[current_index] + (char)1;
+                        result[current_index] = static_cast<char>(result[current_index] + static_cast<char>(1));
                     }
                 } while (continue_rounding && current_index > 2);
             }
@@ -523,7 +523,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                 }
             }
         }
-        else if ((size_t)precision > index)
+        else if (static_cast<size_t>(precision) > index)
         {
             // Use our fallback routine that will capture more of the precision
             return -1;
@@ -532,7 +532,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     // Print the exponent.
     result[index++] = 'e';
-    int32_t exp = v.exponent + olength - 1;
+    int32_t exp = v.exponent + static_cast<int32_t>(olength) - 1;
     if (exp < 0)
     {
         result[index++] = '-';
@@ -543,7 +543,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         result[index++] = '+';
     }
 
-    uint32_t elength = num_digits(exp);
+    uint32_t elength = static_cast<uint32_t>(num_digits(exp));
     for (uint32_t i = 0; i < elength; ++i)
     {
         // Always print a minimum of 2 characters in the exponent field
@@ -553,12 +553,12 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
             ++index;
         }
 
-        const uint32_t c = exp % 10;
+        const uint32_t c = static_cast<uint32_t>(exp % 10);
         exp /= 10;
-        result[index + elength - 1 - i] = (char) ('0' + c);
+        result[index + elength - 1 - i] = static_cast<char>('0' + c);
     }
     index += elength;
-    return index;
+    return static_cast<int>(index);
 }
 
 static inline struct floating_decimal_128 float_to_fd128(float f) noexcept

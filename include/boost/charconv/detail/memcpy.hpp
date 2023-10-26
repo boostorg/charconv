@@ -17,7 +17,7 @@
 //
 // memcpy is defined as taking a size_t for the count and the largest count this will recieve is the number of digits
 // in a 128-bit int (39) so we can safely ignore
-#if __GNUC__ >= 10
+#if defined(__GNUC__) && __GNUC__ >= 10
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wstringop-overflow"
 #  define BOOST_CHARCONV_STRINGOP_OVERFLOW_DISABLED
@@ -45,7 +45,7 @@ constexpr char* memcpy(char* dest, const char* src, std::size_t count)
         // Workaround for GCC-11 because it does not honor GCC diagnostic ignored
         // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
         // Hopefully the optimizer turns this into memcpy
-        #if __GNUC__ == 11
+        #if defined(__GNUC__) && __GNUC__ == 11
             for (std::size_t i = 0; i < count; ++i)
             {
                 *(dest + i) = *(src + i);

@@ -299,6 +299,15 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     return {first + converted_value_digits, std::errc()};
 }
 
+// Conversion warning from shift operators with unsigned char
+#if defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wconversion"
+#endif
+
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
 template <typename Integer, typename Unsigned_Integer>
@@ -325,7 +334,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         if (value < 0)
         {
             *first++ = '-';
-            unsigned_value = -(static_cast<Unsigned_Integer>(value));
+            unsigned_value = static_cast<Unsigned_Integer>(detail::apply_sign(value));
         }
         else
         {
@@ -350,7 +359,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             while (unsigned_value != 0)
             {
                 *end-- = static_cast<char>(zero + (unsigned_value & 1U)); // 1<<1 - 1
-                unsigned_value >>= 1U;
+                unsigned_value >>= static_cast<Unsigned_Integer>(1);
             }
             break;
 
@@ -358,7 +367,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             while (unsigned_value != 0)
             {
                 *end-- = static_cast<char>(zero + (unsigned_value & 3U)); // 1<<2 - 1
-                unsigned_value >>= 2U;
+                unsigned_value >>= static_cast<Unsigned_Integer>(2);
             }
             break;
 
@@ -366,7 +375,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             while (unsigned_value != 0)
             {
                 *end-- = static_cast<char>(zero + (unsigned_value & 7U)); // 1<<3 - 1
-                unsigned_value >>= 3U;
+                unsigned_value >>= static_cast<Unsigned_Integer>(3);
             }
             break;
 
@@ -374,7 +383,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             while (unsigned_value != 0)
             {
                 *end-- = digit_table[unsigned_value & 15U]; // 1<<4 - 1
-                unsigned_value >>= 4U;
+                unsigned_value >>= static_cast<Unsigned_Integer>(4);
             }
             break;
 
@@ -382,7 +391,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             while (unsigned_value != 0)
             {
                 *end-- = digit_table[unsigned_value & 31U]; // 1<<5 - 1
-                unsigned_value >>= 5U;
+                unsigned_value >>= static_cast<Unsigned_Integer>(5);
             }
             break;
 
@@ -407,6 +416,12 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
     return {first + num_chars, std::errc()};
 }
+
+#if defined(__GNUC__) && __GNUC__ >= 5
+# pragma GCC diagnostic pop
+#elif defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
