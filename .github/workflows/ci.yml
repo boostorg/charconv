@@ -192,19 +192,19 @@ jobs:
               - clang-11
           - toolset: clang
             compiler: clang++-12
-            cxxstd: "03,11,14,17,20,2b"
+            cxxstd: "03,11,14,17,20"
             os: ubuntu-22.04
             install:
               - clang-12
           - toolset: clang
             compiler: clang++-13
-            cxxstd: "03,11,14,17,20,2b"
+            cxxstd: "03,11,14,17,20"
             os: ubuntu-22.04
             install:
               - clang-13
           - toolset: clang
             compiler: clang++-14
-            cxxstd: "03,11,14,17,20,2b"
+            cxxstd: "03,11,14,17,20"
             os: ubuntu-22.04
             install:
               - clang-14
@@ -216,7 +216,7 @@ jobs:
               - clang-14
           - toolset: clang
             compiler: clang++-15
-            cxxstd: "03,11,14,17,20,2b"
+            cxxstd: "03,11,14,17,20"
             os: ubuntu-22.04
             install:
               - clang-15
