@@ -433,7 +433,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     if (fmt == chars_format::general)
     {
         const int64_t exp = v.exponent + static_cast<int64_t>(olength);
-        if (exp <= 0 && exp >= -4)
+        if (std::abs(exp) <= olength)
         {
             return generic_to_chars_fixed(v, result, result_size, precision);
         }
