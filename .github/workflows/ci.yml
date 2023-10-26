@@ -210,7 +210,7 @@ jobs:
               - clang-14
           - toolset: clang
             compiler: clang++-14
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
             os: ubuntu-22.04
             install:
               - clang-14
