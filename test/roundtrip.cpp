@@ -463,12 +463,14 @@ int main()
 
     #ifdef BOOST_CHARCONV_HAS_FLOAT16
     {
+        std::float16_t const small_q = std::pow(1.0F16, -16.0F16);
+
         for( int i = 0; i < N; ++i )
         {
             std::float16_t w0 = static_cast<std::float16_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::float16_t w1 = static_cast<std::float16_t>( rng() * q ); // 0.0 .. 1.0
+            std::float16_t w1 = static_cast<std::float16_t>( rng() ) * small_q ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::float16_t w2 = (std::numeric_limits<std::float16_t>::max)() / static_cast<std::float16_t>( rng() ); // large values
@@ -484,12 +486,14 @@ int main()
 
     #ifdef BOOST_CHARCONV_HAS_BFLOAT16
     {
+        std::bfloat16_t const small_q = std::pow(1.0BF16, -16.0BF16);
+
         for( int i = 0; i < N; ++i )
         {
             std::bfloat16_t w0 = static_cast<std::bfloat16_t>( rng() ); // 0 .. 2^64
             test_roundtrip( w0 );
 
-            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() * q ); // 0.0 .. 1.0
+            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() ) * small_q ; // 0.0 .. 1.0
             test_roundtrip( w1 );
 
             std::bfloat16_t w2 = (std::numeric_limits<std::bfloat16_t>::max)() / static_cast<std::bfloat16_t>( rng() ); // large values

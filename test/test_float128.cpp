@@ -500,7 +500,7 @@ void charconv_roundtrip(T val, boost::charconv::chars_format fmt = boost::charco
         const boost::int128_type dist = float_distance(val, val_boost);
 
         float_total += dist;
-        abs_float_total += dist < 0 ? -dist : dist;
+        abs_float_total += static_cast<boost::uint128_type>(dist < 0 ? -dist : dist);
         std::cerr << std::setprecision(35)
                   << "Value: " << val
                   << "\nBoost: " << val_boost
