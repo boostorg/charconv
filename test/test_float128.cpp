@@ -69,11 +69,11 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 
     if( v >= 0 )
     {
-        p = mini_to_chars( buffer, v );
+        p = mini_to_chars( buffer, static_cast<boost::uint128_type>(v) );
     }
     else
     {
-        p = mini_to_chars( buffer, -(boost::uint128_type)v );
+        p = mini_to_chars( buffer, -static_cast<boost::uint128_type>(v) );
         *--p = '-';
     }
 
