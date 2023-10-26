@@ -242,6 +242,11 @@ int main()
     test_roundtrip<float>(8.922125027e+34F);
     #endif
 
+    // Reported in issue #93
+    test_spot<float>(3.3F);
+    test_spot<double>(3.3);
+    test_spot<long double>(3.3L);
+
     return boost::report_errors();
 }
 
