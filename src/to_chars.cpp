@@ -750,7 +750,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 }
 #endif
 
-#ifdef BOOST_CHARCONV_HAS_BFLOAT16
+#ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
