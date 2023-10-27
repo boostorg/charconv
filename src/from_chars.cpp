@@ -141,7 +141,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 }
 #endif
 
-#ifdef BOOST_CHARCONV_HAS_BFLOAT16
+#ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
 {
     float f;

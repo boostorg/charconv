@@ -13,7 +13,7 @@
 #include <cerrno>
 #include <utility>
 
-#ifdef __GLIBCXX_TYPE_INT_N_0
+#ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>
 void test_128bit_int()
 {
@@ -24,8 +24,52 @@ void test_128bit_int()
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
     BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST(v1 == test_value);
+
+    #ifdef __GLIBCXX_TYPE_INT_N_0
     BOOST_TEST(std::numeric_limits<T>::max() > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+    #else
+    BOOST_IF_CONSTEXPR (std::is_same<T, boost::int128_type>::value)
+    {
+        BOOST_TEST(BOOST_CHARCONV_INT128_MAX > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+    }
+    else
+    {
+        BOOST_TEST(BOOST_CHARCONV_UINT128_MAX > static_cast<T>(std::numeric_limits<unsigned long long>::max()));
+    }
+    #endif
 }
+
+template <typename T>
+void test_128bit_overflow();
+
+template <>
+void test_128bit_overflow<boost::int128_type>()
+{
+    const char* buffer1 = "170141183460469231731687303715884105728"; // max + 1
+    boost::int128_type v1 = 1000;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+
+    const char* buffer2 = "-170141183460469231731687303715884105729"; // min - 1
+    boost::int128_type v2 = 1000;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST(r2.ec == std::errc::result_out_of_range);
+}
+
+template <>
+void test_128bit_overflow<boost::uint128_type>()
+{
+    const char* buffer1 = "340282366920938463463374607431768211457"; // max + 1
+    boost::uint128_type v1 = 1000;
+    auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1);
+    BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+
+    const char* buffer2 = "-1"; // min - 1
+    boost::uint128_type v2 = 1000;
+    auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
+    BOOST_TEST(r2.ec == std::errc::invalid_argument);
+}
+
 #endif // 128-bit testing
 
 #ifndef BOOST_NO_CXX14_CONSTEXPR
@@ -57,7 +101,7 @@ void base2_test()
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, 2);
     BOOST_TEST(r1.ec == std::errc());
-    BOOST_TEST_EQ(v1, 42);
+    BOOST_TEST_EQ(v1, static_cast<T>(42));
 }
 
 template <typename T>
@@ -68,13 +112,13 @@ void base16_test()
     T v1 = 0;
     auto r1 = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), v1, 16);
     BOOST_TEST(r1.ec == std::errc());
-    BOOST_TEST_EQ(v1, 42);
+    BOOST_TEST_EQ(v1, static_cast<T>(42));
 
     const char* buffer2 = "0";
     T v2 = 1;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2, 16);
     BOOST_TEST(r2.ec == std::errc());
-    BOOST_TEST_EQ(v2, 0);
+    BOOST_TEST_EQ(v2, static_cast<T>(0));
 }
 
 template <typename T>
@@ -97,7 +141,7 @@ void overflow_test()
     T v2 = 0;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer2), v2);
     // In the event of overflow v2 is to be returned unmodified
-    BOOST_TEST(r2.ec == std::errc::result_out_of_range) && BOOST_TEST_EQ(v2, 0);
+    BOOST_TEST(r2.ec == std::errc::result_out_of_range) && BOOST_TEST_EQ(v2, static_cast<T>(0));
 }
 
 template <typename T>
@@ -138,7 +182,7 @@ void invalid_argument_test()
     T v7 = 3;
     auto r7 = boost::charconv::from_chars(buffer7, buffer7 + std::strlen(buffer7), v7);
     BOOST_TEST(r7.ec == std::errc::invalid_argument);
-    BOOST_TEST_EQ(v7, 3);
+    BOOST_TEST_EQ(v7, static_cast<T>(3));
 }
 
 // No overflows, negative numbers, locales, etc.
@@ -150,7 +194,7 @@ void simple_test()
     T v = 0;
     auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 
-    BOOST_TEST( r.ec == std::errc() ) && BOOST_TEST_EQ(v, 34);
+    BOOST_TEST( r.ec == std::errc() ) && BOOST_TEST_EQ(v, static_cast<T>(34));
     BOOST_TEST(r == r);
 
     boost::charconv::from_chars_result r2 {r.ptr, std::errc()};
@@ -160,7 +204,7 @@ void simple_test()
     T v2 = 0;
     auto r3 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer), v2);
     BOOST_TEST(r != r3);
-    BOOST_TEST(r3.ec == std::errc()) && BOOST_TEST_EQ(v2, 12);
+    BOOST_TEST(r3.ec == std::errc()) && BOOST_TEST_EQ(v2, static_cast<T>(12));
 }
 
 template <typename T>
@@ -169,22 +213,22 @@ void extended_ascii_codes()
     const char* buffer = "30±5"; // plus/minus is 177
     T v = 0;
     auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
-    BOOST_TEST(r.ec == std::errc()) && BOOST_TEST_EQ(v, 30);
+    BOOST_TEST(r.ec == std::errc()) && BOOST_TEST_EQ(v, static_cast<T>(30));
 
     const char* buffer2 = "123°"; // Degrees is 186
     T v2 = 0;
     auto r2 = boost::charconv::from_chars(buffer2, buffer2 + std::strlen(buffer), v2);
-    BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ(v2, 123);
+    BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ(v2, static_cast<T>(123));
 
     const char* buffer3 = "2¼"; // 1/4 is 188
     T v3 = 0;
     auto r3 = boost::charconv::from_chars(buffer3, buffer3 + std::strlen(buffer3), v3);
-    BOOST_TEST(r3.ec == std::errc()) && BOOST_TEST_EQ(v3, 2);
+    BOOST_TEST(r3.ec == std::errc()) && BOOST_TEST_EQ(v3, static_cast<T>(2));
 
     const char* buffer4 = "123²"; // squared is 178
     T v4 = 0;
     auto r4 = boost::charconv::from_chars(buffer4, buffer4 + std::strlen(buffer4), v4);
-    BOOST_TEST(r4.ec == std::errc()) && BOOST_TEST_EQ(v4, 123);
+    BOOST_TEST(r4.ec == std::errc()) && BOOST_TEST_EQ(v4, static_cast<T>(123));
 }
 
 int main()
@@ -221,10 +265,12 @@ int main()
     #   endif
     #endif
 
-    // Only compiles using cxxstd-dialect=gnu or equivalent
-    #ifdef __GLIBCXX_TYPE_INT_N_0
-    test_128bit_int<__int128>();
-    test_128bit_int<unsigned __int128>();
+    #ifdef BOOST_CHARCONV_HAS_INT128
+    test_128bit_int<boost::int128_type>();
+    test_128bit_int<boost::uint128_type>();
+
+    test_128bit_overflow<boost::int128_type>();
+    test_128bit_overflow<boost::uint128_type>();
     #endif
 
     extended_ascii_codes<int>();

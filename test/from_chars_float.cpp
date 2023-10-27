@@ -23,7 +23,7 @@ void spot_value(const std::string& buffer, T expected_value, boost::charconv::ch
     BOOST_TEST(r.ec == std::errc());
     if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST_EQ(buffer.c_str() + buffer.size(), r.ptr)))
     {
-        #if __GNUC__ >= 5
+        #if defined(__GNUC__) && __GNUC__ >= 5
         std::cerr << std::hexfloat
                   << "Test failure for: " << expected_value
                   << "\n             Got: " << v << std::endl;

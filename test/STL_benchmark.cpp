@@ -37,6 +37,7 @@
 #include <string>
 #include <cmath>
 
+#include <fmt/format.h>
 #include <double-conversion/double-conversion.h>
 #include <boost/spirit/include/karma.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -69,7 +70,7 @@ void verify_fp(T x, T y, int tol = 10) {
 
 enum class RoundTrip { Sci, Fix, Gen, Hex, Lossy, u32, u64 };
 
-constexpr size_t N = 200; // how many values to test
+constexpr size_t N = 2000; // how many values to test
 
 constexpr size_t K = 5; // how many times to repeat the test, for cleaner timing
 
@@ -397,6 +398,38 @@ void test_google_double_conversion_to_string(const char* const str, const vector
         auto from_result = from_chars(converted_values[n].data(), converted_values[n].data() + converted_values[n].size(), round_trip);
         verify_fp(round_trip, values[n], 1);
         verify(from_result.ec == errc());
+    }
+}
+
+template <typename T>
+void test_fmt_lib_conversion_to_string(const char* const str, const vector<T>& vec)
+{
+    char buf[BufSize];
+
+    const auto start = steady_clock::now();
+    for (size_t k = 0; k < K; ++k) {
+        for (const auto& elem : vec) {
+            fmt::format_to(buf, "{}", elem);
+            global_dummy += static_cast<unsigned int>(buf[0]);
+        }
+    }
+    const auto finish = steady_clock::now();
+
+    printf("%6.1f ns | %s\n", duration<double, nano>{finish - start}.count() / (N * K), str);
+
+    for (const auto& elem : vec) {
+        std::memset(buf, '\0', BufSize);
+        fmt::format_to(buf, "{}", elem);
+
+        if constexpr (is_same_v<T, float>) {
+            verify_fp(strtof(buf, nullptr), elem);
+        } else if constexpr (is_same_v<T, double>) {
+            verify_fp(strtod(buf, nullptr), elem);
+        } else if constexpr (is_same_v<T, uint32_t>) {
+            verify(strtoul(buf, nullptr, 10) == (unsigned long)elem);
+        } else if constexpr (is_same_v<T, uint64_t>) {
+            verify(strtoull(buf, nullptr, 10) == (unsigned long long)elem);
+        }
     }
 }
 
@@ -903,6 +936,9 @@ void test_all() {
 
     test_google_double_conversion_to_string("double-conversion float plain shortest", vec_flt);
     test_google_double_conversion_to_string("double-conversion double plain shortest", vec_dbl);
+
+    test_fmt_lib_conversion_to_string("{fmt} float scientific", vec_flt);
+    test_fmt_lib_conversion_to_string("{fmt} double scientific", vec_dbl);
 /*
     test_STL_to_chars<RoundTrip::Sci>("std::to_chars float scientific shortest", vec_flt, chars_format::scientific);
     test_STL_to_chars<RoundTrip::Sci>("std::to_chars double scientific shortest", vec_dbl, chars_format::scientific);
@@ -962,6 +998,9 @@ void test_all() {
 
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars uint32_t", vec_u32, 10);
     test_boost_to_chars<RoundTrip::Gen>("Boost.Charconv::to_chars uint64_t", vec_u64, 10);
+
+    test_fmt_lib_conversion_to_string("{fmt} uint32_t", vec_u32);
+    test_fmt_lib_conversion_to_string("{fmt} uint64_t", vec_u64);
 
     puts("\n----from_chars float----");
 

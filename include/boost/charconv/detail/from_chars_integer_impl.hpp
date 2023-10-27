@@ -9,6 +9,7 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/type_traits.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
 #include <system_error>
@@ -59,10 +60,13 @@ constexpr unsigned char digit_from_char(char val) noexcept
 #elif defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Woverflow"
+# pragma GCC diagnostic ignored "-Wconversion"
+# pragma GCC diagnostic ignored "-Wsign-conversion"
 
 #elif defined(__GNUC__) && (__GNUC__ >= 7)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+# pragma GCC diagnostic ignored "-Wconversion"
 
 #endif
 
@@ -86,11 +90,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     BOOST_ATTRIBUTE_UNUSED bool is_negative = false;
     auto next = first;
 
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value || std::is_signed<Integer>::value)
-    #else
-    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
-    #endif
+    BOOST_CHARCONV_IF_CONSTEXPR (is_signed<Integer>::value)
     {
         if (next != last)
         {
@@ -150,7 +150,13 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     {
         overflow_value /= unsigned_base;
         max_digit %= unsigned_base;
-        overflow_value *= 2; // Overflow value would cause INT128_MIN in non-base10 to fail
+        #ifndef __GLIBCXX_TYPE_INT_N_0
+        if (base != 10)
+        {
+            // Overflow value would cause INT128_MIN in non-base10 to fail
+            overflow_value *= static_cast<Unsigned_Integer>(2);
+        }
+        #endif
     }
     else
     #endif
@@ -167,8 +173,16 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 
     bool overflowed = false;
 
-    std::ptrdiff_t nc = last - next;
+    const std::ptrdiff_t nc = last - next;
+
+    // In non-GNU mode on GCC numeric limits may not be specialized
+    #if defined(BOOST_CHARCONV_HAS_INT128) && !defined(__GLIBCXX_TYPE_INT_N_0)
+    constexpr std::ptrdiff_t nd = std::is_same<Integer, boost::int128_type>::value ? 38 :
+                                  std::is_same<Integer, boost::uint128_type>::value ? 38 :
+                                  std::numeric_limits<Integer>::digits10;
+    #else
     constexpr std::ptrdiff_t nd = std::numeric_limits<Integer>::digits10;
+    #endif
 
     {
         std::ptrdiff_t i = 0;
@@ -219,11 +233,8 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     }
 
     value = static_cast<Integer>(result);
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value || std::is_signed<Integer>::value)
-    #else
-    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
-    #endif
+
+    BOOST_IF_CONSTEXPR (is_signed<Integer>::value)
     {
         if (is_negative)
         {
@@ -236,7 +247,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
-#elif defined(__clang__) && defined(__APPLE__)
+#elif defined(__clang__)
 # pragma clang diagnostic pop
 #elif defined(__GNUC__)
 # pragma GCC diagnostic pop

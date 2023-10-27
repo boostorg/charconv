@@ -19,12 +19,12 @@
 #  define BOOST_CHARCONV_DEBUG_ASSERT(expr)
 #endif
 
-// Use 128 bit integers and supress warnings for using extensions
+// Use 128-bit integers and suppress warnings for using extensions
 #if defined(BOOST_HAS_INT128)
 #  define BOOST_CHARCONV_HAS_INT128
-#  define BOOST_CHARCONV_INT128_MAX  (boost::int128_type)(((boost::uint128_type) 1 << 127) - 1)
+#  define BOOST_CHARCONV_INT128_MAX  static_cast<boost::int128_type>((static_cast<boost::uint128_type>(1) << 127) - 1)
 #  define BOOST_CHARCONV_INT128_MIN  (-BOOST_CHARCONV_INT128_MAX - 1)
-#  define BOOST_CHARCONV_UINT128_MAX ((2 * (boost::uint128_type) BOOST_CHARCONV_INT128_MAX) + 1)
+#  define BOOST_CHARCONV_UINT128_MAX (2 * static_cast<boost::uint128_type>(BOOST_CHARCONV_INT128_MAX) + 1)
 #endif
 
 #if defined(BOOST_HAS_FLOAT128) && !defined(__STRICT_ANSI__) && !defined(BOOST_CHARCONV_CMAKE_TESTING)
@@ -110,7 +110,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #endif
 
 // Workaround for errors in MSVC 14.3 with gotos in if constexpr blocks
-#if BOOST_MSVC == 1933 || BOOST_MSVC == 1934
+#if defined(BOOST_MSVC) && (BOOST_MSVC == 1933 || BOOST_MSVC == 1934)
 #  define BOOST_CHARCONV_IF_CONSTEXPR if 
 #else
 #  define BOOST_CHARCONV_IF_CONSTEXPR BOOST_IF_CONSTEXPR 
@@ -146,7 +146,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 //
 // As does GCC-9:
 //
-#if !defined(BOOST_NO_CXX14_CONSTEXPR) && (__GNUC__ >= 9) && !defined(BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED)
+#if !defined(BOOST_NO_CXX14_CONSTEXPR) && defined(__GNUC__) && (__GNUC__ >= 9) && !defined(BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED)
 #  define BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
 #endif
 
@@ -154,7 +154,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) std::is_constant_evaluated()
 #elif defined(BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED)
 #  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) __builtin_is_constant_evaluated()
-#elif !defined(BOOST_NO_CXX14_CONSTEXPR) && (__GNUC__ >= 6)
+#elif !defined(BOOST_NO_CXX14_CONSTEXPR) && defined(__GNUC__) && (__GNUC__ >= 6)
 #  define BOOST_CHARCONV_IS_CONSTANT_EVALUATED(x) __builtin_constant_p(x)
 #  define BOOST_CHARCONV_USING_BUILTIN_CONSTANT_P
 #else

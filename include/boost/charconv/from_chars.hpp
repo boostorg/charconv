@@ -67,11 +67,11 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 #ifdef BOOST_CHARCONV_HAS_INT128
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, boost::int128_type& value, int base = 10) noexcept
 {
-    return detail::from_chars_integer_impl<boost::int128_type, boost::uint128_type>(first, last, value, base);
+    return detail::from_chars128(first, last, value, base);
 }
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, boost::uint128_type& value, int base = 10) noexcept
 {
-    return detail::from_chars_integer_impl<boost::uint128_type, boost::uint128_type>(first, last, value, base);
+    return detail::from_chars128(first, last, value, base);
 }
 #endif
 

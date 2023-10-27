@@ -64,10 +64,10 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
             *first++ = '-';
         }
 
-        if (is_signaling && buffer_size >= (9 + (int)is_negative))
+        if (is_signaling && buffer_size >= (9 + static_cast<int>(is_negative)))
         {
             std::memcpy(first, "nan(snan)", 9);
-            offset = 9 + (int)is_negative;
+            offset = 9 + static_cast<int>(is_negative);
         }
         else if (is_negative && buffer_size >= 9)
         {
@@ -117,6 +117,12 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 
+// GCC-5 evaluates the following specialization for other types
+#if defined(__GNUC__) && __GNUC__ == 5
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wfloat-conversion"
+#endif
+
 template <>
 inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, __float128 value, int classification) noexcept
 {
@@ -136,10 +142,10 @@ inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, _
             *first++ = '-';
         }
 
-        if (is_signaling && buffer_size >= (9 + (int)is_negative))
+        if (is_signaling && buffer_size >= (9 + static_cast<int>(is_negative)))
         {
             std::memcpy(first, "nan(snan)", 9);
-            offset = 9 + (int)is_negative;
+            offset = 9 + static_cast<int>(is_negative);
         }
         else if (is_negative && buffer_size >= 9)
         {
@@ -183,6 +189,10 @@ inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, _
 
     return { first + offset, std::errc() };
 }
+
+#if defined(__GNUC__) && __GNUC__ == 5
+# pragma GCC diagnostic pop
+#endif
 
 #endif // BOOST_CHARCONV_HAS_FLOAT128
 
@@ -706,7 +716,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float128_t value,
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
-#ifdef BOOST_CHARCONV_HAS_BFLOAT16
+#ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::bfloat16_t value, 
                                              chars_format fmt = chars_format::general, int precision = -1 ) noexcept;
 #endif
