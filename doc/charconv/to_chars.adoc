@@ -19,6 +19,7 @@ struct to_chars_result
 
     friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
     friend constexpr bool operator!=(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
+    constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 };
 
 template <typename Integral>
@@ -86,6 +87,7 @@ char buffer[64] {};
 double v = 1e300;
 to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
 assert(r.ec == std::errc());
+assert(r); // Same as above but less verbose. Added in C++26.
 assert(!strcmp(buffer, "1e+300"));
 ----
 
@@ -97,6 +99,7 @@ char buffer[64] {};
 int v = 42;
 to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, 16);
 assert(r.ec == std::errc());
+assert(r); // Same as above but less verbose. Added in C++26.
 assert(!strcmp(buffer, "2a")); // strcmp returns 0 on match
 ----
 ==== Floating Point
@@ -128,6 +131,7 @@ char buffer[3] {};
 int v = -1234;
 to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, 16);
 assert(r.ec == std::errc::result_out_of_range);
+assert(!r); // Same as above but less verbose. Added in C++26.
 ----
 ==== Floating Point
 [source, c++]
@@ -136,6 +140,7 @@ char buffer[3] {};
 double v = 1.2345;
 auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
 assert(r.ec == std::errc::result_out_of_range);
+assert(!r); // Same as above but less verbose. Added in C++26.
 ----
 
 In the event of std::errc::result_out_of_range, to_chars_result.ptr is equal to first
