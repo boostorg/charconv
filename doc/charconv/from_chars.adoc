@@ -19,6 +19,7 @@ struct from_chars_result
 
     friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
     friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+    constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 }
 
 template <typename Integral>
@@ -70,6 +71,7 @@ const char* buffer = "42";
 int v = 0;
 from_chars_result r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == std::errc());
+assert(r); // Same as above but less verbose. Added in C++26.
 assert(v == 42);
 ----
 ==== Floating Point
@@ -79,6 +81,7 @@ const char* buffer = "1.2345"
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == std::errc());
+assert(r); // Same as above but less verbose. Added in C++26.
 assert(v == 1.2345);
 ----
 
@@ -90,6 +93,7 @@ const char* buffer = "2a";
 unsigned v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, 16);
 assert(r.ec == std::errc());
+assert(r); // Same as above but less verbose. Added in C++26.
 assert(v == 42);
 ----
 ==== Floating Point
@@ -99,6 +103,7 @@ const char* buffer = "1.3a2bp-10";
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, boost::charconv::chars_format::hex);
 assert(r.ec == std::errc());
+assert(r); // Same as above but less verbose. Added in C++26.
 assert(v == 8.0427e-18);
 ----
 
@@ -109,6 +114,7 @@ const char* buffer = "-123";
 unsigned v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == std::errc::invalid_argument);
+assert(!r); // Same as above but less verbose. Added in C++26.
 ----
 [source, c++]
 ----
@@ -116,6 +122,7 @@ const char* buffer = "-1.573e-3";
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, boost::charconv::chars_format::fixed);
 assert(r.ec == std::errc::invalid_argument);
+assert(!r); // Same as above but less verbose. Added in C++26.
 ----
 Note: In the event of std::errc::invalid_argument, v is not modified by `from_chars`
 
@@ -126,6 +133,7 @@ const char* buffer = "1234";
 unsigned char v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == std::errc::result_out_of_range);
+assert(!r); // Same as above but less verbose. Added in C++26.
 assert(v == 0)
 ----
 Note: In the event of std::errc::result_out_of_range, v is not modified by `from_chars`
