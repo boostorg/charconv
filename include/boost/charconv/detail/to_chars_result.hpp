@@ -25,6 +25,8 @@ struct to_chars_result
     {
         return !(lhs == rhs);
     }
+
+    constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 };
 
 }} // Namespaces

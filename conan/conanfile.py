@@ -19,7 +19,7 @@ required_conan_version = ">=1.53.0"
 
 class CharconvConan(ConanFile):
     name = "boost_charconv"
-    version = "1.0.0"
+    version = "1.0.1"
     description = "Boost provides free peer-reviewed portable C++ source libraries"
     url = "https://github.com/cppalliance/charconv"
     homepage = "https://github.com/cppalliance/charconv"
