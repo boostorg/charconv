@@ -258,7 +258,13 @@ from_chars_result from_chars_eight_bit_integer_impl(const char* first, const cha
     }
     else if (len > 4)
     {
-        return {last, std::errc::result_out_of_range};
+        // Needs to be partially parsed to match the standard
+        return from_chars_integer_impl<std::uint8_t, std::uint8_t>(first, last, value, 10);
+    }
+
+    if (*first == '-' || *first == '+')
+    {
+        return {first, std::errc::invalid_argument};
     }
 
     // Write into buffer to ensure we can always read 4 bytes
@@ -280,18 +286,20 @@ from_chars_result from_chars_eight_bit_integer_impl(const char* first, const cha
     value = static_cast<std::uint8_t>((UINT64_C(0x640a0100) * digits) >> 32);
 
     #ifndef BOOST_MSVC
-    if (BOOST_LIKELY((digits & UINT32_C(0xf0f0f0f0)) == 0 && __builtin_bswap32(digits) <= 0x020505))
+    if (BOOST_LIKELY((digits & UINT32_C(0xf0f0f0f0)) == 0 && __builtin_bswap32(digits) <= UINT32_C(0x020505)))
     {
         return {first + len, std::errc()};
     }
     #else
-    if (BOOST_LIKELY((digits & UINT32_C(0xf0f0f0f0)) == 0 && _byteswap_ulong(digits) <= 0x020505))
+    if (BOOST_LIKELY((digits & UINT32_C(0xf0f0f0f0)) == 0 && _byteswap_ulong(digits) <= UINT32_C(0x020505)))
     {
         return {first + len, std::errc()};
     }
     #endif
 
-    return {last, std::errc::result_out_of_range};
+    // If there was something we did not expect (e.g. a digit separator) then fall back to the default
+    // implementation to get the partially parsed value correct
+    return from_chars_integer_impl<std::uint8_t, std::uint8_t>(first, last, value, 10);
 }
 
 #ifdef BOOST_MSVC
