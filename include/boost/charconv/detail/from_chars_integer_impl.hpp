@@ -261,21 +261,31 @@ from_chars_result from_chars_eight_bit_integer_impl(const char* first, const cha
         return {last, std::errc::result_out_of_range};
     }
 
-    union {
-        std::uint8_t as_str[4];
-        std::uint32_t as_int;
-    } digits;
-
-    std::memcpy(&digits.as_int, first, sizeof(digits));
+    std::uint32_t digits;
+    std::memcpy(&digits, first, sizeof(digits));
     // flip 0x30, detect non-digits
-    digits.as_int ^= UINT32_C(0x30303030);
+    digits ^= UINT32_C(0x30303030);
+
+    // Reverse the byte-order for big endian systems
+    #if BOOST_CHARCONV_ENDIAN_BIG_BYTE
+    digits = __builtin_bswap32(digits);
+    #endif
+
     // shift off trash bytes
-    digits.as_int <<= (4 - (len & 0x3)) * 8;
-    value = static_cast<std::uint8_t>((UINT64_C(0x640a0100) * digits.as_int) >> 32);
-    if (BOOST_LIKELY((digits.as_int & 0xf0f0f0f0) == 0 && __builtin_bswap32(digits.as_int) <= 0x020505))
+    digits <<= (4 - (len & 0x3)) * 8;
+    value = static_cast<std::uint8_t>((UINT64_C(0x640a0100) * digits) >> 32);
+
+    #ifndef BOOST_MSVC
+    if (BOOST_LIKELY((digits & UINT32_C(0xf0f0f0f0)) == 0 && __builtin_bswap32(digits) <= 0x020505))
     {
         return {first + len, std::errc()};
     }
+    #else
+    if (BOOST_LIKELY((digits & UINT32_C(0xf0f0f0f0)) == 0 && _byteswap_ulong(digits) <= 0x020505))
+    {
+        return {first + len, std::errc()};
+    }
+    #endif
 
     return {last, std::errc::result_out_of_range};
 }
