@@ -245,6 +245,41 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     return {next, std::errc()};
 }
 
+// Derived from: https://lemire.me/blog/2023/11/28/parsing-8-bit-integers-quickly/
+// See also: https://blog.regehr.org/archives/959
+from_chars_result from_chars_eight_bit_integer_impl(const char* first, const char* last, std::uint8_t& value) noexcept
+{
+    // Check pre-conditions
+    const std::ptrdiff_t len {last - first};
+
+    if (len <= 0)
+    {
+        return {first, std::errc::invalid_argument};
+    }
+    else if (len > 4)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
+
+    union {
+        std::uint8_t as_str[4];
+        std::uint32_t as_int;
+    } digits;
+
+    std::memcpy(&digits.as_int, first, sizeof(digits));
+    // flip 0x30, detect non-digits
+    digits.as_int ^= UINT32_C(0x30303030);
+    // shift off trash bytes
+    digits.as_int <<= (4 - (len & 0x3)) * 8;
+    value = static_cast<std::uint8_t>((UINT64_C(0x640a0100) * digits.as_int) >> 32);
+    if (BOOST_LIKELY((digits.as_int & 0xf0f0f0f0) == 0 && __builtin_bswap32(digits.as_int) <= 0x020505))
+    {
+        return {first + len, std::errc()};
+    }
+
+    return {last, std::errc::result_out_of_range};
+}
+
 #ifdef BOOST_MSVC
 # pragma warning(pop)
 #elif defined(__clang__)
@@ -260,6 +295,28 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
     using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
     return detail::from_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
+
+#ifdef BOOST_CHARCONV_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+template <>
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars<std::uint8_t>(const char* first, const char* last, std::uint8_t& value, int base) noexcept
+{
+    if (BOOST_CHARCONV_IS_CONSTANT_EVALUATED(first))
+    {
+        return detail::from_chars_integer_impl<std::uint8_t, std::uint8_t>(first, last, value, base);
+    }
+    else
+    {
+        if (base != 10)
+        {
+            return detail::from_chars_integer_impl<std::uint8_t, std::uint8_t>(first, last, value, base);
+        }
+        else
+        {
+            return detail::from_chars_eight_bit_integer_impl(first, last, value);
+        }
+    }
+}
+#endif
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 template <typename Integer>
