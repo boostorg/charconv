@@ -247,7 +247,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
 
 // Derived from: https://lemire.me/blog/2023/11/28/parsing-8-bit-integers-quickly/
 // See also: https://blog.regehr.org/archives/959
-from_chars_result from_chars_eight_bit_integer_impl(const char* first, const char* last, std::uint8_t& value) noexcept
+inline from_chars_result from_chars_eight_bit_integer_impl(const char* first, const char* last, std::uint8_t& value) noexcept
 {
     // Check pre-conditions
     const std::ptrdiff_t len {last - first};
