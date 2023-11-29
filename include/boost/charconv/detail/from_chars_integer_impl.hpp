@@ -261,8 +261,12 @@ from_chars_result from_chars_eight_bit_integer_impl(const char* first, const cha
         return {last, std::errc::result_out_of_range};
     }
 
+    // Write into buffer to ensure we can always read 4 bytes
+    // since this is an assumption for the rest of the function
+    char buffer[4];
+    std::memcpy(&buffer, first, static_cast<std::size_t>(len));
     std::uint32_t digits;
-    std::memcpy(&digits, first, sizeof(digits));
+    std::memcpy(&digits, buffer, sizeof(digits));
     // flip 0x30, detect non-digits
     digits ^= UINT32_C(0x30303030);
 
