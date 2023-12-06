@@ -1,40 +1,23 @@
-﻿# ------------------------------------------------------------------------------
-#  Copyright Matt Borland 2023.
-#  Copyright Christopher Kormanyos 2023.
-#  Distributed under the Boost Software License,
-#  Version 1.0. (See accompanying file LICENSE_1_0.txt
-#  or copy at http://www.boost.org/LICENSE_1_0.txt)
-# ------------------------------------------------------------------------------
+﻿# Copyright 2019 - 2021 Alexander Grund
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+#
+# Sample codecov configuration file. Edit as required
 
 codecov:
+  max_report_age: off
   require_ci_to_pass: yes
+  notify:
+    # Increase this if you have multiple coverage collection jobs
+    after_n_builds: 1
+    wait_for_ci: yes
 
-coverage:
-  precision: 1
-  round: up
-  range: '50...100'
-  status:
-    project:
-      default: # This can be anything, but it needs to exist as the name
-        # basic settings
-        target: 75%
-        threshold: 10%
-        if_ci_failed: error #success, failure, error, ignore
-        only_pulls: false
-    patch:
-      default:
-        target: 75%
-        threshold: 25%
-
-parsers:
-  gcov:
-    branch_detection:
-      conditional: no
-      loop: no
-      method: no
-      macro: no
-
+# Change how pull request comments look
 comment:
-  layout: 'reach,diff,flags,files,footer'
-  behavior: default
-  require_changes: no
+  layout: "reach,diff,flags,files,footer"
+
+# Ignore specific files or folders. Glob patterns are supported.
+# See https://docs.codecov.com/docs/ignoring-paths
+ignore:
+  - extra/**/*
+  # - test/**/*
