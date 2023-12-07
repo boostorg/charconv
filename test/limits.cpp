@@ -173,16 +173,9 @@ int main()
     test_integral<long long>();
     test_integral<unsigned long long>();
 
-#if !defined(__CYGWIN__) && !defined(__s390x__) && !((defined(__arm__) || defined(__aarch64__))  && !defined(__APPLE__)) && !(defined(__APPLE__) && (__clang_major__ == 12))
-
-    // the stub implementations fail under Cygwin, s390x, linux ARM, and Apple Clang w/Xcode 12.2;
-    // re-enable these when we have real ones
-
     test_floating_point<float>();
     test_floating_point<double>();
     test_floating_point<long double>();
-
-#endif // Broken Platforms
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 
