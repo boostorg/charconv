@@ -81,6 +81,7 @@ struct from_chars_result
 
     friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
     friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+    constexpr explicit operator bool() const noexcept
 }
 
 template <typename Integral>
@@ -98,6 +99,7 @@ struct to_chars_result
 
     friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
     friend constexpr bool operator!=(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
+    constexpr explicit operator bool() const noexcept
 };
 
 template <typename Integral>
@@ -137,13 +139,13 @@ assert(v == 1.2345);
 const char* buffer = "2a";
 unsigned v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, 16);
-assert(r.ec == std::errc());
+assert(r); // from_chars_result has operator bool()
 assert(v == 42);
 
 const char* buffer = "1.3a2bp-10";
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, boost::charconv::chars_format::hex);
-assert(r.ec == std::errc());
+assert(r);
 assert(v == 8.0427e-18);
 ````
 ## `to_chars`
@@ -164,7 +166,7 @@ assert(!strcmp(buffer, "1e+300"));
 char buffer[64] {};
 int v = 42;
 to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, 16);
-assert(r.ec == std::errc());
+assert(r); // to_chars_result has operator bool()
 assert(!strcmp(buffer, "2a")); // strcmp returns 0 on match
 
 ````
