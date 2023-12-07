@@ -616,12 +616,12 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     format[pos] = '\n';
     const auto rv = print_val(first, last - first, format, value);
 
-    if (rv == -1)
+    if (rv <= 0)
     {
         return {last, static_cast<std::errc>(errno)};
     }
 
-    return {first + rv, static_cast<std::errc>(errno)};
+    return {first + rv, std::errc()};
 }
 
 } // Namespace detail
