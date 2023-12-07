@@ -4,6 +4,14 @@ This library is a C++11 compatible implementation of `<charconv>`. The full docu
 # Notice
 This library is not an official boost library.
 
+# Build Status
+
+|                | Master                                                                                                                                              | Develop                                                                                                                                              |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Github Actions | [![Build Status](https://github.com/cppalliance/charconv/workflows/CI/badge.svg?branch=master)](https://github.com/cppalliance/charconv/actions)    | [![Build Status](https://github.com/cppalliance/charconv/workflows/CI/badge.svg?branch=develop)](https://github.com/cppalliance/charconv/actions)    |
+| Drone          | [![Build Status](https://drone.cpp.al/api/badges/cppalliance/charconv/status.svg?ref=refs/heads/master)](https://drone.cpp.al/cppalliance/charconv) | [![Build Status](https://drone.cpp.al/api/badges/cppalliance/charconv/status.svg?ref=refs/heads/develop)](https://drone.cpp.al/cppalliance/charconv) |
+| Codecov        | [![codecov](https://codecov.io/gh/cppalliance/charconv/branch/master/graph/badge.svg)](https://codecov.io/gh/cppalliance/charconv/branch/master)    | [![codecov](https://codecov.io/gh/cppalliance/charconv/branch/develop/graph/badge.svg)](https://codecov.io/gh/cppalliance/charconv/branch/develop)   |
+
 # How to build the library
 
 ## B2
@@ -81,6 +89,7 @@ struct from_chars_result
 
     friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
     friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+    constexpr explicit operator bool() const noexcept
 }
 
 template <typename Integral>
@@ -98,6 +107,7 @@ struct to_chars_result
 
     friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
     friend constexpr bool operator!=(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
+    constexpr explicit operator bool() const noexcept
 };
 
 template <typename Integral>
@@ -137,13 +147,13 @@ assert(v == 1.2345);
 const char* buffer = "2a";
 unsigned v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, 16);
-assert(r.ec == std::errc());
+assert(r); // from_chars_result has operator bool()
 assert(v == 42);
 
 const char* buffer = "1.3a2bp-10";
 double v = 0;
 auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v, boost::charconv::chars_format::hex);
-assert(r.ec == std::errc());
+assert(r);
 assert(v == 8.0427e-18);
 ````
 ## `to_chars`
@@ -164,7 +174,7 @@ assert(!strcmp(buffer, "1e+300"));
 char buffer[64] {};
 int v = 42;
 to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v, 16);
-assert(r.ec == std::errc());
+assert(r); // to_chars_result has operator bool()
 assert(!strcmp(buffer, "2a")); // strcmp returns 0 on match
 
 ````
