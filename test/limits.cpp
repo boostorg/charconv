@@ -63,6 +63,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <limits>
+#include <string>
 
 void test_odr_use( int const* );
 
@@ -124,24 +125,46 @@ template<typename T> void test_floating_point( T value )
     {
         char buffer[ boost::charconv::limits<T>::max_chars10 ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
-        BOOST_TEST(r.ec == std::errc());
+        if (!BOOST_TEST(r.ec == std::errc()))
+        {
+            std::cerr << " Value: " << value
+                      << "\nBuffer: " << std::string(buffer)
+                      << "\n    Ec: " << static_cast<int>(r.ec) << std::endl;
+        }
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
+        if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value ))
+        {
+            std::cerr << " Value: " << value
+                      << "\nBuffer: " << std::string(buffer)
+                      << "\nRetVal: " << v2
+                      << "\n    Ec: " << static_cast<int>(r2.ec) << std::endl;
+        }
     }
 
     // no base, max_chars
     {
         char buffer[ boost::charconv::limits<T>::max_chars ];
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
-        BOOST_TEST(r.ec == std::errc());
+        if (!BOOST_TEST(r.ec == std::errc()))
+        {
+            std::cerr << " Value: " << value
+                      << "\nBuffer: " << std::string(buffer)
+                      << "\n    Ec: " << static_cast<int>(r.ec) << std::endl;
+        }
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
+        if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value ))
+        {
+            std::cerr << " Value: " << value
+                      << "\nBuffer: " << std::string(buffer)
+                      << "\nRetVal: " << v2
+                      << "\n    Ec: " << static_cast<int>(r2.ec) << std::endl;
+        }
     }
 }
 
