@@ -215,7 +215,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
         value = std::strtold(temp.c_str(), &ptr);
         r.ptr = ptr;
 
-        #ifdef __PPC64__
         // See: https://github.com/cppalliance/charconv/issues/103
         // The value of errno should be 0 since the conversion is successful, but it is incorrect
         if (value == 0 || value == HUGE_VALL)
@@ -226,9 +225,6 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
         {
             r.ec = std::errc();
         }
-        #else
-        r.ec = static_cast<std::errc>(errno);
-        #endif
     }
 
     return r;
