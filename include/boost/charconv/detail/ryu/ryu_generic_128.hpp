@@ -608,8 +608,12 @@ static inline struct floating_decimal_128 long_double_to_fd128(long double d) no
     unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(long double));
 
-    #if LDBL_MANT_DIG == 113 // binary128 (e.g. ARM, S390X)
-    return generic_binary_to_decimal(bits, 112, 15, true);
+    #if LDBL_MANT_DIG == 113 // binary128 (e.g. ARM, S390X, PPC64LE)
+    # ifdef __PPC64__
+        return generic_binary_to_decimal(bits, 112, 15, false);
+    # else
+        return generic_binary_to_decimal(bits, 112, 15, true);
+    # endif
     #elif LDBL_MANT_DIG == 106 // ibm128 (e.g. PowerPC)
     return generic_binary_to_decimal(bits, 105, 11, true);
     #endif
