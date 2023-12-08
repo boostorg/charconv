@@ -612,7 +612,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
             break;
     }
 
-    ++pos;
+    const auto rv = print_val(first, static_cast<std::size_t>(last - first), format, value);
     format[pos] = '\n';
     const auto rv = print_val(first, last - first, format, value);
 
