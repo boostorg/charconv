@@ -552,7 +552,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     // v % + . + num_digits(INT_MAX) + specifier + null terminator
     // 1 + 1 + 10 + 1 + 1
     char format[14] {};
-    std::memcpy(&format, "%", 1); // NOLINT : No null terminator is purposeful
+    std::memcpy(format, "%", 1); // NOLINT : No null terminator is purposeful
     std::size_t pos = 1;
 
     // precision of -1 is unspecified
@@ -580,7 +580,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     else if (fmt == chars_format::fixed)
     {
         // Force 0 decimal places
-        std::memcpy(&format, ".0", 2); // NOLINT : No null terminator is purposeful
+        std::memcpy(format + pos, ".0", 2); // NOLINT : No null terminator is purposeful
         pos += 2;
     }
 
