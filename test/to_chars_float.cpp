@@ -181,6 +181,33 @@ void test_printf_fallback(T v, const std::string&, boost::charconv::chars_format
     BOOST_TEST_CSTR_EQ(buffer, printf_buffer);
 }
 
+std::string format(int prec)
+{
+    std::string format = "%." + std::to_string(prec) + "g";
+    return format;
+}
+
+template <typename T>
+void test_floff()
+{
+    for (int prec = 2; prec < std::numeric_limits<T>::digits10; ++prec)
+    {
+        char buffer[256] {};
+        const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), std::numeric_limits<T>::denorm_min(), boost::charconv::chars_format::general, prec);
+        BOOST_TEST(r.ec == std::errc());
+
+        char printf_buffer[256] {};
+        std::snprintf(printf_buffer, sizeof(printf_buffer), format(prec + 1).c_str(), std::numeric_limits<T>::denorm_min());
+
+        if (!BOOST_TEST_CSTR_EQ(buffer, printf_buffer))
+        {
+            std::cerr << "Precision: " << prec
+                      << "\nTo chars: " << buffer
+                      << "\n  Printf: " << printf_buffer << std::endl;
+        }
+    }
+}
+
 int main()
 {
     printf_divergence<double>();
@@ -996,6 +1023,8 @@ int main()
     spot_check(1.7e-02, "1.7e-02", boost::charconv::chars_format::scientific);
     spot_check(1.7e-01, "1.7e-01", boost::charconv::chars_format::scientific);
     spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::scientific);
+
+    test_floff<float>();
 
     return boost::report_errors();
 }
