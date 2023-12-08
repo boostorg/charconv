@@ -438,16 +438,17 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, std::uint32_t>::type;
     
     const std::ptrdiff_t buffer_size = last - first;
-    
+
+    auto abs_value = std::abs(value);
+    constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
+    constexpr auto min_fractional_value = 1 / max_fractional_value;
+    constexpr auto max_value = static_cast<Real>(std::numeric_limits<Unsigned_Integer>::max());
+
     // Unspecified precision so we always go with the shortest representation
     if (precision == -1)
     {
         if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
         {
-            auto abs_value = std::abs(value);
-            constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
-            constexpr auto max_value = static_cast<Real>(std::numeric_limits<Unsigned_Integer>::max());
-
             if (abs_value >= 1 && abs_value < max_fractional_value)
             {
                 auto value_struct = boost::charconv::detail::to_decimal(value);
@@ -503,6 +504,53 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     {
         if (fmt != boost::charconv::chars_format::hex)
         {
+            if (abs_value >= min_fractional_value && abs_value < max_fractional_value)
+            {
+                auto value_struct = boost::charconv::detail::to_decimal(value);
+                if (value_struct.is_negative)
+                {
+                    *first++ = '-';
+                }
+
+                *first++ = '0';
+
+                auto sig_dig = num_digits(value_struct.significand) - 1;
+                while (sig_dig > precision + 1)
+                {
+                    value_struct.significand /= 10;
+                    ++value_struct.exponent;
+                    --sig_dig;
+                }
+
+                if (sig_dig > precision)
+                {
+                    const auto round_val = value_struct.significand % 10;
+                    value_struct.significand /= 10;
+                    if (round_val >= 5)
+                    {
+                        ++value_struct.significand;
+                    }
+                    ++value_struct.exponent;
+                }
+
+                auto r = to_chars_integer_impl(first, last, value_struct.significand);
+                if (r.ec != std::errc())
+                {
+                    return r;
+                }
+
+                // Bounds check
+                if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
+                {
+                    std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent,
+                                 static_cast<std::size_t>(-value_struct.exponent));
+                    std::memset(r.ptr + value_struct.exponent, '.', 1);
+                    ++r.ptr;
+                }
+
+                return { r.ptr , std::errc() };
+            }
+
             auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
             return { ptr, std::errc() };
         }
