@@ -541,7 +541,8 @@ inline int print_val(char* first, std::size_t size, char* format, __float128 val
 }
 #endif
 
-inline int print_val(char* first, std::size_t size, char* format, long double value) noexcept
+template <typename T>
+inline int print_val(char* first, std::size_t size, char* format, T value) noexcept
 {
     return std::snprintf(first, size, format, value);
 }
