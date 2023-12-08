@@ -586,13 +586,13 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
 
     // Add the type identifier
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    BOOST_IF_CONSTEPXR(std::is_same<T, __float128>::value || std::is_same<T, long double>::value)
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, __float128>::value || std::is_same<T, long double>::value)
     {
         format[pos] = std::is_same<T, __float128>::value ? 'Q' : 'L';
         ++pos;
     }
     #else
-    BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, long double>::value)
     {
         format[pos] = 'L';
         ++pos;
