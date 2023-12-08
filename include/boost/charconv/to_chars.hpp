@@ -541,7 +541,8 @@ inline int print_val(char* first, std::size_t size, char* format, __float128 val
 }
 #endif
 
-inline int print_val(char* first, std::size_t size, char* format, long double value) noexcept
+template <typename T>
+inline int print_val(char* first, std::size_t size, char* format, T value) noexcept
 {
     return std::snprintf(first, size, format, value);
 }
@@ -552,7 +553,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     // v % + . + num_digits(INT_MAX) + specifier + null terminator
     // 1 + 1 + 10 + 1 + 1
     char format[14] {};
-    std::memcpy(&format, "%", 1); // NOLINT : No null terminator is purposeful
+    std::memcpy(format, "%", 1); // NOLINT : No null terminator is purposeful
     std::size_t pos = 1;
 
     // precision of -1 is unspecified
@@ -580,17 +581,24 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     else if (fmt == chars_format::fixed)
     {
         // Force 0 decimal places
-        std::memcpy(&format, ".0", 2); // NOLINT : No null terminator is purposeful
+        std::memcpy(format + pos, ".0", 2); // NOLINT : No null terminator is purposeful
         pos += 2;
     }
 
     // Add the type identifier
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    format[pos] = std::is_same<T, __float128>::value ? 'Q' : 'L';
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, __float128>::value || std::is_same<T, long double>::value)
+    {
+        format[pos] = std::is_same<T, __float128>::value ? 'Q' : 'L';
+        ++pos;
+    }
     #else
-    format[pos] = 'L';
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, long double>::value)
+    {
+        format[pos] = 'L';
+        ++pos;
+    }
     #endif
-    ++pos;
 
     // Add the format character
     switch (fmt)
@@ -612,9 +620,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
             break;
     }
 
-    ++pos;
-    format[pos] = '\n';
-    const auto rv = print_val(first, last - first, format, value);
+    const auto rv = print_val(first, static_cast<std::size_t>(last - first), format, value);
 
     if (rv <= 0)
     {
