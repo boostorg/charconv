@@ -13,6 +13,8 @@
 #include <cerrno>
 #include <utility>
 #include <string>
+#include <random>
+#include <iomanip>
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW
@@ -190,6 +192,12 @@ std::string format(int prec)
 template <typename T>
 void test_floff()
 {
+    std::mt19937_64 rng(42);
+    std::uniform_real_distribution<T> small_dist(0, 1);
+    std::uniform_real_distribution<T> large_dist(1e10, std::numeric_limits<T>::max());
+
+    auto dists = {&small_dist, &large_dist};
+
     for (int prec = 2; prec < std::numeric_limits<T>::digits10; ++prec)
     {
         char buffer[256] {};
@@ -197,13 +205,36 @@ void test_floff()
         BOOST_TEST(r.ec == std::errc());
 
         char printf_buffer[256] {};
-        std::snprintf(printf_buffer, sizeof(printf_buffer), format(prec + 1).c_str(), std::numeric_limits<T>::denorm_min());
+        const auto printf_format = format(prec + 1);
+        std::snprintf(printf_buffer, sizeof(printf_buffer), printf_format.c_str(), std::numeric_limits<T>::denorm_min());
 
         if (!BOOST_TEST_CSTR_EQ(buffer, printf_buffer))
         {
             std::cerr << "Precision: " << prec
                       << "\nTo chars: " << buffer
                       << "\n  Printf: " << printf_buffer << std::endl;
+        }
+
+        for (int i = 0; i < 1000; ++i)
+        {
+            for (auto dist : dists)
+            {
+                const T rand_val = (*dist)(rng);
+                char rand_buffer[256] {};
+                const auto r_small = boost::charconv::to_chars(rand_buffer, rand_buffer + sizeof(rand_buffer), rand_val,
+                                                               boost::charconv::chars_format::general, prec);
+
+                char rand_printf_buffer[256] {};
+                std::snprintf(rand_printf_buffer, sizeof(rand_printf_buffer), printf_format.c_str(), rand_val);
+
+                if (!BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small))
+                {
+                    std::cerr << "Precision: " << prec
+                              << std::setprecision(prec + 1) << "\n     Val: " << rand_val
+                              << "\nTo chars: " << rand_buffer
+                              << "\n  Printf: " << rand_printf_buffer << std::endl;
+                }
+            }
         }
     }
 }
