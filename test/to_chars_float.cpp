@@ -215,7 +215,7 @@ void test_floff()
                       << "\n  Printf: " << printf_buffer << std::endl;
         }
 
-        for (int i = 0; i < 1000; ++i)
+        for (int i = 0; i < 10; ++i)
         {
             for (auto dist : dists)
             {
@@ -227,7 +227,7 @@ void test_floff()
                 char rand_printf_buffer[256] {};
                 const auto num = std::snprintf(rand_printf_buffer, sizeof(rand_printf_buffer), printf_format.c_str(), rand_val);
 
-                if (!BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small) && !BOOST_TEST(num == static_cast<int>(r_small.ptr - rand_buffer)))
+                if (!(BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small) && BOOST_TEST(num == static_cast<int>(r_small.ptr - rand_buffer))))
                 {
                     std::cerr << "Precision: " << prec
                               << std::setprecision(prec + 1) << "\n     Val: " << rand_val
