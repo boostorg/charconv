@@ -3773,8 +3773,17 @@ print_exponent_and_return:
         }
 
         ++buffer;
+
+        // Fixes values without a fraction. Without we would get:
+        //     Val: 2e+38
+        //To chars: 2.e+38
+        //  Printf: 2e+38
+        if (*(buffer - 1) == '.')
+        {
+            --buffer;
+        }
     }
-    
+
     if (decimal_exponent >= 0)
     {
         std::memcpy(buffer, "e+", 2); // NOLINT : Specifically not null-terminating
