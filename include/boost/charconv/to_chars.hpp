@@ -31,6 +31,10 @@
 #include <climits>
 #include <cmath>
 
+#ifdef BOOST_CHARCONV_DEBUG_FIXED
+#include <iostream>
+#endif
+
 #if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) || defined(BOOST_CHARCONV_HAS_FLOAT128)
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #  include <boost/charconv/detail/issignaling.hpp>
@@ -433,7 +437,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 #endif
 
 template <typename Real>
-to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int/*int precision = -1*/) noexcept
+to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int precision = -1) noexcept
 {
     const std::ptrdiff_t buffer_size = last - first;
 
@@ -445,6 +449,30 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int/*in
         *first++ = '-';
     }
 
+    int num_dig = 0;
+    if (precision != -1)
+    {
+        num_dig = num_digits(value_struct.significand);
+        while (num_dig > precision + 2)
+        {
+            value_struct.significand /= 10;
+            ++value_struct.exponent;
+            --num_dig;
+        }
+
+        if (num_dig == precision + 2)
+        {
+            const auto trailing_dig = value_struct.significand % 10;
+            if (trailing_dig >= 5)
+            {
+                value_struct.significand /= 10;
+                ++value_struct.significand;
+                ++value_struct.exponent;
+                --num_dig;
+            }
+        }
+    }
+
     auto r = to_chars_integer_impl(first, last, value_struct.significand);
     if (r.ec != std::errc())
     {
@@ -452,7 +480,7 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int/*in
     }
 
     // Bounds check
-    if (abs_value > 1)
+    if (abs_value >= 1)
     {
         if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
         {
@@ -461,12 +489,38 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int/*in
             std::memset(r.ptr + value_struct.exponent, '.', 1);
             ++r.ptr;
         }
-    }
 
-    while (std::fmod(abs_value, 10) == 0)
+        while (std::fmod(abs_value, 10) == 0)
+        {
+            *r.ptr++ = '0';
+            abs_value /= 10;
+        }
+    }
+    else
     {
-        *r.ptr++ = '0';
-        abs_value /= 10;
+        #ifdef BOOST_CHARCONV_DEBUG_FIXED
+        std::cerr << "Value: " << value
+                  << "\n  Buf: " << first
+                  << "\n  sig: " << value_struct.significand
+                  << "\n  exp: " << value_struct.exponent << std::endl;
+        #endif
+
+        const std::size_t offset_bytes = -value_struct.exponent - num_dig;
+
+        std::memmove(first + 2 + static_cast<std::size_t>(value_struct.is_negative) + offset_bytes,
+                     first + static_cast<std::size_t>(value_struct.is_negative),
+                     static_cast<std::size_t>(-value_struct.exponent - offset_bytes));
+
+        std::memcpy(first + static_cast<std::size_t>(value_struct.is_negative), "0.", 2U);
+        first += 2;
+        r.ptr += 2;
+
+        while (num_dig < -value_struct.exponent)
+        {
+            *first++ = '0';
+            ++num_dig;
+            ++r.ptr;
+        }
     }
 
     return { r.ptr, std::errc() };
