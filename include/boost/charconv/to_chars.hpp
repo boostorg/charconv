@@ -32,6 +32,7 @@
 #include <cmath>
 
 #ifdef BOOST_CHARCONV_DEBUG_FIXED
+#include <iomanip>
 #include <iostream>
 #endif
 
@@ -437,7 +438,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 #endif
 
 template <typename Real>
-to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int precision = -1) noexcept
+to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1) noexcept
 {
     const std::ptrdiff_t buffer_size = last - first;
 
@@ -473,11 +474,15 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int pre
             }
         }
 
-        if (value_struct.significand % 10 == 0)
+        // In general formatting we remove trailing 0s
+        if (fmt == chars_format::general)
         {
-            value_struct.significand /= 10;
-            ++value_struct.exponent;
-            --num_dig;
+            while (value_struct.significand % 10 == 0)
+            {
+                value_struct.significand /= 10;
+                ++value_struct.exponent;
+                --num_dig;
+            }
         }
     }
 
@@ -507,7 +512,7 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int pre
     else
     {
         #ifdef BOOST_CHARCONV_DEBUG_FIXED
-        std::cerr << "Value: " << value
+        std::cerr << std::setprecision(std::numeric_limits<Real>::digits10) << "Value: " << value
                   << "\n  Buf: " << first
                   << "\n  sig: " << value_struct.significand
                   << "\n  exp: " << value_struct.exponent << std::endl;
@@ -551,7 +556,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         {
             if (abs_value >= 1 && abs_value < max_fractional_value)
             {
-                return to_chars_fixed_impl(first, last, value, precision);
+                return to_chars_fixed_impl(first, last, value, fmt, precision);
             }
             else if (abs_value >= max_fractional_value && abs_value < max_value)
             {
@@ -579,7 +584,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         {
             if (abs_value >= min_fractional_value && abs_value < max_fractional_value)
             {
-                return to_chars_fixed_impl(first, last, value, precision);
+                return to_chars_fixed_impl(first, last, value, fmt, precision);
             }
 
             auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
