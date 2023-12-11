@@ -180,7 +180,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 
 // Detection for C++23 fixed width floating point types
 // All of these types are optional so check for each of them individually
-#ifdef __has_include
+#if (defined(_MSVC_LANG) && _MSVC_LANG > 202002L) || __cplusplus > 202002L
 #  if __has_include(<stdfloat>)
 #    include <stdfloat>
 #  endif
