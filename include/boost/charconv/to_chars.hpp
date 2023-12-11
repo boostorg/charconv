@@ -463,12 +463,13 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int pre
         if (num_dig == precision + 2)
         {
             const auto trailing_dig = value_struct.significand % 10;
+            value_struct.significand /= 10;
+            ++value_struct.exponent;
+            --num_dig;
+
             if (trailing_dig >= 5)
             {
-                value_struct.significand /= 10;
                 ++value_struct.significand;
-                ++value_struct.exponent;
-                --num_dig;
             }
         }
     }
