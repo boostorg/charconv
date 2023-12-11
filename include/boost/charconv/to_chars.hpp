@@ -472,6 +472,13 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, int pre
                 ++value_struct.significand;
             }
         }
+
+        if (value_struct.significand % 10 == 0)
+        {
+            value_struct.significand /= 10;
+            ++value_struct.exponent;
+            --num_dig;
+        }
     }
 
     auto r = to_chars_integer_impl(first, last, value_struct.significand);
