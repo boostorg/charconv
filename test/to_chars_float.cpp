@@ -225,14 +225,16 @@ void test_floff()
                                                                boost::charconv::chars_format::general, prec);
 
                 char rand_printf_buffer[256] {};
-                std::snprintf(rand_printf_buffer, sizeof(rand_printf_buffer), printf_format.c_str(), rand_val);
+                const auto num = std::snprintf(rand_printf_buffer, sizeof(rand_printf_buffer), printf_format.c_str(), rand_val);
 
-                if (!BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small))
+                if (!BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small) && !BOOST_TEST(num == static_cast<int>(r_small.ptr - rand_buffer)))
                 {
                     std::cerr << "Precision: " << prec
                               << std::setprecision(prec + 1) << "\n     Val: " << rand_val
                               << "\nTo chars: " << rand_buffer
-                              << "\n  Printf: " << rand_printf_buffer << std::endl;
+                              << "\n  Printf: " << rand_printf_buffer
+                              << "\nto chars count: " << static_cast<int>(r_small.ptr - rand_buffer)
+                              << "\n  printf count: " << num << std::endl;
                 }
             }
         }
