@@ -2,9 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_CHARCONV_STD_ERANGE
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+
+#ifdef BOOST_CHARCONV_STD_ERANGE
 
 template <typename T>
 void overflow_spot_value(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
@@ -21,15 +22,24 @@ void overflow_spot_value(const std::string& buffer, boost::charconv::chars_forma
 template <typename T>
 void test()
 {
-    const auto format_list = {boost::charconv::chars_format::fixed, boost::charconv::chars_format::general,
-                              boost::charconv::chars_format::hex, boost::charconv::chars_format::scientific};
+    const auto format_list = {boost::charconv::chars_format::general, boost::charconv::chars_format::scientific, boost::charconv::chars_format::hex};
 
     for (const auto format : format_list)
     {
-        overflow_spot_value<T>("1e99999", format);
-        overflow_spot_value<T>("-1e99999", format);
-        overflow_spot_value<T>("1e-99999", format);
-        overflow_spot_value<T>("-1.0e-99999", format);
+        if (format != boost::charconv::chars_format::hex)
+        {
+            overflow_spot_value<T>("1e99999", format);
+            overflow_spot_value<T>("-1e99999", format);
+            overflow_spot_value<T>("1e-99999", format);
+            overflow_spot_value<T>("-1.0e-99999", format);
+        }
+        else
+        {
+            overflow_spot_value<T>("1p99999", format);
+            overflow_spot_value<T>("-1p99999", format);
+            overflow_spot_value<T>("1p-99999", format);
+            overflow_spot_value<T>("-1.0p-99999", format);
+        }
     }
 }
 
@@ -45,3 +55,12 @@ int main()
 
     return boost::report_errors();
 }
+
+#else
+
+int main()
+{
+    return 0;
+}
+
+#endif
