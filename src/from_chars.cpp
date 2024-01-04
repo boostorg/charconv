@@ -38,7 +38,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     float temp_value;
     const auto r = fmt != boost::charconv::chars_format::hex ? boost::charconv::detail::fast_float::from_chars(first, last, temp_value, fmt) :
                                                                boost::charconv::detail::from_chars_float_impl(first, last, temp_value, fmt);
-    if (r.ec != std::errc::result_out_of_range)
+    if (r)
     {
         value = temp_value;
     }
@@ -60,10 +60,10 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 {
     #ifdef BOOST_CHARCONV_STD_ERANGE
 
-    float temp_value;
+    double temp_value;
     const auto r = fmt != boost::charconv::chars_format::hex ? boost::charconv::detail::fast_float::from_chars(first, last, temp_value, fmt) :
                                                                boost::charconv::detail::from_chars_float_impl(first, last, temp_value, fmt);
-    if (r.ec != std::errc::result_out_of_range)
+    if (r)
     {
         value = temp_value;
     }
