@@ -7,8 +7,8 @@
 vcpkg_from_github(
         OUT_SOURCE_PATH SOURCE_PATH
         REPO cppalliance/charconv
-        REF v1.0.1
-        SHA512 b1d0accec1a4251f3107061c80e5c72a76aa4de0d5fdc085c934a3da8b55a5e72bb3e6a3a1b51d4e7debe6917a3c64be731d56eb8e7cacb890434a154f140726
+        REF v1.1.0
+        SHA512 13d248f22a3c14a8c4950b2a88db133604b2611c6d171f9eac72c93fb97d09f1b2ca89852a7476696c006d0bff79b749e25368955b7b39568ac6a46c2294e068
         HEAD_REF master
 )
 
