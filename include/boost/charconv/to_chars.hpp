@@ -31,6 +31,11 @@
 #include <climits>
 #include <cmath>
 
+#ifdef BOOST_CHARCONV_DEBUG_FIXED
+#include <iomanip>
+#include <iostream>
+#endif
+
 #if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) || defined(BOOST_CHARCONV_HAS_FLOAT128)
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #  include <boost/charconv/detail/issignaling.hpp>
@@ -433,51 +438,125 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 #endif
 
 template <typename Real>
+to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1) noexcept
+{
+    const std::ptrdiff_t buffer_size = last - first;
+
+    auto abs_value = std::abs(value);
+
+    auto value_struct = boost::charconv::detail::to_decimal(value);
+    if (value_struct.is_negative)
+    {
+        *first++ = '-';
+    }
+
+    int num_dig = 0;
+    if (precision != -1)
+    {
+        num_dig = num_digits(value_struct.significand);
+        while (num_dig > precision + 2)
+        {
+            value_struct.significand /= 10;
+            ++value_struct.exponent;
+            --num_dig;
+        }
+
+        if (num_dig == precision + 2)
+        {
+            const auto trailing_dig = value_struct.significand % 10;
+            value_struct.significand /= 10;
+            ++value_struct.exponent;
+            --num_dig;
+
+            if (trailing_dig >= 5)
+            {
+                ++value_struct.significand;
+            }
+        }
+
+        // In general formatting we remove trailing 0s
+        if (fmt == chars_format::general)
+        {
+            while (value_struct.significand % 10 == 0)
+            {
+                value_struct.significand /= 10;
+                ++value_struct.exponent;
+                --num_dig;
+            }
+        }
+    }
+
+    auto r = to_chars_integer_impl(first, last, value_struct.significand);
+    if (r.ec != std::errc())
+    {
+        return r;
+    }
+
+    // Bounds check
+    if (abs_value >= 1)
+    {
+        if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
+        {
+            std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent,
+                         static_cast<std::size_t>(-value_struct.exponent));
+            std::memset(r.ptr + value_struct.exponent, '.', 1);
+            ++r.ptr;
+        }
+
+        while (std::fmod(abs_value, 10) == 0)
+        {
+            *r.ptr++ = '0';
+            abs_value /= 10;
+        }
+    }
+    else
+    {
+        #ifdef BOOST_CHARCONV_DEBUG_FIXED
+        std::cerr << std::setprecision(std::numeric_limits<Real>::digits10) << "Value: " << value
+                  << "\n  Buf: " << first
+                  << "\n  sig: " << value_struct.significand
+                  << "\n  exp: " << value_struct.exponent << std::endl;
+        #endif
+
+        const std::size_t offset_bytes = -value_struct.exponent - num_dig;
+
+        std::memmove(first + 2 + static_cast<std::size_t>(value_struct.is_negative) + offset_bytes,
+                     first + static_cast<std::size_t>(value_struct.is_negative),
+                     static_cast<std::size_t>(-value_struct.exponent - offset_bytes));
+
+        std::memcpy(first + static_cast<std::size_t>(value_struct.is_negative), "0.", 2U);
+        first += 2;
+        r.ptr += 2;
+
+        while (num_dig < -value_struct.exponent)
+        {
+            *first++ = '0';
+            ++num_dig;
+            ++r.ptr;
+        }
+    }
+
+    return { r.ptr, std::errc() };
+}
+
+template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
 {
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, std::uint32_t>::type;
-    
-    const std::ptrdiff_t buffer_size = last - first;
-    
+
+    auto abs_value = std::abs(value);
+    constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
+    constexpr auto min_fractional_value = 1 / max_fractional_value;
+    constexpr auto max_value = static_cast<Real>(std::numeric_limits<Unsigned_Integer>::max());
+
     // Unspecified precision so we always go with the shortest representation
     if (precision == -1)
     {
         if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
         {
-            auto abs_value = std::abs(value);
-            constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
-            constexpr auto max_value = static_cast<Real>(std::numeric_limits<Unsigned_Integer>::max());
-
             if (abs_value >= 1 && abs_value < max_fractional_value)
             {
-                auto value_struct = boost::charconv::detail::to_decimal(value);
-                if (value_struct.is_negative)
-                {
-                    *first++ = '-';
-                }
-
-                auto r = to_chars_integer_impl(first, last, value_struct.significand);
-                if (r.ec != std::errc())
-                {
-                    return r;
-                }
-                
-                // Bounds check
-                if (value_struct.exponent < 0 && -value_struct.exponent < buffer_size)
-                {
-                    std::memmove(r.ptr + value_struct.exponent + 1, r.ptr + value_struct.exponent,
-                                 static_cast<std::size_t>(-value_struct.exponent));
-                    std::memset(r.ptr + value_struct.exponent, '.', 1);
-                    ++r.ptr;
-                }
-
-                while (std::fmod(abs_value, 10) == 0)
-                {
-                    *r.ptr++ = '0';
-                    abs_value /= 10;
-                }
-
-                return { r.ptr, std::errc() };
+                return to_chars_fixed_impl(first, last, value, fmt, precision);
             }
             else if (abs_value >= max_fractional_value && abs_value < max_value)
             {
@@ -503,6 +582,11 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     {
         if (fmt != boost::charconv::chars_format::hex)
         {
+            if (abs_value >= min_fractional_value && abs_value < max_fractional_value)
+            {
+                return to_chars_fixed_impl(first, last, value, fmt, precision);
+            }
+
             auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
             return { ptr, std::errc() };
         }
@@ -541,7 +625,8 @@ inline int print_val(char* first, std::size_t size, char* format, __float128 val
 }
 #endif
 
-inline int print_val(char* first, std::size_t size, char* format, long double value) noexcept
+template <typename T>
+inline int print_val(char* first, std::size_t size, char* format, T value) noexcept
 {
     return std::snprintf(first, size, format, value);
 }
@@ -552,7 +637,7 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     // v % + . + num_digits(INT_MAX) + specifier + null terminator
     // 1 + 1 + 10 + 1 + 1
     char format[14] {};
-    std::memcpy(&format, "%", 1); // NOLINT : No null terminator is purposeful
+    std::memcpy(format, "%", 1); // NOLINT : No null terminator is purposeful
     std::size_t pos = 1;
 
     // precision of -1 is unspecified
@@ -580,17 +665,24 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     else if (fmt == chars_format::fixed)
     {
         // Force 0 decimal places
-        std::memcpy(&format, ".0", 2); // NOLINT : No null terminator is purposeful
+        std::memcpy(format + pos, ".0", 2); // NOLINT : No null terminator is purposeful
         pos += 2;
     }
 
     // Add the type identifier
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    format[pos] = std::is_same<T, __float128>::value ? 'Q' : 'L';
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, __float128>::value || std::is_same<T, long double>::value)
+    {
+        format[pos] = std::is_same<T, __float128>::value ? 'Q' : 'L';
+        ++pos;
+    }
     #else
-    format[pos] = 'L';
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, long double>::value)
+    {
+        format[pos] = 'L';
+        ++pos;
+    }
     #endif
-    ++pos;
 
     // Add the format character
     switch (fmt)
@@ -612,16 +704,14 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
             break;
     }
 
-    ++pos;
-    format[pos] = '\n';
-    const auto rv = print_val(first, last - first, format, value);
+    const auto rv = print_val(first, static_cast<std::size_t>(last - first), format, value);
 
-    if (rv == -1)
+    if (rv <= 0)
     {
         return {last, static_cast<std::errc>(errno)};
     }
 
-    return {first + rv, static_cast<std::errc>(errno)};
+    return {first + rv, std::errc()};
 }
 
 } // Namespace detail

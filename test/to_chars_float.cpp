@@ -13,6 +13,8 @@
 #include <cerrno>
 #include <utility>
 #include <string>
+#include <random>
+#include <iomanip>
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW
@@ -127,6 +129,118 @@ void spot_check(T v, const std::string& str, boost::charconv::chars_format fmt =
     BOOST_TEST_CSTR_EQ(buffer, str.c_str());
 }
 
+constexpr const char* fmt_general(double)
+{
+    return "%g";
+}
+
+constexpr const char* fmt_general(long double)
+{
+    return "%Lg";
+}
+
+constexpr const char* fmt_sci(double)
+{
+    return "%e";
+}
+
+constexpr const char* fmt_sci(long double)
+{
+    return "%Le";
+}
+
+constexpr const char* fmt_fixed(double)
+{
+    return "%.0f";
+}
+
+constexpr const char* fmt_fixed(long double)
+{
+    return "%.0Lf";
+}
+
+template <typename T>
+void test_printf_fallback(T v, const std::string&, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
+{
+    char buffer[256] {};
+    const auto r = boost::charconv::detail::to_chars_printf_impl(buffer, buffer + sizeof(buffer), v, fmt, precision);
+    BOOST_TEST(r.ec == std::errc());
+
+    char printf_buffer[256] {};
+    if (fmt == boost::charconv::chars_format::general)
+    {
+        std::snprintf(printf_buffer, sizeof(printf_buffer), fmt_general(v), v);
+    }
+    else if (fmt == boost::charconv::chars_format::scientific)
+    {
+        std::snprintf(printf_buffer, sizeof(printf_buffer), fmt_sci(v), v);
+    }
+    else if (fmt == boost::charconv::chars_format::fixed)
+    {
+        std::snprintf(printf_buffer, sizeof(printf_buffer), fmt_fixed(v), v);
+    }
+
+    BOOST_TEST_CSTR_EQ(buffer, printf_buffer);
+}
+
+std::string format(int prec)
+{
+    std::string format = "%." + std::to_string(prec) + "g";
+    return format;
+}
+
+template <typename T>
+void test_floff()
+{
+    std::mt19937_64 rng(42);
+    std::uniform_real_distribution<T> small_dist(0, 1);
+    std::uniform_real_distribution<T> large_dist(1e10, std::numeric_limits<T>::max());
+
+    auto dists = {&small_dist, &large_dist};
+
+    for (int prec = 2; prec < std::numeric_limits<T>::digits10; ++prec)
+    {
+        char buffer[256] {};
+        const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), std::numeric_limits<T>::denorm_min(), boost::charconv::chars_format::general, prec);
+        BOOST_TEST(r.ec == std::errc());
+
+        char printf_buffer[256] {};
+        const auto printf_format = format(prec + 1);
+        std::snprintf(printf_buffer, sizeof(printf_buffer), printf_format.c_str(), std::numeric_limits<T>::denorm_min());
+
+        if (!BOOST_TEST_CSTR_EQ(buffer, printf_buffer))
+        {
+            std::cerr << "Precision: " << prec
+                      << "\nTo chars: " << buffer
+                      << "\n  Printf: " << printf_buffer << std::endl;
+        }
+
+        for (int i = 0; i < 10; ++i)
+        {
+            for (auto dist : dists)
+            {
+                const T rand_val = (*dist)(rng);
+                char rand_buffer[256] {};
+                const auto r_small = boost::charconv::to_chars(rand_buffer, rand_buffer + sizeof(rand_buffer), rand_val,
+                                                               boost::charconv::chars_format::general, prec);
+
+                char rand_printf_buffer[256] {};
+                const auto num = std::snprintf(rand_printf_buffer, sizeof(rand_printf_buffer), printf_format.c_str(), rand_val);
+
+                if (!(BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small) && BOOST_TEST(num == static_cast<int>(r_small.ptr - rand_buffer))))
+                {
+                    std::cerr << "Precision: " << prec
+                              << std::setprecision(prec + 1) << "\n     Val: " << rand_val
+                              << "\nTo chars: " << rand_buffer
+                              << "\n  Printf: " << rand_printf_buffer
+                              << "\nto chars count: " << static_cast<int>(r_small.ptr - rand_buffer)
+                              << "\n  printf count: " << num << std::endl;
+                }
+            }
+        }
+    }
+}
+
 int main()
 {
     printf_divergence<double>();
@@ -199,6 +313,108 @@ int main()
     spot_check(12345678901234.0, "1.2345678901234e+13", boost::charconv::chars_format::scientific);
     spot_check(123456789012345.0, "1.23456789012345e+14", boost::charconv::chars_format::scientific);
     spot_check(1234567890123456.0, "1.234567890123456e+15", boost::charconv::chars_format::scientific);
+
+    test_printf_fallback(1.0, "1");
+    test_printf_fallback(1.2, "1.2");
+    test_printf_fallback(1.23, "1.23");
+    test_printf_fallback(1.234, "1.234");
+    test_printf_fallback(1.2345, "1.2345");
+    test_printf_fallback(1.23456, "1.23456");
+    test_printf_fallback(1.234567, "1.234567");
+    test_printf_fallback(1.2345678, "1.2345678");
+    test_printf_fallback(1.23456789, "1.23456789");
+    test_printf_fallback(1.234567890, "1.23456789");
+    test_printf_fallback(1.2345678901, "1.2345678901");
+    test_printf_fallback(1.23456789012, "1.23456789012");
+    test_printf_fallback(1.234567890123, "1.234567890123");
+    test_printf_fallback(1.2345678901234, "1.2345678901234");
+    test_printf_fallback(1.23456789012345, "1.23456789012345");
+    test_printf_fallback(1.234567890123456, "1.234567890123456");
+
+    test_printf_fallback(1.0, "1e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2, "1.2e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23, "1.23e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234, "1.234e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345, "1.2345e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456, "1.23456e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567, "1.234567e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345678, "1.2345678e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456789, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567890, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345678901, "1.2345678901e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456789012, "1.23456789012e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567890123, "1.234567890123e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345678901234, "1.2345678901234e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456789012345, "1.23456789012345e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567890123456, "1.234567890123456e+00", boost::charconv::chars_format::scientific);
+
+    test_printf_fallback(1.0, "1e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2, "1.2e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23, "1.23e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234, "1.234e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345, "1.2345e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456, "1.23456e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567, "1.234567e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345678, "1.2345678e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456789, "1.23456789e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567890, "1.23456789e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345678901, "1.2345678901e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456789012, "1.23456789012e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567890123, "1.234567890123e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345678901234, "1.2345678901234e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456789012345, "1.23456789012345e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567890123456, "1.234567890123456e+00", boost::charconv::chars_format::fixed);
+
+    test_printf_fallback(1.0L, "1");
+    test_printf_fallback(1.2L, "1.2");
+    test_printf_fallback(1.23L, "1.23");
+    test_printf_fallback(1.234L, "1.234");
+    test_printf_fallback(1.2345L, "1.2345");
+    test_printf_fallback(1.23456L, "1.23456");
+    test_printf_fallback(1.234567L, "1.234567");
+    test_printf_fallback(1.2345678L, "1.2345678");
+    test_printf_fallback(1.23456789L, "1.23456789");
+    test_printf_fallback(1.234567890L, "1.23456789");
+    test_printf_fallback(1.2345678901L, "1.2345678901");
+    test_printf_fallback(1.23456789012L, "1.23456789012");
+    test_printf_fallback(1.234567890123L, "1.234567890123");
+    test_printf_fallback(1.2345678901234L, "1.2345678901234");
+    test_printf_fallback(1.23456789012345L, "1.23456789012345");
+    test_printf_fallback(1.234567890123456L, "1.234567890123456");
+
+    test_printf_fallback(1.0L, "1e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2L, "1.2e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23L, "1.23e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234L, "1.234e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345L, "1.2345e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456L, "1.23456e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567L, "1.234567e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345678L, "1.2345678e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456789L, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567890L, "1.23456789e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345678901L, "1.2345678901e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456789012L, "1.23456789012e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567890123L, "1.234567890123e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.2345678901234L, "1.2345678901234e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.23456789012345L, "1.23456789012345e+00", boost::charconv::chars_format::scientific);
+    test_printf_fallback(1.234567890123456L, "1.234567890123456e+00", boost::charconv::chars_format::scientific);
+
+    test_printf_fallback(1.0L, "1e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2L, "1.2e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23L, "1.23e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234L, "1.234e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345L, "1.2345e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456L, "1.23456e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567L, "1.234567e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345678L, "1.2345678e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456789L, "1.23456789e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567890L, "1.23456789e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345678901L, "1.2345678901e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456789012L, "1.23456789012e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567890123L, "1.234567890123e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.2345678901234L, "1.2345678901234e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.23456789012345L, "1.23456789012345e+00", boost::charconv::chars_format::fixed);
+    test_printf_fallback(1.234567890123456L, "1.234567890123456e+00", boost::charconv::chars_format::fixed);
 
     // Regressions or numbers that take >64 bits to represent correctly
     spot_check(9007199254740991.0, "9.007199254740991e+15", boost::charconv::chars_format::scientific);
@@ -840,6 +1056,8 @@ int main()
     spot_check(1.7e-02, "1.7e-02", boost::charconv::chars_format::scientific);
     spot_check(1.7e-01, "1.7e-01", boost::charconv::chars_format::scientific);
     spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::scientific);
+
+    test_floff<float>();
 
     return boost::report_errors();
 }
