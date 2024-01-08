@@ -15,6 +15,7 @@
 #include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/generate_nan.hpp>
 #include <system_error>
 #include <string>
 #include <cstdlib>
@@ -118,8 +119,9 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
             value = sign ? -static_cast<__float128>(__builtin_nanq("")) : static_cast<__float128>(__builtin_nanq(""));
             #elif BOOST_CHARCONV_HAS_BUILTIN(__nanq)
             value = sign ? -static_cast<__float128>(__nanq("")) : static_cast<__float128>(__nanq(""));
-            #else // Hope they specialized numeric limits
-            value = sign ? -std::numeric_limits<__float128>::quiet_NaN() : std::numeric_limits<__float128>::quiet_NaN();
+            #else
+            value = boost::charconv::detail::nanq();
+            value = sign ? -value : value;
             #endif
         }
         else
@@ -128,8 +130,9 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
             value = sign ? -static_cast<__float128>(__builtin_nansq("")) : static_cast<__float128>(__builtin_nansq(""));
             #elif BOOST_CHARCONV_HAS_BUILTIN(__nansq)
             value = sign ? -static_cast<__float128>(__nansq("")) : static_cast<__float128>(__nansq(""));
-            #else // Hope they specialized numeric limits
-            value = sign ? -std::numeric_limits<__float128>::signaling_NaN() : std::numeric_limits<__float128>::signaling_NaN();
+            #else
+            value = boost::charconv::detail::nans();
+            value = sign ? -value : value;
             #endif
         }
 

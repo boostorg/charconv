@@ -85,6 +85,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <boost/charconv/detail/generate_nan.hpp>
 #include <limits>
 #include <iostream>
 #include <iomanip>
@@ -563,6 +564,16 @@ void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt
     }
 }
 
+void test_nanq()
+{
+    BOOST_TEST(isnanq(boost::charconv::detail::nanq())) && BOOST_TEST(!issignaling(boost::charconv::detail::nanq()));
+}
+
+void test_nans()
+{
+    BOOST_TEST(isnanq(boost::charconv::detail::nans())) && BOOST_TEST(issignaling(boost::charconv::detail::nans()));
+}
+
 int main()
 {
     /*
@@ -795,6 +806,9 @@ int main()
     spot_check_inf("-INF", boost::charconv::chars_format::general);
     spot_check_nan("nan(snan)", boost::charconv::chars_format::general);
     spot_check_nan("-nan(snan)", boost::charconv::chars_format::general);
+
+    test_nanq();
+    test_nans();
 
     return boost::report_errors();
 }
