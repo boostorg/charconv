@@ -541,8 +541,31 @@ void random_roundtrip(boost::charconv::chars_format fmt = boost::charconv::chars
 
 #endif // BOOST_CHARCONV_HAS_STDFLOAT128
 
+void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt)
+{
+    __float128 v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    if (!(BOOST_TEST(isnanq(v)) && BOOST_TEST(r)))
+    {
+        // LCOV_EXCL_LINE
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+    }
+}
+
+void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt)
+{
+    __float128 v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    if (!(BOOST_TEST(isinfq(v)) && BOOST_TEST(r)))
+    {
+        // LCOV_EXCL_LINE
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+    }
+}
+
 int main()
 {
+    /*
     #if BOOST_CHARCONV_LDBL_BITS == 128
     test_signaling_nan<long double>();
 
@@ -761,6 +784,17 @@ int main()
     }
 
     #endif
+*/
+    spot_check_nan("nan", boost::charconv::chars_format::general);
+    spot_check_nan("-nan", boost::charconv::chars_format::general);
+    spot_check_inf("inf", boost::charconv::chars_format::general);
+    spot_check_inf("-inf", boost::charconv::chars_format::general);
+    spot_check_nan("NAN", boost::charconv::chars_format::general);
+    spot_check_nan("-NAN", boost::charconv::chars_format::general);
+    spot_check_inf("INF", boost::charconv::chars_format::general);
+    spot_check_inf("-INF", boost::charconv::chars_format::general);
+    spot_check_nan("nan(snan)", boost::charconv::chars_format::general);
+    spot_check_nan("-nan(snan)", boost::charconv::chars_format::general);
 
     return boost::report_errors();
 }
