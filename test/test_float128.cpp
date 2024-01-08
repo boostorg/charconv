@@ -548,8 +548,7 @@ void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     if (!(BOOST_TEST(isnanq(v)) && BOOST_TEST(r)))
     {
-        // LCOV_EXCL_LINE
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
     }
 }
 
@@ -559,10 +558,14 @@ void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     if (!(BOOST_TEST(isinfq(v)) && BOOST_TEST(r)))
     {
-        // LCOV_EXCL_LINE
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
     }
 }
+
+#if defined(__GNUC__) && __GNUC__ < 9 && __GNUC__ >= 5
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-conversion"
+#endif
 
 void test_nanq()
 {
@@ -573,6 +576,10 @@ void test_nans()
 {
     BOOST_TEST(isnanq(boost::charconv::detail::nans())) && BOOST_TEST(issignaling(boost::charconv::detail::nans()));
 }
+
+#if defined(__GNUC__) && __GNUC__ < 9 && __GNUC__ >= 5
+#pragma GCC diagnostic pop
+#endif
 
 int main()
 {
