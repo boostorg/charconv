@@ -97,11 +97,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     #endif
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != std::errc())
-    {
-        return r;
-    }
-    else if (r.ec == std::errc::value_too_large)
+    if (r.ec == std::errc::value_too_large)
     {
         r.ec = std::errc();
         value = sign ? -std::numeric_limits<__float128>::infinity() : std::numeric_limits<__float128>::infinity();
@@ -119,6 +115,10 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
             value = sign ? -std::numeric_limits<__float128>::signaling_NaN() : std::numeric_limits<__float128>::signaling_NaN();
         }
 
+        return r;
+    }
+    else if (r.ec != std::errc())
+    {
         return r;
     }
     else if (significand == 0)
@@ -244,11 +244,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     #endif
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != std::errc())
-    {
-        return r;
-    }
-    else if (r.ec == std::errc::value_too_large)
+    if (r.ec == std::errc::value_too_large)
     {
         r.ec = std::errc();
         value = sign ? -std::numeric_limits<long double>::infinity() : std::numeric_limits<long double>::infinity();
@@ -266,6 +262,10 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
             value = sign ? -std::numeric_limits<long double>::signaling_NaN() : std::numeric_limits<long double>::signaling_NaN();
         }
 
+        return r;
+    }
+    else if (r.ec != std::errc())
+    {
         return r;
     }
     else if (significand == 0)
