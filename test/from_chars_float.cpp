@@ -58,8 +58,7 @@ void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     if (!(BOOST_TEST(std::isnan(v)) && BOOST_TEST(r)))
     {
-        // LCOV_EXCL_LINE
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
     }
 }
 
@@ -70,8 +69,7 @@ void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     if (!(BOOST_TEST(std::isinf(v)) && BOOST_TEST(r)))
     {
-        // LCOV_EXCL_LINE
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
     }
 }
 
