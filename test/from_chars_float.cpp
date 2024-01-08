@@ -1840,40 +1840,45 @@ int main()
     spot_check(170.0000e-00, "170.0000e+00", boost::charconv::chars_format::general);
 
     // https://github.com/cppalliance/charconv/issues/114
-    spot_check_nan<float>("nan");
-    spot_check_nan<float>("-nan");
-    spot_check_nan<double>("nan");
-    spot_check_nan<double>("-nan");
-    spot_check_nan<long double>("nan");
-    spot_check_nan<long double>("-nan");
+    auto fmts = {boost::charconv::chars_format::general, boost::charconv::chars_format::scientific,
+                 boost::charconv::chars_format::fixed ,boost::charconv::chars_format::hex};
+    for (const auto fmt : fmts)
+    {
+        spot_check_nan<float>("nan", fmt);
+        spot_check_nan<float>("-nan", fmt);
+        spot_check_nan<double>("nan", fmt);
+        spot_check_nan<double>("-nan", fmt);
+        spot_check_nan<long double>("nan", fmt);
+        spot_check_nan<long double>("-nan", fmt);
 
-    spot_check_inf<float>("inf");
-    spot_check_inf<float>("-inf");
-    spot_check_inf<double>("inf");
-    spot_check_inf<double>("-inf");
-    spot_check_inf<long double>("inf");
-    spot_check_inf<long double>("-inf");
+        spot_check_inf<float>("inf", fmt);
+        spot_check_inf<float>("-inf", fmt);
+        spot_check_inf<double>("inf", fmt);
+        spot_check_inf<double>("-inf", fmt);
+        spot_check_inf<long double>("inf", fmt);
+        spot_check_inf<long double>("-inf", fmt);
 
-    spot_check_nan<float>("NAN");
-    spot_check_nan<float>("-NAN");
-    spot_check_nan<double>("NAN");
-    spot_check_nan<double>("-NAN");
-    spot_check_nan<long double>("NAN");
-    spot_check_nan<long double>("-NAN");
+        spot_check_nan<float>("NAN", fmt);
+        spot_check_nan<float>("-NAN", fmt);
+        spot_check_nan<double>("NAN", fmt);
+        spot_check_nan<double>("-NAN", fmt);
+        spot_check_nan<long double>("NAN", fmt);
+        spot_check_nan<long double>("-NAN", fmt);
 
-    spot_check_inf<float>("INF");
-    spot_check_inf<float>("-INF");
-    spot_check_inf<double>("INF");
-    spot_check_inf<double>("-INF");
-    spot_check_inf<long double>("INF");
-    spot_check_inf<long double>("-INF");
+        spot_check_inf<float>("INF", fmt);
+        spot_check_inf<float>("-INF", fmt);
+        spot_check_inf<double>("INF", fmt);
+        spot_check_inf<double>("-INF", fmt);
+        spot_check_inf<long double>("INF", fmt);
+        spot_check_inf<long double>("-INF", fmt);
 
-    spot_check_nan<float>("nan(snan)");
-    spot_check_nan<float>("-nan(snan)");
-    spot_check_nan<double>("nan(snan)");
-    spot_check_nan<double>("-nan(snan)");
-    spot_check_nan<long double>("nan(snan)");
-    spot_check_nan<long double>("-nan(snan)");
+        spot_check_nan<float>("nan(snan)", fmt);
+        spot_check_nan<float>("-nan(snan)", fmt);
+        spot_check_nan<double>("nan(snan)", fmt);
+        spot_check_nan<double>("-nan(snan)", fmt);
+        spot_check_nan<long double>("nan(snan)", fmt);
+        spot_check_nan<long double>("-nan(snan)", fmt);
+    }
 
     return boost::report_errors();
 }
