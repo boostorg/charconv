@@ -815,7 +815,9 @@ int main()
     spot_check_nan("-nan(snan)", boost::charconv::chars_format::general);
 
     test_nanq();
+    #if defined(__GNUC__) && __GNUC__ >= 6
     test_nans();
+    #endif
 
     return boost::report_errors();
 }
