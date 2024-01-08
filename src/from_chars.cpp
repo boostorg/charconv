@@ -228,6 +228,26 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     {
         return r;
     }
+    else if (r.ec == std::errc::value_too_large)
+    {
+        r.ec = std::errc();
+        value = sign ? -std::numeric_limits<long double>::infinity() : std::numeric_limits<long double>::infinity();
+        return r;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        r.ec = std::errc();
+        if (significand == 0)
+        {
+            value = sign ? -std::numeric_limits<long double>::quiet_NaN() : std::numeric_limits<long double>::quiet_NaN();
+        }
+        else
+        {
+            value = sign ? -std::numeric_limits<long double>::signaling_NaN() : std::numeric_limits<long double>::signaling_NaN();
+        }
+
+        return r;
+    }
     else if (significand == 0)
     {
         value = sign ? -0.0L : 0.0L;

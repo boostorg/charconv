@@ -88,6 +88,55 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         sign = false;
     }
 
+    // Handle non-finite values
+    // Stl allows for string like "iNf" to return inf
+    //
+    // This is nested ifs rather than a big one-liner to ensure that once we hit an invalid character
+    // or an end of buffer we return the correct value of next
+    if (*next == 'i' || *next == 'I')
+    {
+        ++next;
+        if (*next == 'n' || *next == 'N')
+        {
+            ++next;
+            if (*next == 'f' || *next == 'F')
+            {
+                significand = 0;
+                return {next, std::errc::value_too_large};
+            }
+        }
+
+        return {next, std::errc::invalid_argument};
+    }
+    else if (*next == 'n' || *next == 'N')
+    {
+        ++next;
+        if (*next == 'a' || *next == 'A')
+        {
+            ++next;
+            if (*next == 'n' || *next == 'N')
+            {
+                ++next;
+                if (*next == '(')
+                {
+                    ++next;
+                    if (*next == 's' || *next == 'S')
+                    {
+                        significand = 1;
+                        return {next, std::errc::not_supported};
+                    }
+                }
+                else
+                {
+                    significand = 0;
+                    return {next, std::errc::not_supported};
+                }
+            }
+        }
+
+        return {next, std::errc::invalid_argument};
+    }
+
     // Ignore leading zeros (e.g. 00005 or -002.3e+5)
     while (*next == '0' && next != last)
     {
