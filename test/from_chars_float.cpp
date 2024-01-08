@@ -1870,5 +1870,12 @@ int main()
     spot_check_inf<long double>("INF");
     spot_check_inf<long double>("-INF");
 
+    spot_check_nan<float>("nan(snan)");
+    spot_check_nan<float>("-nan(snan)");
+    spot_check_nan<double>("nan(snan)");
+    spot_check_nan<double>("-nan(snan)");
+    spot_check_nan<long double>("nan(snan)");
+    spot_check_nan<long double>("-nan(snan)");
+
     return boost::report_errors();
 }
