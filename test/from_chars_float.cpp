@@ -56,7 +56,23 @@ void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt
 {
     T v {};
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
-    BOOST_TEST(isnan(v)) && BOOST_TEST(r);
+    if (!(BOOST_TEST(isnan(v)) && BOOST_TEST(r)))
+    {
+        // LCOV_EXCL_LINE
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+    }
+}
+
+template <typename T>
+void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    T v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    if (!(BOOST_TEST(isinf(v)) && BOOST_TEST(r)))
+    {
+        // LCOV_EXCL_LINE
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+    }
 }
 
 void fc (const std::string& s)
@@ -1832,6 +1848,27 @@ int main()
     spot_check_nan<double>("-nan");
     spot_check_nan<long double>("nan");
     spot_check_nan<long double>("-nan");
+
+    spot_check_inf<float>("inf");
+    spot_check_inf<float>("-inf");
+    spot_check_inf<double>("inf");
+    spot_check_inf<double>("-inf");
+    spot_check_inf<long double>("inf");
+    spot_check_inf<long double>("-inf");
+
+    spot_check_nan<float>("NAN");
+    spot_check_nan<float>("-NAN");
+    spot_check_nan<double>("NAN");
+    spot_check_nan<double>("-NAN");
+    spot_check_nan<long double>("NAN");
+    spot_check_nan<long double>("-NAN");
+
+    spot_check_inf<float>("INF");
+    spot_check_inf<float>("-INF");
+    spot_check_inf<double>("INF");
+    spot_check_inf<double>("-INF");
+    spot_check_inf<long double>("INF");
+    spot_check_inf<long double>("-INF");
 
     return boost::report_errors();
 }
