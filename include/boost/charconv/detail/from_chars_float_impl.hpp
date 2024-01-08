@@ -129,6 +129,26 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
     std::int64_t  exponent {};
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
+    if (r.ec == std::errc::value_too_large)
+    {
+        r.ec = std::errc();
+        value = sign ? -std::numeric_limits<T>::infinity() : std::numeric_limits<T>::infinity();
+        return r;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        r.ec = std::errc();
+        if (significand == 0)
+        {
+            value = sign ? -std::numeric_limits<T>::quiet_NaN() : std::numeric_limits<long double>::quiet_NaN();
+        }
+        else
+        {
+            value = sign ? -std::numeric_limits<T>::signaling_NaN() : std::numeric_limits<T>::signaling_NaN();
+        }
+
+        return r;
+    }
     if (r.ec != std::errc())
     {
         return r;
