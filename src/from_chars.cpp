@@ -100,7 +100,13 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     if (r.ec == std::errc::value_too_large)
     {
         r.ec = std::errc();
-        value = sign ? -std::numeric_limits<__float128>::infinity() : std::numeric_limits<__float128>::infinity();
+
+        #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_inf)
+        value = sign ? -static_cast<__float128>(__builtin_inf()) : static_cast<__float128>(__builtin_inf());
+        #else // Conversion from HUGE_VALL should work
+        value = sign ? -static_cast<__float128>(HUGE_VALL) : static_cast<__float128>(HUGE_VALL);
+        #endif
+
         return r;
     }
     else if (r.ec == std::errc::not_supported)
@@ -108,11 +114,23 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
         r.ec = std::errc();
         if (significand == 0)
         {
+            #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_nanq)
+            value = sign ? -static_cast<__float128>(__builtin_nanq("")) : static_cast<__float128>(__builtin_nanq(""));
+            #elif BOOST_CHARCONV_HAS_BUILTIN(__nanq)
+            value = sign ? -static_cast<__float128>(__nanq("")) : static_cast<__float128>(__nanq(""));
+            #else // Hope they specialized numeric limits
             value = sign ? -std::numeric_limits<__float128>::quiet_NaN() : std::numeric_limits<__float128>::quiet_NaN();
+            #endif
         }
         else
         {
+            #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_nansq)
+            value = sign ? -static_cast<__float128>(__builtin_nansq("")) : static_cast<__float128>(__builtin_nansq(""));
+            #elif BOOST_CHARCONV_HAS_BUILTIN(__nansq)
+            value = sign ? -static_cast<__float128>(__nansq("")) : static_cast<__float128>(__nansq(""));
+            #else // Hope they specialized numeric limits
             value = sign ? -std::numeric_limits<__float128>::signaling_NaN() : std::numeric_limits<__float128>::signaling_NaN();
+            #endif
         }
 
         return r;
