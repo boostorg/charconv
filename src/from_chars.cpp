@@ -101,6 +101,26 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     {
         return r;
     }
+    else if (r.ec == std::errc::value_too_large)
+    {
+        r.ec = std::errc();
+        value = sign ? -std::numeric_limits<__float128>::infinity() : std::numeric_limits<__float128>::infinity();
+        return r;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        r.ec = std::errc();
+        if (significand == 0)
+        {
+            value = sign ? -std::numeric_limits<__float128>::quiet_NaN() : std::numeric_limits<__float128>::quiet_NaN();
+        }
+        else
+        {
+            value = sign ? -std::numeric_limits<__float128>::signaling_NaN() : std::numeric_limits<__float128>::signaling_NaN();
+        }
+
+        return r;
+    }
     else if (significand == 0)
     {
         value = sign ? -0.0Q : 0.0Q;
