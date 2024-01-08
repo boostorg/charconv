@@ -51,6 +51,14 @@ inline void spot_check(T expected_value, const std::string& buffer, boost::charc
     spot_value(buffer, expected_value, fmt);
 }
 
+template <typename T>
+void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    T v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    BOOST_TEST(isnan(v)) && BOOST_TEST(r);
+}
+
 void fc (const std::string& s)
 {
     char* str_end;
@@ -1816,6 +1824,14 @@ int main()
     spot_check(170e-00, "170e+00", boost::charconv::chars_format::general);
     spot_check(170.0e-00, "170.0e+00", boost::charconv::chars_format::general);
     spot_check(170.0000e-00, "170.0000e+00", boost::charconv::chars_format::general);
+
+    // https://github.com/cppalliance/charconv/issues/114
+    spot_check_nan<float>("nan");
+    spot_check_nan<float>("-nan");
+    spot_check_nan<double>("nan");
+    spot_check_nan<double>("-nan");
+    spot_check_nan<long double>("nan");
+    spot_check_nan<long double>("-nan");
 
     return boost::report_errors();
 }
