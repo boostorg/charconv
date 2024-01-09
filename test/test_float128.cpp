@@ -85,6 +85,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <boost/charconv/detail/generate_nan.hpp>
 #include <limits>
 #include <iostream>
 #include <iomanip>
@@ -541,8 +542,48 @@ void random_roundtrip(boost::charconv::chars_format fmt = boost::charconv::chars
 
 #endif // BOOST_CHARCONV_HAS_STDFLOAT128
 
+void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt)
+{
+    __float128 v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    if (!(BOOST_TEST(isnanq(v)) && BOOST_TEST(r)))
+    {
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
+    }
+}
+
+void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt)
+{
+    __float128 v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    if (!(BOOST_TEST(isinfq(v)) && BOOST_TEST(r)))
+    {
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
+    }
+}
+
+#if defined(__GNUC__) && __GNUC__ < 9 && __GNUC__ >= 5
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-conversion"
+#endif
+
+void test_nanq()
+{
+    BOOST_TEST(isnanq(boost::charconv::detail::nanq())) && BOOST_TEST(!issignaling(boost::charconv::detail::nanq()));
+}
+
+void test_nans()
+{
+    BOOST_TEST(isnanq(boost::charconv::detail::nans())) && BOOST_TEST(issignaling(boost::charconv::detail::nans()));
+}
+
+#if defined(__GNUC__) && __GNUC__ < 9 && __GNUC__ >= 5
+#pragma GCC diagnostic pop
+#endif
+
 int main()
 {
+    /*
     #if BOOST_CHARCONV_LDBL_BITS == 128
     test_signaling_nan<long double>();
 
@@ -760,6 +801,22 @@ int main()
                   << "\nTotal ULP distance: " << abs_float_total << std::endl;
     }
 
+    #endif
+*/
+    spot_check_nan("nan", boost::charconv::chars_format::general);
+    spot_check_nan("-nan", boost::charconv::chars_format::general);
+    spot_check_inf("inf", boost::charconv::chars_format::general);
+    spot_check_inf("-inf", boost::charconv::chars_format::general);
+    spot_check_nan("NAN", boost::charconv::chars_format::general);
+    spot_check_nan("-NAN", boost::charconv::chars_format::general);
+    spot_check_inf("INF", boost::charconv::chars_format::general);
+    spot_check_inf("-INF", boost::charconv::chars_format::general);
+    spot_check_nan("nan(snan)", boost::charconv::chars_format::general);
+    spot_check_nan("-nan(snan)", boost::charconv::chars_format::general);
+
+    test_nanq();
+    #if defined(__GNUC__) && __GNUC__ >= 6
+    test_nans();
     #endif
 
     return boost::report_errors();

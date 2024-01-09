@@ -15,6 +15,7 @@
 #include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/generate_nan.hpp>
 #include <system_error>
 #include <string>
 #include <cstdlib>
@@ -97,7 +98,47 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     #endif
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != std::errc())
+    if (r.ec == std::errc::value_too_large)
+    {
+        r.ec = std::errc();
+
+        #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_inf)
+        value = sign ? -static_cast<__float128>(__builtin_inf()) : static_cast<__float128>(__builtin_inf());
+        #else // Conversion from HUGE_VALL should work
+        value = sign ? -static_cast<__float128>(HUGE_VALL) : static_cast<__float128>(HUGE_VALL);
+        #endif
+
+        return r;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        r.ec = std::errc();
+        if (significand == 0)
+        {
+            #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_nanq)
+            value = sign ? -static_cast<__float128>(__builtin_nanq("")) : static_cast<__float128>(__builtin_nanq(""));
+            #elif BOOST_CHARCONV_HAS_BUILTIN(__nanq)
+            value = sign ? -static_cast<__float128>(__nanq("")) : static_cast<__float128>(__nanq(""));
+            #else
+            value = boost::charconv::detail::nanq();
+            value = sign ? -value : value;
+            #endif
+        }
+        else
+        {
+            #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_nansq)
+            value = sign ? -static_cast<__float128>(__builtin_nansq("")) : static_cast<__float128>(__builtin_nansq(""));
+            #elif BOOST_CHARCONV_HAS_BUILTIN(__nansq)
+            value = sign ? -static_cast<__float128>(__nansq("")) : static_cast<__float128>(__nansq(""));
+            #else
+            value = boost::charconv::detail::nans();
+            value = sign ? -value : value;
+            #endif
+        }
+
+        return r;
+    }
+    else if (r.ec != std::errc())
     {
         return r;
     }
@@ -224,7 +265,27 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     #endif
 
     auto r = boost::charconv::detail::parser(first, last, sign, significand, exponent, fmt);
-    if (r.ec != std::errc())
+    if (r.ec == std::errc::value_too_large)
+    {
+        r.ec = std::errc();
+        value = sign ? -std::numeric_limits<long double>::infinity() : std::numeric_limits<long double>::infinity();
+        return r;
+    }
+    else if (r.ec == std::errc::not_supported)
+    {
+        r.ec = std::errc();
+        if (significand == 0)
+        {
+            value = sign ? -std::numeric_limits<long double>::quiet_NaN() : std::numeric_limits<long double>::quiet_NaN();
+        }
+        else
+        {
+            value = sign ? -std::numeric_limits<long double>::signaling_NaN() : std::numeric_limits<long double>::signaling_NaN();
+        }
+
+        return r;
+    }
+    else if (r.ec != std::errc())
     {
         return r;
     }
