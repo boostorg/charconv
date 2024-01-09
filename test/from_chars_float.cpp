@@ -1887,6 +1887,10 @@ int main()
         spot_check_nan<long double>("nan(snan)", fmt);
         spot_check_nan<long double>("-nan(snan)", fmt);
 
+        spot_check_nan<float>("-nan(ind)", fmt);
+        spot_check_nan<double>("-nan(ind)", fmt);
+        spot_check_nan<long double>("-nan(ind)", fmt);
+
         spot_check_bad_non_finite<float>("na7", fmt);
         spot_check_bad_non_finite<float>("na", fmt);
         spot_check_bad_non_finite<float>("in", fmt);

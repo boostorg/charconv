@@ -125,6 +125,11 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                         significand = 1;
                         return {next, std::errc::not_supported};
                     }
+                    else if (*next == 'i' || *next == 'I')
+                    {
+                        significand = 0;
+                        return {next, std::errc::not_supported};
+                    }
                 }
                 else
                 {
