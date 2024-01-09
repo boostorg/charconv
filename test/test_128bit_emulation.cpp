@@ -9,6 +9,7 @@
 // We need to define these operator<< overloads before
 // including boost/core/lightweight_test.hpp, or they
 // won't be visible to BOOST_TEST_EQ
+// LCOV_EXCL_START
 
 #include <ostream>
 
@@ -53,6 +54,8 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
     os << p;
     return os;
 }
+
+// LCOV_EXCL_STOP
 
 #endif // #ifdef BOOST_HAS_INT128
 
@@ -117,8 +120,10 @@ void test_arithmetic_operators()
         comp_val *= 2;
 		if(!BOOST_TEST(test_val == comp_val))
 		{
+            // LCOV_EXCL_START
             std::cerr << "Target: " << comp_val
-                << "\ntest_val: " << test_val.low << std::endl;
+                      << "\ntest_val: " << test_val.low << std::endl;
+            // LCOV_EXCL_STOP
 		}
         test_val *= 2;
     }
@@ -129,8 +134,10 @@ void test_arithmetic_operators()
         test_val /= 2;
         if(!BOOST_TEST(test_val == comp_val))
         {
+            // LCOV_EXCL_START
             std::cerr << "Target: " << comp_val
                       << "\ntest_val: " << test_val.low << std::endl;
+            // LCOV_EXCL_STOP
         }
         comp_val /= 2;
     }
@@ -150,9 +157,11 @@ void test_arithmetic_operators()
     {
         if(!BOOST_TEST(test_high_word == reference))
         {
+            // LCOV_EXCL_START
             std::cerr << "i: " << i
                       << "\nTarget: " << reference
                       << "\ntest_val: " << test_high_word.high << " " << test_high_word.low << std::endl;
+            // // LCOV_EXCL_STOP
         }
         test_high_word *= 2;
         reference *= 2;

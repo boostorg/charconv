@@ -9,6 +9,7 @@
 // We need to define these operator<< overloads before
 // including boost/core/lightweight_test.hpp, or they
 // won't be visible to BOOST_TEST_EQ
+// LCOV_EXCL_START
 
 #include <ostream>
 
@@ -54,6 +55,8 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
     return os;
 }
 
+// LCOV_EXCL_STOP
+
 #endif // #ifdef BOOST_HAS_INT128
 
 #include <boost/charconv.hpp>
@@ -95,7 +98,7 @@ template<class T> void test_roundtrip( T value, int base )
     }
     else
     {
-        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
+        std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl; // LCOV_EXCL_LINE
     }
 }
 
@@ -252,6 +255,7 @@ template<class T> void test_roundtrip( T value )
     }
     else
     {
+        // LCOV_EXCL_START
         #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
         std::cerr << std::setprecision(std::numeric_limits<T>::digits10 + 1)
                   << "     Value: " << value
@@ -263,6 +267,7 @@ template<class T> void test_roundtrip( T value )
         #else
         std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
         #endif
+        // LCOV_EXCL_STOP
     }
 }
 
@@ -356,6 +361,7 @@ template <> void test_roundtrip<long double>(long double value)
     }
     else
     {
+        // LCOV_EXCL_START
         #ifdef BOOST_CHARCONV_DEBUG_ROUNDTRIP
         std::cerr << std::setprecision(std::numeric_limits<long double>::digits10 + 1)
                   << "     Value: " << value
@@ -370,6 +376,7 @@ template <> void test_roundtrip<long double>(long double value)
                   << "; ulp distance=" << Distance(v2, value)
                   << "; error code=" << static_cast<int>(r2.ec) << std::endl;
         #endif
+        // LCOV_EXCL_STOP
     }
 }
 

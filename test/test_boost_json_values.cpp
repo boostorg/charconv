@@ -28,8 +28,10 @@ void grind(const std::string& str, const T expected_value)
     auto from_r = boost::charconv::from_chars(str.c_str(), str.c_str() + std::strlen(str.c_str()), v);
     if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST(from_r.ec == std::errc())))
     {
+        // LCOV_EXCL_START
         std::cerr << "Expected value: " << expected_value << "\nFrom chars value: " << v << std::endl;
         return;
+        // LCOV_EXCL_STOP
     }
 
     // Roundtrip
@@ -41,8 +43,10 @@ void grind(const std::string& str, const T expected_value)
     auto roundtrip_r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), roundtrip_v);
     if (!(BOOST_TEST_EQ(roundtrip_v, expected_value) && BOOST_TEST(roundtrip_r.ec == std::errc())))
     {
+        // LCOV_EXCL_START
         std::cerr << "Expected value: " << expected_value << "\nRoundtrip value: " << roundtrip_v << std::endl;
         return;
+        // LCOV_EXCL_STOP
     }
 }
 
@@ -69,7 +73,7 @@ void spot_value(const std::string& buffer, T expected_value)
     BOOST_TEST(r.ec == std::errc());
     if (!BOOST_TEST_EQ(v, expected_value))
     {
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
     }
 }
 
@@ -138,6 +142,7 @@ void issue_599_test()
         BOOST_TEST(return_r.ec == std::errc());
         if (!BOOST_TEST_EQ(current_ref_val, return_val))
         {
+            // LCOV_EXCL_START
             #ifdef BOOST_CHARCONV_DEBUG
             std::cerr << std::setprecision(17)
                   << "     Value: " << current_ref_val
@@ -146,6 +151,7 @@ void issue_599_test()
             #else
             std::cerr << "... test failure for value=" << current_ref_val << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
             #endif
+            // LCOV_EXCL_STOP
         }
     }
 }
