@@ -10,6 +10,7 @@
 // We need to define these operator<< overloads before
 // including boost/core/lightweight_test.hpp, or they
 // won't be visible to BOOST_TEST_EQ
+// LCOV_EXCL_START
 
 #include <ostream>
 
@@ -54,6 +55,8 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
     os << p;
     return os;
 }
+
+// LCOV_EXCL_STOP
 
 #endif // #ifdef BOOST_HAS_INT128
 
@@ -127,9 +130,11 @@ template<typename T> void test_floating_point( T value )
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
         if (!BOOST_TEST(r.ec == std::errc()))
         {
+            // LCOV_EXCL_START
             std::cerr << " Value: " << value
                       << "\nBuffer: " << std::string(buffer)
                       << "\n    Ec: " << static_cast<int>(r.ec) << std::endl;
+            // LCOV_EXCL_STOP
         }
 
         T v2 = 0;
@@ -137,10 +142,12 @@ template<typename T> void test_floating_point( T value )
 
         if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value ))
         {
+            // LCOV_EXCL_START
             std::cerr << " Value: " << value
                       << "\nBuffer: " << std::string(buffer)
                       << "\nRetVal: " << v2
                       << "\n    Ec: " << static_cast<int>(r2.ec) << std::endl;
+            // LCOV_EXCL_STOP
         }
     }
 
@@ -150,9 +157,11 @@ template<typename T> void test_floating_point( T value )
         auto r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value );
         if (!BOOST_TEST(r.ec == std::errc()))
         {
+            // LCOV_EXCL_START
             std::cerr << " Value: " << value
                       << "\nBuffer: " << std::string(buffer)
                       << "\n    Ec: " << static_cast<int>(r.ec) << std::endl;
+            // LCOV_EXCL_STOP
         }
 
         T v2 = 0;
@@ -160,10 +169,12 @@ template<typename T> void test_floating_point( T value )
 
         if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value ))
         {
+            // LCOV_EXCL_START
             std::cerr << " Value: " << value
                       << "\nBuffer: " << std::string(buffer)
                       << "\nRetVal: " << v2
                       << "\n    Ec: " << static_cast<int>(r2.ec) << std::endl;
+            // LCOV_EXCL_STOP
         }
     }
 }

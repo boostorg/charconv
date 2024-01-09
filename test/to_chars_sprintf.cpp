@@ -242,10 +242,12 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
             {
                 // Set precision for integer part + decimal digits
                 // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
+                // LCOV_EXCL_START
                 std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
                         << "   Value: " << value
                         << "\nTo chars: " << std::string( buffer, r.ptr )
                         << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+                // LCOV_EXCL_STOP
             }
         }
     }
@@ -257,10 +259,12 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
             {
                 // Set precision for integer part + decimal digits
                 // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
+                // LCOV_EXCL_START
                 std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
                         << "   Value: " << value
                         << "\nTo chars: " << std::string( buffer, r.ptr )
                         << "\nSnprintf: " << std::string( buffer2 ) << std::endl;
+                // LCOV_EXCL_STOP
             }
         }        
     }
@@ -282,6 +286,7 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
 
     if (!BOOST_TEST( r.ec == std::errc() ))
     {
+        // LCOV_EXCL_START
         const char* error_format {};
         switch (fmt)
         {
@@ -302,6 +307,7 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
         std::cerr << "Failure: " << static_cast<int>(r.ec)
                   << "\nValue: " << value
                   << "\nFormat: " << error_format << std::endl;
+        // LCOV_EXCL_STOP
     }
 
     if (fmt == boost::charconv::chars_format::general)
@@ -372,10 +378,12 @@ template<> void test_sprintf_float( long double value, boost::charconv::chars_fo
     {
         // Set precision for integer part + decimal digits
         // See: https://en.cppreference.com/w/cpp/io/manip/setprecision
+        // LCOV_EXCL_START
         std::cerr << std::setprecision(std::numeric_limits<long double>::max_digits10 + 1)
                   << "   Value: " << value
                   << "\nTo chars: " << std::string( buffer, r.ptr )
                   << "\nSnprintf: " << printf_string << std::endl;
+        // LCOV_EXCL_STOP
     }
 }
 #endif

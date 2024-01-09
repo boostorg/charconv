@@ -41,9 +41,11 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
     case boost::charconv::chars_format::hex:
         stl_fmt = std::chars_format::hex;
         break;
+    // LCOV_EXCL_START
     default:
         BOOST_UNREACHABLE_RETURN(fmt);
         break;
+    // LCOV_EXCL_STOP
     }
 
     char buffer_boost[256];
@@ -82,10 +84,12 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
     }
     else if (!(BOOST_TEST_CSTR_EQ(boost_str.c_str(), stl_str.c_str()) && BOOST_TEST_EQ(diff_boost, diff_stl)))
     {
+        // LCOV_EXCL_START
         std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
                     << "Value: " << val
                     << "\nBoost: " << boost_str.c_str()
                     << "\n  STL: " << stl_str.c_str() << std::endl;
+        // LCOV_EXCL_STOP
     }
 }
 
@@ -169,6 +173,7 @@ void test_roundtrip( T value )
     }
     else
     {
+        // LCOV_EXCL_START
         #ifdef BOOST_CHARCONV_DEBUG
         std::cerr << std::setprecision(17)
                   << "     Value: " << value
@@ -177,6 +182,7 @@ void test_roundtrip( T value )
         #else
         std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
         #endif
+        // LCOV_EXCL_STOP
     }
 }
 

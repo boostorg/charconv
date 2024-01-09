@@ -210,9 +210,11 @@ void test_floff()
 
         if (!BOOST_TEST_CSTR_EQ(buffer, printf_buffer))
         {
+            // LCOV_EXCL_START
             std::cerr << "Precision: " << prec
                       << "\nTo chars: " << buffer
                       << "\n  Printf: " << printf_buffer << std::endl;
+            // LCOV_EXCL_STOP
         }
 
         for (int i = 0; i < 10; ++i)
@@ -229,12 +231,14 @@ void test_floff()
 
                 if (!(BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small) && BOOST_TEST(num == static_cast<int>(r_small.ptr - rand_buffer))))
                 {
+                    // LCOV_EXCL_START
                     std::cerr << "Precision: " << prec
                               << std::setprecision(prec + 1) << "\n     Val: " << rand_val
                               << "\nTo chars: " << rand_buffer
                               << "\n  Printf: " << rand_printf_buffer
                               << "\nto chars count: " << static_cast<int>(r_small.ptr - rand_buffer)
                               << "\n  printf count: " << num << std::endl;
+                    // LCOV_EXCL_STOP
                 }
             }
         }
