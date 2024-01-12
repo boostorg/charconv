@@ -51,6 +51,36 @@ inline void spot_check(T expected_value, const std::string& buffer, boost::charc
     spot_value(buffer, expected_value, fmt);
 }
 
+template <typename T>
+void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    T v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    if (!(BOOST_TEST(std::isnan(v)) && BOOST_TEST(r)))
+    {
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
+    }
+}
+
+template <typename T>
+void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+{
+    T v {};
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    if (!(BOOST_TEST(std::isinf(v)) && BOOST_TEST(r)))
+    {
+        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
+    }
+}
+
+template <typename T>
+void spot_check_bad_non_finite(const std::string& buffer, boost::charconv::chars_format fmt)
+{
+    T v = static_cast<T>(5.0L);
+    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    BOOST_TEST(r.ec == std::errc::invalid_argument);
+}
+
 void fc (const std::string& s)
 {
     char* str_end;
@@ -1816,6 +1846,55 @@ int main()
     spot_check(170e-00, "170e+00", boost::charconv::chars_format::general);
     spot_check(170.0e-00, "170.0e+00", boost::charconv::chars_format::general);
     spot_check(170.0000e-00, "170.0000e+00", boost::charconv::chars_format::general);
+
+    // https://github.com/cppalliance/charconv/issues/114
+    auto fmts = {boost::charconv::chars_format::general, boost::charconv::chars_format::scientific,
+                 boost::charconv::chars_format::fixed ,boost::charconv::chars_format::hex};
+    for (const auto fmt : fmts)
+    {
+        spot_check_nan<float>("nan", fmt);
+        spot_check_nan<float>("-nan", fmt);
+        spot_check_nan<double>("nan", fmt);
+        spot_check_nan<double>("-nan", fmt);
+        spot_check_nan<long double>("nan", fmt);
+        spot_check_nan<long double>("-nan", fmt);
+
+        spot_check_inf<float>("inf", fmt);
+        spot_check_inf<float>("-inf", fmt);
+        spot_check_inf<double>("inf", fmt);
+        spot_check_inf<double>("-inf", fmt);
+        spot_check_inf<long double>("inf", fmt);
+        spot_check_inf<long double>("-inf", fmt);
+
+        spot_check_nan<float>("NAN", fmt);
+        spot_check_nan<float>("-NAN", fmt);
+        spot_check_nan<double>("NAN", fmt);
+        spot_check_nan<double>("-NAN", fmt);
+        spot_check_nan<long double>("NAN", fmt);
+        spot_check_nan<long double>("-NAN", fmt);
+
+        spot_check_inf<float>("INF", fmt);
+        spot_check_inf<float>("-INF", fmt);
+        spot_check_inf<double>("INF", fmt);
+        spot_check_inf<double>("-INF", fmt);
+        spot_check_inf<long double>("INF", fmt);
+        spot_check_inf<long double>("-INF", fmt);
+
+        spot_check_nan<float>("nan(snan)", fmt);
+        spot_check_nan<float>("-nan(snan)", fmt);
+        spot_check_nan<double>("nan(snan)", fmt);
+        spot_check_nan<double>("-nan(snan)", fmt);
+        spot_check_nan<long double>("nan(snan)", fmt);
+        spot_check_nan<long double>("-nan(snan)", fmt);
+
+        spot_check_nan<float>("-nan(ind)", fmt);
+        spot_check_nan<double>("-nan(ind)", fmt);
+        spot_check_nan<long double>("-nan(ind)", fmt);
+
+        spot_check_bad_non_finite<float>("na7", fmt);
+        spot_check_bad_non_finite<float>("na", fmt);
+        spot_check_bad_non_finite<float>("in", fmt);
+    }
 
     return boost::report_errors();
 }

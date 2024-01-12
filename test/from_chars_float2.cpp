@@ -29,7 +29,7 @@ template<class T> void zero_extend_test()
 
             if( !BOOST_TEST_EQ( static_cast<int>(r1.ec), 0 ) )
             {
-                std::fprintf( stderr, "Test failure for '%s': got error at position %ld\n", buffer, static_cast<long>( r1.ptr - buffer ) );
+                std::fprintf( stderr, "Test failure for '%s': got error at position %ld\n", buffer, static_cast<long>( r1.ptr - buffer ) ); // LCOV_EXCL_LINE
             }
             else
             {
@@ -42,11 +42,11 @@ template<class T> void zero_extend_test()
 
                     if( !BOOST_TEST_EQ( static_cast<int>(r2.ec), 0 ) )
                     {
-                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) );
+                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) ); // LCOV_EXCL_LINE
                     }
                     else if( !BOOST_TEST_EQ( w, ref ) )
                     {
-                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got '%.15g'\n", buffer, ref, w );
+                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got '%.15g'\n", buffer, ref, w ); // LCOV_EXCL_LINE
                     }
                 }
 
@@ -59,11 +59,11 @@ template<class T> void zero_extend_test()
 
                     if( !BOOST_TEST_EQ( static_cast<int>(r2.ec), 0 ) )
                     {
-                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) );
+                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) ); // LCOV_EXCL_LINE
                     }
                     else if( !BOOST_TEST_EQ( w, ref ) )
                     {
-                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got '%.15g'\n", buffer, ref, w );
+                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got '%.15g'\n", buffer, ref, w ); // LCOV_EXCL_LINE
                     }
                 }
             }
@@ -80,7 +80,7 @@ template<class T> void zero_extend_test()
 
             if( !BOOST_TEST_EQ( static_cast<int>(r1.ec), 0 ) )
             {
-                std::fprintf( stderr, "Test failure for '%s': got error at position %ld\n", buffer, static_cast<long>( r1.ptr - buffer ) );
+                std::fprintf( stderr, "Test failure for '%s': got error at position %ld\n", buffer, static_cast<long>( r1.ptr - buffer ) ); // LCOV_EXCL_LINE
             }
             else
             {
@@ -93,11 +93,11 @@ template<class T> void zero_extend_test()
 
                     if( !BOOST_TEST_EQ( static_cast<int>(r2.ec), 0 ) )
                     {
-                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) );
+                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got error at position %ld\n", buffer, ref, static_cast<long>( r1.ptr - buffer ) ); // LCOV_EXCL_LINE
                     }
                     else if( !BOOST_TEST_EQ( w, ref ) )
                     {
-                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got '%.15g'\n", buffer, ref, w );
+                        std::fprintf( stderr, "Test failure for '%s': expected '%.15g', got '%.15g'\n", buffer, ref, w ); // LCOV_EXCL_LINE
                     }
                 }
             }
