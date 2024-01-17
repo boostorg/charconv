@@ -240,16 +240,6 @@ void test_within_ulp()
     }
 };
 
-// Directly conflicts with the expected outcomes
-#ifdef BOOST_CHARCONV_STD_ERANGE
-
-int main()
-{
-    return 0;
-}
-
-#else
-
 int main()
 {
     issue_599_test();
@@ -495,5 +485,3 @@ int main()
 
     return boost::report_errors();
 }
-
-#endif
