@@ -306,3 +306,78 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 #endif
 
 #endif // long double implementations
+
+namespace {
+
+template <typename T>
+boost::charconv::from_chars_result from_chars_strict_impl(const char *first, const char *last, T &value, boost::charconv::chars_format fmt) noexcept
+{
+    T temp_value;
+    const auto r = boost::charconv::from_chars(first, last, temp_value, fmt);
+
+    if (r)
+    {
+        value = temp_value;
+    }
+
+    return r;
+}
+
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, double& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, std::float16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, std::float32_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, std::float64_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+#endif
+
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars_strict(const char* first, const char* last, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(first, last, value, fmt);
+}
+#endif
