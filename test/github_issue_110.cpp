@@ -11,10 +11,7 @@ void overflow_spot_value(const std::string& buffer, boost::charconv::chars_forma
     auto v = static_cast<T>(42.L);
     auto r = boost::charconv::from_chars_strict(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
 
-    if (!(BOOST_TEST_EQ(v, static_cast<T>(42.L)) && BOOST_TEST(r.ec == std::errc::result_out_of_range)))
-    {
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
-    }
+    BOOST_TEST(v == static_cast<T>(42.L)) && BOOST_TEST(r.ec == std::errc::result_out_of_range);
 }
 
 template <typename T>
