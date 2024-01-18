@@ -14,11 +14,19 @@ void test()
 {
     const char buffer[] = "1.1897e+2";
 
-    #ifdef BOOST_MSVC
-    std::locale::global(std::locale("German"));
-    #else
-    std::locale::global(std::locale("de_DE.UTF-8"));
-    #endif
+    try
+    {
+        #ifdef BOOST_MSVC
+        std::locale::global(std::locale("German"));
+        #else
+        std::locale::global(std::locale("de_DE.UTF-8"));
+        #endif
+    }
+    catch (...)
+    {
+        std::cerr << "Locale not installed. Skipping test." << std::endl;
+        return;
+    }
 
     T v = 0;
     auto r = boost::charconv::detail::from_chars_strtod(buffer, buffer + sizeof(buffer), v);
