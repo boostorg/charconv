@@ -45,7 +45,7 @@ namespace boost { namespace charconv { namespace detail {
 # pragma clang diagnostic ignored "-Wconversion"
 #endif
 
-#ifdef BOOST_MSVC
+#if defined(BOOST_MSVC) || (defined(__clang__) && defined(_WIN32))
 
 #define BOOST_CHARCONV_NEW_LOCALE(category, locale) "C"
 #define BOOST_CHARCONV_USE_LOCALE(locale) _configthreadlocale(_ENABLE_PER_THREAD_LOCALE); setlocale(LC_ALL, locale)
