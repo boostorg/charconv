@@ -343,7 +343,9 @@ jobs:
                 done
             fi
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y ${{join(matrix.install, ' ')}}
+            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y ${{join(matrix.install, ' ')}} locales
+            sudo locale-gen de_DE.UTF-8
+            sudo update-locale
       - name: Setup GCC Toolchain
         if: matrix.gcc_toolchain
         run: |
@@ -422,11 +424,6 @@ jobs:
                     echo " ;" >> ~/user-config.jam
                 fi
             fi
-      - name: Install locales
-        run : |
-            sudo apt-get install locales
-            sudo locale-gen de_DE.UTF-8
-            sudo update-locale
       - name: Run tests
         if: matrix.cmake_tests == ''
         run: |
