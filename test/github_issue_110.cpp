@@ -5,18 +5,13 @@
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 
-#ifdef BOOST_CHARCONV_STD_ERANGE
-
 template <typename T>
 void overflow_spot_value(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
     auto v = static_cast<T>(42.L);
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+    auto r = boost::charconv::from_chars_strict(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
 
-    if (!(BOOST_TEST_EQ(v, static_cast<T>(42.L)) && BOOST_TEST(r.ec == std::errc::result_out_of_range)))
-    {
-        std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
-    }
+    BOOST_TEST(v == static_cast<T>(42.L)) && BOOST_TEST(r.ec == std::errc::result_out_of_range);
 }
 
 template <typename T>
@@ -53,14 +48,21 @@ int main()
     test<__float128>();
     #endif
 
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    test<std::float16_t>();
+    #endif
+    #ifdef BOOST_CHARCONV_HAS_FLOAT32
+    test<std::float32_t>();
+    #endif
+    #ifdef BOOST_CHARCONV_HAS_FLOAT64
+    test<std::float64_t>();
+    #endif
+    #if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+    test<std::float128_t>();
+    #endif
+    #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+    test<std::bfloat16_t>();
+    #endif
+
     return boost::report_errors();
 }
-
-#else
-
-int main()
-{
-    return 0;
-}
-
-#endif
