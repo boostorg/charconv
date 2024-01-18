@@ -41,6 +41,9 @@ void test()
     BOOST_TEST(r.ptr == r2.ptr);
 }
 
+// See: https://stackoverflow.com/questions/1745045/stdlocale-breakage-on-macos-10-6-with-lang-en-us-utf-8
+#if !defined(__APPLE__) || (defined(__APPLE__) && defined(__clang__))
+
 int main()
 {
     test<float>();
@@ -53,3 +56,12 @@ int main()
 
     return boost::report_errors();
 }
+
+#else
+
+int main()
+{
+    return 0;
+}
+
+#endif
