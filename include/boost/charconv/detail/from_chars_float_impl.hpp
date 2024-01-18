@@ -80,7 +80,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     const auto c_locale = BOOST_CHARCONV_NEW_LOCALE(LC_ALL, "C");
     if (BOOST_UNLIKELY(!c_locale))
     {
-        return {last, std::errc::not_supported};
+        return {first, std::errc::not_enough_memory};
     }
     BOOST_CHARCONV_USE_LOCALE(c_locale);
 
