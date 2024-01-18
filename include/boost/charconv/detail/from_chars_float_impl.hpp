@@ -14,8 +14,19 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
+#include <locale>
+#include <clocale>
 #include <cstdlib>
 #include <cmath>
+
+#ifdef __has_include
+#  if __has_include(<xlocale.h>)
+#    include <xlocale.h>
+#  endif
+#  if __has_include(<windows.h>)
+#    include <windows.h>
+#  endif
+#endif
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -34,6 +45,20 @@ namespace boost { namespace charconv { namespace detail {
 # pragma clang diagnostic ignored "-Wconversion"
 #endif
 
+#ifdef BOOST_MSVC
+
+#define BOOST_CHARCONV_NEW_LOCALE(category, locale) _create_locale(category, locale)
+#define BOOST_CHARCONV_USE_LOCALE(locale) _configthreadlocale(_ENABLE_PER_THREAD_LOCALE); setlocale(LC_ALL, locale)
+#define BOOST_CHARCONV_FREE_LOCALE(locale) _free_locale(locale)
+
+#else
+
+#define BOOST_CHARCONV_NEW_LOCALE(category, locale) newlocale(category, locale, nullptr)
+#define BOOST_CHARCONV_USE_LOCALE(locale) uselocale(locale)
+#define BOOST_CHARCONV_FREE_LOCALE(locale) freelocale(locale)
+
+#endif
+
 template <typename T>
 from_chars_result from_chars_strtod_impl(const char* first, const char* last, T& value, char* buffer) noexcept
 {
@@ -42,11 +67,21 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     // If the converted value falls out of range of corresponding return type, range error occurs and HUGE_VAL, HUGE_VALF or HUGE_VALL is returned.
     // If no conversion can be performed, 0 is returned and *str_end is set to str.
 
+    // Create the thread local locale
+    const auto c_locale = BOOST_CHARCONV_NEW_LOCALE(LC_ALL, "C");
+    if (BOOST_UNLIKELY(!c_locale))
+    {
+        return {last, std::errc::not_supported};
+    }
+    BOOST_CHARCONV_USE_LOCALE(c_locale);
+
     std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
     buffer[last - first] = '\0';
 
     char* str_end;
     T return_value {};
+    from_chars_result r {nullptr, std::errc()};
+
     BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
     {
         return_value = std::strtof(buffer, &str_end);
@@ -57,7 +92,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         if (return_value >= std::numeric_limits<T>::max())
         #endif
         {
-            return {last, std::errc::result_out_of_range};
+            r = {last, std::errc::result_out_of_range};
         }
     }
     else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
@@ -70,10 +105,10 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         if (return_value >= std::numeric_limits<T>::max())
         #endif
         {
-            return {last, std::errc::result_out_of_range};
+            r = {last, std::errc::result_out_of_range};
         }
     }
-    else
+    else BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
     {
         return_value = std::strtold(buffer, &str_end);
 
@@ -83,18 +118,37 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         if (return_value >= std::numeric_limits<T>::max())
         #endif
         {
-            return {last, std::errc::result_out_of_range};
+            r = {last, std::errc::result_out_of_range};
         }
     }
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    else
+    {
+        return_value = strtoflt128(buffer, &str_end);
+
+        if (return_value == HUGE_VALQ)
+        {
+            r = {last, std::errc::result_out_of_range};
+        }
+    }
+    #endif
 
     // Since this is a fallback routine we are safe to check for 0
     if (return_value == 0 && str_end == last)
     {
-        return {first, std::errc::result_out_of_range};
+        r = {first, std::errc::result_out_of_range};
     }
 
-    value = return_value;
-    return {first + (str_end - buffer), std::errc()};
+    if (r)
+    {
+        value = return_value;
+        r = {first + (str_end - buffer), std::errc()};
+    }
+
+    // Free the locale
+    BOOST_CHARCONV_FREE_LOCALE(c_locale);
+
+    return r;
 }
 
 template <typename T>
