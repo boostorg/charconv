@@ -51,6 +51,15 @@ namespace boost { namespace charconv { namespace detail {
 #define BOOST_CHARCONV_USE_LOCALE(locale) _configthreadlocale(_ENABLE_PER_THREAD_LOCALE); setlocale(LC_ALL, locale)
 #define BOOST_CHARCONV_FREE_LOCALE(locale)
 
+#elif defined(__MINGW32__) || defined(__MINGW64__)
+
+// Only C and POSIX are allowed so we don't need to worry
+// See: https://stackoverflow.com/a/75427494/2512582
+
+#define BOOST_CHARCONV_NEW_LOCALE(category, locale) "C"
+#define BOOST_CHARCONV_USE_LOCALE(locale)
+#define BOOST_CHARCONV_FREE_LOCALE(locale)
+
 #else
 
 #define BOOST_CHARCONV_NEW_LOCALE(category, locale) newlocale(category, locale, nullptr)

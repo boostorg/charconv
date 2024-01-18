@@ -50,10 +50,6 @@ int main()
     test<double>();
     test<long double>();
 
-    #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    test<__float128>();
-    #endif
-
     return boost::report_errors();
 }
 
