@@ -29,7 +29,7 @@ void test()
     auto r2 = boost::charconv::detail::from_chars_strtod(buffer, buffer + sizeof(buffer), v2);
     BOOST_TEST(r2);
 
-    BOOST_TEST_EQ(v, v2);
+    BOOST_TEST(v == v2);
     BOOST_TEST(r.ptr == r2.ptr);
 }
 
