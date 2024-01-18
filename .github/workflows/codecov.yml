@@ -128,7 +128,9 @@ jobs:
           else
               pkgs="${{matrix.install}}"
           fi
-          sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y $pkgs
+          sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y $pkgs locales
+          sudo locale-gen de_DE.UTF-8
+          sudo update-locale
 
       - name: Setup GCC Toolchain
         if: matrix.gcc_toolchain

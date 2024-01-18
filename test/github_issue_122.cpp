@@ -22,11 +22,13 @@ void test()
         std::locale::global(std::locale("de_DE.UTF-8"));
         #endif
     }
+    // LCOV_EXCL_START
     catch (...)
     {
         std::cerr << "Locale not installed. Skipping test." << std::endl;
         return;
     }
+    // LCOV_EXCL_STOP
 
     T v = 0;
     auto r = boost::charconv::detail::from_chars_strtod(buffer, buffer + sizeof(buffer), v);
