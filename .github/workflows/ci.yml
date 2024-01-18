@@ -422,6 +422,11 @@ jobs:
                     echo " ;" >> ~/user-config.jam
                 fi
             fi
+      - name: Install locales
+        run : |
+            sudo apt-get install locales
+            sudo locale-gen de_DE.UTF-8
+            sudo update-locale
       - name: Run tests
         if: matrix.cmake_tests == ''
         run: |
