@@ -47,9 +47,9 @@ namespace boost { namespace charconv { namespace detail {
 
 #ifdef BOOST_MSVC
 
-#define BOOST_CHARCONV_NEW_LOCALE(category, locale) _create_locale(category, locale)
+#define BOOST_CHARCONV_NEW_LOCALE(category, locale) "C"
 #define BOOST_CHARCONV_USE_LOCALE(locale) _configthreadlocale(_ENABLE_PER_THREAD_LOCALE); setlocale(LC_ALL, locale)
-#define BOOST_CHARCONV_FREE_LOCALE(locale) _free_locale(locale)
+#define BOOST_CHARCONV_FREE_LOCALE(locale)
 
 #else
 

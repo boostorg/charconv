@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <locale>
+#include <iostream>
 #include <boost/charconv.hpp>
 #include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/core/lightweight_test.hpp>
@@ -12,7 +13,12 @@ template <typename T>
 void test()
 {
     const char buffer[] = "1.1897e+2";
+
+    #ifdef BOOST_MSVC
+    std::locale::global(std::locale("German"));
+    #else
     std::locale::global(std::locale("de_DE.UTF-8"));
+    #endif
 
     T v = 0;
     auto r = boost::charconv::detail::from_chars_strtod(buffer, buffer + sizeof(buffer), v);
