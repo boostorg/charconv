@@ -19,15 +19,6 @@
 #include <cstdlib>
 #include <cmath>
 
-#ifdef __has_include
-#  if __has_include(<xlocale.h>)
-#    include <xlocale.h>
-#  endif
-#  if __has_include(<windows.h>)
-#    include <windows.h>
-#  endif
-#endif
-
 namespace boost { namespace charconv { namespace detail {
 
 #ifdef BOOST_MSVC
@@ -45,28 +36,19 @@ namespace boost { namespace charconv { namespace detail {
 # pragma clang diagnostic ignored "-Wconversion"
 #endif
 
-#if defined(BOOST_MSVC) || (defined(__clang__) && defined(_WIN32))
-
-#define BOOST_CHARCONV_NEW_LOCALE(category, locale) "C"
-#define BOOST_CHARCONV_USE_LOCALE(locale) _configthreadlocale(_ENABLE_PER_THREAD_LOCALE); setlocale(LC_ALL, locale)
-#define BOOST_CHARCONV_FREE_LOCALE(locale)
-
-#elif defined(__MINGW32__) || defined(__MINGW64__)
-
-// Only C and POSIX are allowed so we don't need to worry
-// See: https://stackoverflow.com/a/75427494/2512582
-
-#define BOOST_CHARCONV_NEW_LOCALE(category, locale) "C"
-#define BOOST_CHARCONV_USE_LOCALE(locale)
-#define BOOST_CHARCONV_FREE_LOCALE(locale)
-
-#else
-
-#define BOOST_CHARCONV_NEW_LOCALE(category, locale) newlocale(category, locale, nullptr)
-#define BOOST_CHARCONV_USE_LOCALE(locale) uselocale(locale)
-#define BOOST_CHARCONV_FREE_LOCALE(locale) freelocale(locale)
-
-#endif
+// We know that the string is in the "C" locale because it would have previously passed through our parser.
+// Convert the string into the current locale so that the strto* family of functions
+// works correctly for the given locale.
+//
+// We are operating on our own copy of the buffer, so we are free to modify it.
+inline void convert_string_locale(char* buffer) noexcept
+{
+    auto p = std::strchr(buffer, '.');
+    if (p != nullptr)
+    {
+        *p = *std::localeconv()->decimal_point;
+    }
+}
 
 template <typename T>
 from_chars_result from_chars_strtod_impl(const char* first, const char* last, T& value, char* buffer) noexcept
@@ -76,16 +58,14 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     // If the converted value falls out of range of corresponding return type, range error occurs and HUGE_VAL, HUGE_VALF or HUGE_VALL is returned.
     // If no conversion can be performed, 0 is returned and *str_end is set to str.
 
-    // Create the thread local locale
-    const auto c_locale = BOOST_CHARCONV_NEW_LOCALE(LC_ALL, "C");
-    if (BOOST_UNLIKELY(!c_locale))
-    {
-        return {first, std::errc::not_enough_memory}; // LCOV_EXCL_LINE
-    }
-    BOOST_CHARCONV_USE_LOCALE(c_locale);
-
     std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
     buffer[last - first] = '\0';
+
+    const auto current_locale = std::locale::global(std::locale(""));
+    if (current_locale.name() != "C" || current_locale.name() != "POSIX")
+    {
+        convert_string_locale(buffer);
+    }
 
     char* str_end;
     T return_value {};
@@ -153,9 +133,6 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         value = return_value;
         r = {first + (str_end - buffer), std::errc()};
     }
-
-    // Free the locale
-    BOOST_CHARCONV_FREE_LOCALE(c_locale);
 
     return r;
 }
