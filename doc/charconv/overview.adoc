@@ -36,7 +36,7 @@ assert(!strncmp(buffer, "123456", 6)); // Strncmp returns 0 on match
 == Supported Compilers
 
 * GCC 5 or later
-* Clang 3.7 or later
+* Clang 3.8 or later
 * Visual Studio 2015 (14.0) or later
 
 Tested on https://github.com/cppalliance/charconv/actions[Github Actions] and https://drone.cpp.al/cppalliance/charconv[Drone].
