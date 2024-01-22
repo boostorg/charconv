@@ -250,7 +250,7 @@ template<class T> void test_roundtrip( T value )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_EQ( v2, value ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_EQ( v2, value ) && BOOST_TEST( r2.ptr == r.ptr) )
     {
     }
     else
@@ -263,7 +263,9 @@ template<class T> void test_roundtrip( T value )
                   << "\nFrom chars: " << v2 << std::endl
                   << std::hexfloat
                   << "\n     Value: " << value
-                  << "\nFrom chars: " << v2 << std::endl << std::scientific;
+                  << "\nFrom chars: " << v2
+                  << "\n R1 offset: " << (r.ptr - buffer)
+                  << "\n R2 offset: " << (r2.ptr - buffer) << std::endl << std::scientific;
         #else
         std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl;
         #endif

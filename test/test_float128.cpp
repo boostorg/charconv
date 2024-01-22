@@ -174,7 +174,7 @@ void test_roundtrip( T value )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( std::abs(float_distance(v2, value)) <= 1 ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( std::abs(float_distance(v2, value)) <= 1 ) && BOOST_TEST( r2.ptr == r.ptr) )
     {
     }
     else
