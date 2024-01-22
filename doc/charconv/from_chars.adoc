@@ -8,6 +8,10 @@ https://www.boost.org/LICENSE_1_0.txt
 :idprefix: from_chars_
 
 == from_chars overview
+
+`from_chars` is a set of functions that parse a string from `[first, last)` in an attempt to convert the string into `value` according to the `chars_format` specified (if applicable).
+The result of `from_chars` is `from_chars_result` which on success returns `ptr == last` and `ec == std::errc()`, and on failure returns `ptr` equal to the last valid character parsed or `last` on underflow/overflow, and `ec == std::errc::invalid_argument` or `std::errc::result_out_of_range` respectively.
+
 [source, c++]
 ----
 namespace boost { namespace charconv {
@@ -17,8 +21,7 @@ struct from_chars_result
     const char* ptr;
     std::errc ec;
 
-    friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
-    friend constexpr bool operator!=(const from_chars_result& lhs, const from_chars_result& rhs) noexcept
+    friend constexpr bool operator==(const from_chars_result& lhs, const from_chars_result& rhs) noexcept = default;
     constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 }
 
@@ -30,23 +33,26 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, cons
 template <typename Real>
 from_chars_result from_chars(const char* first, const char* last, Real& value, chars_format fmt = chars_format::general) noexcept;
 
+// See note below in from_chars for floating point types
+template <typename Real>
+from_chars_result from_chars_strict(const char* first, const char* last, Real& value, chars_format fmt = chars_format::general) noexcept;
+
 }} // Namespace boost::charconv
 ----
 
 == from_chars_result
-* ptr - points to the first character not matching the pattern, or has the value of last if all characters are successfully parsed.
-* ec - the error code. Valid values for are:
-** std::errc() - successful parsing
-** std::errc::invalid_argument - invalid argument (e.g. parsing a negative number into an unsigned type)
-** std::errc::result_out_of_range - result out of range (e.g. overflow)
-* operator== - compares the values of ptr and ec for equality
-* operator! - compares the value of ptr and ec for inequality
+* `ptr` - On return from `from_chars` it is a pointer to the first character not matching the pattern, or pointer to `last` if all characters are successfully parsed.
+* `ec` - the error code. Values returned by `from_chars` are:
+** `std::errc()` - successful parsing
+** `std::errc::invalid_argument` - invalid argument (e.g. parsing a negative number into an unsigned type)
+** `std::errc::result_out_of_range` - result out of range (e.g. overflow)
+* `operator==` - compares the values of ptr and ec for equality
 
 == from_chars
-* first, last - valid range to parse
-* value - where the output is stored upon successful parsing
-* base (integer only) - the integer base to use. Must be between 2 and 36 inclusive
-* fmt (floating point only) - The format of the buffer. See <<chars_format overview>> for description.
+* `first`, `last` - valid range to parse
+* `value` - where the output is stored upon successful parsing
+* `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
+* `fmt` (floating point only) - The format of the buffer. See <<chars_format overview>> for description.
 
 === from_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
@@ -55,9 +61,20 @@ from_chars_result from_chars(const char* first, const char* last, Real& value, c
 ** One known exception is GCC 5 which does not support constexpr comparison of `const char*`.
 
 === from_chars for floating point types
-* On std::errc::result_out_of_range we return ±0 for small values (e.g. 1.0e-99999) or ±HUGE_VAL for large values (e.g. 1.0e+99999) to match the handling of `std::strtod`.
+* On `std::errc::result_out_of_range` we return ±0 for small values (e.g. 1.0e-99999) or ±HUGE_VAL for large values (e.g. 1.0e+99999) to match the handling of `std::strtod`.
 This is a divergence from the standard which states we should return the `value` argument unmodified.
-** If you want the behavior from the standard, compile the library with `BOOST_CHARCONV_STD_ERANGE` defined.
+
+** The rationale for this divergence is an open issue with LWG here: https://cplusplus.github.io/LWG/lwg-active.html#3081.
+The standard for <charconv> does not distinguish between underflow and overflow like strtod does.
+Let's say you are writing a JSON library, and you replace `std::strtod` with `boost::charconv::from_chars` for performance reasons.
+Charconv returns std::errc::result_out_of_range on some conversion.
+You would then have to parse the string again yourself to figure out which of the four possible reasons you got `std::errc::result_out_of_range`.
+Charconv already had this information but could not give it to you.
+By implementing the resolution to the LWG issue that matches the established strtod behavior I think we are providing the correct behavior without waiting on the committee's decision.
+
+** If you prefer the handling required by the standard (e.g. value is returned unmodified on `std::errc::result_out_of_range`) use `boost::charconv::from_chars_strict`.
+The handling of `std::errc::result_out_of_range` is the only difference between `from_chars` and `from_chars_strict`.
+
 * These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
 ** Long doubles can be 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported, format is `__ibm128`.
 ** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
@@ -137,4 +154,4 @@ assert(r.ec == std::errc::result_out_of_range);
 assert(!r); // Same as above but less verbose. Added in C++26.
 assert(v == 0)
 ----
-Note: In the event of std::errc::result_out_of_range, v is not modified by `from_chars`
+Note: In the event of `std::errc::result_out_of_range`, v is not modified by `from_chars`

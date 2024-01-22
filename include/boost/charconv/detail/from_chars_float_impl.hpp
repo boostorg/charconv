@@ -14,6 +14,8 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
+#include <locale>
+#include <clocale>
 #include <cstdlib>
 #include <cmath>
 
@@ -34,6 +36,20 @@ namespace boost { namespace charconv { namespace detail {
 # pragma clang diagnostic ignored "-Wconversion"
 #endif
 
+// We know that the string is in the "C" locale because it would have previously passed through our parser.
+// Convert the string into the current locale so that the strto* family of functions
+// works correctly for the given locale.
+//
+// We are operating on our own copy of the buffer, so we are free to modify it.
+inline void convert_string_locale(char* buffer) noexcept
+{
+    auto p = std::strchr(buffer, '.');
+    if (p != nullptr)
+    {
+        *p = *std::localeconv()->decimal_point;
+    }
+}
+
 template <typename T>
 from_chars_result from_chars_strtod_impl(const char* first, const char* last, T& value, char* buffer) noexcept
 {
@@ -45,8 +61,16 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
     std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
     buffer[last - first] = '\0';
 
+    const auto current_locale = std::locale::global(std::locale(""));
+    if (current_locale.name() != "C" || current_locale.name() != "POSIX")
+    {
+        convert_string_locale(buffer);
+    }
+
     char* str_end;
     T return_value {};
+    from_chars_result r {nullptr, std::errc()};
+
     BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
     {
         return_value = std::strtof(buffer, &str_end);
@@ -57,7 +81,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         if (return_value >= std::numeric_limits<T>::max())
         #endif
         {
-            return {last, std::errc::result_out_of_range};
+            r = {last, std::errc::result_out_of_range};
         }
     }
     else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
@@ -70,10 +94,10 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         if (return_value >= std::numeric_limits<T>::max())
         #endif
         {
-            return {last, std::errc::result_out_of_range};
+            r = {last, std::errc::result_out_of_range};
         }
     }
-    else
+    else BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
     {
         return_value = std::strtold(buffer, &str_end);
 
@@ -83,18 +107,34 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         if (return_value >= std::numeric_limits<T>::max())
         #endif
         {
-            return {last, std::errc::result_out_of_range};
+            r = {last, std::errc::result_out_of_range};
         }
     }
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    else
+    {
+        return_value = strtoflt128(buffer, &str_end);
+
+        if (return_value == HUGE_VALQ)
+        {
+            r = {last, std::errc::result_out_of_range};
+        }
+    }
+    #endif
 
     // Since this is a fallback routine we are safe to check for 0
     if (return_value == 0 && str_end == last)
     {
-        return {first, std::errc::result_out_of_range};
+        r = {first, std::errc::result_out_of_range};
     }
 
-    value = return_value;
-    return {first + (str_end - buffer), std::errc()};
+    if (r)
+    {
+        value = return_value;
+        r = {first + (str_end - buffer), std::errc()};
+    }
+
+    return r;
 }
 
 template <typename T>

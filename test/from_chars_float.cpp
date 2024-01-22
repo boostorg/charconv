@@ -423,14 +423,6 @@ void boost_json_test()
     fc("6372891218502368041059e064");
 }
 
-// Issue 37 conflicts with handling from 110
-#ifdef BOOST_CHARCONV_STD_ERANGE
-
-template <typename T>
-void test_issue_37() {}
-
-#else
-
 template <typename T>
 void test_issue_37()
 {
@@ -459,8 +451,6 @@ void test_issue_37()
     overflow_spot_value("1e-99999", static_cast<T>(0.0L));
     overflow_spot_value("-1.0e-99999", static_cast<T>(-0.0L));
 }
-
-#endif
 
 template <typename T>
 void test_issue_45(T v, const std::string& full_buffer, const std::ptrdiff_t ptr, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)

@@ -98,13 +98,6 @@ jobs:
             install:
               - g++-12-multilib
           - toolset: gcc-12
-            cxxstd: "03,11,14,17,20,23"
-            address_model: 32,64
-            os: ubuntu-22.04
-            install:
-              - g++-12-multilib
-            define: "BOOST_CHARCONV_STD_ERANGE"
-          - toolset: gcc-12
             cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
             address_model: 32,64
             os: ubuntu-22.04
@@ -120,13 +113,6 @@ jobs:
               - g++-12-multilib
 
           # Linux, clang
-          - toolset: clang
-            compiler: clang++-3.7
-            cxxstd: "03,11,14"
-            os: ubuntu-latest
-            container: ubuntu:16.04
-            install:
-              - clang-3.7
           - toolset: clang
             compiler: clang++-3.8
             cxxstd: "03,11,14"
@@ -350,7 +336,9 @@ jobs:
                 done
             fi
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y ${{join(matrix.install, ' ')}}
+            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y ${{join(matrix.install, ' ')}} locales
+            sudo locale-gen de_DE.UTF-8
+            sudo update-locale
       - name: Setup GCC Toolchain
         if: matrix.gcc_toolchain
         run: |
@@ -460,10 +448,6 @@ jobs:
             if [ -n "${{matrix.address_model}}" ]
             then
                 B2_ARGS+=("address-model=${{matrix.address_model}}")
-            fi
-            if [ -n "${{matrix.define}}" ]
-            then
-                B2_ARGS+=("define=${{matrix.define}}")
             fi
             B2_ARGS+=("libs/$LIBRARY/test")
             ./b2 "${B2_ARGS[@]}"
