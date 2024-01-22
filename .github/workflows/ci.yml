@@ -114,13 +114,6 @@ jobs:
 
           # Linux, clang
           - toolset: clang
-            compiler: clang++-3.7
-            cxxstd: "03,11,14"
-            os: ubuntu-latest
-            container: ubuntu:16.04
-            install:
-              - clang-3.7
-          - toolset: clang
             compiler: clang++-3.8
             cxxstd: "03,11,14"
             os: ubuntu-latest
@@ -343,7 +336,9 @@ jobs:
                 done
             fi
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y ${{join(matrix.install, ' ')}}
+            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y ${{join(matrix.install, ' ')}} locales
+            sudo locale-gen de_DE.UTF-8
+            sudo update-locale
       - name: Setup GCC Toolchain
         if: matrix.gcc_toolchain
         run: |

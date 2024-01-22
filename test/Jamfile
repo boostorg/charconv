@@ -55,3 +55,4 @@ run-fail STL_benchmark.cpp : : : [ requires cxx17_hdr_charconv ] [ check-target-
 run test_float128.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <library>"quadmath" ] ;
 run P2497.cpp ;
 run github_issue_110.cpp ;
+run github_issue_122.cpp ;
