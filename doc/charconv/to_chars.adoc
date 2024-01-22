@@ -1,5 +1,5 @@
 ////
-Copyright 2023 Matt Borland
+Copyright 2023-2024 Matt Borland
 Distributed under the Boost Software License, Version 1.0.
 https://www.boost.org/LICENSE_1_0.txt
 ////
@@ -8,6 +8,9 @@ https://www.boost.org/LICENSE_1_0.txt
 :idprefix: to_chars_
 
 == to_chars overview
+
+`to_chars` is a set of functions that attempts to convert `value` into a character buffer specified by `[first, last)`. The result of `to_chars` is `to_chars_result` which on success returns `ptr` equal to one-past-the-end of the characters written and `ec == std::errc()` and on failure returns `std::errc::result_out_of_range` and `ptr == last`.
+
 [source, c++]
 ----
 namespace boost { namespace charconv {
@@ -17,8 +20,7 @@ struct to_chars_result
     char* ptr;
     std::errc ec;
 
-    friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
-    friend constexpr bool operator!=(const to_chars_result& lhs, const to_chars_result& rhs) noexcept;
+    friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept; = default;
     constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 };
 
@@ -35,21 +37,19 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 ----
 
 == to_chars_result
-* ptr - points to the first character
-* ec - the error code. Valid values from are:
-** 0 - successful parsing
-** std::errc::invalid_argument - invalid argument
-** std::errc::result_out_of_range - result out of range (e.g. overflow)
-* operator== - compares the value of ptr and ec for equality
-* operator!= - compares the value of ptr and ec for inequality
+* `ptr` - On return from `to_chars` points to one-past-the-end of the characters written on success or `last` on failure
+* `ec` - the error code from `to_chars`. Returned values are:
+** `std::errc()` - successful parsing
+** `std::errc::result_out_of_range` - result out of range (e.g. overflow)
+* `operator==` - compares the value of ptr and ec for equality
 
 == to_chars
-* first, last - pointers to the character buffer
-* value - the value to be parsed into the buffer
-* base (integer only) - the integer base to use. Must be between 2 and 36 inclusive
-* fmt (float only) - the floating point format to use.
+* `first, last` - pointers to the beginning and end of the character buffer
+* `value` - the value to be parsed into the buffer
+* `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
+* `fmt` (float only) - the floating point format to use.
 See <<chars_format overview>> for description.
-* precision (float only) - the number of decimal places required
+* `precision` (float only) - the number of decimal places required
 
 === to_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
@@ -60,10 +60,10 @@ See <<chars_format overview>> for description.
 
 === to_chars for floating point types
 * The following will be returned when handling different values of `NaN`
-** +qNaN returns "nan"
-** -qNaN returns "-nan(ind)"
-** +sNaN returns "nan(snan)"
-** -sNaN returns "-nan(snan)"
+** `qNaN` returns "nan"
+** `-qNaN` returns "-nan(ind)"
+** `sNaN` returns "nan(snan)"
+** `-sNaN` returns "-nan(snan)"
 * These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
 ** Long doubles can be 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported, format is `ibm128`.
 ** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
@@ -143,4 +143,4 @@ assert(r.ec == std::errc::result_out_of_range);
 assert(!r); // Same as above but less verbose. Added in C++26.
 ----
 
-In the event of std::errc::result_out_of_range, to_chars_result.ptr is equal to first
+In the event of `std::errc::result_out_of_range`, to_chars_result.ptr is equal to `last`
