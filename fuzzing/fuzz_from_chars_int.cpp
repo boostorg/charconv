@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <exception>
 
 extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size)
 {
@@ -14,12 +15,12 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
     try
     {
         long val;
-        std::string s {reinterpret_cast<const char*>(data), size};
         boost::charconv::from_chars(s.c_str(), s.c_str() + s.size(), val);
     }
     catch(...)
     {
         std::cerr << "Error with: " << s << std::endl;
+        std::terminate();
     }
 
     return 0;
