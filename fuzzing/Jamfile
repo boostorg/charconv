@@ -146,8 +146,8 @@ rule fuzzer-props ( props * )
           <optimization>speed
           <address-sanitizer>on
           <undefined-sanitizer>norecover
-          <cxxflags>-fsanitize=fuzzer
-          <linkflags>-fsanitize=fuzzer
+          <cxxflags>-fsanitize=fuzzer,address
+          <linkflags>-fsanitize=fuzzer,address
           # explicitly set BOOST_JSON_STACK_BUFFER_SIZE small so interesting
           # code paths are taken also for small inputs
           # (see https://github.com/boostorg/json/issues/333)
