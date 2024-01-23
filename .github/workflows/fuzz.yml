@@ -107,20 +107,6 @@ jobs:
               - "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
             source_keys:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - toolset: clang
-            compiler: clang++-15
-            cxxstd: "03,11,14,17,20,2b"
-            os: ubuntu-22.04
-            install:
-              - clang-15
-              - libc++-15-dev
-              - libc++abi-15-dev
-            sources:
-              - "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
-            source_keys:
-              - "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            cxxflags: -stdlib=libc++
-            linkflags: -stdlib=libc++
 
     timeout-minutes: 60
     runs-on: ${{matrix.os}}
