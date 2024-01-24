@@ -12,7 +12,7 @@
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
 
-#if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_CHARCONV_DYN_LINK)
+#if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_CHARCONV_DYN_LINK) && !defined(BOOST_CHARCONV_NO_LIB)
 # if defined(BOOST_CHARCONV_SOURCE)
 #  define BOOST_CHARCONV_DECL BOOST_SYMBOL_EXPORT
 # else
