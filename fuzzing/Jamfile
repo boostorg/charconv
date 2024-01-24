@@ -52,8 +52,7 @@ import sequence ;
 #explicit old-corpus ;
 
 
-# local initial-corpus = [ glob-tree-ex ../test : *.json ] ;
-
+# local initial-corpus = [ glob-tree-ex seedcorpus : *.txt ] ;
 
 local variants = from_chars_float from_chars_int ;
 for local variant in from_chars_float from_chars_int
@@ -88,26 +87,26 @@ for local variant in from_chars_float from_chars_int
     #explicit oldcorpus/$(variant) ;
 
     # make an initial corpus from the test data already in the repo
-    #local seed-corpus ;
-    #for file in $(initial-corpus)
-    #{
-    #    local copied = $(variant)/$(file:D=) ;
-    #    make $(copied) : $(file) : common.copy : <location>seedcorpus ;
-    #    explicit $(copied) ;
-    #    seed-corpus += $(copied) ;
-    #}
-    #make seedcorpus/$(variant)
-    #    : $(seed-corpus)
-    #    : common.MkDir
-    #    : <location>.
-    #    ;
-    #explicit seedcorpus/$(variant) ;
+    local seed-corpus ;
+    for file in $(initial-corpus)
+    {
+        local copied = $(variant)/$(file:D=) ;
+        make $(copied) : $(file) : common.copy : <location>seedcorpus ;
+        explicit $(copied) ;
+        seed-corpus += $(copied) ;
+    }
+    make seedcorpus/$(variant)
+        : $(seed-corpus)
+        : common.MkDir
+        : <location>.
+        ;
+    explicit seedcorpus/$(variant) ;
 
     # run the fuzzer for a short while
     make out/$(variant)
         : $(fuzzer)
           #oldcorpus/$(variant)
-          #seedcorpus/$(variant)
+          seedcorpus/$(variant)
         : @run-fuzzer
         : <location>.
           <flags>$(.MAXTIME)
