@@ -409,7 +409,16 @@ BOOST_FORCEINLINE std::uint8_t load_extended_cache(CacheBlockType* blocks_ptr, i
         excessive_bits_to_right = static_cast<std::uint32_t>(end_bit_index - src_end_bit_index) %
                                     static_cast<std::uint32_t>(ExtendedCache::cache_bits_unit);
 
+        #if defined(__GNUC__) && __GNUC__ >= 5
+        #  pragma GCC diagnostic push
+        #  pragma GCC diagnostic ignored "-Wconversion"
+        #endif
+
         cache_block_count -= number_of_trailing_zero_blocks;
+
+        #if defined(__GNUC__) && __GNUC__ >= 5
+        #  pragma GCC diagnostic pop
+        #endif
     }
     else
     {
@@ -3801,7 +3810,18 @@ print_exponent_and_return:
         // 6554 = ceil(2^16 / 10)
         auto prod = static_cast<std::uint32_t>(decimal_exponent) * UINT32_C(6554);
         auto d1 = prod >> 16;
-        prod = static_cast<std::uint16_t>(prod) * UINT16_C(5); // * 10
+
+        #if defined(__GNUC__) && __GNUC__ >= 5
+        #  pragma GCC diagnostic push
+        #  pragma GCC diagnostic ignored "-Wsign-conversion"
+        #endif
+
+        prod = static_cast<std::uint16_t>(prod) * static_cast<std::uint16_t>(5); // * 10
+
+        #if defined(__GNUC__) && __GNUC__ >= 5
+        #  pragma GCC diagnostic pop
+        #endif
+
         auto d2 = prod >> 15;                                  // >> 16
         print_2_digits(d1, buffer);
         print_1_digit(d2, buffer + 2);
