@@ -1322,6 +1322,11 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
     int e = static_cast<int>(br >> (ieee754_binary64::significand_bits + 1));
     auto significand = (br & ((UINT64_C(1) << (ieee754_binary64::significand_bits + 1)) - 1)); // shifted by 1-bit.
 
+    #if defined(__GNUC__) && __GNUC__ >= 5
+    #  pragma GCC diagnostic push
+    #  pragma GCC diagnostic ignored "-Wsign-conversion"
+    #endif
+
     // Infinities or NaN
     if (e == ((UINT32_C(1) << ieee754_binary64::exponent_bits) - 1)) 
     {
@@ -1399,6 +1404,10 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             e = ieee754_binary64::min_exponent - ieee754_binary64::significand_bits;
         }
     }
+
+    #if defined(__GNUC__) && __GNUC__ >= 5
+    #  pragma GCC diagnostic pop
+    #endif
 
     constexpr int kappa = 2;
     int k = kappa - log::floor_log10_pow2(e);
