@@ -517,11 +517,11 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
                   << "\n  exp: " << value_struct.exponent << std::endl;
         #endif
 
-        const std::size_t offset_bytes = -value_struct.exponent - num_dig;
+        const auto offset_bytes = static_cast<std::size_t>(-value_struct.exponent - num_dig);
 
         std::memmove(first + 2 + static_cast<std::size_t>(value_struct.is_negative) + offset_bytes,
                      first + static_cast<std::size_t>(value_struct.is_negative),
-                     static_cast<std::size_t>(-value_struct.exponent - offset_bytes));
+                     static_cast<std::size_t>(-value_struct.exponent) - offset_bytes);
 
         std::memcpy(first + static_cast<std::size_t>(value_struct.is_negative), "0.", 2U);
         first += 2;
