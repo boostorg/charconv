@@ -67,6 +67,15 @@ example, using a `conanfile.txt`:
 boost_charconv/1.0.0
 ````
 
+## Header Only
+To use as header-only; that is, to eliminate the requirement to link a program to a static or dynamic Boost.Charconv library, simply place the following line in __exactly one__ new or existing source file in your project.
+
+````
+#include <boost/charconv/src.hpp>
+````
+
+__IMPORTANT__: MSVC users must also define the macro BOOST_CHARCONV_NO_LIB to disable auto-linking.
+
 # Synopsis
 
 Charconv is a collection of parsing functions that are locale-independent, non-allocating, and non-throwing.
