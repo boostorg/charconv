@@ -3,23 +3,45 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv.hpp>
-#include <cstdint>
-#include <cstdlib>
 #include <iostream>
 #include <exception>
 
 extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size)
 {
-    std::string s {reinterpret_cast<const char*>(data), size};
-
     try
     {
-        long val;
-        boost::charconv::from_chars(s.c_str(), s.c_str() + s.size(), val);
+        auto c_data = reinterpret_cast<const char*>(data);
+
+        for (int base = 2; base < 36; ++base)
+        {
+            char c_val;
+            boost::charconv::from_chars(c_data, c_data + size, c_val, base);
+
+            int i_val;
+            boost::charconv::from_chars(c_data, c_data + size, i_val, base);
+
+            long l_val;
+            boost::charconv::from_chars(c_data, c_data + size, l_val, base);
+
+            long long ll_val;
+            boost::charconv::from_chars(c_data, c_data + size, ll_val, base);
+
+            unsigned char uc_val;
+            boost::charconv::from_chars(c_data, c_data + size, uc_val, base);
+
+            unsigned int ui_val;
+            boost::charconv::from_chars(c_data, c_data + size, ui_val, base);
+
+            unsigned long ul_val;
+            boost::charconv::from_chars(c_data, c_data + size, ul_val, base);
+
+            unsigned long long ull_val;
+            boost::charconv::from_chars(c_data, c_data + size, ull_val, base);
+        }
     }
     catch(...)
     {
-        std::cerr << "Error with: " << s << std::endl;
+        std::cerr << "Error with: " << data << std::endl;
         std::terminate();
     }
 
