@@ -5,14 +5,6 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_SRC_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_SRC_HPP
 
-// https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
-#ifndef _SCL_SECURE_NO_WARNINGS
-# define _SCL_SECURE_NO_WARNINGS
-#endif
-#ifndef NO_WARN_MBCS_MFC_DEPRECATION
-# define NO_WARN_MBCS_MFC_DEPRECATION
-#endif
-
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
 #include <boost/charconv/detail/from_chars_float_impl.hpp>
 #include <boost/charconv/from_chars.hpp>
