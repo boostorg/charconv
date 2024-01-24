@@ -67,3 +67,13 @@ For example, using a `conanfile.txt`:
 [requires]
 boost_charconv/1.0.0
 ----
+
+== Header Only
+To use as header-only; that is, to eliminate the requirement to link a program to a static or dynamic Boost.Charconv library, simply place the following line in *exactly one* new or existing source file in your project.
+
+[source, c++]
+----
+#include <boost/charconv/src.hpp>
+----
+
+IMPORTANT: MSVC users must also define the macro BOOST_CHARCONV_NO_LIB to disable auto-linking.
