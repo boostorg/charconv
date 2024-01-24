@@ -197,7 +197,7 @@ parsed_number_string_t<UC> parse_number_string(UC const *p, UC const * pend, par
     return answer;
   }
   int64_t exp_number = 0;            // explicit exponential part
-  if (((unsigned)fmt & (unsigned)chars_format::scientific) && (p != pend) && ((UC('e') == *p) || (UC('E') == *p))) {
+  if ((static_cast<unsigned>(fmt) & static_cast<unsigned>(chars_format::scientific)) && (p != pend) && ((UC('e') == *p) || (UC('E') == *p))) {
     UC const * location_of_e = p;
     ++p;
     bool neg_exp = false;
@@ -208,7 +208,7 @@ parsed_number_string_t<UC> parse_number_string(UC const *p, UC const * pend, par
       ++p;
     }
     if ((p == pend) || !is_integer(*p)) {
-      if(!((unsigned)fmt & (unsigned)chars_format::fixed)) {
+      if(!(static_cast<unsigned>(fmt) & static_cast<unsigned>(chars_format::fixed))) {
         // We are in error.
         return answer;
       }
@@ -227,7 +227,8 @@ parsed_number_string_t<UC> parse_number_string(UC const *p, UC const * pend, par
     }
   } else {
     // If it scientific and not fixed, we have to bail out.
-    if(((unsigned)fmt & (unsigned)chars_format::scientific) && !((unsigned)fmt & (unsigned)chars_format::fixed))
+    if((static_cast<unsigned>(fmt) & static_cast<unsigned>(chars_format::scientific)) &&
+       !(static_cast<unsigned>(fmt) & static_cast<unsigned>(chars_format::fixed)))
     {
         return answer;
     }
