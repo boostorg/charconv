@@ -79,33 +79,33 @@ for local variant in from_chars_float from_chars_int
         $(variant)-runs += $(variant)-run-crashes ;
     }
 
-    #make oldcorpus/$(variant)
-    #    : old-corpus
-    #    : common.MkDir
-    #    : <location>.
-    #    ;
-    #explicit oldcorpus/$(variant) ;
-
-    # make an initial corpus from the test data already in the repo
-    local seed-corpus ;
-    for file in $(initial-corpus)
-    {
-        local copied = $(variant)/$(file:D=) ;
-        make $(copied) : $(file) : common.copy : <location>seedcorpus ;
-        explicit $(copied) ;
-        seed-corpus += $(copied) ;
-    }
-    make seedcorpus/$(variant)
-        : $(seed-corpus)
+    make oldcorpus/$(variant)
+        : old-corpus
         : common.MkDir
         : <location>.
         ;
+    explicit oldcorpus/$(variant) ;
+
+    # make an initial corpus from the test data already in the repo
+    #local seed-corpus ;
+    #for file in $(initial-corpus)
+    #{
+    #    local copied = $(variant)/$(file:D=) ;
+    #    make $(copied) : $(file) : common.copy : <location>seedcorpus ;
+    #    explicit $(copied) ;
+    #    seed-corpus += $(copied) ;
+    #}
+    #make seedcorpus/$(variant)
+    #    : $(seed-corpus)
+    #    : common.MkDir
+    #    : <location>.
+    #    ;
     explicit seedcorpus/$(variant) ;
 
     # run the fuzzer for a short while
     make out/$(variant)
         : $(fuzzer)
-          #oldcorpus/$(variant)
+          oldcorpus/$(variant)
           seedcorpus/$(variant)
         : @run-fuzzer
         : <location>.
