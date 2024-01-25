@@ -16,11 +16,10 @@ add_library(Boost::charconv ALIAS boost_charconv)
 
 target_include_directories(boost_charconv PUBLIC include)
 
-find_library(LIBQUADMATH quadmath)
+find_library(LIBQUADMATH NAMES quadmath)
 if(NOT LIBQUADMATH)
   message(STATUS "Boost.Charconv: quadmath support OFF")
-  # https://crascit.com/2015/03/28/enabling-cxx11-in-cmake/
-  set(CMAKE_CXX_EXTENSIONS OFF)
+  target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_NO_QUADMATH)
   target_link_libraries(boost_charconv
     PUBLIC
       Boost::config
@@ -52,8 +51,7 @@ else()
 endif()
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
-
-  target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_CMAKE_TESTING)
+  
   add_subdirectory(test)
 
 endif()
