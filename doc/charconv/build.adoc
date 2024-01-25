@@ -4,7 +4,7 @@ Distributed under the Boost Software License, Version 1.0.
 https://www.boost.org/LICENSE_1_0.txt
 ////
 
-= Building the Library
+= Getting Started
 :idprefix: build_
 
 == B2
@@ -67,3 +67,7 @@ For example, using a `conanfile.txt`:
 [requires]
 boost_charconv/1.0.0
 ----
+
+== Dependencies
+
+This library depends on: Boost.Assert, Boost.Config, Boost.Core, and  https://gcc.gnu.org/onlinedocs/libquadmath/[libquadmath] on supported platforms (e.g. Linux with x86, x86_64, PPC64, and IA64).
