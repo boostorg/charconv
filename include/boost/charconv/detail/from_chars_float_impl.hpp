@@ -43,10 +43,14 @@ namespace boost { namespace charconv { namespace detail {
 // We are operating on our own copy of the buffer, so we are free to modify it.
 inline void convert_string_locale(char* buffer) noexcept
 {
-    auto p = std::strchr(buffer, '.');
-    if (p != nullptr)
+    const auto locale_decimal_point = *std::localeconv()->decimal_point;
+    if (locale_decimal_point != '.')
     {
-        *p = *std::localeconv()->decimal_point;
+        auto p = std::strchr(buffer, '.');
+        if (p != nullptr)
+        {
+            *p = locale_decimal_point;
+        }
     }
 }
 
@@ -60,12 +64,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
 
     std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
     buffer[last - first] = '\0';
-
-    const auto current_locale = std::locale::global(std::locale(""));
-    if (current_locale.name() != "C" || current_locale.name() != "POSIX")
-    {
-        convert_string_locale(buffer);
-    }
+    convert_string_locale(buffer);
 
     char* str_end;
     T return_value {};
