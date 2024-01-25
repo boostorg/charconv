@@ -11,39 +11,25 @@ https://www.boost.org/LICENSE_1_0.txt
 
 == Description
 
-Charconv is a collection of parsing functions that are locale-independent, non-allocating, and non-throwing.
-This library requires a minimum of C++11.
+Boost.Charconv converts character buffers to numbers, and numbers to character buffers.
+It is a small library of two overloaded functions to do the heavy lifting, plus several supporting enums, structures, templates, and constants, with a particular focus on performance and consistency
+across the supported development environments.
 
-== Usage Examples
-[source, c++]
-----
-#include <boost/charconv.hpp>
+Why should I be interested in this Library? Charconv is locale-independent, non-allocating^1^, non-throwing and only requires a minimum of C\++11.
+It provides functionality similar to that found in `std::printf` or `std::strtod` with link:benchmarks.adoc[substantial performance increases].
+This library can also be used in place of the standard library `<charconv>` if unavailable with your toolchain.
+Currently only https://en.cppreference.com/w/cpp/compiler_support/17[GCC 11+ and MSVC 19.24+] support both integer and floating-point conversions in their implementation of `<charconv>`. +
+If you are using either of those compilers, Boost.Charconv is at least as performant as `<charconv>`, and can be up to several times faster.
+See: <<Benchmarks>>
 
-const char* buffer = "42";
-int v = 0;
-boost::charconv::from_chars_result r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
-assert(r.ec == std::errc());
-assert(v == 42);
+^1^ The one edge case where allocation may occur is you are parsing a string to an 80 or 128-bit `long double` or `__float128`, and the string is over 1024 bytes long.
 
-char buffer[64];
-int v = 123456;
-boost::charconv:to_chars_result r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, v);
-assert(r.ec == std::errc());
-assert(!strncmp(buffer, "123456", 6)); // Strncmp returns 0 on match
+== Supported Compilers / OS
 
-----
-
-== Supported Compilers
+Boost.Charconv is tested on Ubuntu, macOS, and Windows with the following compilers:
 
 * GCC 5 or later
 * Clang 3.8 or later
 * Visual Studio 2015 (14.0) or later
 
-Tested on https://github.com/cppalliance/charconv/actions[Github Actions] and https://drone.cpp.al/cppalliance/charconv[Drone].
-
-== Why use Boost.Charconv over <charconv>?
-
-Currently only https://en.cppreference.com/w/cpp/compiler_support/17[GCC 11+ and MSVC 19.24+] support both integer and floating-point conversions in their implementation of `<charconv>`. +
-
-If you are using either of those compilers, Boost.Charconv is at least as performant as `<charconv>`, and can be up to several times faster.
-See: <<Benchmarks>>
+Tested on https://github.com/cppalliance/charconv/actions[GitHub Actions] and https://drone.cpp.al/cppalliance/charconv[Drone].
