@@ -69,7 +69,7 @@ template <typename T>
 void spot_value(const std::string& buffer, T expected_value)
 {
     T v = 0;
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v);
+    auto r = boost::charconv::from_chars_erange(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v);
     BOOST_TEST(r.ec == std::errc());
     if (!BOOST_TEST_EQ(v, expected_value))
     {
@@ -138,7 +138,7 @@ void issue_599_test()
         BOOST_TEST(r.ec == std::errc());
 
         double return_val {};
-        const auto return_r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), return_val);
+        const auto return_r = boost::charconv::from_chars_erange(buffer, buffer + std::strlen(buffer), return_val);
         BOOST_TEST(return_r.ec == std::errc());
         if (!BOOST_TEST_EQ(current_ref_val, return_val))
         {
@@ -188,7 +188,7 @@ void check_accuracy(const char* nm, int max_ulp)
     }
 
     T y {};
-    boost::charconv::from_chars(nm, nm + std::strlen(nm), y, boost::charconv::chars_format::scientific);
+    boost::charconv::from_chars_erange(nm, nm + std::strlen(nm), y, boost::charconv::chars_format::scientific);
 
     Unsigned_Integer bx;
     Unsigned_Integer by;
