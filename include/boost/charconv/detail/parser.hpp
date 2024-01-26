@@ -93,13 +93,13 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     //
     // This is nested ifs rather than a big one-liner to ensure that once we hit an invalid character
     // or an end of buffer we return the correct value of next
-    if (*next == 'i' || *next == 'I')
+    if (next != last && (*next == 'i' || *next == 'I'))
     {
         ++next;
-        if (*next == 'n' || *next == 'N')
+        if (next != last && (*next == 'n' || *next == 'N'))
         {
             ++next;
-            if (*next == 'f' || *next == 'F')
+            if (next != last && (*next == 'f' || *next == 'F'))
             {
                 significand = 0;
                 return {next, std::errc::value_too_large};
@@ -108,24 +108,24 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
         return {next, std::errc::invalid_argument};
     }
-    else if (*next == 'n' || *next == 'N')
+    else if (next != last && (*next == 'n' || *next == 'N'))
     {
         ++next;
-        if (*next == 'a' || *next == 'A')
+        if (next != last && (*next == 'a' || *next == 'A'))
         {
             ++next;
-            if (*next == 'n' || *next == 'N')
+            if (next != last && (*next == 'n' || *next == 'N'))
             {
                 ++next;
-                if (*next == '(')
+                if (next != last && (*next == '('))
                 {
                     ++next;
-                    if (*next == 's' || *next == 'S')
+                    if (next != last && (*next == 's' || *next == 'S'))
                     {
                         significand = 1;
                         return {next, std::errc::not_supported};
                     }
-                    else if (*next == 'i' || *next == 'I')
+                    else if (next != last && (*next == 'i' || *next == 'I'))
                     {
                         significand = 0;
                         return {next, std::errc::not_supported};
@@ -143,7 +143,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     }
 
     // Ignore leading zeros (e.g. 00005 or -002.3e+5)
-    while (*next == '0' && next != last)
+    while (next != last && *next == '0')
     {
         ++next;
     }
@@ -179,7 +179,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     const auto char_validation_func = (fmt != boost::charconv::chars_format::hex) ? is_integer_char : is_hex_char;
     const int base = (fmt != boost::charconv::chars_format::hex) ? 10 : 16;
 
-    while (char_validation_func(*next) && next != last && i < significand_buffer_size)
+    while (next != last && char_validation_func(*next) && i < significand_buffer_size)
     {
         all_zeros = false;
         significand_buffer[i] = *next;
@@ -226,7 +226,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // so that we get the useful parts of the fraction
         if (all_zeros)
         {
-            while (*next == '0' && next != last)
+            while (next != last && *next == '0')
             {
                 ++next;
                 --leading_zero_powers;
@@ -238,7 +238,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             }
         }
 
-        while (char_validation_func(*next) && next != last && i < significand_buffer_size)
+        while (next != last && char_validation_func(*next) && i < significand_buffer_size)
         {
             significand_buffer[i] = *next;
             ++next;
@@ -251,14 +251,14 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         // We can not process any more significant figures into the significand so skip to the end
         // or the exponent part and capture the additional orders of magnitude for the exponent
         bool found_dot = false;
-        while ((char_validation_func(*next) || *next == '.') && next != last)
+        while (next != last && (char_validation_func(*next) || *next == '.'))
         {
             ++next;
             if (!fractional && !found_dot)
             {
                 ++extra_zeros;
             }
-            if (*next == '.')
+            if (next != last && *next == '.')
             {
                 found_dot = true;
             }
@@ -361,25 +361,25 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
     i = 0;
 
     // Get the sign first
-    if (*next == '-')
+    if (next != last && *next == '-')
     {
         exponent_buffer[i] = *next;
         ++next;
         ++i;
     }
-    else if (*next == '+')
+    else if (next != last && *next == '+')
     {
         ++next;
     }
 
     // Next strip any leading zeros
-    while (*next == '0')
+    while (next != last && *next == '0')
     {
         ++next;
     }
 
     // Process the significant values
-    while (is_integer_char(*next) && next != last && i < exponent_buffer_size)
+    while (next != last && is_integer_char(*next) && i < exponent_buffer_size)
     {
         exponent_buffer[i] = *next;
         ++next;
