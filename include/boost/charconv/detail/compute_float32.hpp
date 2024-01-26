@@ -25,7 +25,7 @@ inline float compute_float32(std::int64_t power, std::uint64_t i, bool negative,
         // warning: comparison with infinity always evaluates to false in fast floating point modes [-Wtautological-constant-compare]
         // if (std::isinf(return_val))
         if (d > static_cast<double>((std::numeric_limits<float>::max)()) ||
-            d < static_cast<double>((std::numeric_limits<float>::denorm_min)()))
+            d < static_cast<double>((std::numeric_limits<float>::lowest)()))
         {
             return_val = negative ? -HUGE_VALF : HUGE_VALF;
             success = false;
