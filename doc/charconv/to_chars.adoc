@@ -51,7 +51,7 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 
 * `operator==` - compares the value of ptr and ec for equality
 
-== to_chars
+== to_chars parameters
 * `first, last` - pointers to the beginning and end of the character buffer
 * `value` - the value to be parsed into the buffer
 * `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
@@ -59,14 +59,14 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 See <<chars_format overview>> for description.
 * `precision` (float only) - the number of decimal places required
 
-=== to_chars for integral types
+=== Usage notes for to_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
 * from_chars for integral type is constexpr (BOOST_CHARCONV_CONSTEXPR is defined) when:
 ** compiled using `-std=c++14` or newer 
 ** using a compiler with `\__builtin_ is_constant_evaluated`
 * These functions have been tested to support `\__int128` and `unsigned __int128`
 
-=== to_chars for floating point types
+=== Usage notes for to_chars for floating point types
 * The following will be returned when handling different values of `NaN`
 ** `qNaN` returns "nan"
 ** `-qNaN` returns "-nan(ind)"
@@ -75,6 +75,7 @@ See <<chars_format overview>> for description.
 * These functions have been tested to support all built-in floating-point types and those from C++23's `<stdfloat>`
 ** Long doubles can be 64, 80, or 128-bit, but must be IEEE 754 compliant. An example of a non-compliant, and therefore unsupported, format is `ibm128`.
 ** Use of `__float128` or `std::float128_t` requires compiling with `-std=gnu++xx` and linking GCC's `libquadmath`.
+This is done automatically when building with CMake.
 
 == Examples
 

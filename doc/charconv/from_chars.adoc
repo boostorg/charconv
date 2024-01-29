@@ -51,9 +51,11 @@ from_chars_result from_chars_erange(const char* first, const char* last, Real& v
 | `std::errc()` | Successful Parsing
 | `std::errc::invalid_argument` | 1) Parsing a negative into an unsigned type
 
-2) Leading `\+` sign
+2) Leading `+` sign
 
 3) Leading space
+
+4) Incompatible formatting (e.g. exponent on `chars_format::fixed`, or p as exponent on value that is not `chars_format::hex`)
 
 | `std::errc::result_out_of_range` | 1) Overflow
 
@@ -62,7 +64,7 @@ from_chars_result from_chars_erange(const char* first, const char* last, Real& v
 
 * `operator==` - compares the values of ptr and ec for equality
 
-== from_chars
+== from_chars parameters
 * `first`, `last` - pointers to a valid range to parse
 * `value` - where the output is stored upon successful parsing
 * `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
@@ -139,6 +141,9 @@ assert(v == 8.0427e-18);
 ----
 
 === std::errc::invalid_argument
+
+The below is invalid because a negative value is being parsed into an unsigned integer.
+
 [source, c++]
 ----
 const char* buffer = "-123";
@@ -147,6 +152,9 @@ auto r = boost::charconv::from_chars(buffer, buffer + std::strlen(buffer), v);
 assert(r.ec == std::errc::invalid_argument);
 assert(!r); // Same as above but less verbose. Added in C++26.
 ----
+
+The below is invalid because a fixed format floating-point value can not have an exponent.
+
 [source, c++]
 ----
 const char* buffer = "-1.573e-3";
