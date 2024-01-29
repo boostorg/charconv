@@ -45,9 +45,21 @@ from_chars_result from_chars_erange(const char* first, const char* last, Real& v
 == from_chars_result
 * `ptr` - On return from `from_chars` it is a pointer to the first character not matching the pattern, or pointer to `last` if all characters are successfully parsed.
 * `ec` - https://en.cppreference.com/w/cpp/error/errc[the error code]. Values returned by `from_chars` are:
-** `std::errc()` - successful parsing
-** `std::errc::invalid_argument` - invalid argument (e.g. parsing a negative number into an unsigned type)
-** `std::errc::result_out_of_range` - result out of range (e.g. overflow)
+
+|===
+|Return Value | Description
+| `std::errc()` | Successful Parsing
+| `std::errc::invalid_argument` | 1) Parsing a negative into an unsigned type
+
+2) Leading `\+` sign
+
+3) Leading space
+
+| `std::errc::result_out_of_range` | 1) Overflow
+
+2) Underflow
+|===
+
 * `operator==` - compares the values of ptr and ec for equality
 
 == from_chars

@@ -40,9 +40,15 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 
 == to_chars_result
 * `ptr` - On return from `to_chars` points to one-past-the-end of the characters written on success or `last` on failure
-* `ec` - the error code from `to_chars`. Returned values are:
-** `std::errc()` - successful parsing
-** `std::errc::result_out_of_range` - result out of range (e.g. overflow)
+* `ec` - https://en.cppreference.com/w/cpp/error/errc[the error code]. Values returned by `to_chars` are:
+|===
+|Return Value | Description
+|`std::errc()` | Successful Parsing
+| `std::errc::result_out_of_range` | 1) Overflow
+
+2) Underflow
+|===
+
 * `operator==` - compares the value of ptr and ec for equality
 
 == to_chars
