@@ -9,7 +9,9 @@ https://www.boost.org/LICENSE_1_0.txt
 
 == to_chars overview
 
-`to_chars` is a set of functions that attempts to convert `value` into a character buffer specified by `[first, last)`. The result of `to_chars` is `to_chars_result` which on success returns `ptr` equal to one-past-the-end of the characters written and `ec == std::errc()` and on failure returns `std::errc::result_out_of_range` and `ptr == last`.
+`to_chars` is a set of functions that attempts to convert `value` into a character buffer specified by `[first, last)`.
+The result of `to_chars` is `to_chars_result` which on success returns `ptr` equal to one-past-the-end of the characters written and `ec == std::errc()` and on failure returns `std::errc::result_out_of_range` and `ptr == last`.
+`to_chars` does not null-terminate the returned characters.
 
 [source, c++]
 ----
