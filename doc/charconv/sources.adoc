@@ -6,6 +6,9 @@ https://www.boost.org/LICENSE_1_0.txt
 
 [#sources]
 = Sources
+
+The following papers and blog posts serve as the basis for the algorithms used in the library:
+
 :idprefix:
 :linkattrs:
 
