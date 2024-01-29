@@ -25,9 +25,10 @@ include::charconv/from_chars.adoc[]
 include::charconv/to_chars.adoc[]
 include::charconv/chars_format.adoc[]
 include::charconv/limits.adoc[]
-include::charconv/reference.adoc[]
+#include::charconv/reference.adoc[]
 include::charconv/benchmarks.adoc[]
 include::charconv/sources.adoc[]
+include::charconv/acknowledgments.adoc[]
 include::charconv/copyright.adoc[]
 
 :leveloffset: -1

@@ -7,8 +7,11 @@ https://www.boost.org/LICENSE_1_0.txt
 = Benchmarks
 :idprefix: benchmarks
 
+This section describes a range of performance benchmarks that have been run comparing this library with the standard library, and how to run your own benchmarks if required.
+
 The values are relative to the performance of `std::printf` and `std::strtoX`.
 Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 means it takes twice as long).
+`std::printf` and `std::strtoX` are always listed first as they will be the reference value.
 
 == How to run the Benchmarks
 
@@ -255,6 +258,3 @@ Data in tables 9-12 were run on MacOS Ventura 13.5.2 with M1 Pro architecture us
 |Boost.Charconv.from_chars
 |2.27 / 1.65
 |===
-
-Special thanks to Stephan T. Lavavej for providing the basis for the benchmarks.
-
