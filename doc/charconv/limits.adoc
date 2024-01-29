@@ -11,6 +11,9 @@ https://www.boost.org/LICENSE_1_0.txt
 
 The contents of `<boost/charconv/limits.hpp>` are designed to help the user optimize the size of the buffer required for `to_chars`.
 
+== Definitions
+[#limits_definitions_]
+
 [source, c++]
 ----
 namespace boost { namespace charconv {

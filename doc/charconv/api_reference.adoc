@@ -7,3 +7,28 @@ https://www.boost.org/LICENSE_1_0.txt
 [#api_reference]
 = API Reference
 :idprefix: api_ref_
+
+== Functions
+
+- xref:from_chars.adoc#from_chars_definitions_[`boost::charconv::from_chars`]
+- xref:from_chars.adoc#from_chars_definitions_[`boost::charconv::from_chars_erange`]
+- xref:to_chars.adoc#to_chars_definitions_[`boost::charconv::to_chars`]
+
+== Structures
+
+- xref:from_chars.adoc#from_chars_definitions_[`boost::charconv::from_chars_result`]
+- xref:to_chars.adoc#to_chars_definitions_[`boost::charconv::to_chars_result`]
+
+== Enums
+
+- xref:chars_format.adoc#chars_format_defintion_[`boost::charconv::chars_format`]
+
+== Constants
+
+- xref:limits.adoc#limits_definitions_[`boost::charconv::limits::digits`]
+- xref:limits.adoc#limits_definitions_[`boost::charconv::limits::digits10`]
+
+== Macros
+
+- xref:to_chars.adoc#integral_usage_notes_[`BOOST_CHARCONV_CONSTEXPR`]
+- xref:benchmarks.adoc#run_benchmarks_[`BOOST_CHARCONV_RUN_BENCHMARKS`]

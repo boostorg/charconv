@@ -14,6 +14,7 @@ The parsing of number is locale-independent (e.g. equivalent to the "C" locale).
 The result of `from_chars` is `from_chars_result` which on success returns `ptr == last` and `ec == std::errc()`, and on failure returns `ptr` equal to the last valid character parsed or `last` on underflow/overflow, and `ec == std::errc::invalid_argument` or `std::errc::result_out_of_range` respectively. `from_chars` does not require the character sequence to be null terminated.
 
 == Definitions
+[#from_chars_definitions_]
 
 [source, c++]
 ----

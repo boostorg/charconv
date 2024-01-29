@@ -11,6 +11,9 @@ https://www.boost.org/LICENSE_1_0.txt
 
 `boost::charconv::chars_format` is an `enum class` used to define the format of floating point types with `from_chars` and `to_chars`.
 
+== Definition
+[#chars_format_defintion_]
+
 [source, c++]
 ----
 namespace boost { namespace charconv {
