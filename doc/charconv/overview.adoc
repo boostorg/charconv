@@ -15,10 +15,10 @@ Boost.Charconv converts character buffers to numbers, and numbers to character b
 It is a small library of two overloaded functions to do the heavy lifting, plus several supporting enums, structures, templates, and constants, with a particular focus on performance and consistency
 across the supported development environments.
 
-Why should I be interested in this Library? Charconv is locale-independent, non-allocating^1^, non-throwing and only requires a minimum of C\++11.
-It provides functionality similar to that found in `std::printf` or `std::strtod` with link:benchmarks.adoc[substantial performance increases].
+Why should I be interested in this Library? Charconv is locale-independent, non-allocating^1^, non-throwing and only requires a minimum of C++ 11.
+It provides functionality similar to that found in `std::printf` or `std::strtod` with <<benchmark_results_, substantial performance increases>>.
 This library can also be used in place of the standard library `<charconv>` if unavailable with your toolchain.
-Currently only https://en.cppreference.com/w/cpp/compiler_support/17[GCC 11+ and MSVC 19.24+] support both integer and floating-point conversions in their implementation of `<charconv>`. +
+Currently only https://en.cppreference.com/w/cpp/compiler_support/17.html[GCC 11+ and MSVC 19.24+] support both integer and floating-point conversions in their implementation of `<charconv>`. +
 If you are using either of those compilers, Boost.Charconv is at least as performant as `<charconv>`, and can be up to several times faster.
 See: <<Benchmarks>>
 
