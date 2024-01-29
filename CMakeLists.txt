@@ -19,6 +19,7 @@ target_include_directories(boost_charconv PUBLIC include)
 
 # find_library for quadmath does not always work so attempt
 # to compile the trivial test case we use with B2
+include(CheckCXXSourceCompiles)
 check_cxx_source_compiles(config/has_float128.cpp QUADMATH_FOUND)
 
 if(NOT QUADMATH_FOUND)
