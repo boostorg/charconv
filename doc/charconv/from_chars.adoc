@@ -55,7 +55,7 @@ from_chars_result from_chars_erange(const char* first, const char* last, Real& v
 
 3) Leading space
 
-4) Incompatible formatting (e.g. exponent on `chars_format::fixed`, or p as exponent on value that is not `chars_format::hex`)
+4) Incompatible formatting (e.g. exponent on `chars_format::fixed`, or p as exponent on value that is not `chars_format::hex`) See <<chars_format overview>>
 
 | `std::errc::result_out_of_range` | 1) Overflow
 

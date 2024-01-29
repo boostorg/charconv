@@ -8,6 +8,9 @@ https://www.boost.org/LICENSE_1_0.txt
 :idprefix: chars_format_
 
 == chars_format overview
+
+`boost::charconv::chars_format` is an `enum class` used to define the format of floating point types with `from_chars` and `to_chars`.
+
 [source, c++]
 ----
 namespace boost { namespace charconv {
@@ -22,7 +25,8 @@ enum class chars_format : unsigned
 
 }} // Namespace boost::charconv
 ----
-`boost::charconv::chars_format` is used to specify the format of floating point types with `from_chars` and `to_chars`.
+
+== Formats
 
 === Scientific Format
 Scientific format will be of the form `1.3e+03`.
