@@ -13,6 +13,8 @@ https://www.boost.org/LICENSE_1_0.txt
 The result of `to_chars` is `to_chars_result` which on success returns `ptr` equal to one-past-the-end of the characters written and `ec == std::errc()` and on failure returns `std::errc::result_out_of_range` and `ptr == last`.
 `to_chars` does not null-terminate the returned characters.
 
+== Definitions
+
 [source, c++]
 ----
 namespace boost { namespace charconv {
@@ -38,6 +40,14 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 }} // Namespace boost::charconv
 ----
 
+== to_chars parameters
+* `first, last` - pointers to the beginning and end of the character buffer
+* `value` - the value to be parsed into the buffer
+* `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
+* `fmt` (float only) - the floating point format to use.
+See <<chars_format overview>> for description.
+* `precision` (float only) - the number of decimal places required
+
 == to_chars_result
 * `ptr` - On return from `to_chars` points to one-past-the-end of the characters written on success or `last` on failure
 * `ec` - https://en.cppreference.com/w/cpp/error/errc[the error code]. Values returned by `to_chars` are:
@@ -51,13 +61,7 @@ to_chars_result to_chars(char* first, char* last, Real value, chars_format fmt =
 
 * `operator==` - compares the value of ptr and ec for equality
 
-== to_chars parameters
-* `first, last` - pointers to the beginning and end of the character buffer
-* `value` - the value to be parsed into the buffer
-* `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
-* `fmt` (float only) - the floating point format to use.
-See <<chars_format overview>> for description.
-* `precision` (float only) - the number of decimal places required
+== Usage Notes
 
 === Usage notes for to_chars for integral types
 * All built-in integral types are allowed except bool which is deleted

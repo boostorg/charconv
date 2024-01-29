@@ -13,6 +13,8 @@ https://www.boost.org/LICENSE_1_0.txt
 The parsing of number is locale-independent (e.g. equivalent to the "C" locale).
 The result of `from_chars` is `from_chars_result` which on success returns `ptr == last` and `ec == std::errc()`, and on failure returns `ptr` equal to the last valid character parsed or `last` on underflow/overflow, and `ec == std::errc::invalid_argument` or `std::errc::result_out_of_range` respectively. `from_chars` does not require the character sequence to be null terminated.
 
+== Definitions
+
 [source, c++]
 ----
 namespace boost { namespace charconv {
@@ -42,6 +44,12 @@ from_chars_result from_chars_erange(const char* first, const char* last, Real& v
 }} // Namespace boost::charconv
 ----
 
+== from_chars parameters
+* `first`, `last` - pointers to a valid range to parse
+* `value` - where the output is stored upon successful parsing
+* `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
+* `fmt` (floating point only) - The format of the buffer. See <<chars_format overview>> for description.
+
 == from_chars_result
 * `ptr` - On return from `from_chars` it is a pointer to the first character not matching the pattern, or pointer to `last` if all characters are successfully parsed.
 * `ec` - https://en.cppreference.com/w/cpp/error/errc[the error code]. Values returned by `from_chars` are:
@@ -64,11 +72,7 @@ from_chars_result from_chars_erange(const char* first, const char* last, Real& v
 
 * `operator==` - compares the values of ptr and ec for equality
 
-== from_chars parameters
-* `first`, `last` - pointers to a valid range to parse
-* `value` - where the output is stored upon successful parsing
-* `base` (integer only) - the integer base to use. Must be between 2 and 36 inclusive
-* `fmt` (floating point only) - The format of the buffer. See <<chars_format overview>> for description.
+== Usage Notes
 
 === Usage notes for from_chars for integral types
 * All built-in integral types are allowed except bool which is deleted
