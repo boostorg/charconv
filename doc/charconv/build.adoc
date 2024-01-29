@@ -29,6 +29,8 @@ To install the development environment, run:
 sudo ./b2 install cxxstd=11
 ----
 
+The value of cxxstd must be at least 11. https://www.boost.org/doc/libs/1_84_0/tools/build/doc/html/index.html[See the b2 documentation] under `cxxstd` for all valid values.
+
 == vcpkg
 
 Run the following commands to clone the latest version of Charconv and install it using vcpkg:
@@ -39,7 +41,7 @@ cd charconv
 vcpkg install charconv --overlay-ports=ports/charconv
 ----
 
-Any required Boost packages that do not already exist will be installed automatically.
+Any required Boost packages not currently installed in your development environment will be installed automatically.
 
 == Conan
 
