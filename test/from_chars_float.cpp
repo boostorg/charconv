@@ -74,7 +74,7 @@ void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt
 }
 
 template <typename T>
-void spot_check_bad_non_finite(const std::string& buffer, boost::charconv::chars_format fmt)
+void spot_check_invalid_argument(const std::string& buffer, boost::charconv::chars_format fmt)
 {
     T v = static_cast<T>(5.0L);
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
@@ -1881,9 +1881,16 @@ int main()
         spot_check_nan<double>("-nan(ind)", fmt);
         spot_check_nan<long double>("-nan(ind)", fmt);
 
-        spot_check_bad_non_finite<float>("na7", fmt);
-        spot_check_bad_non_finite<float>("na", fmt);
-        spot_check_bad_non_finite<float>("in", fmt);
+        spot_check_invalid_argument<float>("na7", fmt);
+        spot_check_invalid_argument<float>("na", fmt);
+        spot_check_invalid_argument<float>("in", fmt);
+
+        spot_check_invalid_argument<float>(" 1.23", fmt);
+        spot_check_invalid_argument<float>("  1.23", fmt);
+        spot_check_invalid_argument<double>(" 1.23", fmt);
+        spot_check_invalid_argument<double>("  1.23", fmt);
+        spot_check_invalid_argument<long double>(" 1.23", fmt);
+        spot_check_invalid_argument<long double>("  1.23", fmt);
     }
 
     return boost::report_errors();

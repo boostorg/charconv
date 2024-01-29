@@ -183,6 +183,18 @@ void invalid_argument_test()
     auto r7 = boost::charconv::from_chars(buffer7, buffer7 + std::strlen(buffer7), v7);
     BOOST_TEST(r7.ec == std::errc::invalid_argument);
     BOOST_TEST_EQ(v7, static_cast<T>(3));
+
+    const char* buffer8 = " 12345";
+    T v8 = 3;
+    auto r8 = boost::charconv::from_chars(buffer8, buffer8 + std::strlen(buffer8), v8);
+    BOOST_TEST(r8.ec == std::errc::invalid_argument);
+    BOOST_TEST_EQ(v8, static_cast<T>(3));
+
+    const char* buffer9 = "123 45";
+    T v9 = 3;
+    auto r9 = boost::charconv::from_chars(buffer9, buffer9 + std::strlen(buffer9), v9);
+    BOOST_TEST(r9);
+    BOOST_TEST_EQ(v9, static_cast<T>(123));
 }
 
 // No overflows, negative numbers, locales, etc.

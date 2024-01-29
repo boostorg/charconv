@@ -99,7 +99,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
                 is_negative = true;
                 ++next;
             }
-            else if (*next == '+')
+            else if (*next == '+' || *next == ' ')
             {
                 return {next, std::errc::invalid_argument};
             }
@@ -126,7 +126,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     }
     else
     {
-        if (next != last && (*next == '-' || *next == '+'))
+        if (next != last && (*next == '-' || *next == '+' || *next == ' '))
         {
             return {first, std::errc::invalid_argument};
         }
