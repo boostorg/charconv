@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <type_traits>
