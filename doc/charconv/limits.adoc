@@ -11,6 +11,9 @@ https://www.boost.org/LICENSE_1_0.txt
 
 The contents of `<boost/charconv/limits.hpp>` are designed to help the user optimize the size of the buffer required for `to_chars`.
 
+== Definitions
+[#limits_definitions_]
+
 [source, c++]
 ----
 namespace boost { namespace charconv {
@@ -35,6 +38,8 @@ The minimum size of the buffer that needs to be  passed to `to_chars` to guarant
 
 == Examples
 
+The following two examples are for `max_chars10` to optimize the buffer size with `to_chars` for an integral type and a floating-point type respectively.
+
 [source, c++]
 ----
 char buffer [boost::charconv::limits<std::int32_t>::max_chars10;
@@ -54,6 +59,8 @@ assert(r.ec == std::errc());
 assert(r); // Same as above but less verbose. Added in C++26.
 assert(!strcmp(buffer, "3.40282347e+38")); // strcmp returns 0 on match
 ----
+
+The following example is a usage of `max_chars` when used to serialize an integer in binary (base = 2).
 
 [source, c++]
 ----
