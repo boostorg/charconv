@@ -125,11 +125,11 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_v
 #ifdef BOOST_CHARCONV_HAS_INT128
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, boost::int128_type& value, int base = 10) noexcept
 {
-    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+    return detail::from_chars128(sv.data(), sv.data() + sv.size(), value, base);
 }
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, boost::uint128_type& value, int base = 10) noexcept
 {
-    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+    return detail::from_chars128(sv.data(), sv.data() + sv.size(), value, base);
 }
 #endif
 
