@@ -86,6 +86,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/charconv/detail/generate_nan.hpp>
+#include <boost/charconv/detail/issignaling.hpp>
 #include <limits>
 #include <iostream>
 #include <iomanip>
