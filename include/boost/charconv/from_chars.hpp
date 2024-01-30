@@ -12,6 +12,7 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <boost/core/detail/string_view.hpp>
 #include <system_error>
 
 namespace boost { namespace charconv {
@@ -72,6 +73,63 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, co
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, boost::uint128_type& value, int base = 10) noexcept
 {
     return detail::from_chars128(first, last, value, base);
+}
+#endif
+
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, bool& value, int base = 10) noexcept = delete;
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, char& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, signed char& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, unsigned char& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, short& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, unsigned short& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, int& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, unsigned int& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, long& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, unsigned long& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, long long& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, unsigned long long& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+
+#ifdef BOOST_CHARCONV_HAS_INT128
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, boost::int128_type& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
+}
+BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_view sv, boost::uint128_type& value, int base = 10) noexcept
+{
+    return detail::from_chars(sv.data(), sv.data() + sv.size(), value, base);
 }
 #endif
 
