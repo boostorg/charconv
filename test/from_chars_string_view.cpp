@@ -71,6 +71,17 @@ int main()
     test_int<long long>();
     test_int<unsigned long long>();
 
+    test_int<signed char, std::string>();
+    test_int<unsigned char, std::string>();
+    test_int<short, std::string>();
+    test_int<unsigned short, std::string>();
+    test_int<int, std::string>();
+    test_int<unsigned, std::string>();
+    test_int<long, std::string>();
+    test_int<unsigned long, std::string>();
+    test_int<long long, std::string>();
+    test_int<unsigned long long, std::string>();
+
     #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 
     test_int<signed char, std::string_view>();
@@ -90,6 +101,10 @@ int main()
     test_float<double>();
     test_float<long double>();
 
+    test_float<float, std::string>();
+    test_float<double, std::string>();
+    test_float<long double, std::string>();
+
     #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 
     test_float<float, std::string_view>();
@@ -101,6 +116,7 @@ int main()
     #ifdef BOOST_CHARCONV_HAS_FLOAT32
 
     test_float<std::float32_t>();
+    test_float<std::float32_t, std::string>();
     test_float<std::float32_t, std::string_view>();
 
     #endif
@@ -108,6 +124,7 @@ int main()
     #ifdef BOOST_CHARCONV_HAS_FLOAT64
 
     test_float<std::float64_t>();
+    test_float<std::float64_t, std::string>();
     test_float<std::float64_t, std::string_view>();
 
     #endif
