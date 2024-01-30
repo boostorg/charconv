@@ -12,10 +12,9 @@
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
-#include <locale>
-#include <clocale>
 #include <cstdlib>
 #include <cmath>
 
@@ -35,130 +34,6 @@ namespace boost { namespace charconv { namespace detail {
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wconversion"
 #endif
-
-// We know that the string is in the "C" locale because it would have previously passed through our parser.
-// Convert the string into the current locale so that the strto* family of functions
-// works correctly for the given locale.
-//
-// We are operating on our own copy of the buffer, so we are free to modify it.
-inline void convert_string_locale(char* buffer) noexcept
-{
-    const auto locale_decimal_point = *std::localeconv()->decimal_point;
-    if (locale_decimal_point != '.')
-    {
-        auto p = std::strchr(buffer, '.');
-        if (p != nullptr)
-        {
-            *p = locale_decimal_point;
-        }
-    }
-}
-
-template <typename T>
-from_chars_result from_chars_strtod_impl(const char* first, const char* last, T& value, char* buffer) noexcept
-{
-    // For strto(f/d)
-    // Floating point value corresponding to the contents of str on success.
-    // If the converted value falls out of range of corresponding return type, range error occurs and HUGE_VAL, HUGE_VALF or HUGE_VALL is returned.
-    // If no conversion can be performed, 0 is returned and *str_end is set to str.
-
-    std::memcpy(buffer, first, static_cast<std::size_t>(last - first));
-    buffer[last - first] = '\0';
-    convert_string_locale(buffer);
-
-    char* str_end;
-    T return_value {};
-    from_chars_result r {nullptr, std::errc()};
-
-    BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
-    {
-        return_value = std::strtof(buffer, &str_end);
-
-        #ifndef __INTEL_LLVM_COMPILER
-        if (return_value == HUGE_VALF)
-        #else
-        if (return_value >= std::numeric_limits<T>::max())
-        #endif
-        {
-            r = {last, std::errc::result_out_of_range};
-        }
-    }
-    else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
-    {
-        return_value = std::strtod(buffer, &str_end);
-
-        #ifndef __INTEL_LLVM_COMPILER
-        if (return_value == HUGE_VAL)
-        #else
-        if (return_value >= std::numeric_limits<T>::max())
-        #endif
-        {
-            r = {last, std::errc::result_out_of_range};
-        }
-    }
-    else BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
-    {
-        return_value = std::strtold(buffer, &str_end);
-
-        #ifndef __INTEL_LLVM_COMPILER
-        if (return_value == HUGE_VALL)
-        #else
-        if (return_value >= std::numeric_limits<T>::max())
-        #endif
-        {
-            r = {last, std::errc::result_out_of_range};
-        }
-    }
-    #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    else
-    {
-        return_value = strtoflt128(buffer, &str_end);
-
-        if (return_value == HUGE_VALQ)
-        {
-            r = {last, std::errc::result_out_of_range};
-        }
-    }
-    #endif
-
-    // Since this is a fallback routine we are safe to check for 0
-    if (return_value == 0 && str_end == last)
-    {
-        r = {first, std::errc::result_out_of_range};
-    }
-
-    if (r)
-    {
-        value = return_value;
-        r = {first + (str_end - buffer), std::errc()};
-    }
-
-    return r;
-}
-
-template <typename T>
-inline from_chars_result from_chars_strtod(const char* first, const char* last, T& value) noexcept
-{
-    if (last - first < 1024)
-    {
-        char buffer[1024];
-        return from_chars_strtod_impl(first, last, value, buffer);
-    }
-
-    // If the string to be parsed does not fit into the 1024 byte static buffer than we have to allocate a buffer.
-    // malloc is used here because it does not throw on allocation failure.
-
-    char* buffer = static_cast<char*>(std::malloc(static_cast<std::size_t>(last - first + 1)));
-    if (buffer == nullptr)
-    {
-        return {first, std::errc::not_enough_memory};
-    }
-
-    auto r = from_chars_strtod_impl(first, last, value, buffer);
-    std::free(buffer);
-
-    return r;
-}
 
 template <typename T>
 from_chars_result from_chars_float_impl(const char* first, const char* last, T& value, chars_format fmt) noexcept
