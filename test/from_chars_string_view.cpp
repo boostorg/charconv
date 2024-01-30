@@ -35,6 +35,29 @@ void test_int()
     }
 }
 
+template <typename T, typename StringViewType = boost::core::string_view>
+void test_float()
+{
+    std::uniform_real_distribution<T> dist(T(-1e3), T(1e3));
+
+    for (std::size_t i = 0; i < N; ++i)
+    {
+        const auto value = dist(rng);
+        std::string str_value = std::to_string(value);
+        StringViewType sv = str_value;
+
+        T v = 0;
+        auto r = boost::charconv::from_chars(sv, v);
+        BOOST_TEST(r);
+
+        T v2 = 0;
+        auto r2 = boost::charconv::from_chars(str_value.data(), str_value.data() + str_value.size(), v2);
+        BOOST_TEST(r2);
+
+        BOOST_TEST_EQ(v, v2);
+    }
+}
+
 int main()
 {
     test_int<signed char>();
@@ -60,6 +83,32 @@ int main()
     test_int<unsigned long, std::string_view>();
     test_int<long long, std::string_view>();
     test_int<unsigned long long, std::string_view>();
+
+    #endif
+
+    test_float<float>();
+    test_float<double>();
+    test_float<long double>();
+
+    #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+
+    test_float<float, std::string_view>();
+    test_float<double, std::string_view>();
+    test_float<long double, std::string_view>();
+
+    #endif
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT32
+
+    test_float<std::float32_t>();
+    test_float<std::float32_t, std::string_view>();
+
+    #endif
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT64
+
+    test_float<std::float64_t>();
+    test_float<std::float64_t, std::string_view>();
 
     #endif
 
