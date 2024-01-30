@@ -287,6 +287,62 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
 
 #endif // long double implementations
 
+// String view overloads
+
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, float& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, double & value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+
+// <stdfloat> types
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, std::float16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, std::float32_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, std::float64_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+#ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::from_chars(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+
 namespace {
 
 // Adheres to the STL strictly as opposed to fixing the ERANGE problem (which pre-review was the library default behavior)
@@ -360,5 +416,62 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
 {
     return from_chars_strict_impl(first, last, value, fmt);
+}
+#endif
+
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, float& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, double& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, std::float16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT32
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, std::float32_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT64
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, std::float64_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+}
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
+{
+    return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 #endif
