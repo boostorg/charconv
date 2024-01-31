@@ -273,7 +273,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
         }
         if (dot_position != 0 || fractional)
         {
-            exponent = static_cast<Integer>(dot_position - i) + extra_zeros + leading_zero_powers;
+            exponent = static_cast<Integer>(dot_position) - static_cast<Integer>(i) + extra_zeros + leading_zero_powers;
         }
         else
         {
