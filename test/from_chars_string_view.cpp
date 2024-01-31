@@ -60,8 +60,13 @@ void test_float()
 
 int main()
 {
+    // MSVC does not allow (un)signed char in uniform_int_distribution
+    // GCC and clang do
+    #ifndef _MSC_VER
     test_int<signed char>();
     test_int<unsigned char>();
+    #endif
+
     test_int<short>();
     test_int<unsigned short>();
     test_int<int>();
@@ -71,8 +76,11 @@ int main()
     test_int<long long>();
     test_int<unsigned long long>();
 
+    #ifndef _MSC_VER
     test_int<signed char, std::string>();
     test_int<unsigned char, std::string>();
+    #endif
+
     test_int<short, std::string>();
     test_int<unsigned short, std::string>();
     test_int<int, std::string>();
@@ -84,8 +92,11 @@ int main()
 
     #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 
+    #ifndef _MSC_VER
     test_int<signed char, std::string_view>();
     test_int<unsigned char, std::string_view>();
+    #endif
+
     test_int<short, std::string_view>();
     test_int<unsigned short, std::string_view>();
     test_int<int, std::string_view>();
