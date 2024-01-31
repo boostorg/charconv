@@ -98,7 +98,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
         return negative ? -HUGE_VAL : HUGE_VAL;
     }
 
-    const std::uint64_t factor_significand = significand_64[power - smallest_power];
+    const std::uint64_t factor_significand = significands_table::significand_64[power - smallest_power];
     const std::int64_t exponent = (((152170 + 65536) * power) >> 16) + 1024 + 63;
     int leading_zeros = boost::core::countl_zero(i);
     i <<= static_cast<std::uint64_t>(leading_zeros);
@@ -123,7 +123,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     // lower + i < lower to be true (proba. much higher than 1%).
     if (BOOST_UNLIKELY((high & 0x1FF) == 0x1FF) && (low + i < low))
     {
-        const std::uint64_t factor_significand_low = significand_128[power - smallest_power];
+        const std::uint64_t factor_significand_low = significands_table::significand_128[power - smallest_power];
         product = umul128(i, factor_significand_low);
         //const std::uint64_t product_low = product.low;
         const std::uint64_t product_middle2 = product.high;

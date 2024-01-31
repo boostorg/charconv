@@ -6,7 +6,7 @@
 #include <locale>
 #include <iostream>
 #include <boost/charconv.hpp>
-#include <boost/charconv/detail/from_chars_float_impl.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/core/lightweight_test.hpp>
 
 template <typename T>
