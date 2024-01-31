@@ -9,6 +9,7 @@
 #include <random>
 #include <string>
 #include <limits>
+#include <iomanip>
 
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 #  include <string_view>
@@ -48,13 +49,18 @@ void test_float()
 
         T v = 0;
         auto r = boost::charconv::from_chars(sv, v);
-        BOOST_TEST(r);
 
         T v2 = 0;
         auto r2 = boost::charconv::from_chars(str_value.data(), str_value.data() + str_value.size(), v2);
-        BOOST_TEST(r2);
 
-        BOOST_TEST_EQ(v, v2);
+        if( BOOST_TEST( r.ec == std::errc() ) && BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) )
+        {
+        }
+        else
+        {
+            std::cerr << std::setprecision(std::numeric_limits<T>::digits10)
+                      << "... test failure for value=" << value << "; buffer='" << str_value << "'; errc=" << static_cast<int>(r.ec) << " and " << static_cast<int>(r2.ec) << std::endl; // LCOV_EXCL_LINE
+        }
     }
 }
 
