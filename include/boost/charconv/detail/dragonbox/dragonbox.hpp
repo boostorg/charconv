@@ -26,6 +26,8 @@
 #include <boost/charconv/detail/dragonbox/dragonbox_common.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/buffer_sizing.hpp>
+#include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/core/bit.hpp>
 #include <type_traits>
@@ -2560,14 +2562,16 @@ BOOST_FORCEINLINE BOOST_CHARCONV_SAFEBUFFERS auto to_decimal(Float x, Policies..
 
 namespace to_chars_detail {
     template <class Float, class FloatTraits>
-    extern char* to_chars(typename FloatTraits::carrier_uint significand, int exponent, char* buffer, chars_format fmt) noexcept;
+    extern to_chars_result dragon_box_print_chars(typename FloatTraits::carrier_uint significand, int exponent, char* first, char* last, chars_format fmt) noexcept;
 
     // Avoid needless ABI overhead incurred by tag dispatch.
     template <class PolicyHolder, class Float, class FloatTraits>
-    char* to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* buffer, chars_format fmt) noexcept
+    to_chars_result to_chars_n_impl(dragonbox_float_bits<Float, FloatTraits> br, char* first, char* last, chars_format fmt) noexcept
     {
         const auto exponent_bits = br.extract_exponent_bits();
         const auto s = br.remove_exponent_bits(exponent_bits);
+
+        auto buffer = first;
 
         if (br.is_finite(exponent_bits))
         {
@@ -2583,19 +2587,18 @@ namespace to_chars_detail {
                     typename PolicyHolder::decimal_to_binary_rounding_policy{},
                     typename PolicyHolder::binary_to_decimal_rounding_policy{},
                     typename PolicyHolder::cache_policy{});
-                return to_chars_detail::to_chars<Float, FloatTraits>(result.significand,
-                                                                        result.exponent, buffer, fmt);
+                return to_chars_detail::dragon_box_print_chars<Float, FloatTraits>(result.significand, result.exponent, buffer, last, fmt);
             }
             else 
             {
                 if (fmt != chars_format::scientific)
                 {
                     std::memcpy(buffer, "0", 1); // NOLINT: Specifically not null-terminated
-                    return buffer + 1;
+                    return {buffer + 1, std::errc()};
                 }
 
                 std::memcpy(buffer, "0e+00", 5); // NOLINT: Specifically not null-terminated
-                return buffer + 5;
+                return {buffer + 5, std::errc()};
             }
         }
         else 
@@ -2609,7 +2612,7 @@ namespace to_chars_detail {
             if (s.has_all_zero_significand_bits())
             {
                 std::memcpy(buffer, "inf", 3); // NOLINT: Specifically not null-terminated
-                return buffer + 3;
+                return {buffer + 3, std::errc()};
             }
             else 
             {
@@ -2651,18 +2654,18 @@ namespace to_chars_detail {
                     if (!s.is_negative())
                     {
                         std::memcpy(buffer, "nan", 3); // NOLINT: Specifically not null-terminated
-                        return buffer + 3;
+                        return {buffer + 3, std::errc()};
                     }
                     else
                     {
                         std::memcpy(buffer, "nan(ind)", 8); // NOLINT: Specifically not null-terminated
-                        return buffer + 8;
+                        return {buffer + 8, std::errc()};
                     }
                 }
                 else
                 {
                     std::memcpy(buffer, "nan(snan)", 9); // NOLINT: Specifically not null-terminated
-                    return buffer + 9;
+                    return {buffer + 9, std::errc()};
                 }
             }
         }
@@ -2671,7 +2674,7 @@ namespace to_chars_detail {
 
 // Returns the next-to-end position
 template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
-char* to_chars_n(Float x, char* buffer, chars_format fmt, BOOST_ATTRIBUTE_UNUSED Policies... policies) noexcept
+to_chars_result to_chars_n(Float x, char* first, char* last, chars_format fmt, BOOST_ATTRIBUTE_UNUSED Policies... policies) noexcept
 {
     using namespace policy_impl;
 
@@ -2693,16 +2696,14 @@ char* to_chars_n(Float x, char* buffer, chars_format fmt, BOOST_ATTRIBUTE_UNUSED
     
     #endif
 
-    return to_chars_detail::to_chars_n_impl<policy_holder>(dragonbox_float_bits<Float, FloatTraits>(x), buffer, fmt);
+    return to_chars_detail::to_chars_n_impl<policy_holder>(dragonbox_float_bits<Float, FloatTraits>(x), first, last, fmt);
 }
 
 // Null-terminate and bypass the return value of fp_to_chars_n
 template <typename Float, typename FloatTraits = dragonbox_float_traits<Float>, typename... Policies>
-char* to_chars(Float x, char* buffer, chars_format fmt, Policies... policies) noexcept
+to_chars_result dragonbox_to_chars(Float x, char* first, char* last, chars_format fmt, Policies... policies) noexcept
 {
-    auto ptr = to_chars_n<Float, FloatTraits>(x, buffer, fmt, policies...);
-    *ptr = '\0';
-    return ptr;
+    return to_chars_n<Float, FloatTraits>(x, first, last, fmt, policies...);
 }
 
 }}} // Namespaces

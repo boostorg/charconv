@@ -564,14 +564,12 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
             }
             else
             {
-                auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
-                return { ptr, std::errc() };
+                return boost::charconv::detail::dragonbox_to_chars(value, first, last, fmt);
             }
         }
         else if (fmt == boost::charconv::chars_format::scientific)
         {
-            auto* ptr = boost::charconv::detail::to_chars(value, first, fmt);
-            return { ptr, std::errc() };
+            return boost::charconv::detail::dragonbox_to_chars(value, first, last, fmt);
         }
     }
     else
@@ -588,16 +586,13 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         }
     }
 
-    // Before passing to hex check for edge cases
-    BOOST_ATTRIBUTE_UNUSED char* ptr;
     const int classification = std::fpclassify(value);
     switch (classification)
     {
         case FP_INFINITE:
         case FP_NAN:
             // The dragonbox impl will return the correct type of NaN
-            ptr = boost::charconv::detail::to_chars(value, first, chars_format::general);
-            return { ptr, std::errc() };
+            return boost::charconv::detail::dragonbox_to_chars(value, first, last, chars_format::general);
         case FP_ZERO:
             if (std::signbit(value))
             {
@@ -607,7 +602,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
             return {first + 4, std::errc()};
         default:
             // Do nothing
-            (void)ptr;
+            (void)precision;
     }
 
     // Hex handles both cases already

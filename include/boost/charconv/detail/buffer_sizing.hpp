@@ -14,7 +14,7 @@ namespace charconv {
 namespace detail {
 
 template <typename Real>
-inline int get_real_precision(int precision) noexcept
+inline int get_real_precision(int precision = -1) noexcept
 {
     // If the user did not specify a precision than we use the maximum representable amount
     // and remove trailing zeros at the end

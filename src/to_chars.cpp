@@ -265,8 +265,16 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     }
 
     template <>
-    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* buffer, chars_format fmt) noexcept
+    to_chars_result dragon_box_print_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* first, char* last, chars_format fmt) noexcept
     {
+        auto buffer = first;
+
+        const std::ptrdiff_t total_length = total_buffer_length(9, exponent, false);
+        if (total_length > (last - first))
+        {
+            return {last, std::errc::result_out_of_range};
+        }
+
         // Print significand.
         print_9_digits(s32, exponent, buffer);
 
@@ -285,7 +293,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 buffer += 4;
             }
 
-            return buffer;
+            return {buffer, std::errc()};
         }
         else 
         {
@@ -296,11 +304,20 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         print_2_digits(std::uint32_t(exponent), buffer);
         buffer += 2;
 
-        return buffer;
+        return {buffer, std::errc()};
     }
 
     template <>
-    char* to_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* buffer, chars_format fmt) noexcept {
+    to_chars_result dragon_box_print_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* first, char* last, chars_format fmt) noexcept
+    {
+        auto buffer = first;
+
+        const std::ptrdiff_t total_length = total_buffer_length(17, exponent, false);
+        if (total_length > (last - first))
+        {
+            return {last, std::errc::result_out_of_range};
+        }
+
         // Print significand by decomposing it into a 9-digit block and a 8-digit block.
         std::uint32_t first_block;
         std::uint32_t second_block {};
@@ -496,7 +513,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 buffer += 4;
             }
 
-            return buffer;
+            return {buffer, std::errc()};
         }
         else
         {
@@ -522,7 +539,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             buffer += 2;
         }
 
-        return buffer;
+        return {buffer, std::errc()};
     }
 
 #ifdef BOOST_MSVC
