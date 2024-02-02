@@ -467,6 +467,13 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         }
     }
 
+    // Make sure the result will fit in the buffer
+    const std::ptrdiff_t total_length = total_buffer_length(num_dig, value_struct.exponent, (value < 0));
+    if (total_length > buffer_size)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
+
     auto r = to_chars_integer_impl(first, last, value_struct.significand);
     if (r.ec != std::errc())
     {
