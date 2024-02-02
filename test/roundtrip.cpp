@@ -619,6 +619,9 @@ int main()
 
             long double w3 = LDBL_MIN * static_cast<long double>( rng() ); // small values
             test_roundtrip( w3 );
+
+            long double w4 = -static_cast<long double>( rng() ) * 1.0L; // -0 .. 2^64
+            test_roundtrip( w4 );
         }
 
         test_roundtrip_bv<long double>();
