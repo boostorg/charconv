@@ -667,6 +667,8 @@ int main()
         test_roundtrip_bv<__float128>();
     }
 
+    test_spot<__float128>(-3.589653987658756543653653365436e+04Q, boost::charconv::chars_format::hex);
+
     #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
     test_signaling_nan<std::float128_t>();
 
@@ -793,6 +795,7 @@ int main()
     test_spot<std::float128_t>(1.00001e-04F128);
     test_spot<std::float128_t>(1.000001e-04F128);
     test_spot<std::float128_t>(1.0000001e-04F128);
+    test_spot<std::float128_t>(-3.589653987658756543653653365436e+04F128, boost::charconv::chars_format::hex);
 
     if (abs_float_total != 0)
     {

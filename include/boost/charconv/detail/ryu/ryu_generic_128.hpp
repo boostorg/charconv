@@ -336,10 +336,9 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     }
 
     // Step 5: Print the decimal representation.
-    size_t index = 0;
     if (v.sign)
     {
-        result[index++] = '-';
+        *result++ = '-';
     }
 
     unsigned_128_type output = v.mantissa;
@@ -362,7 +361,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     if (v.exponent == 0)
     {
         // Option 1: We need to do nothing
-        return current_len;
+        return current_len + static_cast<int>(v.sign);
     }
     else if (v.exponent > 0)
     {
@@ -402,7 +401,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         current_len = precision;
     }
 
-    return current_len;
+    return current_len + static_cast<int>(v.sign);
 }
 
 // Converts the given decimal floating point number to a string, writing to result, and returning
