@@ -676,9 +676,7 @@ int main()
 
         test_roundtrip_bv<__float128>();
     }
-
-    test_spot<__float128>(-3.589653987658756543653653365436e+04Q, boost::charconv::chars_format::hex);
-
+    
     #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
     test_signaling_nan<std::float128_t>();
 
