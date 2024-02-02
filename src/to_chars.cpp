@@ -577,7 +577,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
-    auto real_precision = get_real_precision<Real>(precision);
+    auto real_precision = boost::charconv::detail::get_real_precision<long double>(precision);
     if (buffer_size < real_precision || first > last)
     {
         return {last, std::errc::result_out_of_range};
