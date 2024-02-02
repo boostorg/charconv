@@ -18,6 +18,7 @@
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
+#include <boost/charconv/detail/buffer_sizing.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
@@ -224,34 +225,9 @@ Unsigned_Integer convert_value(Real value) noexcept
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
 {
-    // If the user did not specify a precision than we use the maximum representable amount
-    // and remove trailing zeros at the end
-
-    int real_precision;
-    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value || std::is_same<Real, double>::value)
-    {
-        real_precision = precision == -1 ? std::numeric_limits<Real>::max_digits10 : precision;
-    }
-    else
-    {
-        #ifdef BOOST_CHARCONV_HAS_FLOAT128
-        BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<Real, __float128>::value)
-        {
-            real_precision = 33;
-        }
-        else
-        #endif
-        {
-            #if BOOST_CHARCONV_LDBL_BITS == 128
-            real_precision = 33;
-            #else
-            real_precision = 18;
-            #endif
-        }
-    }
-
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = get_real_precision<Real>(precision);
     if (buffer_size < real_precision || first > last)
     {
         return {last, std::errc::result_out_of_range};
@@ -352,8 +328,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
                                                 static_cast<std::uint32_t>(unbiased_exponent);
 
     // Bounds check
-    // Sign + integer part + '.' + precision of fraction part + p+/p- + exponent digits
-    const std::ptrdiff_t total_length = (value < 0) + 2 + real_precision + 2 + num_digits(abs_unbiased_exponent);
+    const std::ptrdiff_t total_length = total_buffer_length(real_precision, abs_unbiased_exponent, (value < 0));
     if (total_length > buffer_size)
     {
         return {last, std::errc::result_out_of_range};
@@ -549,6 +524,14 @@ template <typename Real>
 to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
 {
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, std::uint32_t>::type;
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = get_real_precision<Real>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
 
     auto abs_value = std::abs(value);
     constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);

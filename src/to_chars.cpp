@@ -558,9 +558,12 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 {
     static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
 
-    if (first > last)
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = get_real_precision<Real>(precision);
+    if (buffer_size < real_precision || first > last)
     {
-        return {last, std::errc::invalid_argument};
+        return {last, std::errc::result_out_of_range};
     }
 
     const auto classification = std::fpclassify(value);
@@ -661,9 +664,12 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 {
     char* const original_first = first;
 
-    if (first > last)
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = get_real_precision<Real>(precision);
+    if (buffer_size < real_precision || first > last)
     {
-        return {last, std::errc::invalid_argument};
+        return {last, std::errc::result_out_of_range};
     }
 
     if (isnanq(value))
