@@ -7,6 +7,7 @@
 #include <system_error>
 #include <limits>
 #include <random>
+#include <array>
 #include <cstdint>
 
 constexpr std::size_t N = 1024;
@@ -15,11 +16,11 @@ static std::mt19937_64 rng(42);
 template <typename T>
 void test_non_finite()
 {
-    auto value = {std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(),
-                  std::numeric_limits<T>::quiet_NaN(), -std::numeric_limits<T>::quiet_NaN(),
-                  std::numeric_limits<T>::signaling_NaN(), -std::numeric_limits<T>::signaling_NaN()};
+    constexpr std::array<T, 6> values = {std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(),
+                                         std::numeric_limits<T>::quiet_NaN(), -std::numeric_limits<T>::quiet_NaN(),
+                                         std::numeric_limits<T>::signaling_NaN(), -std::numeric_limits<T>::signaling_NaN()};
 
-    for (const auto val : value)
+    for (const auto val : values)
     {
         char buffer[2];
         auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), val);
@@ -62,8 +63,12 @@ void test_min_buffer_size()
         for (std::size_t i = 0; i < N; ++i)
         {
             char buffer[boost::charconv::limits<T>::max_chars10];
-            auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), dist(rng), format);
-            BOOST_TEST(r);
+            const T value = dist(rng);
+            auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format);
+            if (!BOOST_TEST(r))
+            {
+                std::cerr << "Overflow for: " << value << std::endl; // LCOV_EXCL_LINE
+            }
         }
     }
 }
