@@ -51,7 +51,11 @@ void test_non_finite()
 template <typename T>
 void test_min_buffer_size()
 {
+    #ifdef BOOST_MSVC
+    std::uniform_real_distribution<T> dist((std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)());
+    #else
     std::uniform_real_distribution<T> dist((std::numeric_limits<T>::lowest)(), (std::numeric_limits<T>::max)());
+    #endif
 
     // No guarantees are made for fixed, especially in this domain
     auto formats = {boost::charconv::chars_format::hex,
