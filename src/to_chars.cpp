@@ -683,6 +683,12 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
 {
+    // Sanity check our bounds
+    if (first <= last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
+
     char* const original_first = first;
 
     if (isnanq(value))
@@ -696,7 +702,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
-    auto real_precision = get_real_precision<__float128>(precision);
+    auto real_precision = boost::charconv::detail::get_real_precision<__float128>(precision);
     if (buffer_size < real_precision || first > last)
     {
         return {last, std::errc::result_out_of_range};
@@ -710,6 +716,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         if (num_chars > 0)
         {
             return { first + num_chars, std::errc() };
+        }
+        else
+        {
+            return {last, std::errc::result_out_of_range};
         }
     }
     else if (fmt == boost::charconv::chars_format::hex)
