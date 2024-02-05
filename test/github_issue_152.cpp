@@ -6,6 +6,11 @@
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <limits>
+#include <random>
+#include <cstdint>
+
+constexpr std::size_t N = 1024;
+static std::mt19937_64 rng(42);
 
 template <typename T>
 void test_non_finite()
@@ -42,6 +47,27 @@ void test_non_finite()
     BOOST_TEST(!std::memcmp(snan_buffer, "nan(snan)", 9));
 };
 
+template <typename T>
+void test_min_buffer_size()
+{
+    std::uniform_real_distribution<T> dist((std::numeric_limits<T>::lowest)(), (std::numeric_limits<T>::max)());
+
+    // No guarantees are made for fixed, especially in this domain
+    auto formats = {boost::charconv::chars_format::hex,
+                    boost::charconv::chars_format::scientific,
+                    boost::charconv::chars_format::general};
+
+    for (const auto format : formats)
+    {
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            char buffer[boost::charconv::limits<T>::max_chars10];
+            auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), dist(rng), format);
+            BOOST_TEST(r);
+        }
+    }
+}
+
 int main()
 {
     test_non_finite<float>();
@@ -51,6 +77,10 @@ int main()
     #ifdef BOOST_CHARCONV_HAS_FLOAT128
     test_non_finite<__float128>();
     #endif
+
+    test_min_buffer_size<float>();
+    test_min_buffer_size<double>();
+    test_min_buffer_size<long double>();
 
     return boost::report_errors();
 }
