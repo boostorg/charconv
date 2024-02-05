@@ -49,7 +49,7 @@ template <typename Int>
 inline int total_buffer_length(int real_precision, Int exp, bool signed_value)
 {
     // Sign + integer part + '.' + precision of fraction part + e+/e- or p+/p- + exponent digits
-    return static_cast<int>(signed_value) + 2 + real_precision + 2 + num_digits(exp);
+    return static_cast<int>(signed_value) + 1 + real_precision + 2 + num_digits(exp);
 }
 
 } //namespace detail

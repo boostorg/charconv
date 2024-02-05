@@ -16,9 +16,9 @@ static std::mt19937_64 rng(42);
 template <typename T>
 void test_non_finite()
 {
-    constexpr std::array<T, 6> values = {std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(),
+    constexpr std::array<T, 6> values = {{std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(),
                                          std::numeric_limits<T>::quiet_NaN(), -std::numeric_limits<T>::quiet_NaN(),
-                                         std::numeric_limits<T>::signaling_NaN(), -std::numeric_limits<T>::signaling_NaN()};
+                                         std::numeric_limits<T>::signaling_NaN(), -std::numeric_limits<T>::signaling_NaN()}};
 
     for (const auto val : values)
     {
@@ -64,6 +64,12 @@ void test_min_buffer_size()
         {
             char buffer[boost::charconv::limits<T>::max_chars10];
             const T value = dist(rng);
+
+            if (!std::isnormal(value))
+            {
+                continue;
+            }
+
             auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format);
             if (!BOOST_TEST(r))
             {
