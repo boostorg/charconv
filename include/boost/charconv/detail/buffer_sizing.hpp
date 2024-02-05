@@ -13,6 +13,11 @@ namespace boost {
 namespace charconv {
 namespace detail {
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127) // Conditional expression for BOOST_IF_CONSTEXPR will be constant in not C++17
+#endif
+
 template <typename Real>
 inline int get_real_precision(int precision = -1) noexcept
 {
@@ -51,6 +56,10 @@ inline int total_buffer_length(int real_precision, Int exp, bool signed_value)
     // Sign + integer part + '.' + precision of fraction part + e+/e- or p+/p- + exponent digits
     return static_cast<int>(signed_value) + 1 + real_precision + 2 + num_digits(exp);
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 } //namespace detail
 } //namespace charconv
