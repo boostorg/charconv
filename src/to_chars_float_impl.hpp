@@ -422,6 +422,11 @@ template <typename Real>
 to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1) noexcept
 {
     const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = get_real_precision<Real>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
 
     auto abs_value = std::abs(value);
 
@@ -533,9 +538,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, std::uint32_t>::type;
 
     // Sanity check our bounds
-    const std::ptrdiff_t buffer_size = last - first;
-    auto real_precision = get_real_precision<Real>(precision);
-    if (buffer_size < real_precision || first > last)
+    if (first >= last)
     {
         return {last, std::errc::result_out_of_range};
     }

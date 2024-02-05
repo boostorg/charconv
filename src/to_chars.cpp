@@ -575,14 +575,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 {
     static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
 
-    // Sanity check our bounds
-    const std::ptrdiff_t buffer_size = last - first;
-    auto real_precision = boost::charconv::detail::get_real_precision<long double>(precision);
-    if (buffer_size < real_precision || first > last)
-    {
-        return {last, std::errc::result_out_of_range};
-    }
-
     const auto classification = std::fpclassify(value);
     #if BOOST_CHARCONV_LDBL_BITS == 128
     if (classification == FP_NAN || classification == FP_INFINITE)
@@ -601,6 +593,14 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         }
     }
     #endif
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = boost::charconv::detail::get_real_precision<long double>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
 
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific)
     {
@@ -681,14 +681,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 {
     char* const original_first = first;
 
-    // Sanity check our bounds
-    const std::ptrdiff_t buffer_size = last - first;
-    auto real_precision = get_real_precision<Real>(precision);
-    if (buffer_size < real_precision || first > last)
-    {
-        return {last, std::errc::result_out_of_range};
-    }
-
     if (isnanq(value))
     {
         return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_NAN);
@@ -696,6 +688,14 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     else if (isinfq(value))
     {
         return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_INFINITE);
+    }
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = get_real_precision<__float128>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::result_out_of_range};
     }
 
     if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific))

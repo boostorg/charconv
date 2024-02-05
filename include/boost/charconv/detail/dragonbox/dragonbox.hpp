@@ -2572,6 +2572,7 @@ namespace to_chars_detail {
         const auto s = br.remove_exponent_bits(exponent_bits);
 
         auto buffer = first;
+        const auto buffer_size = last - first;
 
         if (br.is_finite(exponent_bits))
         {
@@ -2597,22 +2598,38 @@ namespace to_chars_detail {
                     return {buffer + 1, std::errc()};
                 }
 
-                std::memcpy(buffer, "0e+00", 5); // NOLINT: Specifically not null-terminated
-                return {buffer + 5, std::errc()};
+                if (buffer_size >= 5)
+                {
+                    std::memcpy(buffer, "0e+00", 5); // NOLINT: Specifically not null-terminated
+                    return {buffer + 5, std::errc()};
+                }
+                else
+                {
+                    return {last, std::errc::result_out_of_range};
+                }
             }
         }
         else 
         {
-            if (s.is_negative()) 
+            bool is_negative = false;
+            if (s.is_negative())
             {
                 *buffer = '-';
                 ++buffer;
+                is_negative = true;
             }
 
             if (s.has_all_zero_significand_bits())
             {
-                std::memcpy(buffer, "inf", 3); // NOLINT: Specifically not null-terminated
-                return {buffer + 3, std::errc()};
+                if (buffer_size >= 3 + static_cast<std::ptrdiff_t>(is_negative))
+                {
+                    std::memcpy(buffer, "inf", 3); // NOLINT: Specifically not null-terminated
+                    return {buffer + 3, std::errc()};
+                }
+                else
+                {
+                    return {last, std::errc::result_out_of_range};
+                }
             }
             else 
             {
@@ -2653,19 +2670,40 @@ namespace to_chars_detail {
                 {
                     if (!s.is_negative())
                     {
-                        std::memcpy(buffer, "nan", 3); // NOLINT: Specifically not null-terminated
-                        return {buffer + 3, std::errc()};
+                        if (buffer_size >= 3 + static_cast<std::ptrdiff_t>(is_negative))
+                        {
+                            std::memcpy(buffer, "nan", 3); // NOLINT: Specifically not null-terminated
+                            return {buffer + 3, std::errc()};
+                        }
+                        else
+                        {
+                            return {last, std::errc::result_out_of_range};
+                        }
                     }
                     else
                     {
-                        std::memcpy(buffer, "nan(ind)", 8); // NOLINT: Specifically not null-terminated
-                        return {buffer + 8, std::errc()};
+                        if (buffer_size >= 8 + static_cast<std::ptrdiff_t>(is_negative))
+                        {
+                            std::memcpy(buffer, "nan(ind)", 8); // NOLINT: Specifically not null-terminated
+                            return {buffer + 8, std::errc()};
+                        }
+                        else
+                        {
+                            return {last, std::errc::result_out_of_range};
+                        }
                     }
                 }
                 else
                 {
-                    std::memcpy(buffer, "nan(snan)", 9); // NOLINT: Specifically not null-terminated
-                    return {buffer + 9, std::errc()};
+                    if (buffer_size >= 9 + static_cast<std::ptrdiff_t>(is_negative))
+                    {
+                        std::memcpy(buffer, "nan(snan)", 9); // NOLINT: Specifically not null-terminated
+                        return {buffer + 9, std::errc()};
+                    }
+                    else
+                    {
+                        return {last, std::errc::result_out_of_range};
+                    }
                 }
             }
         }
