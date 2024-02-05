@@ -282,7 +282,7 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     return {output, exp, ieeeSign};
 }
 
-static inline int copy_special_str(char* result, const struct floating_decimal_128 fd) noexcept
+static inline int copy_special_str(char* result, const std::ptrdiff_t result_size, const struct floating_decimal_128 fd) noexcept
 {
     if (fd.sign)
     {
@@ -298,13 +298,27 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
                 fd.mantissa == static_cast<unsigned_128_type>(6917529027641081856) ||
                 fd.mantissa == static_cast<unsigned_128_type>(1) << 110) // 2^110
             {
-                std::memcpy(result, "nan(snan)", 9);
-                return 10;
+                if (result_size >= 10)
+                {
+                    std::memcpy(result, "nan(snan)", 9);
+                    return 10;
+                }
+                else
+                {
+                    return -1;
+                }
             }
             else
             {
-                std::memcpy(result, "nan(ind)", 8);
-                return 9;
+                if (result_size >= 9)
+                {
+                    std::memcpy(result, "nan(ind)", 8);
+                    return 9;
+                }
+                else
+                {
+                    return -1;
+                }
             }
         }
         else
@@ -313,26 +327,45 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
                 fd.mantissa == static_cast<unsigned_128_type>(6917529027641081856) ||
                 fd.mantissa == static_cast<unsigned_128_type>(1) << 110) // 2^110
             {
-                std::memcpy(result, "nan(snan)", 9);
-                return 9;
+                if (result_size >= 9)
+                {
+                    std::memcpy(result, "nan(snan)", 9);
+                    return 9;
+                }
+                else
+                {
+                    return -1;
+                }
             }
             else
             {
-                std::memcpy(result, "nan", 3);
-                return 3;
+                if (result_size >= 3)
+                {
+                    std::memcpy(result, "nan", 3);
+                    return 3;
+                }
+                else
+                {
+                    return -1;
+                }
             }
         }
     }
 
-    memcpy(result, "inf", 3);
-    return static_cast<int>(fd.sign) + 3;
+    if (result_size >= 3 + static_cast<std::ptrdiff_t>(fd.sign))
+    {
+        memcpy(result, "inf", 3);
+        return static_cast<int>(fd.sign) + 3;
+    }
+
+    return -1;
 }
 
 static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
-        return copy_special_str(result, v);
+        return copy_special_str(result, result_size, v);
     }
 
     // Step 5: Print the decimal representation.
@@ -416,7 +449,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
-        return copy_special_str(result, v);
+        return copy_special_str(result, result_size, v);
     }
 
     unsigned_128_type output = v.mantissa;

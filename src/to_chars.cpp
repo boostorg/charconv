@@ -591,6 +591,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first + num_chars, std::errc() };
         }
+        else
+        {
+            return {last, std::errc::result_out_of_range};
+        }
     }
     #endif
 
