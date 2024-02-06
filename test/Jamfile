@@ -57,3 +57,4 @@ run P2497.cpp ;
 run github_issue_110.cpp ;
 run github_issue_122.cpp ;
 run from_chars_string_view.cpp ;
+run github_issue_156.cpp ;
