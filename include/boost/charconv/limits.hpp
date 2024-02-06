@@ -5,7 +5,7 @@
 #ifndef BOOST_CHARCONV_LIMITS_HPP
 #define BOOST_CHARCONV_LIMITS_HPP
 
-#include <boost/config.hpp>
+#include <boost/charconv/detail/config.hpp>
 #include <limits>
 #include <type_traits>
 
@@ -71,6 +71,16 @@ template<typename T> struct limits
         // floating point
         std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // as above
 };
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+
+template <> struct limits<__float128>
+{
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars10 = 33 + 3 + 2 + 5;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars = max_chars10;
+};
+
+#endif
 
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
