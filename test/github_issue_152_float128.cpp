@@ -2,6 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/config.hpp>
+#include <ostream>
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+
+std::ostream& operator<<( std::ostream& os, __float128 v )
+{
+    char buffer[ 256 ] {};
+    quadmath_snprintf(buffer, sizeof(buffer), "%Qg", v);
+    os << buffer;
+    return os;
+}
+
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
@@ -14,12 +27,9 @@
 constexpr std::size_t N = 1024;
 static std::mt19937_64 rng(42);
 
-template <typename T>
 void test_non_finite()
 {
-    constexpr std::array<T, 6> values = {{std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(),
-                                         std::numeric_limits<T>::quiet_NaN(), -std::numeric_limits<T>::quiet_NaN(),
-                                         std::numeric_limits<T>::signaling_NaN(), -std::numeric_limits<T>::signaling_NaN()}};
+    constexpr std::array<__float128, 4> values = {{INFINITY, -INFINITY, NAN, -NAN}};
 
     for (const auto val : values)
     {
@@ -29,37 +39,24 @@ void test_non_finite()
     }
 
     char inf_buffer[3];
-    constexpr T inf_val = std::numeric_limits<T>::infinity();
-    auto r_inf = boost::charconv::to_chars(inf_buffer, inf_buffer + 3, inf_val);
+    auto r_inf = boost::charconv::to_chars(inf_buffer, inf_buffer + 3, values[0]);
     BOOST_TEST(r_inf);
     BOOST_TEST(!std::memcmp(inf_buffer, "inf", 3));
 
     char nan_buffer[3];
-    constexpr T nan_val = std::numeric_limits<T>::quiet_NaN();
-    auto r_nan = boost::charconv::to_chars(nan_buffer, nan_buffer + 3, nan_val);
+    auto r_nan = boost::charconv::to_chars(nan_buffer, nan_buffer + 3, values[2]);
     BOOST_TEST(r_nan);
     BOOST_TEST(!std::memcmp(nan_buffer, "nan", 3));
 
     char neg_nan_buffer[9];
-    auto r_neg_nan = boost::charconv::to_chars(neg_nan_buffer, neg_nan_buffer + 9, -nan_val);
+    auto r_neg_nan = boost::charconv::to_chars(neg_nan_buffer, neg_nan_buffer + 9, values[3]);
     BOOST_TEST(r_neg_nan);
     BOOST_TEST(!std::memcmp(neg_nan_buffer, "-nan(ind)", 9));
+}
 
-    char snan_buffer[9];
-    constexpr T snan_val = std::numeric_limits<T>::signaling_NaN();
-    auto r_snan = boost::charconv::to_chars(snan_buffer, snan_buffer + 9, snan_val);
-    BOOST_TEST(r_snan);
-    BOOST_TEST(!std::memcmp(snan_buffer, "nan(snan)", 9));
-};
-
-template <typename T>
 void test_min_buffer_size()
 {
-    #if defined(_WIN32)
-    std::uniform_real_distribution<T> dist((std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)());
-    #else
-    std::uniform_real_distribution<T> dist((std::numeric_limits<T>::lowest)(), (std::numeric_limits<T>::max)());
-    #endif
+    boost::random::uniform_real_distribution<__float128> dist(-1e4000Q, 1e4000Q);
 
     // No guarantees are made for fixed, especially in this domain
     auto formats = {boost::charconv::chars_format::hex,
@@ -70,10 +67,10 @@ void test_min_buffer_size()
     {
         for (std::size_t i = 0; i < N; ++i)
         {
-            char buffer[boost::charconv::limits<T>::max_chars10];
-            const T value = dist(rng);
+            char buffer[boost::charconv::limits<__float128>::max_chars10];
+            const auto value = dist(rng);
 
-            if (!std::isnormal(value))
+            if (isinfq(value) || isnanq(value))
             {
                 continue;
             }
@@ -89,13 +86,17 @@ void test_min_buffer_size()
 
 int main()
 {
-    test_non_finite<float>();
-    test_non_finite<double>();
-    test_non_finite<long double>();
-
-    test_min_buffer_size<float>();
-    test_min_buffer_size<double>();
-    test_min_buffer_size<long double>();
+    test_non_finite();
+    test_min_buffer_size();
 
     return boost::report_errors();
 }
+
+#else
+
+int main()
+{
+    return 0;
+}
+
+#endif
