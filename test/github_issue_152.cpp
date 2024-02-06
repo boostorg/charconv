@@ -28,22 +28,25 @@ void test_non_finite()
     }
 
     char inf_buffer[3];
-    auto r_inf = boost::charconv::to_chars(inf_buffer, inf_buffer + 3, std::numeric_limits<T>::infinity());
+    constexpr T inf_val = std::numeric_limits<T>::infinity();
+    auto r_inf = boost::charconv::to_chars(inf_buffer, inf_buffer + 3, inf_val);
     BOOST_TEST(r_inf);
     BOOST_TEST(!std::memcmp(inf_buffer, "inf", 3));
 
     char nan_buffer[3];
-    auto r_nan = boost::charconv::to_chars(nan_buffer, nan_buffer + 3, std::numeric_limits<T>::quiet_NaN());
+    constexpr T nan_val = std::numeric_limits<T>::quiet_NaN();
+    auto r_nan = boost::charconv::to_chars(nan_buffer, nan_buffer + 3, nan_val);
     BOOST_TEST(r_nan);
     BOOST_TEST(!std::memcmp(nan_buffer, "nan", 3));
 
     char neg_nan_buffer[9];
-    auto r_neg_nan = boost::charconv::to_chars(neg_nan_buffer, neg_nan_buffer + 9, -std::numeric_limits<T>::quiet_NaN());
+    auto r_neg_nan = boost::charconv::to_chars(neg_nan_buffer, neg_nan_buffer + 9, -nan_val);
     BOOST_TEST(r_neg_nan);
     BOOST_TEST(!std::memcmp(neg_nan_buffer, "-nan(ind)", 9));
 
     char snan_buffer[9];
-    auto r_snan = boost::charconv::to_chars(snan_buffer, snan_buffer + 9, std::numeric_limits<T>::signaling_NaN());
+    constexpr T snan_val = std::numeric_limits<T>::signaling_NaN();
+    auto r_snan = boost::charconv::to_chars(snan_buffer, snan_buffer + 9, snan_val);
     BOOST_TEST(r_snan);
     BOOST_TEST(!std::memcmp(snan_buffer, "nan(snan)", 9));
 };
