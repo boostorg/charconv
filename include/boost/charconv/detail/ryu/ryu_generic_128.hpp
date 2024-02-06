@@ -484,7 +484,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     }
     else if (olength == 0)
     {
-        return -1; // Something has gone horribly wrong
+        return -2; // Something has gone horribly wrong
     }
 
     for (uint32_t i = 0; i < olength - 1; ++i)
