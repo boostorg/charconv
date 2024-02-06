@@ -2,8 +2,24 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/config.hpp>
+#include <ostream>
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+
+std::ostream& operator<<( std::ostream& os, __float128 v )
+{
+    char buffer[ 256 ] {};
+    quadmath_snprintf(buffer, sizeof(buffer), "%Qg", v);
+    os << buffer;
+    return os;
+}
+
+#endif
+
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 #include <system_error>
 #include <limits>
 #include <random>
@@ -116,19 +132,53 @@ void test_min_buffer_size()
     }
 }
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+void test_min_buffer_size<__float128>()
+{
+    boost::random::uniform_real_distribution<__float128> dist(-1e4000Q, 1e4000Q);
+
+    // No guarantees are made for fixed, especially in this domain
+    auto formats = {boost::charconv::chars_format::hex,
+                    boost::charconv::chars_format::scientific,
+                    boost::charconv::chars_format::general};
+
+    for (const auto format : formats)
+    {
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            char buffer[boost::charconv::limits<__float128>::max_chars10];
+            const auto value = dist(rng);
+
+            if (isinfq(value) || isnanq(value))
+            {
+                continue;
+            }
+
+            auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format);
+            if (!BOOST_TEST(r))
+            {
+                std::cerr << "Overflow for: " << value << std::endl; // LCOV_EXCL_LINE
+            }
+        }
+    }
+}
+#endif
+
 int main()
 {
     test_non_finite<float>();
     test_non_finite<double>();
     test_non_finite<long double>();
 
-    #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    test_non_finite<__float128>();
-    #endif
-
     test_min_buffer_size<float>();
     test_min_buffer_size<double>();
     test_min_buffer_size<long double>();
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT128
+    test_non_finite<__float128>();
+    test_min_buffer_size<__float128>();
+    #endif
 
     return boost::report_errors();
 }
