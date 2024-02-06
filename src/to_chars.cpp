@@ -755,6 +755,15 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
+    // Since std::bfloat16_t uses float as an interchange format we need to cap the precision since
+    // float can represent more digits than std::bfloat16_t can
+    //
+    // See: https://github.com/cppalliance/charconv/issues/156
+    if (precision == -1)
+    {
+        return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, 3);
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
