@@ -51,6 +51,36 @@ void test_non_finite()
     BOOST_TEST(!std::memcmp(snan_buffer, "nan(snan)", 9));
 };
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+template <>
+void test_non_finite<__float128>()
+{
+    constexpr std::array<__float128, 4> values = {{INFINITY, -INFINITY, NAN, -NAN}};
+
+    for (const auto val : values)
+    {
+        char buffer[2];
+        auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), val);
+        BOOST_TEST(r.ec == std::errc::result_out_of_range);
+    }
+
+    char inf_buffer[3];
+    auto r_inf = boost::charconv::to_chars(inf_buffer, inf_buffer + 3, values[0]);
+    BOOST_TEST(r_inf);
+    BOOST_TEST(!std::memcmp(inf_buffer, "inf", 3));
+
+    char nan_buffer[3];
+    auto r_nan = boost::charconv::to_chars(nan_buffer, nan_buffer + 3, values[2]);
+    BOOST_TEST(r_nan);
+    BOOST_TEST(!std::memcmp(nan_buffer, "nan", 3));
+
+    char neg_nan_buffer[9];
+    auto r_neg_nan = boost::charconv::to_chars(neg_nan_buffer, neg_nan_buffer + 9, values[3]);
+    BOOST_TEST(r_neg_nan);
+    BOOST_TEST(!std::memcmp(neg_nan_buffer, "-nan(ind)", 9));
+}
+#endif
+
 template <typename T>
 void test_min_buffer_size()
 {
