@@ -684,7 +684,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
 {
     // Sanity check our bounds
-    if (first <= last)
+    if (first >= last)
     {
         return {last, std::errc::result_out_of_range};
     }
