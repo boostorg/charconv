@@ -100,6 +100,7 @@ void test_min_buffer_size()
     }
 }
 
+#if BOOST_CHARCONV_LDBL_BITS > 64
 void test_failed_values()
 {
     // No guarantees are made for fixed, especially in this domain
@@ -134,6 +135,7 @@ void test_failed_values()
         ++format_int;
     }
 }
+#endif
 
 int main()
 {
@@ -145,7 +147,9 @@ int main()
     test_min_buffer_size<double>();
     test_min_buffer_size<long double>();
 
+    #if BOOST_CHARCONV_LDBL_BITS > 64
     test_failed_values();
+    #endif
 
     return boost::report_errors();
 }
