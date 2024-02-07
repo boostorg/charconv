@@ -10,6 +10,7 @@
 #include <random>
 #include <array>
 #include <cstdint>
+#include <iomanip>
 
 constexpr std::size_t N = 1024;
 static std::mt19937_64 rng(42);
@@ -81,7 +82,7 @@ void test_min_buffer_size()
             auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format);
             if (!BOOST_TEST(r))
             {
-                std::cerr << "Overflow for: " << value << std::endl; // LCOV_EXCL_LINE
+                std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10) << "Overflow for: " << value << std::endl; // LCOV_EXCL_LINE
             }
         }
     }
