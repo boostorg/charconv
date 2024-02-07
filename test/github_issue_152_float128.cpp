@@ -17,7 +17,6 @@ std::ostream& operator<<( std::ostream& os, __float128 v )
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
 #include <system_error>
 #include <limits>
 #include <random>
@@ -56,8 +55,6 @@ void test_non_finite()
 
 void test_min_buffer_size()
 {
-    boost::random::uniform_real_distribution<__float128> dist(-1e4000Q, 1e4000Q);
-
     // No guarantees are made for fixed, especially in this domain
     auto formats = {boost::charconv::chars_format::hex,
                     boost::charconv::chars_format::scientific,
@@ -68,7 +65,7 @@ void test_min_buffer_size()
         for (std::size_t i = 0; i < N; ++i)
         {
             char buffer[boost::charconv::limits<__float128>::max_chars10];
-            const auto value = dist(rng);
+            const auto value = static_cast<__float128>(rng());
 
             if (isinfq(value) || isnanq(value))
             {
