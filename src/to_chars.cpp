@@ -265,8 +265,16 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     }
 
     template <>
-    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* buffer, chars_format fmt) noexcept
+    to_chars_result dragon_box_print_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* first, char* last, chars_format fmt) noexcept
     {
+        auto buffer = first;
+
+        const std::ptrdiff_t total_length = total_buffer_length(9, exponent, false);
+        if (total_length > (last - first))
+        {
+            return {last, std::errc::result_out_of_range};
+        }
+
         // Print significand.
         print_9_digits(s32, exponent, buffer);
 
@@ -285,7 +293,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 buffer += 4;
             }
 
-            return buffer;
+            return {buffer, std::errc()};
         }
         else 
         {
@@ -296,11 +304,20 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         print_2_digits(std::uint32_t(exponent), buffer);
         buffer += 2;
 
-        return buffer;
+        return {buffer, std::errc()};
     }
 
     template <>
-    char* to_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* buffer, chars_format fmt) noexcept {
+    to_chars_result dragon_box_print_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* first, char* last, chars_format fmt) noexcept
+    {
+        auto buffer = first;
+
+        const std::ptrdiff_t total_length = total_buffer_length(17, exponent, false);
+        if (total_length > (last - first))
+        {
+            return {last, std::errc::result_out_of_range};
+        }
+
         // Print significand by decomposing it into a 9-digit block and a 8-digit block.
         std::uint32_t first_block;
         std::uint32_t second_block {};
@@ -496,7 +513,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 buffer += 4;
             }
 
-            return buffer;
+            return {buffer, std::errc()};
         }
         else
         {
@@ -522,7 +539,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             buffer += 2;
         }
 
-        return buffer;
+        return {buffer, std::errc()};
     }
 
 #ifdef BOOST_MSVC
@@ -558,11 +575,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 {
     static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
 
-    if (first > last)
-    {
-        return {last, std::errc::invalid_argument};
-    }
-
     const auto classification = std::fpclassify(value);
     #if BOOST_CHARCONV_LDBL_BITS == 128
     if (classification == FP_NAN || classification == FP_INFINITE)
@@ -579,8 +591,20 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first + num_chars, std::errc() };
         }
+        else
+        {
+            return {last, std::errc::result_out_of_range};
+        }
     }
     #endif
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = boost::charconv::detail::get_real_precision<long double>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
 
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific)
     {
@@ -659,12 +683,13 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
 {
-    char* const original_first = first;
-
-    if (first > last)
+    // Sanity check our bounds
+    if (first >= last)
     {
-        return {last, std::errc::invalid_argument};
+        return {last, std::errc::result_out_of_range};
     }
+
+    char* const original_first = first;
 
     if (isnanq(value))
     {
@@ -675,6 +700,14 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_INFINITE);
     }
 
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = boost::charconv::detail::get_real_precision<__float128>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
+
     if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific))
     {
         const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
@@ -683,6 +716,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         if (num_chars > 0)
         {
             return { first + num_chars, std::errc() };
+        }
+        else if (num_chars == -1)
+        {
+            return {last, std::errc::result_out_of_range};
         }
     }
     else if (fmt == boost::charconv::chars_format::hex)
