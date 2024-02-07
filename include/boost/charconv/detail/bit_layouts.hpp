@@ -57,7 +57,7 @@ struct IEEEl2bits
 
 struct ieee754_binary80
 {
-    static constexpr int significand_bits = 63;
+    static constexpr int significand_bits = 64; // Fraction is 63 and 1 integer bit
     static constexpr int exponent_bits = 15;
     static constexpr int min_exponent = -16382;
     static constexpr int max_exponent = 16383;
