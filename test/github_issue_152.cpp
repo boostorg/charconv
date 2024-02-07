@@ -69,6 +69,7 @@ void test_min_buffer_size()
 
     for (const auto format : formats)
     {
+        int format_int = 0;
         for (std::size_t i = 0; i < N; ++i)
         {
             char buffer[boost::charconv::limits<T>::max_chars10];
@@ -82,8 +83,48 @@ void test_min_buffer_size()
             auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format);
             if (!BOOST_TEST(r))
             {
-                std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10) << "Overflow for: " << value << std::endl; // LCOV_EXCL_LINE
+                // LCOV_EXCL_START
+                std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10) << "Overflow for: " << value
+                          << "\nFormat: " << format_int
+                          << "\nBuffer size: " << sizeof(buffer) << std::endl;
+                // LCOV_EXCL_STOP
             }
+            ++format_int;
+        }
+    }
+}
+
+void test_failed_values()
+{
+    // No guarantees are made for fixed, especially in this domain
+    auto formats = {boost::charconv::chars_format::hex,
+                    boost::charconv::chars_format::scientific,
+                    boost::charconv::chars_format::general};
+
+    std::array<long double, 2> failed_values = {{6.93880126833169422964e+4931L, 9.14517491001980558957e+4931L}};
+
+    for (const auto format : formats)
+    {
+        int format_int = 0;
+        for (const auto value : failed_values)
+        {
+            char buffer[boost::charconv::limits<long double>::max_chars10];
+
+            if (!std::isnormal(value))
+            {
+                continue;
+            }
+
+            auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format);
+            if (!BOOST_TEST(r))
+            {
+                // LCOV_EXCL_START
+                std::cerr << std::setprecision(std::numeric_limits<long double>::max_digits10) << "Overflow for: " << value
+                          << "\nFormat: " << format_int
+                          << "\nBuffer size: " << sizeof(buffer) << std::endl;
+                // LCOV_EXCL_STOP
+            }
+            ++format_int;
         }
     }
 }
@@ -97,6 +138,8 @@ int main()
     test_min_buffer_size<float>();
     test_min_buffer_size<double>();
     test_min_buffer_size<long double>();
+
+    test_failed_values();
 
     return boost::report_errors();
 }
