@@ -266,7 +266,13 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Align the significand to the hexit boundaries (i.e. divisible by 4)
-    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 : std::is_same<Real, double>::value ? 13 : 28;
+    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 :
+                                      std::is_same<Real, double>::value ? 13 :
+                                      #if BOOST_CHARCONV_LDBL_BITS == 80
+                                      std::is_same<Real, long double>::value ? 15
+                                      #endif
+                                      : 28;
+
     constexpr auto nibble_bits = CHAR_BIT / 2;
     constexpr auto hex_bits = hex_precision * nibble_bits;
     const Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
