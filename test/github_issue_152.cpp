@@ -53,6 +53,11 @@ void test_non_finite()
     BOOST_TEST(!std::memcmp(snan_buffer, "nan(snan)", 9));
 };
 
+#ifdef BOOST_MSVC
+# pragma warning(push)
+# pragma warning(disable: 4127)
+#endif
+
 template <typename T>
 void test_min_buffer_size()
 {
@@ -99,6 +104,10 @@ void test_min_buffer_size()
         ++format_int;
     }
 }
+
+#ifdef BOOST_MSVC
+# pragma warning(pop)
+#endif
 
 #if BOOST_CHARCONV_LDBL_BITS > 64
 void test_failed_values()
