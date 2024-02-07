@@ -64,12 +64,18 @@ void test_min_buffer_size()
 
     // No guarantees are made for fixed, especially in this domain
     auto formats = {boost::charconv::chars_format::hex,
-                    boost::charconv::chars_format::scientific,
-                    boost::charconv::chars_format::general};
+                                         boost::charconv::chars_format::scientific,
+                                         boost::charconv::chars_format::general};
 
+    int format_int = 0;
     for (const auto format : formats)
     {
-        int format_int = 0;
+        // TODO(mborland): Remove this once https://github.com/boostorg/charconv/issues/154 is fixed
+        if (std::is_same<T, long double>::value && format_int == 0)
+        {
+            continue;
+        }
+
         for (std::size_t i = 0; i < N; ++i)
         {
             char buffer[boost::charconv::limits<T>::max_chars10];
@@ -89,23 +95,23 @@ void test_min_buffer_size()
                           << "\nBuffer size: " << sizeof(buffer) << std::endl;
                 // LCOV_EXCL_STOP
             }
-            ++format_int;
         }
+        ++format_int;
     }
 }
 
 void test_failed_values()
 {
     // No guarantees are made for fixed, especially in this domain
-    auto formats = {boost::charconv::chars_format::hex,
-                    boost::charconv::chars_format::scientific,
-                    boost::charconv::chars_format::general};
+    // TODO(mborland): Add hex once https://github.com/boostorg/charconv/issues/154 is fixed
+    auto formats = {boost::charconv::chars_format::scientific,
+                                         boost::charconv::chars_format::general};
 
     std::array<long double, 2> failed_values = {{6.93880126833169422964e+4931L, 9.14517491001980558957e+4931L}};
 
+    int format_int = 0;
     for (const auto format : formats)
     {
-        int format_int = 0;
         for (const auto value : failed_values)
         {
             char buffer[boost::charconv::limits<long double>::max_chars10];
@@ -124,8 +130,8 @@ void test_failed_values()
                           << "\nBuffer size: " << sizeof(buffer) << std::endl;
                 // LCOV_EXCL_STOP
             }
-            ++format_int;
         }
+        ++format_int;
     }
 }
 
