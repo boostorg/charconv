@@ -359,7 +359,16 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 
     // Print the integral part
     const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
-    *first++ = static_cast<char>('0' + leading_nibble);
+    BOOST_CHARCONV_ASSERT(leading_nibble < 16);
+    if (leading_nibble <= 9)
+    {
+        *first++ = static_cast<char>('0' + leading_nibble);
+    }
+    else
+    {
+        *first++ = static_cast<char>('a' + leading_nibble - 10U);
+    }
+    
     aligned_significand &= hex_mask;
 
     // Print the fractional part
