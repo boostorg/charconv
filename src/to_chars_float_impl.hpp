@@ -317,10 +317,23 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
     else BOOST_IF_CONSTEXPR (std::is_same<Real, long double>::value)
     {
-        if (unbiased_exponent > 16383)
+        #if BOOST_CHARCONV_LDBL_BITS == 80
+        bool adjusted = false;
+        while (unbiased_exponent > 16383)
+        {
+            unbiased_exponent -= 32768;
+            adjusted = true;
+        }
+        if (adjusted)
+        {
+            unbiased_exponent -= 3;
+        }
+        #else
+        while (unbiased_exponent > 16383)
         {
             unbiased_exponent -= 32768;
         }
+        #endif
     }
     else
     {
