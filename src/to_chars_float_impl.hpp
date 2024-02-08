@@ -371,16 +371,22 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Print the integral part
-    const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
-    BOOST_CHARCONV_ASSERT(leading_nibble < 16);
-    if (leading_nibble <= 9)
+    #if BOOST_CHARCONV_LDBL_BITS == 80
+    std::uint32_t leading_nibble;
+    BOOST_IF_CONSTEXPR (std::is_same<Real, long double>::value)
     {
-        *first++ = static_cast<char>('0' + leading_nibble);
+        leading_nibble = static_cast<std::uint32_t>(significand >> hex_bits);
     }
     else
     {
-        *first++ = static_cast<char>('a' + leading_nibble - 10U);
+        leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
     }
+    #else
+    const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
+    #endif
+
+    BOOST_CHARCONV_ASSERT(leading_nibble < 16);
+    *first++ = digit_table[leading_nibble];
     
     aligned_significand &= hex_mask;
 
