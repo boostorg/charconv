@@ -9,11 +9,13 @@
 
 int main()
 {
+    #if BOOST_CHARCONV_LDBL_BITS == 80
     const long double test_value = -35896.53987658756543653653365436L;
     char buffer[256] {};
     auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), test_value, boost::charconv::chars_format::hex);
     BOOST_TEST(r);
     BOOST_TEST_CSTR_EQ(buffer, "-8.c388a355a1f783ap+12");
+    #endif
 
     return boost::report_errors();
 }
