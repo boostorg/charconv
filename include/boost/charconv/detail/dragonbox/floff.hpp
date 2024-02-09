@@ -1396,6 +1396,9 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
     std::uint32_t current_digits {};
     char* const buffer_starting_pos = buffer;
     int decimal_exponent = -k;
+
+    // TODO(mborland): Use this for bounds checking since there is currently nothing preventing
+    // buffer overflows in the algorithm
     int remaining_digits = precision + 1;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3760,10 +3763,33 @@ fill_remaining_digits_with_0s:
     }
 
 insert_decimal_dot:
-    buffer_starting_pos[0] = buffer_starting_pos[1];
-    buffer_starting_pos[1] = '.';
+    if (fmt != chars_format::fixed)
+    {
+        buffer_starting_pos[0] = buffer_starting_pos[1];
+        buffer_starting_pos[1] = '.';
+    }
 
 print_exponent_and_return:
+
+    // In the negative fixed case we have not inserted the decimal dot
+    // so the value will be in the form ex. 01000...
+    //
+    // Need to memset leading zeros equal to a negative exponent
+    if (fmt == chars_format::fixed && decimal_exponent < 0)
+    {
+        return buffer;
+    }
+
+    // In the positive case the precision is still measured after the decimal point
+    // We need to memmove the buffer, insert the decimal point, and then append zeros
+    else if (fmt == chars_format::fixed && decimal_exponent > 0)
+    {
+        std::memmove(&buffer_starting_pos[0], &buffer_starting_pos[1], decimal_exponent);
+        buffer_starting_pos[decimal_exponent + 1] = '.';
+        std::memset(buffer, '0', decimal_exponent);
+        return buffer + decimal_exponent;
+    }
+
     if (fmt == boost::charconv::chars_format::general)
     {
         --buffer;
