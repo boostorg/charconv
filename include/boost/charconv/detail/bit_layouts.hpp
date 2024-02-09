@@ -41,27 +41,25 @@ struct ieee754_binary64
 struct IEEEl2bits
 {
 #if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
-    std::uint32_t mantissa_l : 32;
-    std::uint32_t mantissa_h : 32;
+    std::uint64_t mantissa_l : 64;
     std::uint32_t exponent : 15;
     std::uint32_t sign : 1;
-    std::uint32_t pad : 32;
+    std::uint64_t pad : 48;
 #else // Big endian
-    std::uint32_t pad : 32;
+    std::uint64_t pad : 48;
     std::uint32_t sign : 1;
     std::uint32_t exponent : 15;
-    std::uint32_t mantissa_h : 32;
-    std::uint32_t mantissa_l : 32;
+    std::uint64_t mantissa_h : 64;
 #endif
 };
 
 struct ieee754_binary80
 {
-    static constexpr int significand_bits = 63;
+    static constexpr int significand_bits = 64; // Fraction is 63 and 1 integer bit
     static constexpr int exponent_bits = 15;
     static constexpr int min_exponent = -16382;
     static constexpr int max_exponent = 16383;
-    static constexpr int exponent_bias = 16383;
+    static constexpr int exponent_bias = -16383;
     static constexpr int decimal_digits = 18;
 };
 

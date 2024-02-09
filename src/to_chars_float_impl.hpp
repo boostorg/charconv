@@ -222,12 +222,40 @@ Unsigned_Integer convert_value(Real value) noexcept
 # pragma warning(disable: 4127) // Conditional expression is constant (BOOST_IF_CONSTEXPR in pre-C++17 modes)
 #endif
 
+template <typename Real, typename Unsigned_Integer>
+inline std::uint64_t extract_exp(Real, Unsigned_Integer uint_value, int significand_bits) noexcept
+{
+    return static_cast<std::uint64_t>(uint_value >> significand_bits);
+}
+
+#if BOOST_CHARCONV_LDBL_BITS == 80
+
+// In the 80-bit long double case we need to ignore the pad on top of the high bits
+// and the 64-bits of significand in the low bits
+// This is easiest to accomplish with a mask rather than all kinds of shifting
+template <>
+inline std::uint64_t extract_exp<long double, uint128>(long double, uint128 uint_value, int) noexcept
+{
+
+    constexpr auto exp_mask = uint128{UINT64_C(0x7FFF), UINT64_C(0)};
+    auto exponent = uint_value & exp_mask;
+    return exponent.high;
+}
+
+#endif
+
 template <typename Real>
 to_chars_result to_chars_hex(char* first, char* last, Real value, int precision) noexcept
 {
     // Sanity check our bounds
     const std::ptrdiff_t buffer_size = last - first;
     auto real_precision = get_real_precision<Real>(precision);
+
+    if (precision != -1)
+    {
+        real_precision = precision;
+    }
+
     if (buffer_size < real_precision || first > last)
     {
         return {last, std::errc::result_out_of_range};
@@ -247,26 +275,33 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
                     #endif
             >::type>::type;
 
-    #ifdef BOOST_CHARCONV_HAS_INT128
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t,
-            typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, boost::uint128_type>::type>::type;
-    #else
-    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t,
-                             typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, uint128>::type>::type;
-    #endif
+            typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, uint128>::type>::type;
+
 
     Unsigned_Integer uint_value {convert_value<Unsigned_Integer>(value)};
 
     const Unsigned_Integer denorm_mask = (Unsigned_Integer(1) << (type_layout::significand_bits)) - 1;
     const Unsigned_Integer significand = uint_value & denorm_mask;
-    auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits);
-    BOOST_IF_CONSTEXPR (!(std::is_same<Real, float>::value || std::is_same<Real, double>::value))
+    std::uint64_t exponent = extract_exp(value, uint_value, type_layout::significand_bits);
+
+    BOOST_IF_CONSTEXPR (!(std::is_same<Real, float>::value || std::is_same<Real, double>::value
+                        #if BOOST_CHARCONV_LDBL_BITS == 80
+                        || std::is_same<Real, long double>::value
+                        #endif
+                        ))
     {
         exponent += 2;
     }
 
     // Align the significand to the hexit boundaries (i.e. divisible by 4)
-    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 : std::is_same<Real, double>::value ? 13 : 28;
+    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 :
+                                      std::is_same<Real, double>::value ? 13
+                                      #if BOOST_CHARCONV_LDBL_BITS == 80
+                                      : std::is_same<Real, long double>::value ? 15
+                                      #endif
+                                      : 28;
+
     constexpr auto nibble_bits = CHAR_BIT / 2;
     constexpr auto hex_bits = hex_precision * nibble_bits;
     const Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
@@ -282,7 +317,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Adjust the exponent based on the bias as described in IEEE 754
-    std::int32_t unbiased_exponent;
+    std::int64_t unbiased_exponent;
     if (exponent == 0 && significand != 0)
     {
         // Subnormal value since we already handled zero
@@ -311,10 +346,18 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
     else BOOST_IF_CONSTEXPR (std::is_same<Real, long double>::value)
     {
-        if (unbiased_exponent > 16383)
+        #if BOOST_CHARCONV_LDBL_BITS == 80
+        while (unbiased_exponent > 16383)
         {
             unbiased_exponent -= 32768;
         }
+        unbiased_exponent -= 3;
+        #else
+        while (unbiased_exponent > 16383)
+        {
+            unbiased_exponent -= 32768;
+        }
+        #endif
     }
     else
     {
@@ -352,8 +395,23 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Print the integral part
+    #if BOOST_CHARCONV_LDBL_BITS == 80
+    std::uint32_t leading_nibble;
+    BOOST_IF_CONSTEXPR (std::is_same<Real, long double>::value)
+    {
+        leading_nibble = static_cast<std::uint32_t>(significand >> hex_bits);
+    }
+    else
+    {
+        leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
+    }
+    #else
     const auto leading_nibble = static_cast<std::uint32_t>(aligned_significand >> hex_bits);
-    *first++ = static_cast<char>('0' + leading_nibble);
+    #endif
+
+    BOOST_CHARCONV_ASSERT(leading_nibble < 16);
+    *first++ = digit_table[leading_nibble];
+    
     aligned_significand &= hex_mask;
 
     // Print the fractional part
