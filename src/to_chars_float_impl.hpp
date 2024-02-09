@@ -265,7 +265,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 
     const Unsigned_Integer denorm_mask = (Unsigned_Integer(1) << (type_layout::significand_bits)) - 1;
     const Unsigned_Integer significand = uint_value & denorm_mask;
-    auto exponent = static_cast<std::int32_t>(uint_value >> type_layout::significand_bits);
+    Unsigned_Integer exponent = uint_value >> type_layout::significand_bits;
     BOOST_IF_CONSTEXPR (!(std::is_same<Real, float>::value || std::is_same<Real, double>::value))
     {
         exponent += 2;
@@ -294,7 +294,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Adjust the exponent based on the bias as described in IEEE 754
-    std::int32_t unbiased_exponent;
+    Unsigned_Integer unbiased_exponent;
     if (exponent == 0 && significand != 0)
     {
         // Subnormal value since we already handled zero
@@ -324,11 +324,16 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     else BOOST_IF_CONSTEXPR (std::is_same<Real, long double>::value)
     {
         #if BOOST_CHARCONV_LDBL_BITS == 80
+        bool adjusted = false;
         while (unbiased_exponent > 16383)
         {
             unbiased_exponent -= 32768;
+            adjusted = true;
         }
-        unbiased_exponent -= 3;
+        if (adjusted)
+        {
+            unbiased_exponent -= 3;
+        }
         #else
         while (unbiased_exponent > 16383)
         {

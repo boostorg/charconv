@@ -41,17 +41,15 @@ struct ieee754_binary64
 struct IEEEl2bits
 {
 #if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
-    std::uint32_t mantissa_l : 32;
-    std::uint32_t mantissa_h : 32;
+    std::uint64_t mantissa_l : 64;
     std::uint32_t exponent : 15;
     std::uint32_t sign : 1;
-    std::uint32_t pad : 32;
+    std::uint64_t pad : 48;
 #else // Big endian
-    std::uint32_t pad : 32;
+    std::uint64_t pad : 48;
     std::uint32_t sign : 1;
     std::uint32_t exponent : 15;
-    std::uint32_t mantissa_h : 32;
-    std::uint32_t mantissa_l : 32;
+    std::uint64_t mantissa_h : 64;
 #endif
 };
 
