@@ -222,8 +222,8 @@ Unsigned_Integer convert_value(Real value) noexcept
 # pragma warning(disable: 4127) // Conditional expression is constant (BOOST_IF_CONSTEXPR in pre-C++17 modes)
 #endif
 
-template <typename Unsigned_Integer>
-inline std::uint64_t extract_exp(Unsigned_Integer uint_value, int significand_bits) noexcept
+template <typename Real, typename Unsigned_Integer>
+inline std::uint64_t extract_exp(Real, Unsigned_Integer uint_value, int significand_bits) noexcept
 {
     return static_cast<std::uint64_t>(uint_value >> significand_bits);
 }
@@ -234,7 +234,7 @@ inline std::uint64_t extract_exp(Unsigned_Integer uint_value, int significand_bi
 // and the 64-bits of significand in the low bits
 // This is easiest to accomplish with a mask rather than all kinds of shifting
 template <>
-inline std::uint64_t extract_exp<uint128>(uint128 uint_value, int) noexcept
+inline std::uint64_t extract_exp<long double, uint128>(long double, uint128 uint_value, int) noexcept
 {
 
     constexpr auto exp_mask = uint128{UINT64_C(0x7FFF), UINT64_C(0)};
@@ -283,7 +283,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 
     const Unsigned_Integer denorm_mask = (Unsigned_Integer(1) << (type_layout::significand_bits)) - 1;
     const Unsigned_Integer significand = uint_value & denorm_mask;
-    std::uint64_t exponent = extract_exp(uint_value, type_layout::significand_bits);
+    std::uint64_t exponent = extract_exp(value, uint_value, type_layout::significand_bits);
 
     BOOST_IF_CONSTEXPR (!(std::is_same<Real, float>::value || std::is_same<Real, double>::value
                         #if BOOST_CHARCONV_LDBL_BITS == 80
