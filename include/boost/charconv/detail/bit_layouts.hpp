@@ -59,7 +59,7 @@ struct ieee754_binary80
     static constexpr int exponent_bits = 15;
     static constexpr int min_exponent = -16382;
     static constexpr int max_exponent = 16383;
-    static constexpr int exponent_bias = 16383;
+    static constexpr int exponent_bias = -16383;
     static constexpr int decimal_digits = 18;
 };
 
