@@ -225,7 +225,7 @@ Unsigned_Integer convert_value(Real value) noexcept
 template <typename Unsigned_Integer>
 inline std::uint64_t extract_exp(Unsigned_Integer uint_value, int significand_bits) noexcept
 {
-    return uint_value >> significand_bits;
+    return static_cast<std::uint64_t>(uint_value >> significand_bits);
 }
 
 #if BOOST_CHARCONV_LDBL_BITS == 80

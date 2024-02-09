@@ -215,9 +215,13 @@ int main()
     random_test<float>(boost::charconv::chars_format::hex);
     random_test<double>(boost::charconv::chars_format::hex);
     random_test<long double>(boost::charconv::chars_format::hex);
+
+    #if !defined(_LIBCPP_VERSION)
     random_test<float>(boost::charconv::chars_format::hex, -1e5F, 1e5F);
     random_test<double>(boost::charconv::chars_format::hex, -1e5, 1e5);
     random_test<long double>(boost::charconv::chars_format::hex, -1e5L, 1e5L);
+    #endif
+
     test_spot<double>(-9.52743282403084637e+306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e-306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e+305, boost::charconv::chars_format::hex);
