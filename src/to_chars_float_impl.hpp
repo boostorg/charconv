@@ -637,12 +637,25 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     {
         if (fmt != boost::charconv::chars_format::hex)
         {
-            if (abs_value >= min_fractional_value && abs_value < max_fractional_value)
+            int changed_fmt = 0;
+            // In this range with general formatting, fixed formatting is the shortest
+            if (fmt == boost::charconv::chars_format::general && abs_value >= min_fractional_value && abs_value < max_fractional_value)
             {
-                return to_chars_fixed_impl(first, last, value, fmt, precision);
+                fmt = boost::charconv::chars_format::fixed;
+                ++changed_fmt;
             }
 
-            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
+            int floff_precision;
+            if (fmt == boost::charconv::chars_format::scientific || fmt == boost::charconv::chars_format::general)
+            {
+                floff_precision = precision;
+            }
+            else
+            {
+                floff_precision = precision - static_cast<int>(value < 1) + changed_fmt;
+            }
+
+            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, floff_precision, first, fmt);
             return { ptr, std::errc() };
         }
     }
