@@ -3771,32 +3771,33 @@ insert_decimal_dot:
 
 print_exponent_and_return:
 
-    // In the negative fixed case we have not inserted the decimal dot
-    // so the value will be in the form ex. 01000...
-    //
-    // Need to memset leading zeros equal to a negative exponent
-    if (fmt == chars_format::fixed && decimal_exponent < 0)
+    if (fmt == chars_format::fixed)
     {
-        std::memmove(&buffer_starting_pos[1 - decimal_exponent], &buffer_starting_pos[1], static_cast<std::size_t>(buffer - buffer_starting_pos + decimal_exponent + 1));
-        std::memset(&buffer_starting_pos[0], '0', static_cast<std::size_t>(-decimal_exponent));
-        buffer_starting_pos[1] = '.';
-
-        char* const buffer_end = buffer + 1;
-
-        // Fix the rounding since we are truncating
-        while (*(buffer + 1) > '5')
+        // In the negative fixed case we have not inserted the decimal dot
+        // so the value will be in the form ex. 01000...
+        //
+        // Need to memset leading zeros equal to a negative exponent
+        if (decimal_exponent < 0)
         {
-            *buffer += static_cast<char>(1);
-            --buffer;
+            std::memmove(&buffer_starting_pos[1 - decimal_exponent], &buffer_starting_pos[1],
+                         static_cast<std::size_t>(buffer - buffer_starting_pos + decimal_exponent + 1));
+            std::memset(&buffer_starting_pos[0], '0', static_cast<std::size_t>(-decimal_exponent));
+            buffer_starting_pos[1] = '.';
+
+            char* const buffer_end = buffer + 1;
+
+            // Fix the rounding since we are truncating
+            while (*(buffer + 1) > '5')
+            {
+                *buffer += static_cast<char>(1);
+                --buffer;
+            }
+
+            return buffer_end;
         }
 
-        return buffer_end;
-    }
-
-    // In the positive case the precision is still measured after the decimal point
-    // We need to memmove the buffer, insert the decimal point, and then append zeros
-    else if (fmt == chars_format::fixed && decimal_exponent > 0)
-    {
+        // In the positive case the precision is still measured after the decimal point
+        // We need to memmove the buffer, insert the decimal point, and then append zeros
         std::memmove(&buffer_starting_pos[0], &buffer_starting_pos[1], decimal_exponent);
         buffer_starting_pos[decimal_exponent + 1] = '.';
         std::memset(buffer, '0', decimal_exponent);
