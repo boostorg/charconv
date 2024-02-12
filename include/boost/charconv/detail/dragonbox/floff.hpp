@@ -3777,7 +3777,20 @@ print_exponent_and_return:
     // Need to memset leading zeros equal to a negative exponent
     if (fmt == chars_format::fixed && decimal_exponent < 0)
     {
-        return buffer;
+        std::memmove(&buffer_starting_pos[1 - decimal_exponent], &buffer_starting_pos[1], static_cast<std::size_t>(buffer - buffer_starting_pos + decimal_exponent + 1));
+        std::memset(&buffer_starting_pos[0], '0', static_cast<std::size_t>(-decimal_exponent));
+        buffer_starting_pos[1] = '.';
+
+        char* const buffer_end = buffer + 1;
+
+        // Fix the rounding since we are truncating
+        while (*(buffer + 1) > '5')
+        {
+            *buffer += static_cast<char>(1);
+            --buffer;
+        }
+
+        return buffer_end;
     }
 
     // In the positive case the precision is still measured after the decimal point
