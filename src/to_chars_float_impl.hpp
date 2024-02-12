@@ -648,11 +648,16 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
             int floff_precision;
             if (fmt == boost::charconv::chars_format::scientific || fmt == boost::charconv::chars_format::general)
             {
-                floff_precision = precision - static_cast<int>(value < 1);
+                floff_precision = precision - static_cast<int>(abs_value < 1);
             }
             else
             {
-                floff_precision = precision - static_cast<int>(value < 1) + changed_fmt;
+                floff_precision = precision - static_cast<int>(abs_value < 1) + changed_fmt;
+            }
+
+            if (floff_precision <= 0)
+            {
+                floff_precision = 0;
             }
 
             return boost::charconv::detail::floff<boost::charconv::detail::main_cache_full,

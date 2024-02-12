@@ -3835,7 +3835,7 @@ print_exponent_and_return:
         {
             std::memmove(&buffer_starting_pos[1 - decimal_exponent], &buffer_starting_pos[1],
                          static_cast<std::size_t>(buffer - buffer_starting_pos + decimal_exponent + 1));
-            std::memset(&buffer_starting_pos[0], '0', static_cast<std::size_t>(-decimal_exponent));
+            std::memset(&buffer_starting_pos[0], '0', static_cast<std::size_t>(-decimal_exponent) + 1U);
             buffer_starting_pos[1] = '.';
 
             char* const buffer_end = buffer + 1;
