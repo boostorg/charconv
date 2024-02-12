@@ -149,7 +149,7 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     {
         // Sprintf uses 9 / 17 digits of precision
         // Precisions differ for negative exps to match the handling in <charconv>
-        if (abs(value) < 1)
+        if (std::fabs(value) < 1)
         {
             r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt, std::numeric_limits<T>::max_digits10 + 1);
         }
