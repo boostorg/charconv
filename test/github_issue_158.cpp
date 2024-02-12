@@ -73,10 +73,10 @@ void test_values_with_positive_exp()
 }
 
 template <typename T>
-void test_spot_value(T value, int precision, const char* result)
+void test_spot_value(T value, int precision, const char* result, boost::charconv::chars_format fmt = boost::charconv::chars_format::fixed)
 {
     char buffer[256];
-    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
+    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, fmt, precision);
     *r.ptr = '\0';
 
     BOOST_TEST(r);
@@ -92,6 +92,8 @@ int main()
     test_spot_value(27057.375F, 49, "27057.3750000000000000000000000000000000000000000000000");
     test_spot_value(-38347.10547F, 49, "-38347.1054687500000000000000000000000000000000000000000");
     test_spot_value(69872.51054F, 5, "69872.51054");
+
+    test_spot_value(12043.7270408630284, 49, "12043.727040863028378225862979888916015625", boost::charconv::chars_format::general);
 
     return boost::report_errors();
 }

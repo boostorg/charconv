@@ -1304,7 +1304,7 @@ bool compute_has_further_digits(unsigned remaining_subsegment_pairs, std::uint64
 // Assumes round-to-nearest, tie-to-even rounding.
 template <typename MainCache = main_cache_full, typename ExtendedCache>
 BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int precision, char* first, char* last,
-                                                 boost::charconv::chars_format fmt) noexcept
+                                                 boost::charconv::chars_format fmt, bool changed_fmt) noexcept
 {
     if (first >= last)
     {
@@ -3851,14 +3851,29 @@ print_exponent_and_return:
         }
 
         // In the positive case the precision is still measured after the decimal point
-        // We need to memmove the buffer, insert the decimal point, and then append zeros
+        // We need to memmove the buffer, insert the decimal point, and then append zeros if applicable
         std::memmove(&buffer_starting_pos[0], &buffer_starting_pos[1], static_cast<std::size_t>(decimal_exponent) + 1U);
         buffer_starting_pos[decimal_exponent + 1] = '.';
         if (current_digits < static_cast<std::uint32_t>(decimal_exponent))
         {
             std::memset(buffer, '0', static_cast<std::size_t>(decimal_exponent));
         }
-        return {buffer + decimal_exponent, std::errc()};
+
+        auto buffer_end = buffer + decimal_exponent;
+        if (changed_fmt)
+        {
+            --buffer_end;
+            while (*buffer_end == '0')
+            {
+                --buffer_end;
+            }
+            if (*buffer_end != '.')
+            {
+                ++buffer_end;
+            }
+        }
+
+        return {buffer_end, std::errc()};
     }
 
     if (fmt == boost::charconv::chars_format::general)

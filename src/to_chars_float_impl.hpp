@@ -662,7 +662,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
 
             return boost::charconv::detail::floff<boost::charconv::detail::main_cache_full,
                                                   boost::charconv::detail::extended_cache_long>(value, floff_precision,
-                                                                                                first, last, fmt);
+                                                                                                first, last, fmt, changed_fmt);
         }
     }
 
