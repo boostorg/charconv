@@ -28,6 +28,7 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/dragonbox/dragonbox_common.hpp>
+#include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/core/bit.hpp>
 #include <type_traits>
@@ -1302,8 +1303,17 @@ bool compute_has_further_digits(unsigned remaining_subsegment_pairs, std::uint64
 // precision means the number of decimal significand digits minus 1.
 // Assumes round-to-nearest, tie-to-even rounding.
 template <typename MainCache = main_cache_full, typename ExtendedCache>
-BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char* buffer, boost::charconv::chars_format fmt) noexcept 
+BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int precision, char* first, char* last,
+                                                 boost::charconv::chars_format fmt) noexcept
 {
+    if (first >= last)
+    {
+        return {last, std::errc::result_out_of_range};
+    }
+
+    auto buffer_size = static_cast<std::size_t>(last - first);
+    auto buffer = first;
+
     BOOST_CHARCONV_ASSERT(precision >= 0);
     using namespace detail;
 
@@ -1320,12 +1330,20 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
         {
             *buffer = '-';
             ++buffer;
+            --buffer_size;
         }
 
-        if (significand == 0) 
+        if (significand == 0)
         {
-            std::memcpy(buffer, "inf", 3); // NOLINT : Specifically not null-terminating
-            return buffer + 3;
+            constexpr std::size_t inf_chars = 3;
+
+            if (buffer_size < inf_chars)
+            {
+                return {last, std::errc::result_out_of_range};
+            }
+
+            std::memcpy(buffer, "inf", inf_chars); // NOLINT : Specifically not null-terminating
+            return {buffer + inf_chars, std::errc()};
         }
         else 
         {
@@ -1337,19 +1355,40 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             {
                 if (!is_negative)
                 {
-                    std::memcpy(buffer, "nan", 3); // NOLINT : Specifically not null-terminating
-                    return buffer + 3;
+                    constexpr std::size_t nan_chars = 3;
+
+                    if (buffer_size < nan_chars)
+                    {
+                        return {last, std::errc::result_out_of_range};
+                    }
+
+                    std::memcpy(buffer, "nan", nan_chars); // NOLINT : Specifically not null-terminating
+                    return {buffer + nan_chars, std::errc()};
                 }
                 else
                 {
-                    std::memcpy(buffer, "nan(ind)", 8); // NOLINT : Specifically not null-terminating
-                    return buffer + 8;
+                    constexpr std::size_t neg_nan_chars = 8;
+
+                    if (buffer_size < neg_nan_chars)
+                    {
+                        return {last, std::errc::result_out_of_range};
+                    }
+
+                    std::memcpy(buffer, "nan(ind)", neg_nan_chars); // NOLINT : Specifically not null-terminating
+                    return {buffer + neg_nan_chars, std::errc()};
                 }
             }
             else
             {
-                std::memcpy(buffer, "nan(snan)", 9); // NOLINT : Specifically not null-terminating
-                return buffer + 9;
+                constexpr std::size_t snan_chars = 9;
+
+                if (buffer_size < snan_chars)
+                {
+                    return {last, std::errc::result_out_of_range};
+                }
+
+                std::memcpy(buffer, "nan(snan)", snan_chars); // NOLINT : Specifically not null-terminating
+                return {buffer + snan_chars, std::errc()};
             }
         }
     }
@@ -1359,6 +1398,7 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
         {
             *buffer = '-';
             ++buffer;
+            --buffer_size;
         }
 
         // Normal numbers.
@@ -1375,15 +1415,27 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
             {
                 if (precision == 0) 
                 {
-                    std::memcpy(buffer, "0e+00", 3);
-                    return buffer + 3;
+                    constexpr std::size_t zero_chars = 5;
+
+                    if (buffer_size < zero_chars)
+                    {
+                        return {last, std::errc::result_out_of_range};
+                    }
+
+                    std::memcpy(buffer, "0e+00", zero_chars);
+                    return {buffer + zero_chars, std::errc()};
                 }
                 else 
                 {
+                    if (buffer_size < static_cast<std::size_t>(precision) + 6U)
+                    {
+                        return {last, std::errc::result_out_of_range};
+                    }
+
                     std::memcpy(buffer, "0.", 2); // NOLINT : Specifically not null-terminating
                     std::memset(buffer + 2, '0', static_cast<std::size_t>(precision)); // NOLINT : Specifically not null-terminating
-                    std::memcpy(buffer + 2 + precision, "e+00", 2); // NOLINT : Specifically not null-terminating
-                    return buffer + precision + 4;
+                    std::memcpy(buffer + 2 + precision, "e+00", 4); // NOLINT : Specifically not null-terminating
+                    return {buffer + precision + 6, std::errc()};
                 }
             }
             // Nonzero
@@ -1396,10 +1448,12 @@ BOOST_CHARCONV_SAFEBUFFERS char* floff(const double x, const int precision, char
     std::uint32_t current_digits {};
     char* const buffer_starting_pos = buffer;
     int decimal_exponent = -k;
-
-    // TODO(mborland): Use this for bounds checking since there is currently nothing preventing
-    // buffer overflows in the algorithm
     int remaining_digits = precision + 1;
+
+    if (buffer_size < static_cast<std::size_t>(remaining_digits))
+    {
+        return {last, std::errc::result_out_of_range};
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /// Phase 1 - Print the first digit segment computed with the Dragonbox table.
@@ -3793,7 +3847,7 @@ print_exponent_and_return:
                 --buffer;
             }
 
-            return buffer_end;
+            return {buffer_end, std::errc()};
         }
 
         // In the positive case the precision is still measured after the decimal point
@@ -3801,7 +3855,7 @@ print_exponent_and_return:
         std::memmove(&buffer_starting_pos[0], &buffer_starting_pos[1], decimal_exponent);
         buffer_starting_pos[decimal_exponent + 1] = '.';
         std::memset(buffer, '0', decimal_exponent);
-        return buffer + decimal_exponent;
+        return {buffer + decimal_exponent, std::errc()};
     }
 
     if (fmt == boost::charconv::chars_format::general)
@@ -3853,7 +3907,7 @@ print_exponent_and_return:
         buffer += 2;
     }
 
-    return buffer;
+    return {buffer, std::errc()};
 
 round_up:
     if ((remaining_digits & 1) != 0)
