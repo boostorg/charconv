@@ -64,7 +64,7 @@ char const* fmt_from_type_scientific( float )
 
 char const* fmt_from_type_fixed( float )
 {
-    return "%.0f";
+    return "%.9f";
 }
 
 char const* fmt_from_type( double )
@@ -79,7 +79,7 @@ char const* fmt_from_type_scientific( double )
 
 char const* fmt_from_type_fixed( double )
 {
-    return "%.0f";
+    return "%.17f";
 }
 
 char const* fmt_from_type( long double )
@@ -148,7 +148,15 @@ template<class T> void test_sprintf_float( T value, boost::charconv::chars_forma
     else
     {
         // Sprintf uses 9 / 17 digits of precision
-        r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt, std::numeric_limits<T>::max_digits10);
+        // Precisions differ for negative exps to match the handling in <charconv>
+        if (abs(value) < 1)
+        {
+            r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt, std::numeric_limits<T>::max_digits10 + 1);
+        }
+        else
+        {
+            r = boost::charconv::to_chars( buffer, buffer + sizeof( buffer ), value, fmt, std::numeric_limits<T>::max_digits10);
+        }
     }
 
     BOOST_TEST( r.ec == std::errc() );
