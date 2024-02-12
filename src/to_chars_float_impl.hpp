@@ -637,18 +637,18 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     {
         if (fmt != boost::charconv::chars_format::hex)
         {
-            int changed_fmt = 0;
+            bool changed_fmt = false;
             // In this range with general formatting, fixed formatting is the shortest
             if (fmt == boost::charconv::chars_format::general && abs_value >= min_fractional_value && abs_value < max_fractional_value)
             {
                 fmt = boost::charconv::chars_format::fixed;
-                ++changed_fmt;
+                changed_fmt = true;
             }
 
             int floff_precision;
             if (fmt == boost::charconv::chars_format::scientific || fmt == boost::charconv::chars_format::general)
             {
-                floff_precision = precision;
+                floff_precision = precision - static_cast<int>(value < 1);
             }
             else
             {
