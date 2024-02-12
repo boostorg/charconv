@@ -114,6 +114,18 @@ void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_form
             test_spot(dist(gen), fmt, i);
         }
     }
+
+    // Test some extended precision arguments
+    if (fmt != boost::charconv::chars_format::fixed || max_val < T(1e10))
+    {
+        for (int i = 40; i < 50; ++i)
+        {
+            for (std::size_t j = 0; j < 10; ++j)
+            {
+                test_spot(dist(gen), fmt, i);
+            }
+        }
+    }
 }
 
 template <typename T>
@@ -210,6 +222,10 @@ int main()
     random_test<long double>(boost::charconv::chars_format::scientific);
     test_spot<double>(0.0, boost::charconv::chars_format::scientific);
     test_spot<double>(-0.0, boost::charconv::chars_format::scientific);
+
+    random_test<float>(boost::charconv::chars_format::scientific, -1e5F, 1e5F);
+    random_test<double>(boost::charconv::chars_format::scientific, -1e5, 1e5);
+    random_test<long double>(boost::charconv::chars_format::scientific, -1e5L, 1e5L);
 
     // Hex
     random_test<float>(boost::charconv::chars_format::hex);
