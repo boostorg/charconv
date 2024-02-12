@@ -119,12 +119,6 @@ void test_min_buffer_size()
     int format_int = 0;
     for (const auto format : formats)
     {
-        // TODO(mborland): Remove this once https://github.com/boostorg/charconv/issues/154 is fixed
-        if (std::is_same<T, long double>::value && format_int == 0)
-        {
-            continue;
-        }
-
         for (std::size_t i = 0; i < N; ++i)
         {
             char buffer[boost::charconv::limits<T>::max_chars10];
