@@ -72,10 +72,26 @@ void test_values_with_positive_exp()
     BOOST_TEST_CSTR_EQ(buffer, "100000000000000000.00000000000000000000000000000000000000000000000000");
 }
 
+template <typename T>
+void test_spot_value(T value, int precision, const char* result)
+{
+    char buffer[256];
+    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
+    *r.ptr = '\0';
+
+    BOOST_TEST(r);
+    BOOST_TEST_CSTR_EQ(buffer, result);
+}
+
 int main()
 {
     test_values_with_negative_exp();
     test_values_with_positive_exp();
+
+    // Found during random testing in to_chars_float_STL_comp
+    test_spot_value(27057.375F, 49, "27057.3750000000000000000000000000000000000000000000000");
+    test_spot_value(-38347.10547F, 49, "-38347.1054687500000000000000000000000000000000000000000");
+    test_spot_value(69872.51054F, 5, "69872.51054");
 
     return boost::report_errors();
 }
