@@ -215,6 +215,9 @@ int main()
     random_test<long double>();
     test_spot<double>(0.0);
     test_spot<double>(-0.0);
+    random_test<float>(boost::charconv::chars_format::general, -1e5F, 1e5F);
+    random_test<double>(boost::charconv::chars_format::general, -1e5, 1e5);
+    random_test<long double>(boost::charconv::chars_format::general, -1e5L, 1e5L);
 
     // Scientific
     random_test<float>(boost::charconv::chars_format::scientific);
