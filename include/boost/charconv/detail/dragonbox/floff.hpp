@@ -3852,9 +3852,12 @@ print_exponent_and_return:
 
         // In the positive case the precision is still measured after the decimal point
         // We need to memmove the buffer, insert the decimal point, and then append zeros
-        std::memmove(&buffer_starting_pos[0], &buffer_starting_pos[1], static_cast<std::size_t>(decimal_exponent));
+        std::memmove(&buffer_starting_pos[0], &buffer_starting_pos[1], static_cast<std::size_t>(decimal_exponent) + 1U);
         buffer_starting_pos[decimal_exponent + 1] = '.';
-        std::memset(buffer, '0', static_cast<std::size_t>(decimal_exponent));
+        if (current_digits < static_cast<std::uint32_t>(decimal_exponent))
+        {
+            std::memset(buffer, '0', static_cast<std::size_t>(decimal_exponent));
+        }
         return {buffer + decimal_exponent, std::errc()};
     }
 
