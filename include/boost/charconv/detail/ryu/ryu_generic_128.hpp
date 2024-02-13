@@ -415,6 +415,11 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     else if ((-v.exponent) < current_len)
     {
         // Option 3: Insert a decimal point into the middle of the existing number
+        if (current_len + v.exponent + 1 > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
         memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
         memcpy(result + current_len + v.exponent, ".", 1U);
         ++current_len;
@@ -439,6 +444,11 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 
     if (precision > 0)
     {
+        if (current_len + precision > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
         memset(result, '0', static_cast<std::size_t>(precision));
         current_len += precision;
     }
