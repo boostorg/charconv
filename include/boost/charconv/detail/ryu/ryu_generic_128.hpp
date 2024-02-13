@@ -612,6 +612,12 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         exp /= 10;
         result[index + elength - 1 - i] = static_cast<char>('0' + c);
     }
+    if (elength == 0)
+    {
+        result[index++] = '0';
+        result[index++] = '0';
+    }
+    
     index += elength;
     return static_cast<int>(index);
 }
