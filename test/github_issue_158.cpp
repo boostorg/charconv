@@ -93,6 +93,38 @@ void test_values_with_negative_exp()
     BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000000099999999999999990753745222790");
 }
 
+void test_long_double_with_negative_exp()
+{
+    char buffer[256];
+    long double d = 1e-15L;
+    auto res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::scientific, 50);
+    *res.ptr = '\0';
+
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "9.99999999999999999994126620636112567498475617893198e-16");
+
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::fixed, 50);
+    *res.ptr = '\0';
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000099999999999999999999412662063611257");
+
+    d = 1e-17L;
+
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::scientific, 50);
+    *res.ptr = '\0';
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "9.99999999999999999997135886174217623518875583428487e-18");
+
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::fixed, 50);
+    *res.ptr = '\0';
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000999999999999999999997135886174218");
+}
+
 void test_values_with_positive_exp()
 {
     char buffer[256];
@@ -373,6 +405,38 @@ void test_zero()
     BOOST_TEST_CSTR_EQ(buffer, "0");
 }
 
+void test_long_double_with_positive_exp()
+{
+    char buffer[256];
+    long double d = 1e15L;
+    auto res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::scientific, 50);
+    *res.ptr = '\0';
+
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000000000000000000000000000000000000000e+15");
+
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::fixed, 50);
+    *res.ptr = '\0';
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "1000000000000000.00000000000000000000000000000000000000000000000000");
+
+    d = 1e17L;
+
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::scientific, 50);
+    *res.ptr = '\0';
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000000000000000000000000000000000000000e+17");
+
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+                         boost::charconv::chars_format::fixed, 50);
+    *res.ptr = '\0';
+    BOOST_TEST(res);
+    BOOST_TEST_CSTR_EQ(buffer, "100000000000000000.00000000000000000000000000000000000000000000000000");
+}
+
 template <typename T>
 void test_spot_value(T value, int precision, const char* result, boost::charconv::chars_format fmt = boost::charconv::chars_format::fixed)
 {
@@ -390,6 +454,11 @@ int main()
     test_values_with_positive_exp();
     test_zero();
     test_round_9();
+
+    #if BOOST_CHARCONV_LDBL_BITS == 80
+    //test_long_double_with_negative_exp();
+    test_long_double_with_positive_exp();
+    #endif
 
     // Found during random testing in to_chars_float_STL_comp
     //test_spot_value(27057.375F, 49, "27057.3750000000000000000000000000000000000000000000000");
