@@ -471,6 +471,7 @@ int main()
     test_spot_value(-37512.44400929347152385L, 17, "-3.75124440092934715e+04", boost::charconv::chars_format::scientific);
     test_spot_value(69260.5792027112860012L, 17, "6.92605792027112860e+04", boost::charconv::chars_format::scientific);
     test_spot_value(7.420390267538564899041L,  13, "7.4203902675386e+00", boost::charconv::chars_format::scientific);
+    test_spot_value(-72911.41743909836600324L, 15, "-7.291141743909837e+04", boost::charconv::chars_format::scientific);
     #endif
 
     return boost::report_errors();
