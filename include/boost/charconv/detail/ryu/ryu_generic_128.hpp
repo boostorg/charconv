@@ -398,14 +398,19 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     }
     else if (v.exponent > 0)
     {
-        // Option 2: Append 0s to the end of the number until we get the proper output
+        // Option 2: Append 0s to the end of the number until we get the proper significand value
+        // Then we need precison worth of zeros after the decimal point as applicable
         if (current_len + v.exponent > result_size)
         {
             return -static_cast<int>(std::errc::value_too_large);
         }
 
-        memset(r.ptr, '0', static_cast<std::size_t>(v.exponent));
+        result = r.ptr;
+        memset(result, '0', static_cast<std::size_t>(v.exponent));
+        result += static_cast<std::size_t>(v.exponent);
         current_len += v.exponent;
+        *result++ = '.';
+        ++precision;
     }
     else if ((-v.exponent) < current_len)
     {
@@ -413,6 +418,8 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
         memcpy(result + current_len + v.exponent, ".", 1U);
         ++current_len;
+        precision -= current_len + v.exponent;
+        result += current_len + v.exponent + 1;
     }
     else
     {
@@ -426,12 +433,13 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         memcpy(result, "0.", 2U);
         memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
+        precision = 0;
     }
 
-    if (current_len < precision)
+    if (precision > 0)
     {
-        memset(result + current_len, '0', static_cast<std::size_t>(precision - current_len));
-        current_len = precision;
+        memset(result, '0', static_cast<std::size_t>(precision));
+        current_len += precision;
     }
 
     return current_len + static_cast<int>(v.sign);
