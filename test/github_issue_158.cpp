@@ -467,5 +467,9 @@ int main()
     //test_spot_value(-38347.10547F, 49, "-38347.1054687500000000000000000000000000000000000000000");
     //test_spot_value(12043.7270408630284, 49, "12043.727040863028378225862979888916015625", boost::charconv::chars_format::general);
 
+    #if BOOST_CHARCONV_LDBL_BITS == 80
+    test_spot_value(-37512.44400929347152385L, 17, "-3.75124440092934715e+04", boost::charconv::chars_format::scientific);
+    #endif
+
     return boost::report_errors();
 }

@@ -533,19 +533,15 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         {
             if (fmt != chars_format::scientific)
             {
-                index = static_cast<size_t>(precision) + 1; // Precision is number of characters not just the decimal portion
+                index = static_cast<size_t>(precision) + 1 + static_cast<size_t>(v.sign); // Precision is number of characters not just the decimal portion
             }
             else
             {
-                index = static_cast<size_t>(precision) + 2; // In scientific format the precision is just the decimal places
+                index = static_cast<size_t>(precision) + 2 + static_cast<size_t>(v.sign); // In scientific format the precision is just the decimal places
             }
 
             // Now we need to see if we need to round
-            if (result[index] == '5' ||
-                result[index] == '6' ||
-                result[index] == '7' ||
-                result[index] == '8' ||
-                result[index] == '9')
+            if (result[index] >= '5')
             {
                 bool continue_rounding = false;
                 auto current_index = index;
