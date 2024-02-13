@@ -569,6 +569,14 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                     --index;
                 }
             }
+            else
+            {
+                // In scientific formatting we may need a final 0 to achieve the correct precision
+                if (precision + 1 > static_cast<int>(olength))
+                {
+                    result[index - 1] = '0';
+                }
+            }
         }
         else if (static_cast<size_t>(precision) > index)
         {
