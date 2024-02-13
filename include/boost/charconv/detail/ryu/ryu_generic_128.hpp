@@ -433,7 +433,8 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         memcpy(result, "0.", 2U);
         memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
-        precision = 0;
+        precision -= current_len - 2;
+        result += current_len;
     }
 
     if (precision > 0)

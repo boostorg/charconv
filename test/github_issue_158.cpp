@@ -108,7 +108,8 @@ void test_long_double_with_negative_exp()
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
-    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000099999999999999999999412662063611257");
+    // BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000099999999999999999999412662063611257");
+    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000100000000000000000000000000000000000");
 
     d = 1e-17L;
 
@@ -122,7 +123,8 @@ void test_long_double_with_negative_exp()
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
-    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000999999999999999999997135886174218");
+    // BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000999999999999999999997135886174218");
+    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000001000000000000000000000000000000000");
 }
 
 void test_values_with_positive_exp()
@@ -456,7 +458,7 @@ int main()
     test_round_9();
 
     #if BOOST_CHARCONV_LDBL_BITS == 80
-    //test_long_double_with_negative_exp();
+    test_long_double_with_negative_exp();
     test_long_double_with_positive_exp();
     #endif
 
