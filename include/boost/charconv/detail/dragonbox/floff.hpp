@@ -1448,7 +1448,15 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
     std::uint32_t current_digits {};
     char* const buffer_starting_pos = buffer;
     int decimal_exponent = -k;
-    int remaining_digits = precision + 1;
+    int remaining_digits;
+    if (fmt == chars_format::scientific)
+    {
+        remaining_digits = precision + 1 + static_cast<int>(std::abs(x) < 1);
+    }
+    else
+    {
+        remaining_digits = precision + 1;
+    }
 
     if (buffer_size < static_cast<std::size_t>(remaining_digits))
     {
