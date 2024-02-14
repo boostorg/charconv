@@ -1468,11 +1468,11 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
         //auto [first_segment, has_more_segments] 
         compute_mul_result segments = [&] {
             const auto r = umul192_upper128(significand << beta, main_cache);
-            return compute_mul_result{r.high, r.low != 0};
+            return compute_mul_result{r.high, r.low == 0};
         }();
 
         auto first_segment = segments.result;
-        auto has_more_segments = segments.is_integer;
+        auto has_more_segments = !segments.is_integer;
 
         // The first segment can be up to 19 digits. It is in fact always of either 18 or 19
         // digits except when the input is a subnormal number. For subnormal numbers, the
