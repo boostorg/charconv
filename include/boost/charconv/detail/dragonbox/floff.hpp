@@ -3849,10 +3849,19 @@ print_exponent_and_return:
             char* const buffer_end = buffer + 1;
 
             // Fix the rounding since we are truncating
-            while (*(buffer + 1) > '5')
+            if (*(buffer + 1) >= '5' && *(buffer + 1) < '9')
             {
                 *buffer += static_cast<char>(1);
                 --buffer;
+            }
+            else if (*(buffer + 1) == '9')
+            {
+                *buffer++ = '0';
+                while (*buffer == '9')
+                {
+                    *buffer++ = '0';
+                }
+                *buffer += static_cast<char>(1);
             }
 
             return {buffer_end, std::errc()};
