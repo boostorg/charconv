@@ -17,7 +17,7 @@ void test_values_with_negative_exp()
     *res.ptr = '\0';
 
     BOOST_TEST(res);
-    BOOST_TEST_CSTR_EQ(buffer, "1.0000000000000000777053998766610792383071856011950e-15");
+    BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000007770539987666107923830718560119502e-15");
 
     res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
                          boost::charconv::chars_format::fixed, 50);
@@ -31,13 +31,13 @@ void test_values_with_negative_exp()
                          boost::charconv::chars_format::scientific, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
-    BOOST_TEST_CSTR_EQ(buffer, "1.0000000000000000715424240546219245085280561849232e-17");
+    BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000007154242405462192450852805618492325e-17");
 
     res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
-    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000001000000000000000071542424054621924");
+    BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000001000000000000000071542424054621925");
 }
 
 void test_values_with_positive_exp()
