@@ -603,7 +603,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
 
     auto abs_value = std::abs(value);
     constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
-    constexpr auto min_fractional_value = 1 / max_fractional_value;
+    constexpr auto min_fractional_value = static_cast<Real>(1e-4L);
     constexpr auto max_value = static_cast<Real>((std::numeric_limits<Unsigned_Integer>::max)());
 
     // Unspecified precision so we always go with the shortest representation
