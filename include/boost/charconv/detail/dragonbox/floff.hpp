@@ -1782,10 +1782,18 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
             }
 
             const auto initial_digits = static_cast<std::uint32_t>(prod >> 32);
-            decimal_exponent += (11 - (initial_digits < 10 ? 1 : 0) + remaining_digits_in_the_current_subsegment);
+            const auto exp_adjustment = 11 - (initial_digits < 10 ? 1 : 0);
+            decimal_exponent += exp_adjustment + remaining_digits_in_the_current_subsegment;
+            if (fmt == chars_format::fixed)
+            {
+                remaining_digits += decimal_exponent;
+            }
+            else
+            {
+                remaining_digits -= (2 - (initial_digits < 10 ? 1 : 0));
+            }
 
             buffer -= (initial_digits < 10 ? 1 : 0);
-            remaining_digits -= (2 - (initial_digits < 10 ? 1 : 0));
             print_2_digits(initial_digits, buffer);
             buffer += 2;
 
