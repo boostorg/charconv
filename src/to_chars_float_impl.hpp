@@ -603,7 +603,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
 
     auto abs_value = std::abs(value);
     constexpr auto max_fractional_value = std::is_same<Real, double>::value ? static_cast<Real>(1e16) : static_cast<Real>(1e7);
-    constexpr auto min_fractional_value = 1 / max_fractional_value;
+    constexpr auto min_fractional_value = static_cast<Real>(1e-4L);
     constexpr auto max_value = static_cast<Real>((std::numeric_limits<Unsigned_Integer>::max)());
 
     // Unspecified precision so we always go with the shortest representation
@@ -637,13 +637,32 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     {
         if (fmt != boost::charconv::chars_format::hex)
         {
-            if (abs_value >= min_fractional_value && abs_value < max_fractional_value)
+            bool changed_fmt = false;
+            // In this range with general formatting, fixed formatting is the shortest
+            if (fmt == boost::charconv::chars_format::general && abs_value >= min_fractional_value && abs_value < max_fractional_value)
             {
-                return to_chars_fixed_impl(first, last, value, fmt, precision);
+                fmt = boost::charconv::chars_format::fixed;
+                changed_fmt = true;
             }
 
-            auto* ptr = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full, boost::charconv::detail::extended_cache_long>(value, precision, first, fmt);
-            return { ptr, std::errc() };
+            int floff_precision;
+            if (fmt == boost::charconv::chars_format::scientific || fmt == boost::charconv::chars_format::general)
+            {
+                floff_precision = precision - static_cast<int>(abs_value < 1);
+            }
+            else
+            {
+                floff_precision = precision - static_cast<int>(abs_value < 1) + changed_fmt;
+            }
+
+            if (floff_precision <= 0)
+            {
+                floff_precision = 0;
+            }
+
+            return boost::charconv::detail::floff<boost::charconv::detail::main_cache_full,
+                                                  boost::charconv::detail::extended_cache_long>(value, floff_precision,
+                                                                                                first, last, fmt, changed_fmt);
         }
     }
 
