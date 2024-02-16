@@ -1782,10 +1782,19 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
             }
 
             const auto initial_digits = static_cast<std::uint32_t>(prod >> 32);
-            decimal_exponent += (11 - (initial_digits < 10 ? 1 : 0) + remaining_digits_in_the_current_subsegment);
+            const auto exp_adjustment = 11 - (initial_digits < 10 ? 1 : 0);
+            decimal_exponent += exp_adjustment + remaining_digits_in_the_current_subsegment;
+            if (fmt == chars_format::fixed && decimal_exponent < 0)
+            {
+                remaining_digits += decimal_exponent;
+                remaining_digits -= initial_digits < 10 ? 0 : 1;
+            }
+            else
+            {
+                remaining_digits -= (2 - (initial_digits < 10 ? 1 : 0));
+            }
 
             buffer -= (initial_digits < 10 ? 1 : 0);
-            remaining_digits -= (2 - (initial_digits < 10 ? 1 : 0));
             print_2_digits(initial_digits, buffer);
             buffer += 2;
 
@@ -3841,34 +3850,12 @@ print_exponent_and_return:
         // Need to memset leading zeros equal to a negative exponent
         if (decimal_exponent < 0)
         {
-            std::memmove(&buffer_starting_pos[1 - decimal_exponent], &buffer_starting_pos[1],
-                         static_cast<std::size_t>(buffer - buffer_starting_pos + decimal_exponent + 1));
-            std::memset(&buffer_starting_pos[0], '0', static_cast<std::size_t>(-decimal_exponent) + 1U);
+            const auto offset = static_cast<std::size_t>(buffer - buffer_starting_pos);
+            std::size_t additional_zeros = static_cast<std::size_t>(-decimal_exponent) + 1U;
+            std::memmove(&buffer_starting_pos[1 - decimal_exponent], &buffer_starting_pos[1], offset);
+            std::memset(&buffer_starting_pos[0], '0', additional_zeros);
             buffer_starting_pos[1] = '.';
-
-            char* const buffer_end = buffer + 1;
-
-            // Fix the rounding since we are truncating
-            if (*(buffer + 1) >= '5' && *(buffer + 1) <= '9')
-            {
-                if (*buffer != '9')
-                {
-                    *buffer += static_cast<char>(1);
-                    --buffer;
-                }
-                else
-                {
-                    *buffer = '0';
-                    --buffer;
-                    while (*buffer == '9')
-                    {
-                        *buffer-- = 0;
-                    }
-                    *buffer += static_cast<char>(1);
-                }
-            }
-
-            return {buffer_end, std::errc()};
+            return {first + precision + 3, std::errc()};
         }
 
         // In the positive case the precision is still measured after the decimal point
