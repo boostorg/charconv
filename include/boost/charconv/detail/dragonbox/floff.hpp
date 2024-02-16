@@ -1787,6 +1787,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
             if (fmt == chars_format::fixed && decimal_exponent < 0)
             {
                 remaining_digits += decimal_exponent;
+                remaining_digits -= initial_digits < 10 ? 0 : 1;
             }
             else
             {
