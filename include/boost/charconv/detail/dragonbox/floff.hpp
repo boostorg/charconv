@@ -3850,7 +3850,7 @@ print_exponent_and_return:
         // Need to memset leading zeros equal to a negative exponent
         if (decimal_exponent < 0)
         {
-            std::size_t offset = buffer - buffer_starting_pos;
+            const auto offset = static_cast<std::size_t>(buffer - buffer_starting_pos);
             std::size_t additional_zeros = static_cast<std::size_t>(-decimal_exponent) + 1U;
             std::memmove(&buffer_starting_pos[1 - decimal_exponent], &buffer_starting_pos[1], offset);
             std::memset(&buffer_starting_pos[0], '0', additional_zeros);
