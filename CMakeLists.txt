@@ -10,6 +10,7 @@ project(boost_charconv VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 add_library(boost_charconv
   src/from_chars.cpp
   src/to_chars.cpp
+  src/dragonbox.cpp
 )
 
 add_library(Boost::charconv ALIAS boost_charconv)

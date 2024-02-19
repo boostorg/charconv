@@ -442,8 +442,17 @@ constexpr int floor_log5_pow2_minus_log5_3(int e) noexcept
 }
 } // Namespace log
 
+// gcc below 5.0 does not compile the main_cache_holder::cache[] declaration in the template class 
+// because of an error related to the presence of a constructor for cache_entry_type
+// `error: cannot initialize aggregate of type 'const cache [...]' with a compound literal`
+// which is why the trick of inlining via a pseudo template class breaks down
+
+#if !defined(BOOST_NO_CXX14_CONSTEXPR) && defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 template <bool b>
 struct main_cache_holder_impl
+#else
+BOOST_CHARCONV_DATA_DECL struct main_cache_holder
+#endif
 {
     using cache_entry_type = boost::charconv::detail::uint128;
     static constexpr int cache_bits = 128;
@@ -762,17 +771,16 @@ struct main_cache_holder_impl
         {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
 };
 
-#if (defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)) || \
-    (defined(__clang_major__) && __clang_major__ == 5)
+#if !defined(BOOST_NO_CXX14_CONSTEXPR) && defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 template <bool b> constexpr int main_cache_holder_impl<b>::cache_bits;
 template <bool b> constexpr int main_cache_holder_impl<b>::min_k;
 template <bool b> constexpr int main_cache_holder_impl<b>::max_k;
 template <bool b> constexpr typename main_cache_holder_impl<b>::cache_entry_type main_cache_holder_impl<b>::cache[];
+using main_cache_holder = main_cache_holder_impl<true>;
 
 #endif
 
-using main_cache_holder = main_cache_holder_impl<true>;
 
 // Compressed cache for double
 struct compressed_cache_detail 

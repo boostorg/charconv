@@ -376,8 +376,13 @@ bool large_mul(stackvec<size>& x, limb_span y) noexcept {
   return true;
 }
 
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 template <typename = void>
-struct pow5_tables {
+struct pow5_tables_impl
+#else
+struct pow5_tables
+#endif
+{
   static constexpr uint32_t large_step = 135;
   static constexpr uint64_t small_power_of_5[] = {
     1UL, 5UL, 25UL, 125UL, 625UL, 3125UL, 15625UL, 78125UL, 390625UL,
@@ -398,20 +403,20 @@ struct pow5_tables {
 #endif
 };
 
-template <typename T>
-constexpr uint32_t pow5_tables<T>::large_step;
+#ifdef BOOST_NO_CXX17_INLINE_VARIABLES
 
-template <typename T>
-constexpr uint64_t pow5_tables<T>::small_power_of_5[];
+template <typename T> constexpr uint32_t pow5_tables_impl<T>::large_step;
+template <typename T> constexpr uint64_t pow5_tables_impl<T>::small_power_of_5[];
+template <typename T> constexpr limb pow5_tables_impl<T>::large_power_of_5[];
 
-template <typename T>
-constexpr limb pow5_tables<T>::large_power_of_5[];
+using pow5_tables = pow5_tables_impl<>;
+#endif
 
 // big integer type. implements a small subset of big integer
 // arithmetic, using simple algorithms since asymptotically
 // faster algorithms are slower for a small number of limbs.
 // all operations assume the big-integer is normalized.
-struct bigint : pow5_tables<> {
+struct bigint : pow5_tables {
   // storage of the limbs, in little-endian order.
   stackvec<bigint_limbs> vec;
 

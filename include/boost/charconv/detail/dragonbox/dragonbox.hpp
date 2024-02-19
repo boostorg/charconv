@@ -487,7 +487,7 @@ using signed_decimal_fp = decimal_fp<UInt, true, false>;
 // Computed cache entries.
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 template <bool b>
 struct cache_holder_ieee754_binary32_impl
 #else
@@ -521,24 +521,26 @@ struct cache_holder_ieee754_binary32
         0xb35dbf821ae4f38c, 0xe0352f62a19e306f};
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::cache_bits;
 template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::min_k;
 template <bool b> constexpr int cache_holder_ieee754_binary32_impl<b>::max_k;
 template <bool b> constexpr typename cache_holder_ieee754_binary32_impl<b>::cache_entry_type cache_holder_ieee754_binary32_impl<b>::cache[];
-
-#endif
-
-#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 using cache_holder_ieee754_binary32 = cache_holder_ieee754_binary32_impl<true>;
+
 #endif
 
-#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
+// gcc below 5.0 does not compile the main_cache_holder::cache[] declaration in the template class 
+// because of an error related to the presence of a constructor for cache_entry_type
+// `error: cannot initialize aggregate of type 'const cache [...]' with a compound literal`
+// which is why the trick of inlining via a pseudo template class breaks down
+
+#if (!defined(BOOST_NO_CXX14_CONSTEXPR) && defined(BOOST_NO_CXX17_INLINE_VARIABLES))
 template <bool b>
 struct cache_holder_ieee754_binary64_impl
 #else
-struct cache_holder_ieee754_binary64
+BOOST_CHARCONV_DATA_DECL struct cache_holder_ieee754_binary64
 #endif
 {
     using cache_entry_type = uint128;
@@ -858,17 +860,14 @@ struct cache_holder_ieee754_binary64
         {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
 };
 
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
+#if !defined(BOOST_NO_CXX14_CONSTEXPR) && defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::cache_bits;
 template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::min_k;
 template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::max_k;
 template <bool b> constexpr typename cache_holder_ieee754_binary64_impl<b>::cache_entry_type cache_holder_ieee754_binary64_impl<b>::cache[];
-
-#endif
-
-#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
 using cache_holder_ieee754_binary64 = cache_holder_ieee754_binary64_impl<true>;
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

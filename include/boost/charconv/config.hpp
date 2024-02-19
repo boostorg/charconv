@@ -22,6 +22,12 @@
 # define BOOST_CHARCONV_DECL
 #endif
 
+#if defined(BOOST_NO_CXX14_CONSTEXPR)
+# define BOOST_CHARCONV_DATA_DECL BOOST_CHARCONV_DECL
+#else
+# define BOOST_CHARCONV_DATA_DECL
+#endif
+
 // Autolink
 
 #if !defined(BOOST_CHARCONV_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_CHARCONV_NO_LIB)
