@@ -62,3 +62,4 @@ run github_issue_152_float128.cpp : : : [ check-target-builds ../config//has_flo
 run github_issue_154.cpp ;
 #run github_issue_156.cpp ;
 run github_issue_158.cpp ;
+run github_issue_166.cpp ;
