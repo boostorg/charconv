@@ -1308,7 +1308,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
 {
     if (first >= last)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     auto buffer_size = static_cast<std::size_t>(last - first);
@@ -1339,7 +1339,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
 
             if (buffer_size < inf_chars)
             {
-                return {last, std::errc::result_out_of_range};
+                return {last, std::errc::value_too_large};
             }
 
             std::memcpy(buffer, "inf", inf_chars); // NOLINT : Specifically not null-terminating
@@ -1359,7 +1359,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
 
                     if (buffer_size < nan_chars)
                     {
-                        return {last, std::errc::result_out_of_range};
+                        return {last, std::errc::value_too_large};
                     }
 
                     std::memcpy(buffer, "nan", nan_chars); // NOLINT : Specifically not null-terminating
@@ -1371,7 +1371,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
 
                     if (buffer_size < neg_nan_chars)
                     {
-                        return {last, std::errc::result_out_of_range};
+                        return {last, std::errc::value_too_large};
                     }
 
                     std::memcpy(buffer, "nan(ind)", neg_nan_chars); // NOLINT : Specifically not null-terminating
@@ -1384,7 +1384,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
 
                 if (buffer_size < snan_chars)
                 {
-                    return {last, std::errc::result_out_of_range};
+                    return {last, std::errc::value_too_large};
                 }
 
                 std::memcpy(buffer, "nan(snan)", snan_chars); // NOLINT : Specifically not null-terminating
@@ -1419,7 +1419,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
 
                     if (buffer_size < zero_chars)
                     {
-                        return {last, std::errc::result_out_of_range};
+                        return {last, std::errc::value_too_large};
                     }
 
                     std::memcpy(buffer, "0e+00", zero_chars);
@@ -1429,7 +1429,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
                 {
                     if (buffer_size < static_cast<std::size_t>(precision) + 6U)
                     {
-                        return {last, std::errc::result_out_of_range};
+                        return {last, std::errc::value_too_large};
                     }
 
                     std::memcpy(buffer, "0.", 2); // NOLINT : Specifically not null-terminating
@@ -1460,7 +1460,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, const int preci
 
     if (buffer_size < static_cast<std::size_t>(remaining_digits))
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////

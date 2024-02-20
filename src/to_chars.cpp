@@ -272,7 +272,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         const std::ptrdiff_t total_length = total_buffer_length(9, exponent, false);
         if (total_length > (last - first))
         {
-            return {last, std::errc::result_out_of_range};
+            return {last, std::errc::value_too_large};
         }
 
         // Print significand.
@@ -315,7 +315,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         const std::ptrdiff_t total_length = total_buffer_length(17, exponent, false);
         if (total_length > (last - first))
         {
-            return {last, std::errc::result_out_of_range};
+            return {last, std::errc::value_too_large};
         }
 
         // Print significand by decomposing it into a 9-digit block and a 8-digit block.
@@ -593,7 +593,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         }
         else
         {
-            return {last, std::errc::result_out_of_range};
+            return {last, std::errc::value_too_large};
         }
     }
     #endif
@@ -603,7 +603,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     auto real_precision = boost::charconv::detail::get_real_precision<long double>(precision);
     if (buffer_size < real_precision || first > last)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific)
@@ -629,9 +629,9 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first + num_chars, std::errc() };
         }
-        else if (num_chars == -static_cast<int>(std::errc::result_out_of_range))
+        else if (num_chars == -static_cast<int>(std::errc::value_too_large))
         {
-            return { last, std::errc::result_out_of_range };
+            return { last, std::errc::value_too_large };
         }
     }
 
@@ -686,7 +686,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     // Sanity check our bounds
     if (first >= last)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     char* const original_first = first;
@@ -705,7 +705,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     auto real_precision = boost::charconv::detail::get_real_precision<__float128>(precision);
     if (buffer_size < real_precision || first > last)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific))
@@ -719,7 +719,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         }
         else if (num_chars == -1)
         {
-            return {last, std::errc::result_out_of_range};
+            return {last, std::errc::value_too_large};
         }
     }
     else if (fmt == boost::charconv::chars_format::hex)
@@ -735,9 +735,9 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         {
             return { first + num_chars, std::errc() };
         }
-        else if (num_chars == -static_cast<int>(std::errc::result_out_of_range))
+        else if (num_chars == -static_cast<int>(std::errc::value_too_large))
         {
-            return { last, std::errc::result_out_of_range };
+            return { last, std::errc::value_too_large };
         }
     }
 

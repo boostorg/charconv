@@ -2605,7 +2605,7 @@ namespace to_chars_detail {
                 }
                 else
                 {
-                    return {last, std::errc::result_out_of_range};
+                    return {last, std::errc::value_too_large};
                 }
             }
         }
@@ -2628,7 +2628,7 @@ namespace to_chars_detail {
                 }
                 else
                 {
-                    return {last, std::errc::result_out_of_range};
+                    return {last, std::errc::value_too_large};
                 }
             }
             else 
@@ -2677,7 +2677,7 @@ namespace to_chars_detail {
                         }
                         else
                         {
-                            return {last, std::errc::result_out_of_range};
+                            return {last, std::errc::value_too_large};
                         }
                     }
                     else
@@ -2689,7 +2689,7 @@ namespace to_chars_detail {
                         }
                         else
                         {
-                            return {last, std::errc::result_out_of_range};
+                            return {last, std::errc::value_too_large};
                         }
                     }
                 }
@@ -2702,7 +2702,7 @@ namespace to_chars_detail {
                     }
                     else
                     {
-                        return {last, std::errc::result_out_of_range};
+                        return {last, std::errc::value_too_large};
                     }
                 }
             }

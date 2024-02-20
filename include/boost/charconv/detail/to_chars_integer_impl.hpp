@@ -130,7 +130,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
         if (converted_value_digits > user_buffer_size)
         {
-            return {last, std::errc::result_out_of_range};
+            return {last, std::errc::value_too_large};
         }
 
         decompose32(converted_value, buffer);
@@ -151,7 +151,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
         if (converted_value_digits > user_buffer_size)
         {
-            return {last, std::errc::result_out_of_range};
+            return {last, std::errc::value_too_large};
         }
 
         if (is_negative)
@@ -258,7 +258,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     if (converted_value_digits > user_buffer_size)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     if (is_negative)
@@ -409,7 +409,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 
     if (num_chars > output_length)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     boost::charconv::detail::memcpy(first, buffer + (buffer_size - static_cast<unsigned long>(num_chars)),

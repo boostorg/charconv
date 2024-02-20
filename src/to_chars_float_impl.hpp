@@ -87,7 +87,7 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
         else
         {
             // Avoid buffer overflow
-            return { first, std::errc::result_out_of_range };
+            return { first, std::errc::value_too_large };
         }
 
     }
@@ -107,7 +107,7 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
         else
         {
             // Avoid buffer overflow
-            return { first, std::errc::result_out_of_range };
+            return { first, std::errc::value_too_large };
         }
     }
     else
@@ -165,7 +165,7 @@ inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, _
         else
         {
             // Avoid buffer overflow
-            return { first, std::errc::result_out_of_range };
+            return { first, std::errc::value_too_large };
         }
 
     }
@@ -184,7 +184,7 @@ inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, _
         else
         {
             // Avoid buffer overflow
-            return { first, std::errc::result_out_of_range };
+            return { first, std::errc::value_too_large };
         }
     }
     else
@@ -258,7 +258,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
 
     if (buffer_size < real_precision || first > last)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     // Extract the significand and the exponent
@@ -374,7 +374,7 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     const std::ptrdiff_t total_length = total_buffer_length(real_precision, abs_unbiased_exponent, (value < 0));
     if (total_length > buffer_size)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     // Round if required
@@ -483,7 +483,7 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
     auto real_precision = get_real_precision<Real>(precision);
     if (buffer_size < real_precision || first > last)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     auto abs_value = std::abs(value);
@@ -534,7 +534,7 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
     const std::ptrdiff_t total_length = total_buffer_length(num_dig, value_struct.exponent, (value < 0));
     if (total_length > buffer_size)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     auto r = to_chars_integer_impl(first, last, value_struct.significand);
@@ -598,7 +598,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     // Sanity check our bounds
     if (first >= last)
     {
-        return {last, std::errc::result_out_of_range};
+        return {last, std::errc::value_too_large};
     }
 
     auto abs_value = std::abs(value);
