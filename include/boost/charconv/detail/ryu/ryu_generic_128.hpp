@@ -401,7 +401,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         // Option 2: Append 0s to the end of the number until we get the proper output
         if (current_len + v.exponent > result_size)
         {
-            return -static_cast<int>(std::errc::result_out_of_range);
+            return -static_cast<int>(std::errc::value_too_large);
         }
 
         memset(r.ptr, '0', static_cast<std::size_t>(v.exponent));
@@ -419,7 +419,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         // Option 4: Leading 0s
         if (-v.exponent + 2 > result_size)
         {
-            return -static_cast<int>(std::errc::result_out_of_range);
+            return -static_cast<int>(std::errc::value_too_large);
         }
 
         memmove(result - v.exponent - current_len + 2, result, static_cast<std::size_t>(current_len));
@@ -480,7 +480,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     if (index + olength > static_cast<size_t>(result_size))
     {
-        return -static_cast<int>(std::errc::result_out_of_range);
+        return -static_cast<int>(std::errc::value_too_large);
     }
     else if (olength == 0)
     {

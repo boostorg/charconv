@@ -167,12 +167,12 @@ void overflow_tests()
     char buffer1[2] {};
     T v1 = static_cast<T>(250);
     auto r1 = boost::charconv::to_chars(buffer1, buffer1 + sizeof(buffer1) - 1, v1);
-    BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+    BOOST_TEST(r1.ec == std::errc::value_too_large);
 
     char buffer2[3] {};
     T v2 = static_cast<T>(12341234);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
-    BOOST_TEST(r2.ec == std::errc::result_out_of_range);
+    BOOST_TEST(r2.ec == std::errc::value_too_large);
 }
 
 template <typename T>
