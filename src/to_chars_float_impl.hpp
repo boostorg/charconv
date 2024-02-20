@@ -637,32 +637,33 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     {
         if (fmt != boost::charconv::chars_format::hex)
         {
-            bool changed_fmt = false;
-            // In this range with general formatting, fixed formatting is the shortest
-            if (fmt == boost::charconv::chars_format::general && abs_value >= min_fractional_value && abs_value < max_fractional_value)
+            if (fmt == boost::charconv::chars_format::general)
             {
-                fmt = boost::charconv::chars_format::fixed;
-                changed_fmt = true;
+                constexpr std::size_t max_output_length = std::is_same<Real, double>::value ? 773 : 117;
+                constexpr std::size_t max_precision = std::is_same<Real, double>::value ? 767 : 112;
+                // We remove trailing zeros, so precision > max_precision is same as precision == max_precision.
+                if (precision > max_precision)
+                {
+                    precision = max_precision;
+                }
+                char temp_buffer[max_output_length];
+                auto result = boost::charconv::detail::floff<boost::charconv::detail::main_cache_full,
+                                                             boost::charconv::detail::extended_cache_long>(value, precision,
+                                                                                                           temp_buffer,
+                                                                                                           temp_buffer + max_output_length,
+                                                                                                           fmt);
+                auto output_size = static_cast<std::size_t>(result.ptr - temp_buffer);
+                if (static_cast<std::size_t>(last - first) < output_size)
+                {
+                    return {last, std::errc::result_out_of_range};
+                }
+                std::memcpy(first, temp_buffer, output_size);
+                return {first + output_size, std::errc()};
+                
             }
-
-            int floff_precision;
-            if (fmt == boost::charconv::chars_format::scientific || fmt == boost::charconv::chars_format::general)
-            {
-                floff_precision = precision - static_cast<int>(abs_value < 1);
-            }
-            else
-            {
-                floff_precision = precision - static_cast<int>(abs_value < 1) + changed_fmt;
-            }
-
-            if (floff_precision <= 0)
-            {
-                floff_precision = 0;
-            }
-
             return boost::charconv::detail::floff<boost::charconv::detail::main_cache_full,
-                                                  boost::charconv::detail::extended_cache_long>(value, floff_precision,
-                                                                                                first, last, fmt, changed_fmt);
+                                                  boost::charconv::detail::extended_cache_long>(value, precision,
+                                                                                                first, last, fmt);
         }
     }
 
