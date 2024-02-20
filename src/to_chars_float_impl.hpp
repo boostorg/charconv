@@ -591,7 +591,7 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
 }
 
 template <typename Real>
-to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt = chars_format::general, int precision = -1 ) noexcept
+to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_format fmt, int precision) noexcept
 {
     using Unsigned_Integer = typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, std::uint32_t>::type;
 

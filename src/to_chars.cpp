@@ -551,7 +551,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt);
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value,
@@ -568,7 +568,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt);
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value,
@@ -587,7 +587,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt);
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
@@ -684,7 +684,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float16_t value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt);
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float16_t value,
@@ -704,7 +704,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float32_t value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt);
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float32_t value,
@@ -728,7 +728,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float64_t value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt);
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float64_t value,
@@ -772,7 +772,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt);
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
