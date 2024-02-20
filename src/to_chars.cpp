@@ -763,7 +763,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
         precision = 6;
     }
 
-    return boost::charconv::to_chars_float_impl(first, last, static_cast<__float128>(value), fmt, precision);
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<__float128>(value), fmt, precision);
 }
 #endif
 
