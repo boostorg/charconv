@@ -689,6 +689,149 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     return boost::charconv::detail::to_chars_hex(first, last, value, precision);
 }
 
+#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
+
+template <>
+to_chars_result to_chars_float_impl(char* first, char* last, long double value, chars_format fmt, int precision) noexcept
+{
+    static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
+
+    const auto classification = std::fpclassify(value);
+    #if BOOST_CHARCONV_LDBL_BITS == 128
+    if (classification == FP_NAN || classification == FP_INFINITE)
+    {
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
+    }
+    #else
+    if (classification == FP_NAN || classification == FP_INFINITE)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+        else
+        {
+            return {last, std::errc::value_too_large};
+        }
+    }
+    #endif
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = boost::charconv::detail::get_real_precision<long double>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::value_too_large};
+    }
+
+    if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+    }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+    }
+    else if (fmt == boost::charconv::chars_format::fixed)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars_fixed(fd128, first, last - first, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+        else if (num_chars == -static_cast<int>(std::errc::value_too_large))
+        {
+            return { last, std::errc::value_too_large };
+        }
+    }
+
+    // Fallback to printf methods
+    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+}
+
+#endif
+
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
+
+template <>
+to_chars_result to_chars_float_impl(char* first, char* last, __float128 value, chars_format fmt, int precision) noexcept
+{
+    // Sanity check our bounds
+    if (first >= last)
+    {
+        return {last, std::errc::value_too_large};
+    }
+
+    char* const original_first = first;
+
+    if (isnanq(value))
+    {
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_NAN);
+    }
+    else if (isinfq(value))
+    {
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_INFINITE);
+    }
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = boost::charconv::detail::get_real_precision<__float128>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::value_too_large};
+    }
+
+    if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific))
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+        else if (num_chars == -1)
+        {
+            return {last, std::errc::value_too_large};
+        }
+    }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+    }
+    else if (fmt == boost::charconv::chars_format::fixed)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars_fixed(fd128, first, last - first, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+        else if (num_chars == -static_cast<int>(std::errc::value_too_large))
+        {
+            return { last, std::errc::value_too_large };
+        }
+    }
+
+    first = original_first;
+    // Fallback to printf
+    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+}
+
+#endif
+
 } // namespace detail
 } // namespace charconv
 } // namespace detail
