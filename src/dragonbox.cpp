@@ -1,7 +1,6 @@
 #include <boost/charconv/detail/dragonbox/dragonbox.hpp>
-
 namespace boost { namespace charconv { namespace detail {
-#if defined(BOOST_NO_CXX14_CONSTEXPR)
+#if defined(BOOST_GCC) && defined(BOOST_NO_CXX14_CONSTEXPR)
 
     constexpr int main_cache_holder::cache_bits;
     constexpr int main_cache_holder::min_k;

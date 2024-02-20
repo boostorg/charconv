@@ -14,7 +14,7 @@
 #ifdef BOOST_MSVC
 # pragma warning(push)
 # pragma warning(disable: 4146)
-#elif defined(__GNUC__) && __GNUC__ >= 5
+#elif defined(__GNUC__) && __GNUC__ >= 4
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wconversion"
 #elif defined(__clang__)
@@ -41,7 +41,7 @@ constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
-#elif defined(__GNUC__) && __GNUC__ >= 5
+#elif defined(__GNUC__) && __GNUC__ >= 4
 # pragma GCC diagnostic pop
 #elif defined(__clang__)
 # pragma clang diagnostic pop

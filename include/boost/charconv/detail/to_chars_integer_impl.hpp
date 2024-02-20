@@ -301,7 +301,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 }
 
 // Conversion warning from shift operators with unsigned char
-#if defined(__GNUC__) && __GNUC__ >= 5
+#if defined(__GNUC__) && __GNUC__ >= 4
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wconversion"
 #elif defined(__clang__)
@@ -418,7 +418,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
     return {first + num_chars, std::errc()};
 }
 
-#if defined(__GNUC__) && __GNUC__ >= 5
+#if defined(__GNUC__) && __GNUC__ >= 4
 # pragma GCC diagnostic pop
 #elif defined(__clang__)
 # pragma clang diagnostic pop
