@@ -587,7 +587,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
