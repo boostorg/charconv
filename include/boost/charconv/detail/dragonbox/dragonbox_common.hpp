@@ -451,7 +451,7 @@ constexpr int floor_log5_pow2_minus_log5_3(int e) noexcept
 template <bool b>
 struct main_cache_holder_impl
 #else
-BOOST_CHARCONV_DATA_DECL struct main_cache_holder
+struct BOOST_CHARCONV_DATA_DECL main_cache_holder
 #endif
 {
     using cache_entry_type = boost::charconv::detail::uint128;

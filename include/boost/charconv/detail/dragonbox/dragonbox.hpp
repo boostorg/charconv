@@ -540,7 +540,7 @@ using cache_holder_ieee754_binary32 = cache_holder_ieee754_binary32_impl<true>;
 template <bool b>
 struct cache_holder_ieee754_binary64_impl
 #else
-BOOST_CHARCONV_DATA_DECL struct cache_holder_ieee754_binary64
+struct BOOST_CHARCONV_DATA_DECL cache_holder_ieee754_binary64
 #endif
 {
     using cache_entry_type = uint128;
