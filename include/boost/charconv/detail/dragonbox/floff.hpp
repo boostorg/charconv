@@ -3811,15 +3811,16 @@ insert_decimal_dot:
             {
                 // Insert decimal dot.
                 decimal_dot_pos = buffer_starting_pos + decimal_exponent_normalized + 1;
-                std::memmove(buffer_starting_pos, buffer_starting_pos + 1, decimal_dot_pos - buffer_starting_pos);
+                std::memmove(buffer_starting_pos, buffer_starting_pos + 1,
+                             static_cast<std::size_t>(decimal_dot_pos - buffer_starting_pos));
                 *decimal_dot_pos = '.';
             }
             else
             {
                 // Print leading zeros and insert decimal dot.
                 int number_of_leading_zeros = -decimal_exponent_normalized - 1;
-                std::memmove(buffer_starting_pos + number_of_leading_zeros + 2,
-                             buffer_starting_pos + 1, buffer - buffer_starting_pos - 1);
+                std::memmove(buffer_starting_pos + number_of_leading_zeros + 2, buffer_starting_pos + 1,
+                             static_cast<std::size_t>(buffer - buffer_starting_pos - 1));
                 std::memcpy(buffer_starting_pos, "0.", 2);
                 std::memset(buffer_starting_pos + 2, '0', static_cast<std::size_t>(number_of_leading_zeros));
                 buffer += number_of_leading_zeros + 1;
@@ -3855,7 +3856,8 @@ insert_decimal_dot:
     }
     else if (decimal_dot_pos != buffer_starting_pos)
     {
-        std::memmove(buffer_starting_pos, buffer_starting_pos + 1, decimal_dot_pos - buffer_starting_pos);
+        std::memmove(buffer_starting_pos, buffer_starting_pos + 1,
+                     static_cast<std::size_t>(decimal_dot_pos - buffer_starting_pos));
         *decimal_dot_pos = '.';
     }
 
