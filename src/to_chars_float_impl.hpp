@@ -655,7 +655,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
                 auto output_size = static_cast<std::size_t>(result.ptr - temp_buffer);
                 if (static_cast<std::size_t>(last - first) < output_size)
                 {
-                    return {last, std::errc::result_out_of_range};
+                    return {last, std::errc::value_too_large};
                 }
                 std::memcpy(first, temp_buffer, output_size);
                 return {first + output_size, std::errc()};
