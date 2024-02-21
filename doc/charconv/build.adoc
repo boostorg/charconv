@@ -15,8 +15,6 @@ Run the following commands to clone the latest versions of Boost and Charconv, p
 git clone https://github.com/boostorg/boost
 cd boost
 git submodule update --init
-cd libs
-git clone https://github.com/cppalliance/charconv
 cd ..
 ./bootstrap
 ./b2 cxxstd=11
@@ -36,7 +34,7 @@ The value of cxxstd must be at least 11. https://www.boost.org/doc/libs/1_84_0/t
 Run the following commands to clone the latest version of Charconv and install it using vcpkg:
 [source, bash]
 ----
-git clone https://github.com/cppalliance/charconv
+git clone https://github.com/boostorg/charconv
 cd charconv
 vcpkg install charconv --overlay-ports=ports/charconv
 ----
@@ -48,7 +46,7 @@ Any required Boost packages not currently installed in your development environm
 Run the following commands to clone the latest version of Charconv and build a boost_charconv package using your default profile:
 [source, bash]
 ----
-git clone https://github.com/cppalliance/charconv
+git clone https://github.com/boostorg/charconv
 conan create charconv/conan --build missing
 ----
 

@@ -32,4 +32,4 @@ Boost.Charconv is tested on Ubuntu, macOS, and Windows with the following compil
 * Clang 3.8 or later
 * Visual Studio 2015 (14.0) or later
 
-Tested on https://github.com/cppalliance/charconv/actions[GitHub Actions] and https://drone.cpp.al/cppalliance/charconv[Drone].
+Tested on https://github.com/boostorg/charconv/actions[GitHub Actions] and https://drone.cpp.al/boostorg/charconv[Drone].

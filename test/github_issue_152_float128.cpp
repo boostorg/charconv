@@ -34,7 +34,7 @@ void test_non_finite()
     {
         char buffer[2];
         auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), val);
-        BOOST_TEST(r.ec == std::errc::result_out_of_range);
+        BOOST_TEST(r.ec == std::errc::value_too_large);
     }
 
     char inf_buffer[3];
