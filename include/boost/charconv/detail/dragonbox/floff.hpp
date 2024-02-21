@@ -1645,14 +1645,11 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
             // If decimal_exponent_normalized == precision - 1, use scientific format if and only if the rounding increases the exponent.
             // Since we cannot reliably decide which format to use, necessary corrections will be made in the last phase.
 
-            if (precision != 1)
-            {
-                // We may end up not printing the decimal dot if fixed format is chosen, but reserve a place anyway.
-                *buffer = '0';
-                ++buffer;
-                decimal_dot_pos += (0 < decimal_exponent_normalized && decimal_exponent_normalized < precision)
-                                   ? decimal_exponent_normalized + 1 : 1;
-            }
+            // We may end up not printing the decimal dot if fixed format is chosen, but reserve a place anyway.
+            *buffer = '0';
+            ++buffer;
+            decimal_dot_pos += (0 < decimal_exponent_normalized && decimal_exponent_normalized < precision)
+                                ? decimal_exponent_normalized + 1 : 1;
         }
 
         if (remaining_digits <= 2) 
@@ -1660,7 +1657,6 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
             uint128 prod;
             std::uint64_t fractional_part64;
             std::uint64_t fractional_part_rounding_threshold64;
-            std::uint32_t current_digits32;
 
             // Convert to fixed-point form with 64/32-bit boundary for the fractional part.
 
@@ -1678,43 +1674,29 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
                     fractional_part_rounding_thresholds64[16];
             }
             fractional_part64 = (prod.low >> 56) | (prod.high << 8);
-            current_digits32 = static_cast<std::uint32_t>(prod.high >> 56);
+            current_digits = static_cast<std::uint32_t>(prod.high >> 56);
 
             // Perform rounding, print the digit, and return.
             if (remaining_digits == 1)
             {
                 if (fractional_part64 >= fractional_part_rounding_threshold64 ||
-                    ((fractional_part64 >> 63) & (has_more_segments | (current_digits32 & 1))) != 0) 
+                    ((fractional_part64 >> 63) & (has_more_segments | (current_digits & 1))) != 0) 
                 {
-                    if (++current_digits32 == 10) 
-                    {
-                        *buffer = '1';
-                        ++buffer;
-                        ++decimal_exponent_normalized;
-
-                        goto insert_decimal_dot;
-                    }
+                    goto round_up_one_digit;
                 }
 
-                print_1_digit(current_digits32, buffer);
+                print_1_digit(current_digits, buffer);
                 ++buffer;
             }
             else 
             {
                 if (fractional_part64 >= fractional_part_rounding_threshold64 ||
-                    ((fractional_part64 >> 63) & (has_more_segments | (current_digits32 & 1))) != 0)
+                    ((fractional_part64 >> 63) & (has_more_segments | (current_digits & 1))) != 0)
                 {
-                    if (++current_digits32 == 100)
-                    {
-                        std::memcpy(buffer, "10", 2); // NOLINT : Specifically not null-terminating
-                        buffer += 2;
-                        ++decimal_exponent_normalized;
-
-                        goto insert_decimal_dot;
-                    }
+                    goto round_up_two_digits;
                 }
 
-                print_2_digits(current_digits32, buffer);
+                print_2_digits(current_digits, buffer);
                 buffer += 2;
             }
 
@@ -3840,6 +3822,7 @@ insert_decimal_dot:
                              buffer_starting_pos + 1, buffer - buffer_starting_pos - 1);
                 std::memcpy(buffer_starting_pos, "0.", 2);
                 std::memset(buffer_starting_pos + 2, '0', static_cast<std::size_t>(number_of_leading_zeros));
+                buffer += number_of_leading_zeros + 1;
             }
             // Don't print exponent.
             fmt = chars_format::fixed;
@@ -3953,7 +3936,7 @@ round_up_all_9s:
     buffer += (2 - (remaining_digits & 1));
     
     // Find the starting position of printed digits.
-    char* const digit_starting_pos = [&] {
+    char* digit_starting_pos = [&] {
         // For negative exponent & fixed format, we already printed leading zeros.
         if (fmt == chars_format::fixed && decimal_exponent_normalized < 0)
         {
@@ -4005,8 +3988,21 @@ round_up_all_9s:
             {
                 return {last, std::errc::result_out_of_range};
             }
-            *buffer = '0';
             ++buffer;
+            // If we were to print the decimal dot, we have to shift it to right
+            // since we now have one more digit in the integer part.
+            if (buffer_starting_pos != decimal_dot_pos)
+            {
+                ++decimal_dot_pos;
+            }
+        }
+        else if (decimal_exponent_normalized == 0)
+        {
+            // For the case 0.99...9 -> 1.00...0, the rounded digit is one before the first digit written.
+            // Note: decimal_exponent_normalized was negative before the increment (++decimal_exponent_normalized),
+            //       so we already have printed "00" onto the buffer.
+            //       Hence, --digit_starting_pos doesn't go more than the starting position of the buffer.
+            --digit_starting_pos;
         }
     }
 
