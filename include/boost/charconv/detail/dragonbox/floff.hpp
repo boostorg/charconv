@@ -1617,7 +1617,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
                 
                 // Always have decimal dot.
                 BOOST_CHARCONV_ASSERT(precision > 0);
-                auto minimum_required_buffer_size = precision + 2;
+                auto minimum_required_buffer_size = static_cast<std::size_t>(precision + 2);
                 if (buffer_size < minimum_required_buffer_size)
                 {
                     return {last, std::errc::value_too_large};
