@@ -13,7 +13,7 @@ void test_values_with_negative_exp()
     char buffer[256];
     double d = 1e-15;
     std::memset(buffer, '\0', sizeof(buffer));
-    auto res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    auto res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::scientific, 50);
     *res.ptr = '\0';
 
@@ -21,7 +21,7 @@ void test_values_with_negative_exp()
     BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000007770539987666107923830718560119502e-15");
 
     std::memset(buffer, '\0', sizeof(buffer));
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
@@ -30,14 +30,14 @@ void test_values_with_negative_exp()
     d = 1e-17;
 
     std::memset(buffer, '\0', sizeof(buffer));
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::scientific, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
     BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000007154242405462192450852805618492325e-17");
 
     std::memset(buffer, '\0', sizeof(buffer));
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
@@ -48,14 +48,15 @@ void test_values_with_positive_exp()
 {
     char buffer[256];
     double d = 1e15;
-    auto res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    auto res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::scientific, 50);
     *res.ptr = '\0';
 
     BOOST_TEST(res);
     BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000000000000000000000000000000000000000e+15");
 
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    std::memset(buffer, '\0', sizeof(buffer));
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
@@ -63,13 +64,15 @@ void test_values_with_positive_exp()
 
     d = 1e17;
 
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    std::memset(buffer, '\0', sizeof(buffer));
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::scientific, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
     BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000000000000000000000000000000000000000e+17");
 
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    std::memset(buffer, '\0', sizeof(buffer));
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
@@ -80,7 +83,7 @@ template <typename T>
 void test_spot_value(T value, int precision, const char* result, boost::charconv::chars_format fmt = boost::charconv::chars_format::fixed)
 {
     char buffer[256];
-    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, fmt, precision);
+    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, value, fmt, precision);
     *r.ptr = '\0';
 
     BOOST_TEST(r);
