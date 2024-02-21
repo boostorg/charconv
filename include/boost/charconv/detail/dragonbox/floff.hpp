@@ -1027,7 +1027,8 @@ template <bool b> constexpr typename extended_cache_long_impl<b>::multiplier_ind
 
 using extended_cache_long = extended_cache_long_impl<true>;
 
-struct extended_cache_compact 
+template<bool b>
+struct extended_cache_compact_impl
 {
     static constexpr std::size_t max_cache_blocks = 6;
     static constexpr std::size_t cache_bits_unit = 64;
@@ -1096,23 +1097,26 @@ struct extended_cache_compact
         0x61, 0x45, 0x23, 0x41, 0x23, 0x31, 0x12, 0x12, 0x01};
 };
 
-#ifdef BOOST_CXX17_INLINE_VARIABLES
+#ifdef BOOST_NO_CXX17_INLINE_VARIABLES
 
-constexpr std::size_t extended_cache_compact::max_cache_blocks;
-constexpr std::size_t extended_cache_compact::cache_bits_unit;
-constexpr int extended_cache_compact::segment_length;
-constexpr bool extended_cache_compact::constant_block_count;
-constexpr int extended_cache_compact::collapse_factor;
-constexpr int extended_cache_compact::e_min;
-constexpr int extended_cache_compact::k_min;
-constexpr int extended_cache_compact::cache_bit_index_offset_base;
-constexpr int extended_cache_compact::cache_block_count_offset_base;
-constexpr extended_cache_compact::multiplier_index_info extended_cache_compact::multiplier_index_info_table[];
-constexpr std::uint8_t extended_cache_compact::cache_block_counts[];
+template <bool b> constexpr std::size_t extended_cache_compact_impl<b>::max_cache_blocks;
+template <bool b> constexpr std::size_t extended_cache_compact_impl<b>::cache_bits_unit;
+template <bool b> constexpr int extended_cache_compact_impl<b>::segment_length;
+template <bool b> constexpr bool extended_cache_compact_impl<b>::constant_block_count;
+template <bool b> constexpr int extended_cache_compact_impl<b>::collapse_factor;
+template <bool b> constexpr int extended_cache_compact_impl<b>::e_min;
+template <bool b> constexpr int extended_cache_compact_impl<b>::k_min;
+template <bool b> constexpr int extended_cache_compact_impl<b>::cache_bit_index_offset_base;
+template <bool b> constexpr int extended_cache_compact_impl<b>::cache_block_count_offset_base;
+template <bool b> constexpr typename extended_cache_compact_impl<b>::multiplier_index_info extended_cache_compact_impl<b>::multiplier_index_info_table[];
+template <bool b> constexpr std::uint8_t extended_cache_compact_impl<b>::cache_block_counts[];
 
 #endif
 
-struct extended_cache_super_compact 
+using extended_cache_compact = extended_cache_compact_impl<true>;
+
+template <bool b>
+struct extended_cache_super_compact_impl
 {
     static constexpr std::size_t max_cache_blocks = 15;
     static constexpr std::size_t cache_bits_unit = 64;
@@ -1159,22 +1163,24 @@ struct extended_cache_super_compact
                                                             0x24, 0x8a, 0x46, 0x62, 0x24, 0x13};
 };
 
-#ifdef BOOST_CXX17_INLINE_VARIABLES
+#ifdef BOOST_NO_CXX17_INLINE_VARIABLES
 
-constexpr std::size_t extended_cache_super_compact::max_cache_blocks;
-constexpr std::size_t extended_cache_super_compact::cache_bits_unit;
-constexpr int extended_cache_super_compact::segment_length;
-constexpr bool extended_cache_super_compact::constant_block_count;
-constexpr int extended_cache_super_compact::collapse_factor;
-constexpr int extended_cache_super_compact::e_min;
-constexpr int extended_cache_super_compact::k_min;
-constexpr int extended_cache_super_compact::cache_bit_index_offset_base;
-constexpr int extended_cache_super_compact::cache_block_count_offset_base;
-constexpr std::uint64_t extended_cache_super_compact::cache[];
-constexpr extended_cache_super_compact::multiplier_index_info extended_cache_super_compact::multiplier_index_info_table[];
-constexpr std::uint8_t extended_cache_super_compact::cache_block_counts[];
+template <bool b> constexpr std::size_t extended_cache_super_compact_impl<b>::max_cache_blocks;
+template <bool b> constexpr std::size_t extended_cache_super_compact_impl<b>::cache_bits_unit;
+template <bool b> constexpr int extended_cache_super_compact_impl<b>::segment_length;
+template <bool b> constexpr bool extended_cache_super_compact_impl<b>::constant_block_count;
+template <bool b> constexpr int extended_cache_super_compact_impl<b>::collapse_factor;
+template <bool b> constexpr int extended_cache_super_compact_impl<b>::e_min;
+template <bool b> constexpr int extended_cache_super_compact_impl<b>::k_min;
+template <bool b> constexpr int extended_cache_super_compact_impl<b>::cache_bit_index_offset_base;
+template <bool b> constexpr int extended_cache_super_compact_impl<b>::cache_block_count_offset_base;
+template <bool b> constexpr std::uint64_t extended_cache_super_compact_impl<b>::cache[];
+template <bool b> constexpr typename extended_cache_super_compact_impl<b>::multiplier_index_info extended_cache_super_compact_impl<b>::multiplier_index_info_table[];
+template <bool b> constexpr std::uint8_t extended_cache_super_compact_impl<b>::cache_block_counts[];
 
 #endif
+
+using extended_cache_super_compact = extended_cache_super_compact_impl<true>;
 
 #ifdef BOOST_MSVC
 # pragma warning(push)

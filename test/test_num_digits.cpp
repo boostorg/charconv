@@ -40,7 +40,7 @@ void test128()
 # pragma GCC diagnostic pop
 #endif
 
-#if defined(__GNUC__) && (__GNUC__ >= 5)
+#if defined(__GNUC__) && (__GNUC__ >= 4)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wconversion"
 #endif
@@ -63,7 +63,7 @@ void test()
     BOOST_TEST_EQ(boost::charconv::detail::num_digits(val), std::numeric_limits<T>::digits10 + 1);
 }
 
-#if defined(__GNUC__) && (__GNUC__ >= 5)
+#if defined(__GNUC__) && (__GNUC__ >= 4)
 # pragma GCC diagnostic pop
 #endif
 

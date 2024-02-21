@@ -28,8 +28,10 @@
 #endif
 
 #if defined(BOOST_HAS_FLOAT128) && !defined(__STRICT_ANSI__) && !defined(BOOST_CHARCONV_NO_QUADMATH)
-#  define BOOST_CHARCONV_HAS_FLOAT128
-#  include <quadmath.h>
+#  if !defined(__has_include) || __has_include(<quadmath.h>)
+#    include <quadmath.h>
+#    define BOOST_CHARCONV_HAS_FLOAT128
+#  endif
 #endif
 
 #ifndef BOOST_NO_CXX14_CONSTEXPR

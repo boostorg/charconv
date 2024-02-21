@@ -126,6 +126,11 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
 #if defined(__GNUC__) && __GNUC__ == 5
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wfloat-conversion"
+#elif defined(__GNUC__) && __GNUC__ == 4
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wpragmas"
+# pragma GCC diagnostic ignored "-Wconversion"
+# pragma GCC diagnostic ignored "-Wfloat-conversion"
 #endif
 
 template <>

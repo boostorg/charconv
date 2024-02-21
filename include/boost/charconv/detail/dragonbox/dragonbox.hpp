@@ -534,18 +534,25 @@ template <bool b> constexpr typename cache_holder_ieee754_binary32_impl<b>::cach
 using cache_holder_ieee754_binary32 = cache_holder_ieee754_binary32_impl<true>;
 #endif
 
-#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
+// gcc below 5.0 does not compile the main_cache_holder::cache[] declaration in the template class 
+// because of an error related to the presence of a constructor for cache_entry_type
+// `error: cannot initialize aggregate of type 'const cache [...]' with a compound literal`
+// which is why the trick of inlining via a pseudo template class breaks down
+
 template <bool b>
 struct cache_holder_ieee754_binary64_impl
-#else
-struct cache_holder_ieee754_binary64
-#endif
 {
     using cache_entry_type = uint128;
     static constexpr int cache_bits = 128;
     static constexpr int min_k = -292;
     static constexpr int max_k = 326;
-    static constexpr cache_entry_type cache[] = {
+    static cache_entry_type cache[];
+};
+    using cache_holder_ieee754_binary64 = cache_holder_ieee754_binary64_impl<true>;
+    template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::cache_bits;
+    template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::min_k;
+    template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::max_k;
+    template <bool b> typename cache_holder_ieee754_binary64_impl<b>::cache_entry_type cache_holder_ieee754_binary64_impl<b>::cache[] = {
         {0xff77b1fcbebcdc4f, 0x25e8e89c13bb0f7b}, {0x9faacf3df73609b1, 0x77b191618c54e9ad},
         {0xc795830d75038c1d, 0xd59df5b9ef6a2418}, {0xf97ae3d0d2446f25, 0x4b0573286b44ad1e},
         {0x9becce62836ac577, 0x4ee367f9430aec33}, {0xc2e801fb244576d5, 0x229c41f793cda740},
@@ -855,21 +862,8 @@ struct cache_holder_ieee754_binary64
         {0x81842f29f2cce375, 0xe6a1158300d46641}, {0xa1e53af46f801c53, 0x60495ae3c1097fd1},
         {0xca5e89b18b602368, 0x385bb19cb14bdfc5}, {0xfcf62c1dee382c42, 0x46729e03dd9ed7b6},
         {0x9e19db92b4e31ba9, 0x6c07a2c26a8346d2}, {0xc5a05277621be293, 0xc7098b7305241886},
-        {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8}};
-};
-
-#if defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
-
-template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::cache_bits;
-template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::min_k;
-template <bool b> constexpr int cache_holder_ieee754_binary64_impl<b>::max_k;
-template <bool b> constexpr typename cache_holder_ieee754_binary64_impl<b>::cache_entry_type cache_holder_ieee754_binary64_impl<b>::cache[];
-
-#endif
-
-#if (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)
-using cache_holder_ieee754_binary64 = cache_holder_ieee754_binary64_impl<true>;
-#endif
+        {0xf70867153aa2db38, 0xb8cbee4fc66d1ea8},
+    };
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Policies.

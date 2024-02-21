@@ -278,7 +278,7 @@ template<class T> void test_roundtrip( T value )
     number representable in FPType.  x must be a finite number.
 */
 
-#if defined(__GNUC__) && (__GNUC__ >= 5)
+#if defined(__GNUC__) && (__GNUC__ >= 4)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wattributes"
 #endif
@@ -335,7 +335,7 @@ int64_t ToOrdinal(FPType x)
     return sign * count;
 }
 
-#if defined(__GNUC__) && (__GNUC__ >= 5)
+#if defined(__GNUC__)
 # pragma GCC diagnostic pop
 #endif
 
