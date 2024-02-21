@@ -3969,7 +3969,15 @@ round_up_all_9s:
     {
         if (std::memcmp(first_9_pos - 2, "99", 2) != 0)
         {
-            ++*(first_9_pos - 1);
+            if (*(first_9_pos - 1) != '9')
+            {
+                ++*(first_9_pos - 1);
+            }
+            else
+            {
+                ++*(first_9_pos - 2);
+                *(first_9_pos - 1) = '0';
+            }
             std::memset(first_9_pos, '0', static_cast<std::size_t>(buffer - first_9_pos));
             goto insert_decimal_dot;
         }
