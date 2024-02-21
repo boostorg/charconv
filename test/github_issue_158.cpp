@@ -11,7 +11,8 @@
 void test_values_with_negative_exp()
 {
     char buffer[256];
-    double d = 1e-15;
+
+    double d = 1e-13;
     std::memset(buffer, '\0', sizeof(buffer));
     auto res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
         boost::charconv::chars_format::scientific, 50);
@@ -21,7 +22,7 @@ void test_values_with_negative_exp()
     BOOST_TEST_CSTR_EQ(buffer, "1.00000000000000003037374556340037091360347168422784e-13");
 
     std::memset(buffer, '\0', sizeof(buffer));
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::fixed, 50);
     *res.ptr = '\0';
     BOOST_TEST(res);
@@ -29,7 +30,7 @@ void test_values_with_negative_exp()
 
     d = 1e-15;
     std::memset(buffer, '\0', sizeof(buffer));
-    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), d,
+    res = boost::charconv::to_chars(buffer, buffer + sizeof(buffer) - 1, d,
                          boost::charconv::chars_format::scientific, 50);
     *res.ptr = '\0';
 
