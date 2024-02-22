@@ -398,21 +398,33 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     }
     else if (v.exponent > 0)
     {
-        // Option 2: Append 0s to the end of the number until we get the proper output
+        // Option 2: Append 0s to the end of the number until we get the proper significand value
+        // Then we need precison worth of zeros after the decimal point as applicable
         if (current_len + v.exponent > result_size)
         {
             return -static_cast<int>(std::errc::value_too_large);
         }
 
-        memset(r.ptr, '0', static_cast<std::size_t>(v.exponent));
+        result = r.ptr;
+        memset(result, '0', static_cast<std::size_t>(v.exponent));
+        result += static_cast<std::size_t>(v.exponent);
         current_len += v.exponent;
+        *result++ = '.';
+        ++precision;
     }
     else if ((-v.exponent) < current_len)
     {
         // Option 3: Insert a decimal point into the middle of the existing number
+        if (current_len + v.exponent + 1 > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
         memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
         memcpy(result + current_len + v.exponent, ".", 1U);
         ++current_len;
+        precision -= current_len + v.exponent;
+        result += current_len + v.exponent + 1;
     }
     else
     {
@@ -426,12 +438,19 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         memcpy(result, "0.", 2U);
         memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
+        precision -= current_len - 2;
+        result += current_len;
     }
 
-    if (current_len < precision)
+    if (precision > 0)
     {
-        memset(result + current_len, '0', static_cast<std::size_t>(precision - current_len));
-        current_len = precision;
+        if (current_len + precision > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
+        memset(result, '0', static_cast<std::size_t>(precision));
+        current_len += precision;
     }
 
     return current_len + static_cast<int>(v.sign);
@@ -514,19 +533,15 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         {
             if (fmt != chars_format::scientific)
             {
-                index = static_cast<size_t>(precision) + 1; // Precision is number of characters not just the decimal portion
+                index = static_cast<size_t>(precision) + 1 + static_cast<size_t>(v.sign); // Precision is number of characters not just the decimal portion
             }
             else
             {
-                index = static_cast<size_t>(precision) + 2; // In scientific format the precision is just the decimal places
+                index = static_cast<size_t>(precision) + 2 + static_cast<size_t>(v.sign); // In scientific format the precision is just the decimal places
             }
 
             // Now we need to see if we need to round
-            if (result[index] == '5' ||
-                result[index] == '6' ||
-                result[index] == '7' ||
-                result[index] == '8' ||
-                result[index] == '9')
+            if (result[index] >= '5' && index < olength + 1 + static_cast<size_t>(v.sign))
             {
                 bool continue_rounding = false;
                 auto current_index = index;
@@ -552,6 +567,14 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                 while (result[index - 1] == '0')
                 {
                     --index;
+                }
+            }
+            else
+            {
+                // In scientific formatting we may need a final 0 to achieve the correct precision
+                if (precision + 1 > static_cast<int>(olength))
+                {
+                    result[index - 1] = '0';
                 }
             }
         }
@@ -589,6 +612,12 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         exp /= 10;
         result[index + elength - 1 - i] = static_cast<char>('0' + c);
     }
+    if (elength == 0)
+    {
+        result[index++] = '0';
+        result[index++] = '0';
+    }
+    
     index += elength;
     return static_cast<int>(index);
 }
