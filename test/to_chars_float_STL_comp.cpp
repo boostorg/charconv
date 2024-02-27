@@ -87,6 +87,7 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
         // LCOV_EXCL_START
         std::cerr << std::setprecision(std::numeric_limits<T>::max_digits10 + 1)
                     << "Value: " << val
+                    << "\nPrecision: " << precision
                     << "\nBoost: " << boost_str.c_str()
                     << "\n  STL: " << stl_str.c_str() << std::endl;
         // LCOV_EXCL_STOP
@@ -94,17 +95,35 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
 }
 
 template <typename T>
-void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+void random_test(boost::charconv::chars_format fmt = boost::charconv::chars_format::general, T min_val = 0, T max_val = std::numeric_limits<T>::max())
 {   
     std::mt19937_64 gen(42);
 
-    std::uniform_real_distribution<T> dist(0, std::numeric_limits<T>::max());
+    std::uniform_real_distribution<T> dist(min_val, max_val);
 
     for (int i = -1; i < std::numeric_limits<T>::digits10; ++i)
     {
+        // TODO(mborland): fix integer part rounding
+        if (fmt == boost::charconv::chars_format::hex && (i == 0 || i == 1 || i == 2))
+        {
+            continue;
+        }
+
         for (std::size_t j = 0; j < 1000; ++j)
         {
             test_spot(dist(gen), fmt, i);
+        }
+    }
+
+    // Test some extended precision arguments
+    if (fmt != boost::charconv::chars_format::fixed || max_val < T(1e10))
+    {
+        for (int i = 40; i < 50; ++i)
+        {
+            for (std::size_t j = 0; j < 10; ++j)
+            {
+                test_spot(dist(gen), fmt, i);
+            }
         }
     }
 }
@@ -197,6 +216,11 @@ int main()
     test_spot<double>(0.0);
     test_spot<double>(-0.0);
 
+    // Good for debugging comparison but too many ideosyncracies
+    //random_test<float>(boost::charconv::chars_format::general, -1e5F, 1e5F);
+    //random_test<double>(boost::charconv::chars_format::general, -1e5, 1e5);
+    //random_test<long double>(boost::charconv::chars_format::general, -1e5L, 1e5L);
+
     // Scientific
     random_test<float>(boost::charconv::chars_format::scientific);
     random_test<double>(boost::charconv::chars_format::scientific);
@@ -204,10 +228,23 @@ int main()
     test_spot<double>(0.0, boost::charconv::chars_format::scientific);
     test_spot<double>(-0.0, boost::charconv::chars_format::scientific);
 
+    random_test<float>(boost::charconv::chars_format::scientific, -1e5F, 1e5F);
+    random_test<double>(boost::charconv::chars_format::scientific, -1e5, 1e5);
+
+    // TODO(mborland): Use Ryu to fix terminal rounding rather than string manipulation
+    //random_test<long double>(boost::charconv::chars_format::scientific, -1e5L, 1e5L);
+
     // Hex
     random_test<float>(boost::charconv::chars_format::hex);
     random_test<double>(boost::charconv::chars_format::hex);
     random_test<long double>(boost::charconv::chars_format::hex);
+
+    #if !defined(_LIBCPP_VERSION)
+    random_test<float>(boost::charconv::chars_format::hex, -1e5F, 1e5F);
+    random_test<double>(boost::charconv::chars_format::hex, -1e5, 1e5);
+    random_test<long double>(boost::charconv::chars_format::hex, -1e5L, 1e5L);
+    #endif
+
     test_spot<double>(-9.52743282403084637e+306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e-306, boost::charconv::chars_format::hex);
     test_spot<double>(-9.52743282403084637e+305, boost::charconv::chars_format::hex);

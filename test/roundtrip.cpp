@@ -93,7 +93,7 @@ template<class T> void test_roundtrip( T value, int base )
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_EQ( v2, value ) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) )
     {
     }
     else
@@ -619,6 +619,9 @@ int main()
 
             long double w3 = LDBL_MIN * static_cast<long double>( rng() ); // small values
             test_roundtrip( w3 );
+
+            long double w4 = -static_cast<long double>( rng() ) * 1.0L; // -0 .. 2^64
+            test_roundtrip( w4 );
         }
 
         test_roundtrip_bv<long double>();

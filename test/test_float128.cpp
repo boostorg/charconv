@@ -86,6 +86,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/charconv/detail/generate_nan.hpp>
+#include <boost/charconv/detail/issignaling.hpp>
 #include <limits>
 #include <iostream>
 #include <iomanip>
@@ -142,9 +143,9 @@ template <typename T>
 void overflow_spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
     auto v = static_cast<T>(42.Q);
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+    auto r = boost::charconv::from_chars_erange(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
 
-    if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST(r.ec == std::errc::result_out_of_range)))
+    if (!(BOOST_TEST(v == expected_value) && BOOST_TEST(r.ec == std::errc::result_out_of_range)))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl;
     }
@@ -281,6 +282,10 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
             }
         }
     }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        printf_string.erase(0, 2); // Remove 0x that printf appends
+    }
 
     // Same issues that arise in to_chars_snprintf.cpp so abort if in range
     //
@@ -296,7 +301,7 @@ void test_sprintf_float( T value, boost::charconv::chars_format fmt = boost::cha
     //  To chars: 1.0600979293241972185e-109
     //  Snprintf: 1.0601e-109
     //
-    if ((value > static_cast<T>(1e16Q) && value < static_cast<T>(1e20Q)) ||
+    if ((value > static_cast<T>(1e15Q) && value < static_cast<T>(1e20Q)) ||
         (value > static_cast<T>(1e4912Q) || value < static_cast<T>(1e-4912Q)) ||
         (value > static_cast<T>(1e-115Q) && value < static_cast<T>(2e-109Q)))
     {
@@ -583,7 +588,6 @@ void test_nans()
 
 int main()
 {
-    /*
     #if BOOST_CHARCONV_LDBL_BITS == 128
     test_signaling_nan<long double>();
 
@@ -661,11 +665,18 @@ int main()
             test_sprintf_float( w3, boost::charconv::chars_format::scientific );
             test_sprintf_float( w3, boost::charconv::chars_format::fixed );
             test_sprintf_float( w3, boost::charconv::chars_format::hex );
+
+            __float128 w5 = -static_cast<__float128>( rng() ); // -0 .. 2^128
+            test_roundtrip( w5 );
+            test_sprintf_float( w5, boost::charconv::chars_format::general );
+            test_sprintf_float( w5, boost::charconv::chars_format::scientific );
+            test_sprintf_float( w5, boost::charconv::chars_format::fixed );
+            test_sprintf_float( w5, boost::charconv::chars_format::hex );
         }
 
         test_roundtrip_bv<__float128>();
     }
-
+    
     #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
     test_signaling_nan<std::float128_t>();
 
@@ -792,6 +803,7 @@ int main()
     test_spot<std::float128_t>(1.00001e-04F128);
     test_spot<std::float128_t>(1.000001e-04F128);
     test_spot<std::float128_t>(1.0000001e-04F128);
+    test_spot<std::float128_t>(-3.589653987658756543653653365436e+04F128, boost::charconv::chars_format::hex);
 
     if (abs_float_total != 0)
     {
@@ -802,7 +814,7 @@ int main()
     }
 
     #endif
-*/
+
     spot_check_nan("nan", boost::charconv::chars_format::general);
     spot_check_nan("-nan", boost::charconv::chars_format::general);
     spot_check_inf("inf", boost::charconv::chars_format::general);

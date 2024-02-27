@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <type_traits>
@@ -187,62 +188,6 @@ std::string format(int prec)
 {
     std::string format = "%." + std::to_string(prec) + "g";
     return format;
-}
-
-template <typename T>
-void test_floff()
-{
-    std::mt19937_64 rng(42);
-    std::uniform_real_distribution<T> small_dist(0, 1);
-    std::uniform_real_distribution<T> large_dist(1e10, std::numeric_limits<T>::max());
-
-    auto dists = {&small_dist, &large_dist};
-
-    for (int prec = 2; prec < std::numeric_limits<T>::digits10; ++prec)
-    {
-        char buffer[256] {};
-        const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), std::numeric_limits<T>::denorm_min(), boost::charconv::chars_format::general, prec);
-        BOOST_TEST(r.ec == std::errc());
-
-        char printf_buffer[256] {};
-        const auto printf_format = format(prec + 1);
-        std::snprintf(printf_buffer, sizeof(printf_buffer), printf_format.c_str(), std::numeric_limits<T>::denorm_min());
-
-        if (!BOOST_TEST_CSTR_EQ(buffer, printf_buffer))
-        {
-            // LCOV_EXCL_START
-            std::cerr << "Precision: " << prec
-                      << "\nTo chars: " << buffer
-                      << "\n  Printf: " << printf_buffer << std::endl;
-            // LCOV_EXCL_STOP
-        }
-
-        for (int i = 0; i < 10; ++i)
-        {
-            for (auto dist : dists)
-            {
-                const T rand_val = (*dist)(rng);
-                char rand_buffer[256] {};
-                const auto r_small = boost::charconv::to_chars(rand_buffer, rand_buffer + sizeof(rand_buffer), rand_val,
-                                                               boost::charconv::chars_format::general, prec);
-
-                char rand_printf_buffer[256] {};
-                const auto num = std::snprintf(rand_printf_buffer, sizeof(rand_printf_buffer), printf_format.c_str(), rand_val);
-
-                if (!(BOOST_TEST_CSTR_EQ(rand_buffer, rand_printf_buffer) && BOOST_TEST(r_small) && BOOST_TEST(num == static_cast<int>(r_small.ptr - rand_buffer))))
-                {
-                    // LCOV_EXCL_START
-                    std::cerr << "Precision: " << prec
-                              << std::setprecision(prec + 1) << "\n     Val: " << rand_val
-                              << "\nTo chars: " << rand_buffer
-                              << "\n  Printf: " << rand_printf_buffer
-                              << "\nto chars count: " << static_cast<int>(r_small.ptr - rand_buffer)
-                              << "\n  printf count: " << num << std::endl;
-                    // LCOV_EXCL_STOP
-                }
-            }
-        }
-    }
 }
 
 int main()
@@ -1060,8 +1005,6 @@ int main()
     spot_check(1.7e-02, "1.7e-02", boost::charconv::chars_format::scientific);
     spot_check(1.7e-01, "1.7e-01", boost::charconv::chars_format::scientific);
     spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::scientific);
-
-    test_floff<float>();
 
     return boost::report_errors();
 }

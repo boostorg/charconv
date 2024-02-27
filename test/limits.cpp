@@ -81,7 +81,13 @@ template<typename T> void test_integral( T value )
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
+        if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) )
+        {
+        }
+        else
+        {
+            std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl; // LCOV_EXCL_LINE
+        }
     }
 
     // base 10
@@ -93,7 +99,13 @@ template<typename T> void test_integral( T value )
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, 10 );
 
-        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
+        if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) )
+        {
+        }
+        else
+        {
+            std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl; // LCOV_EXCL_LINE
+        }
     }
 
     // any base
@@ -106,7 +118,13 @@ template<typename T> void test_integral( T value )
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, base );
 
-        BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value );
+        if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) )
+        {
+        }
+        else
+        {
+            std::cerr << "... test failure for value=" << value << "; buffer='" << std::string( buffer, r.ptr ) << "'" << std::endl; // LCOV_EXCL_LINE
+        }
     }
 }
 

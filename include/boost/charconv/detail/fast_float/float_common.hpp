@@ -207,17 +207,17 @@ int leading_zeroes(uint64_t input_num) {
 
 // slow emulation routine for 32-bit
 BOOST_FORCEINLINE constexpr uint64_t emulu(uint32_t x, uint32_t y) {
-    return x * (uint64_t)y;
+    return x * static_cast<uint64_t>(y);
 }
 
 BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR14
 uint64_t umul128_generic(uint64_t ab, uint64_t cd, uint64_t *hi) {
-  uint64_t ad = emulu((uint32_t)(ab >> 32), (uint32_t)cd);
-  uint64_t bd = emulu((uint32_t)ab, (uint32_t)cd);
-  uint64_t adbc = ad + emulu((uint32_t)ab, (uint32_t)(cd >> 32));
+  uint64_t ad = emulu(static_cast<uint32_t>(ab >> 32), static_cast<uint32_t>(cd));
+  uint64_t bd = emulu(static_cast<uint32_t>(ab), static_cast<uint32_t>(cd));
+  uint64_t adbc = ad + emulu(static_cast<uint32_t>(ab), static_cast<uint32_t>(cd >> 32));
   uint64_t adbc_carry = !!(adbc < ad);
   uint64_t lo = bd + (adbc << 32);
-  *hi = emulu((uint32_t)(ab >> 32), (uint32_t)(cd >> 32)) + (adbc >> 32) +
+  *hi = emulu(static_cast<uint32_t>(ab >> 32), static_cast<uint32_t>(cd >> 32)) + (adbc >> 32) +
         (adbc_carry << 32) + !!(lo < bd);
   return lo;
 }
@@ -254,7 +254,7 @@ value128 full_multiplication(uint64_t a, uint64_t b) {
   answer.low = _umul128(a, b, &high); // _umul128 not available on ARM64
   answer.high = static_cast<uint64_t>(high);
 #elif defined(BOOST_CHARCONV_FASTFLOAT_64BIT)
-  __uint128_t r = ((__uint128_t)a) * b;
+  __uint128_t r = (static_cast<__uint128_t>(a)) * b;
   answer.low = uint64_t(r);
   answer.high = uint64_t(r >> 64);
 #else
@@ -527,7 +527,7 @@ template<typename T>
 BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 void to_float(bool negative, adjusted_mantissa am, T &value) {
   using uint = typename binary_format<T>::equiv_uint;
-  uint word = (uint)am.mantissa;
+  uint word = static_cast<uint>(am.mantissa);
   word |= uint(am.power2) << binary_format<T>::mantissa_explicit_bits();
   word |= uint(negative) << binary_format<T>::sign_index();
 #if BOOST_CHARCONV_FASTFLOAT_HAS_BIT_CAST

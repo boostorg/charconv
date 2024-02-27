@@ -7,10 +7,14 @@ https://www.boost.org/LICENSE_1_0.txt
 = Benchmarks
 :idprefix: benchmarks
 
+This section describes a range of performance benchmarks that have been run comparing this library with the standard library, and how to run your own benchmarks if required.
+
 The values are relative to the performance of `std::printf` and `std::strtoX`.
 Larger numbers are more performant (e.g. 2.00 means twice as fast, and 0.50 means it takes twice as long).
+`std::printf` and `std::strtoX` are always listed first as they will be the reference value.
 
 == How to run the Benchmarks
+[#run_benchmarks_]
 
 To run the benchmarks yourself, navigate to the test folder and define `BOOST_CHARCONV_RUN_BENCHMARKS` when running the tests.
 An example on Linux with b2: `../../../b2 cxxstd=20 toolset=gcc-13 define=BOOST_CHARCONV_RUN_BENCHMARKS STL_benchmark linkflags="-lfmt" -a release` .
@@ -23,11 +27,14 @@ Additionally, you will need the following:
 * https://github.com/google/double-conversion[libdouble-conversion]
 * https://github.com/fmtlib/fmt[{fmt}]
 
-== x86_64 Linux
+== Results
+[#benchmark_results_]
+
+=== x86_64 Linux
 
 Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_64 architecture using GCC 13.1.0 with libstdc++.
 
-=== Floating Point
+==== Floating Point
 
 .to_chars floating point with the shortest representation
 |===
@@ -67,7 +74,7 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_64 architecture using GCC
 |1.16 / 1.30
 |===
 
-=== Integral
+==== Integral
 
 .to_chars base 10 integers
 |===
@@ -103,11 +110,11 @@ Data in tables 1 - 4 were run on Ubuntu 23.04 with x86_64 architecture using GCC
 |2.54 / 1.78
 |===
 
-== x86_64 Windows
+=== x86_64 Windows
 
 Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 14.3 (V17.7.0).
 
-=== Floating Point
+==== Floating Point
 
 .to_chars floating point with the shortest representation
 |===
@@ -141,7 +148,7 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 |2.06 / 5.21
 |===
 
-=== Integral
+==== Integral
 
 .to_chars base 10 integers
 |===
@@ -175,11 +182,11 @@ Data in tables 5 - 8 were run on Windows 11 with x86_64 architecture using MSVC 
 |2.68 / 2.27
 |===
 
-== ARM MacOS
+=== ARM MacOS
 
 Data in tables 9-12 were run on MacOS Ventura 13.5.2 with M1 Pro architecture using Homebrew GCC 13.2.0 with libstdc++.
 
-=== Floating Point
+==== Floating Point
 
 .to_chars floating point with the shortest representation
 |===
@@ -220,7 +227,7 @@ Data in tables 9-12 were run on MacOS Ventura 13.5.2 with M1 Pro architecture us
 
 |===
 
-=== Integral
+==== Integral
 
 .to_chars base 10 integers
 |===
@@ -255,6 +262,3 @@ Data in tables 9-12 were run on MacOS Ventura 13.5.2 with M1 Pro architecture us
 |Boost.Charconv.from_chars
 |2.27 / 1.65
 |===
-
-Special thanks to Stephan T. Lavavej for providing the basis for the benchmarks.
-

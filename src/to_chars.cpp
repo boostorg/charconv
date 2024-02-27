@@ -4,6 +4,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include "to_chars_float_impl.hpp"
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <limits>
@@ -264,8 +265,16 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     }
 
     template <>
-    char* to_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* buffer, chars_format fmt) noexcept
+    to_chars_result dragon_box_print_chars<float, dragonbox_float_traits<float>>(std::uint32_t s32, int exponent, char* first, char* last, chars_format fmt) noexcept
     {
+        auto buffer = first;
+
+        const std::ptrdiff_t total_length = total_buffer_length(9, exponent, false);
+        if (total_length > (last - first))
+        {
+            return {last, std::errc::value_too_large};
+        }
+
         // Print significand.
         print_9_digits(s32, exponent, buffer);
 
@@ -284,7 +293,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 buffer += 4;
             }
 
-            return buffer;
+            return {buffer, std::errc()};
         }
         else 
         {
@@ -295,11 +304,20 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
         print_2_digits(std::uint32_t(exponent), buffer);
         buffer += 2;
 
-        return buffer;
+        return {buffer, std::errc()};
     }
 
     template <>
-    char* to_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* buffer, chars_format fmt) noexcept {
+    to_chars_result dragon_box_print_chars<double, dragonbox_float_traits<double>>(const std::uint64_t significand, int exponent, char* first, char* last, chars_format fmt) noexcept
+    {
+        auto buffer = first;
+
+        const std::ptrdiff_t total_length = total_buffer_length(17, exponent, false);
+        if (total_length > (last - first))
+        {
+            return {last, std::errc::value_too_large};
+        }
+
         // Print significand by decomposing it into a 9-digit block and a 8-digit block.
         std::uint32_t first_block;
         std::uint32_t second_block {};
@@ -495,7 +513,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
                 buffer += 4;
             }
 
-            return buffer;
+            return {buffer, std::errc()};
         }
         else
         {
@@ -521,7 +539,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
             buffer += 2;
         }
 
-        return buffer;
+        return {buffer, std::errc()};
     }
 
 #ifdef BOOST_MSVC
@@ -531,87 +549,75 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 }}}} // Namespaces
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
+}
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
+}
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, double value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
 }
 
 #if BOOST_CHARCONV_LDBL_BITS == 64 || defined(BOOST_MSVC)
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, -1);
+}
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
 }
 
 #elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
+}
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
-    static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
-
-    if (first > last)
+    if (precision < 0)
     {
-        return {last, std::errc::invalid_argument};
+        precision = 6;
     }
 
-    const auto classification = std::fpclassify(value);
-    #if BOOST_CHARCONV_LDBL_BITS == 128
-    if (classification == FP_NAN || classification == FP_INFINITE)
-    {
-        return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
-    }
-    #else
-    if (classification == FP_NAN || classification == FP_INFINITE)
-    {
-        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
-
-        if (num_chars > 0)
-        {
-            return { first + num_chars, std::errc() };
-        }
-    }
-    #endif
-
-    if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific)
-    {
-        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
-
-        if (num_chars > 0)
-        {
-            return { first + num_chars, std::errc() };
-        }
-    }
-    else if (fmt == boost::charconv::chars_format::hex)
-    {
-        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
-    }
-    else if (fmt == boost::charconv::chars_format::fixed)
-    {
-        const auto fd128 = boost::charconv::detail::ryu::long_double_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars_fixed(fd128, first, last - first, precision);
-
-        if (num_chars > 0)
-        {
-            return { first + num_chars, std::errc() };
-        }
-        else if (num_chars == -static_cast<int>(std::errc::result_out_of_range))
-        {
-            return { last, std::errc::result_out_of_range };
-        }
-    }
-
-    // Fallback to printf methods
-    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
 }
 
 #else
@@ -656,69 +662,51 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT128
 
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, -1);
+}
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt, int precision) noexcept
 {
-    char* const original_first = first;
-
-    if (first > last)
+    if (precision < 0)
     {
-        return {last, std::errc::invalid_argument};
+        precision = 6;
     }
 
-    if (isnanq(value))
-    {
-        return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_NAN);
-    }
-    else if (isinfq(value))
-    {
-        return boost::charconv::detail::to_chars_nonfinite(first, last, value, FP_INFINITE);
-    }
-
-    if ((fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific))
-    {
-        const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
-
-        if (num_chars > 0)
-        {
-            return { first + num_chars, std::errc() };
-        }
-    }
-    else if (fmt == boost::charconv::chars_format::hex)
-    {
-        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
-    }
-    else if (fmt == boost::charconv::chars_format::fixed)
-    {
-        const auto fd128 = boost::charconv::detail::ryu::float128_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars_fixed(fd128, first, last - first, precision);
-
-        if (num_chars > 0)
-        {
-            return { first + num_chars, std::errc() };
-        }
-        else if (num_chars == -static_cast<int>(std::errc::result_out_of_range))
-        {
-            return { last, std::errc::result_out_of_range };
-        }
-    }
-
-    first = original_first;
-    // Fallback to printf
-    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+    return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
 }
 
 #endif
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT16
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float16_t value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
+}
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float16_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT32
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float32_t value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
+}
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float32_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
@@ -726,34 +714,75 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
                   std::numeric_limits<std::float32_t>::min_exponent == FLT_MIN_EXP,
                   "float and std::float32_t are not the same layout like they should be");
 
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT64
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float64_t value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, -1);
+}
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float64_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
     static_assert(std::numeric_limits<std::float64_t>::digits == DBL_MANT_DIG &&
                   std::numeric_limits<std::float64_t>::min_exponent == DBL_MIN_EXP,
                   "double and std::float64_t are not the same layout like they should be");
-    
+
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
 }
 #endif
 
 #if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float128_t value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<__float128>(value), fmt, -1);
+}
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float128_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
-    return boost::charconv::to_chars(first, last, static_cast<__float128>(value), fmt, precision);
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<__float128>(value), fmt, precision);
 }
 #endif
 
 #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+
+boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
+                                                           boost::charconv::chars_format fmt) noexcept
+{
+    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
+}
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
                                                            boost::charconv::chars_format fmt, int precision) noexcept
 {
+    if (precision < 0)
+    {
+        precision = 6;
+    }
+
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif

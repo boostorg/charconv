@@ -282,7 +282,7 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     return {output, exp, ieeeSign};
 }
 
-static inline int copy_special_str(char* result, const struct floating_decimal_128 fd) noexcept
+static inline int copy_special_str(char* result, const std::ptrdiff_t result_size, const struct floating_decimal_128 fd) noexcept
 {
     if (fd.sign)
     {
@@ -298,13 +298,27 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
                 fd.mantissa == static_cast<unsigned_128_type>(6917529027641081856) ||
                 fd.mantissa == static_cast<unsigned_128_type>(1) << 110) // 2^110
             {
-                std::memcpy(result, "nan(snan)", 9);
-                return 10;
+                if (result_size >= 10)
+                {
+                    std::memcpy(result, "nan(snan)", 9);
+                    return 10;
+                }
+                else
+                {
+                    return -1;
+                }
             }
             else
             {
-                std::memcpy(result, "nan(ind)", 8);
-                return 9;
+                if (result_size >= 9)
+                {
+                    std::memcpy(result, "nan(ind)", 8);
+                    return 9;
+                }
+                else
+                {
+                    return -1;
+                }
             }
         }
         else
@@ -313,33 +327,51 @@ static inline int copy_special_str(char* result, const struct floating_decimal_1
                 fd.mantissa == static_cast<unsigned_128_type>(6917529027641081856) ||
                 fd.mantissa == static_cast<unsigned_128_type>(1) << 110) // 2^110
             {
-                std::memcpy(result, "nan(snan)", 9);
-                return 9;
+                if (result_size >= 9)
+                {
+                    std::memcpy(result, "nan(snan)", 9);
+                    return 9;
+                }
+                else
+                {
+                    return -1;
+                }
             }
             else
             {
-                std::memcpy(result, "nan", 3);
-                return 3;
+                if (result_size >= 3)
+                {
+                    std::memcpy(result, "nan", 3);
+                    return 3;
+                }
+                else
+                {
+                    return -1;
+                }
             }
         }
     }
 
-    memcpy(result, "inf", 3);
-    return static_cast<int>(fd.sign) + 3;
+    if (result_size >= 3 + static_cast<std::ptrdiff_t>(fd.sign))
+    {
+        memcpy(result, "inf", 3);
+        return static_cast<int>(fd.sign) + 3;
+    }
+
+    return -1;
 }
 
 static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
-        return copy_special_str(result, v);
+        return copy_special_str(result, result_size, v);
     }
 
     // Step 5: Print the decimal representation.
-    size_t index = 0;
     if (v.sign)
     {
-        result[index++] = '-';
+        *result++ = '-';
     }
 
     unsigned_128_type output = v.mantissa;
@@ -362,47 +394,66 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     if (v.exponent == 0)
     {
         // Option 1: We need to do nothing
-        return current_len;
+        return current_len + static_cast<int>(v.sign);
     }
     else if (v.exponent > 0)
     {
-        // Option 2: Append 0s to the end of the number until we get the proper output
+        // Option 2: Append 0s to the end of the number until we get the proper significand value
+        // Then we need precison worth of zeros after the decimal point as applicable
         if (current_len + v.exponent > result_size)
         {
-            return -static_cast<int>(std::errc::result_out_of_range);
+            return -static_cast<int>(std::errc::value_too_large);
         }
 
-        memset(r.ptr, '0', static_cast<std::size_t>(v.exponent));
+        result = r.ptr;
+        memset(result, '0', static_cast<std::size_t>(v.exponent));
+        result += static_cast<std::size_t>(v.exponent);
         current_len += v.exponent;
+        *result++ = '.';
+        ++precision;
     }
     else if ((-v.exponent) < current_len)
     {
         // Option 3: Insert a decimal point into the middle of the existing number
+        if (current_len + v.exponent + 1 > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
         memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
         memcpy(result + current_len + v.exponent, ".", 1U);
         ++current_len;
+        precision -= current_len + v.exponent;
+        result += current_len + v.exponent + 1;
     }
     else
     {
         // Option 4: Leading 0s
         if (-v.exponent + 2 > result_size)
         {
-            return -static_cast<int>(std::errc::result_out_of_range);
+            return -static_cast<int>(std::errc::value_too_large);
         }
 
         memmove(result - v.exponent - current_len + 2, result, static_cast<std::size_t>(current_len));
         memcpy(result, "0.", 2U);
         memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
+        precision -= current_len - 2;
+        result += current_len;
     }
 
-    if (current_len < precision)
+    if (precision > 0)
     {
-        memset(result + current_len, '0', static_cast<std::size_t>(precision - current_len));
-        current_len = precision;
+        if (current_len + precision > result_size)
+        {
+            return -static_cast<int>(std::errc::result_out_of_range);
+        }
+
+        memset(result, '0', static_cast<std::size_t>(precision));
+        current_len += precision;
     }
 
-    return current_len;
+    return current_len + static_cast<int>(v.sign);
 }
 
 // Converts the given decimal floating point number to a string, writing to result, and returning
@@ -417,7 +468,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
-        return copy_special_str(result, v);
+        return copy_special_str(result, result_size, v);
     }
 
     unsigned_128_type output = v.mantissa;
@@ -448,11 +499,11 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     if (index + olength > static_cast<size_t>(result_size))
     {
-        return -static_cast<int>(std::errc::result_out_of_range);
+        return -static_cast<int>(std::errc::value_too_large);
     }
     else if (olength == 0)
     {
-        return -1; // Something has gone horribly wrong
+        return -2; // Something has gone horribly wrong
     }
 
     for (uint32_t i = 0; i < olength - 1; ++i)
@@ -482,19 +533,15 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         {
             if (fmt != chars_format::scientific)
             {
-                index = static_cast<size_t>(precision) + 1; // Precision is number of characters not just the decimal portion
+                index = static_cast<size_t>(precision) + 1 + static_cast<size_t>(v.sign); // Precision is number of characters not just the decimal portion
             }
             else
             {
-                index = static_cast<size_t>(precision) + 2; // In scientific format the precision is just the decimal places
+                index = static_cast<size_t>(precision) + 2 + static_cast<size_t>(v.sign); // In scientific format the precision is just the decimal places
             }
 
             // Now we need to see if we need to round
-            if (result[index] == '5' ||
-                result[index] == '6' ||
-                result[index] == '7' ||
-                result[index] == '8' ||
-                result[index] == '9')
+            if (result[index] >= '5' && index < olength + 1 + static_cast<size_t>(v.sign))
             {
                 bool continue_rounding = false;
                 auto current_index = index;
@@ -520,6 +567,14 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
                 while (result[index - 1] == '0')
                 {
                     --index;
+                }
+            }
+            else
+            {
+                // In scientific formatting we may need a final 0 to achieve the correct precision
+                if (precision + 1 > static_cast<int>(olength))
+                {
+                    result[index - 1] = '0';
                 }
             }
         }
@@ -557,6 +612,12 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         exp /= 10;
         result[index + elength - 1 - i] = static_cast<char>('0' + c);
     }
+    if (elength == 0)
+    {
+        result[index++] = '0';
+        result[index++] = '0';
+    }
+    
     index += elength;
     return static_cast<int>(index);
 }

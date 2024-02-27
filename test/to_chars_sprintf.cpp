@@ -64,7 +64,7 @@ char const* fmt_from_type_scientific( float )
 
 char const* fmt_from_type_fixed( float )
 {
-    return "%.0f";
+    return "%.9f";
 }
 
 char const* fmt_from_type( double )
@@ -79,7 +79,7 @@ char const* fmt_from_type_scientific( double )
 
 char const* fmt_from_type_fixed( double )
 {
-    return "%.0f";
+    return "%.17f";
 }
 
 char const* fmt_from_type( long double )

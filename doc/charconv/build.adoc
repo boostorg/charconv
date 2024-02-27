@@ -4,7 +4,7 @@ Distributed under the Boost Software License, Version 1.0.
 https://www.boost.org/LICENSE_1_0.txt
 ////
 
-= Building the Library
+= Getting Started
 :idprefix: build_
 
 == B2
@@ -15,8 +15,6 @@ Run the following commands to clone the latest versions of Boost and Charconv, p
 git clone https://github.com/boostorg/boost
 cd boost
 git submodule update --init
-cd libs
-git clone https://github.com/cppalliance/charconv
 cd ..
 ./bootstrap
 ./b2 cxxstd=11
@@ -29,24 +27,26 @@ To install the development environment, run:
 sudo ./b2 install cxxstd=11
 ----
 
+The value of cxxstd must be at least 11. https://www.boost.org/doc/libs/1_84_0/tools/build/doc/html/index.html[See the b2 documentation] under `cxxstd` for all valid values.
+
 == vcpkg
 
 Run the following commands to clone the latest version of Charconv and install it using vcpkg:
 [source, bash]
 ----
-git clone https://github.com/cppalliance/charconv
+git clone https://github.com/boostorg/charconv
 cd charconv
 vcpkg install charconv --overlay-ports=ports/charconv
 ----
 
-Any required Boost packages that do not already exist will be installed automatically.
+Any required Boost packages not currently installed in your development environment will be installed automatically.
 
 == Conan
 
 Run the following commands to clone the latest version of Charconv and build a boost_charconv package using your default profile:
 [source, bash]
 ----
-git clone https://github.com/cppalliance/charconv
+git clone https://github.com/boostorg/charconv
 conan create charconv/conan --build missing
 ----
 
@@ -67,3 +67,7 @@ For example, using a `conanfile.txt`:
 [requires]
 boost_charconv/1.0.0
 ----
+
+== Dependencies
+
+This library depends on: Boost.Assert, Boost.Config, Boost.Core, and  https://gcc.gnu.org/onlinedocs/libquadmath/[libquadmath] on supported platforms (e.g. Linux with x86, x86_64, PPC64, and IA64).

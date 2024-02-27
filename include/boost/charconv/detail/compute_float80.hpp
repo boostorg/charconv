@@ -51,7 +51,7 @@ static constexpr __float128 powers_of_tenq[] = {
 #endif
 
 template <typename ResultType, typename Unsigned_Integer, typename ArrayPtr>
-inline long double fast_path(std::int64_t q, Unsigned_Integer w, bool negative, ArrayPtr table) noexcept
+inline ResultType fast_path(std::int64_t q, Unsigned_Integer w, bool negative, ArrayPtr table) noexcept
 {
     // The general idea is as follows.
     // if 0 <= s <= 2^64 and if 10^0 <= p <= 10^27

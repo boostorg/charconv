@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/from_chars_float_impl.hpp>
+#include "../src/from_chars_float_impl.hpp"
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
@@ -37,7 +37,7 @@ template <typename T>
 void overflow_spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
 {
     auto v = static_cast<T>(42.L);
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
+    auto r = boost::charconv::from_chars_erange(buffer.c_str(), buffer.c_str() + std::strlen(buffer.c_str()), v, fmt);
 
     if (!(BOOST_TEST_EQ(v, expected_value) && BOOST_TEST(r.ec == std::errc::result_out_of_range)))
     {
@@ -74,7 +74,7 @@ void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt
 }
 
 template <typename T>
-void spot_check_bad_non_finite(const std::string& buffer, boost::charconv::chars_format fmt)
+void spot_check_invalid_argument(const std::string& buffer, boost::charconv::chars_format fmt)
 {
     T v = static_cast<T>(5.0L);
     auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
@@ -1881,9 +1881,16 @@ int main()
         spot_check_nan<double>("-nan(ind)", fmt);
         spot_check_nan<long double>("-nan(ind)", fmt);
 
-        spot_check_bad_non_finite<float>("na7", fmt);
-        spot_check_bad_non_finite<float>("na", fmt);
-        spot_check_bad_non_finite<float>("in", fmt);
+        spot_check_invalid_argument<float>("na7", fmt);
+        spot_check_invalid_argument<float>("na", fmt);
+        spot_check_invalid_argument<float>("in", fmt);
+
+        spot_check_invalid_argument<float>(" 1.23", fmt);
+        spot_check_invalid_argument<float>("  1.23", fmt);
+        spot_check_invalid_argument<double>(" 1.23", fmt);
+        spot_check_invalid_argument<double>("  1.23", fmt);
+        spot_check_invalid_argument<long double>(" 1.23", fmt);
+        spot_check_invalid_argument<long double>("  1.23", fmt);
     }
 
     return boost::report_errors();
