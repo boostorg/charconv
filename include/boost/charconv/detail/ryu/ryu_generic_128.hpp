@@ -682,7 +682,7 @@ static inline struct floating_decimal_128 long_double_to_fd128(long double d) no
 
 #endif
 
-#ifdef BOOST_HAS_FLOAT128
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
 
 static inline struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
 {
