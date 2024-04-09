@@ -91,7 +91,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double val
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
                                              chars_format fmt, int precision) noexcept;
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
+#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, __float128 value,
                                              chars_format fmt = chars_format::general) noexcept;
 
@@ -120,7 +120,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float64_t value, 
                                              chars_format fmt, int precision) noexcept;
 #endif
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::float128_t value,
                                              chars_format fmt = chars_format::general) noexcept;
 
