@@ -163,7 +163,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
 // --------------------------------------------------------------------------------------------------------------------
 
 template <>
-to_chars_result to_chars_printf_impl<__float128>(char* first, char* last, __float128 value, chars_format fmt, int precision)
+inline to_chars_result to_chars_printf_impl<__float128>(char* first, char* last, __float128 value, chars_format fmt, int precision)
 {
     // v % + . + num_digits(INT_MAX) + specifier + null terminator
     // 1 + 1 + 10 + 1 + 1
@@ -239,7 +239,7 @@ to_chars_result to_chars_printf_impl<__float128>(char* first, char* last, __floa
 // --------------------------------------------------------------------------------------------------------------------
 
 template <>
-from_chars_result from_chars_strtod_impl<__float128>(const char* first, const char* last, __float128& value, char* buffer) noexcept
+inline from_chars_result from_chars_strtod_impl<__float128>(const char* first, const char* last, __float128& value, char* buffer) noexcept
 {
     // For strto(f/d)
     // Floating point value corresponding to the contents of str on success.
