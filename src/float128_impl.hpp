@@ -58,6 +58,18 @@ static constexpr __float128 powers_of_tenq[] = {
     1e49Q, 1e50Q, 1e51Q, 1e52Q, 1e53Q, 1e54Q, 1e55Q
 };
 
+template <typename Unsigned_Integer>
+inline __float128 to_float128(Unsigned_Integer w) noexcept
+{
+    return static_cast<__float128>(w);
+}
+
+template <>
+inline __float128 to_float128<uint128>(uint128 w) noexcept
+{
+    return ldexp(static_cast<__float128>(w.high), 64) + static_cast<__float128>(w.low);
+}
+
 template <typename Unsigned_Integer, typename ArrayPtr>
 inline __float128 fast_path_float128(std::int64_t q, Unsigned_Integer w, bool negative, ArrayPtr table) noexcept
 {
@@ -67,7 +79,7 @@ inline __float128 fast_path_float128(std::int64_t q, Unsigned_Integer w, bool ne
     // because of this s*p and s/p will produce
     // correctly rounded values
 
-    auto ld = ldexp(static_cast<__float128>(high), 64) + static_cast<__float128>(low);
+    auto ld = to_float128(w);
 
     if (q < 0)
     {
@@ -277,9 +289,27 @@ struct words
 #endif
 };
 
-BOOST_ATTRIBUTE_UNUSED inline __float128 nans BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept;
+inline __float128 nans BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept
+{
+    words bits;
+    bits.hi = UINT64_C(0x7FFF400000000000);
+    bits.lo = UINT64_C(0);
 
-BOOST_ATTRIBUTE_UNUSED inline __float128 nanq BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept;
+    __float128 return_val;
+    std::memcpy(&return_val, &bits, sizeof(__float128));
+    return return_val;
+}
+
+inline __float128 nanq BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept
+{
+    words bits;
+    bits.hi = UINT64_C(0x7FFF800000000000);
+    bits.lo = UINT64_C(0);
+
+    __float128 return_val;
+    std::memcpy(&return_val, &bits, sizeof(__float128));
+    return return_val;
+}
 
 template <>
 inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128 x) noexcept

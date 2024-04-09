@@ -50,32 +50,6 @@ inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d) noexc
 
 #endif
 
-// --------------------------------------------------------------------------------------------------------------------
-// generate nans
-// --------------------------------------------------------------------------------------------------------------------
-
-inline __float128 nans BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept
-{
-    words bits;
-    bits.hi = UINT64_C(0x7FFF400000000000);
-    bits.lo = UINT64_C(0);
-
-    __float128 return_val;
-    std::memcpy(&return_val, &bits, sizeof(__float128));
-    return return_val;
-}
-
-inline __float128 nanq BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept
-{
-    words bits;
-    bits.hi = UINT64_C(0x7FFF800000000000);
-    bits.lo = UINT64_C(0);
-
-    __float128 return_val;
-    std::memcpy(&return_val, &bits, sizeof(__float128));
-    return return_val;
-}
-
 } // namespace ryu
 
 } // namespace detail
