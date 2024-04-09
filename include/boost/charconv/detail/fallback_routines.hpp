@@ -187,18 +187,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
             r = {last, std::errc::result_out_of_range};
         }
     }
-    #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    else
-    {
-        return_value = strtoflt128(buffer, &str_end);
-
-        if (return_value == HUGE_VALQ)
-        {
-            r = {last, std::errc::result_out_of_range};
-        }
-    }
-    #endif
-
+    
     // Since this is a fallback routine we are safe to check for 0
     if (return_value == 0 && str_end == last)
     {
