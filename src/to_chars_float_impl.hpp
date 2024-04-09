@@ -7,6 +7,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_FLOAT_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_FLOAT_IMPL_HPP
 
+#include "float128_impl.hpp"
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
@@ -38,7 +39,7 @@
 #include <iostream>
 #endif
 
-#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) || defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #  include <boost/charconv/detail/issignaling.hpp>
 #endif

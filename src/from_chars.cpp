@@ -11,11 +11,11 @@
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
+#include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/charconv/detail/generate_nan.hpp>
 #include <system_error>
 #include <string>
 #include <cstdlib>
