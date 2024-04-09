@@ -21,13 +21,6 @@ namespace boost {
 namespace charconv {
 namespace detail {
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
-inline int print_val(char* first, std::size_t size, char* format, __float128 value) noexcept
-{
-    return quadmath_snprintf(first, size, format, value);
-}
-#endif
-
 template <typename T>
 inline int print_val(char* first, std::size_t size, char* format, T value) noexcept
 {
@@ -73,19 +66,8 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     }
 
     // Add the type identifier
-    #ifdef BOOST_CHARCONV_HAS_FLOAT128
-    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, __float128>::value || std::is_same<T, long double>::value)
-    {
-        format[pos] = std::is_same<T, __float128>::value ? 'Q' : 'L';
-        ++pos;
-    }
-    #else
-    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, long double>::value)
-    {
-        format[pos] = 'L';
-        ++pos;
-    }
-    #endif
+    format[pos] = 'L';
+    ++pos;
 
     // Add the format character
     switch (fmt)
