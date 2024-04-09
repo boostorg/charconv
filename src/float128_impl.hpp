@@ -10,6 +10,7 @@
 #include <boost/charconv/detail/compute_float80.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/charconv/detail/issignaling.hpp>
+#include <boost/charconv/limits.hpp>
 #include <system_error>
 #include <cstring>
 #include <cstdint>
@@ -34,10 +35,10 @@ namespace detail {
 
 namespace ryu {
 
-static inline struct floating_decimal_128 float128_to_fd128(__float128 d);
+inline struct floating_decimal_128 float128_to_fd128(__float128 d);
 
 #  ifdef BOOST_CHARCONV_HAS_STDFLOAT128
-static inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d) noexcept;
+inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d) noexcept;
 #  endif
 
 } // namespace ryu
@@ -57,6 +58,34 @@ static constexpr __float128 powers_of_tenq[] = {
     1e49Q, 1e50Q, 1e51Q, 1e52Q, 1e53Q, 1e54Q, 1e55Q
 };
 
+template <typename Unsigned_Integer, typename ArrayPtr>
+inline __float128 fast_path_float128(std::int64_t q, Unsigned_Integer w, bool negative, ArrayPtr table) noexcept
+{
+    // The general idea is as follows.
+    // if 0 <= s <= 2^64 and if 10^0 <= p <= 10^27
+    // Both s and p can be represented exactly
+    // because of this s*p and s/p will produce
+    // correctly rounded values
+
+    auto ld = ldexp(static_cast<__float128>(high), 64) + static_cast<__float128>(low);
+
+    if (q < 0)
+    {
+        ld /= table[-q];
+    }
+    else
+    {
+        ld *= table[q];
+    }
+
+    if (negative)
+    {
+        ld = -ld;
+    }
+
+    return ld;
+}
+
 template <typename Unsigned_Integer>
 inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool negative, std::errc& success) noexcept
 {
@@ -68,7 +97,7 @@ inline __float128 compute_float128(std::int64_t q, Unsigned_Integer w, bool nega
     if (-55 <= q && q <= 48 && w <= static_cast<Unsigned_Integer>(1) << 113)
     {
         success = std::errc();
-        return fast_path<__float128>(q, w, negative, powers_of_tenq);
+        return fast_path_float128(q, w, negative, powers_of_tenq);
     }
 
     if (w == 0)
@@ -184,7 +213,7 @@ from_chars_result from_chars_strtod_impl<__float128>(const char* first, const ch
     convert_string_locale(buffer);
 
     char* str_end;
-    T return_value {};
+    __float128 return_value {};
     from_chars_result r {nullptr, std::errc()};
 
     return_value = strtoflt128(buffer, &str_end);
@@ -237,17 +266,26 @@ inline from_chars_result from_chars_strtod<__float128>(const char* first, const 
 // nans
 // --------------------------------------------------------------------------------------------------------------------
 
-struct words;
+struct words
+{
+#if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
+    std::uint64_t lo;
+    std::uint64_t hi;
+#else
+    std::uint64_t hi;
+    std::uint64_t lo;
+#endif
+};
 
-inline __float128 nans BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept;
+BOOST_ATTRIBUTE_UNUSED inline __float128 nans BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept;
 
-inline __float128 nanq BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept;
+BOOST_ATTRIBUTE_UNUSED inline __float128 nanq BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept;
 
 template <>
 inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128 x) noexcept
 {
     words bits;
-    std::memcpy(&bits, &x, sizeof(T));
+    std::memcpy(&bits, &x, sizeof(__float128));
 
     std::uint64_t hi_word = bits.hi;
     std::uint64_t lo_word = bits.lo;

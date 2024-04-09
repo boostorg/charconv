@@ -4,6 +4,7 @@
 
 #include "float128_impl.hpp"
 
+#ifdef BOOST_CHARCONV_HAS_FLOAT128
 
 namespace boost {
 namespace charconv {
@@ -17,9 +18,7 @@ namespace detail {
 
 namespace ryu {
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
-
-static inline struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
+inline struct floating_decimal_128 float128_to_fd128(__float128 d) noexcept
 {
 #ifdef BOOST_CHARCONV_HAS_INT128
     unsigned_128_type bits = 0;
@@ -35,7 +34,7 @@ static inline struct floating_decimal_128 float128_to_fd128(__float128 d) noexce
 
 #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
 
-static inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d) noexcept
+inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d) noexcept
 {
 #ifdef BOOST_CHARCONV_HAS_INT128
     unsigned_128_type bits = 0;
@@ -54,17 +53,6 @@ static inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d
 // --------------------------------------------------------------------------------------------------------------------
 // generate nans
 // --------------------------------------------------------------------------------------------------------------------
-
-struct words
-{
-#if BOOST_CHARCONV_ENDIAN_LITTLE_BYTE
-    std::uint64_t lo;
-    std::uint64_t hi;
-#else
-    std::uint64_t hi;
-    std::uint64_t lo;
-#endif
-};
 
 inline __float128 nans BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept
 {
@@ -88,11 +76,11 @@ inline __float128 nanq BOOST_PREVENT_MACRO_SUBSTITUTION () noexcept
     return return_val;
 }
 
-#endif // BOOST_CHARCONV_HAS_FLOAT128
-
 } // namespace ryu
 
 } // namespace detail
 
 } // namespace charconv
 } // namespace boost
+
+#endif // BOOST_CHARCONV_HAS_FLOAT128
