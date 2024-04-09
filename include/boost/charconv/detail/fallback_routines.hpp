@@ -66,8 +66,11 @@ to_chars_result to_chars_printf_impl(char* first, char* last, T value, chars_for
     }
 
     // Add the type identifier
-    format[pos] = 'L';
-    ++pos;
+    BOOST_CHARCONV_IF_CONSTEXPR (std::is_same<T, long double>::value)
+    {
+        format[pos] = 'L';
+        ++pos;
+    }
 
     // Add the format character
     switch (fmt)
