@@ -662,7 +662,7 @@ static inline struct floating_decimal_128 long_double_to_fd128(long double d) no
     return generic_binary_to_decimal(bits, 64, 15, true);
 }
 
-#else
+#elif BOOST_CHARCONV_LDBL_BITS == 128
 
 static inline struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
