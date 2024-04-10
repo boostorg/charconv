@@ -50,7 +50,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
     return boost::charconv::detail::from_chars_float_impl(first, last, value, fmt);
 }
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
+#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
 {
     bool sign {};
@@ -271,7 +271,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
     return r;
 }
 
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
 {
     static_assert(sizeof(__float128) == sizeof(std::float128_t));
@@ -304,7 +304,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::cor
     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
+#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
 {
     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
@@ -330,7 +330,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::cor
     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 #endif
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
 {
     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
@@ -377,7 +377,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return from_chars_strict_impl(first, last, value, fmt);
 }
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
+#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
 {
     return from_chars_strict_impl(first, last, value, fmt);
@@ -405,7 +405,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
 }
 #endif
 
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
 {
     return from_chars_strict_impl(first, last, value, fmt);
@@ -434,7 +434,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
+#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
 boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
 {
     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
@@ -462,7 +462,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
 }
 #endif
 
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
 boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, std::float128_t& value, boost::charconv::chars_format fmt) noexcept
 {
     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
