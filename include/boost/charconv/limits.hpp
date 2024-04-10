@@ -72,6 +72,16 @@ template<typename T> struct limits
         std::numeric_limits<T>::max_digits10 + 3 + 2 + detail::exp_digits( std::numeric_limits<T>::max_exponent10 ); // as above
 };
 
+#if defined(BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
+
+template <> struct limits<__float128>
+{
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars10 = 33 + 3 + 2 + 5;
+    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars = max_chars10;
+};
+
+#endif
+
 #if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 // Definitions of in-class constexpr members are allowed but deprecated in C++17

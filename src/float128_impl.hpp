@@ -352,17 +352,6 @@ inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128
 }
 
 } //namespace detail
-
-// --------------------------------------------------------------------------------------------------------------------
-// Limits overloads
-// --------------------------------------------------------------------------------------------------------------------
-
-template <> struct limits<__float128>
-{
-    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars10 = 33 + 3 + 2 + 5;
-    BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars = max_chars10;
-};
-
 } //namespace charconv
 } //namespace boost
 
