@@ -20,6 +20,8 @@
 
 #include <quadmath.h>
 
+#define BOOST_CHARCONV_HAS_FLOAT128
+
 namespace boost {
 namespace charconv {
 
