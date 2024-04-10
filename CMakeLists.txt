@@ -34,7 +34,7 @@ if(NOT QUADMATH_FOUND)
   target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_NO_QUADMATH)
 else()
   message(STATUS "Boost.Charconv: quadmath support ON")
-  target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
+  target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_HAS_QUADMATH)
   target_link_libraries(boost_charconv PUBLIC quadmath)
 endif()
 

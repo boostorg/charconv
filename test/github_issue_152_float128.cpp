@@ -5,7 +5,7 @@
 #include <boost/charconv/detail/config.hpp>
 #include <ostream>
 
-#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
+#ifdef BOOST_CHARCONV_HAS_QUADMATH
 
 std::ostream& operator<<( std::ostream& os, __float128 v )
 {

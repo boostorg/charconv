@@ -16,12 +16,9 @@
 #include <cstdint>
 
 // Only add in float128 support if the build system says it can
-#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
-#  define BOOST_CHARCONV_HAS_FLOAT128
-#  include <quadmath.h>
-#endif
+#ifdef BOOST_CHARCONV_HAS_QUADMATH
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
+#include <quadmath.h>
 
 namespace boost {
 namespace charconv {

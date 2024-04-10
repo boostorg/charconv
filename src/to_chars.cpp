@@ -661,7 +661,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 #endif
 
-#ifdef BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT
+#ifdef BOOST_CHARCONV_HAS_QUADMATH
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt) noexcept
 {
@@ -748,7 +748,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 }
 #endif
 
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_BUILD_FLOAT128_SUPPORT)
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_QUADMATH)
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float128_t value,
                                                            boost::charconv::chars_format fmt) noexcept
