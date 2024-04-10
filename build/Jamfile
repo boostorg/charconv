@@ -7,7 +7,7 @@ import ../../config/checks/config : requires ;
 
 project boost/charconv ;
 
-local SOURCES = from_chars.cpp to_chars.cpp float128.cpp ;
+local SOURCES = from_chars.cpp to_chars.cpp ;
 
 lib quadmath ;
 
