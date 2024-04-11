@@ -51,7 +51,7 @@ namespace detail {
 template <typename Real>
 inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
 
-#if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128)
+#if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128) || defined(BOOST_CHARCONV_HAS_FLOAT16) || defined(BOOST_CHARCONV_HAS_BRAINFLOAT16)
 
 template <typename Real>
 inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept
@@ -884,17 +884,7 @@ to_chars_result to_chars_16_bit_float_impl(char* first, char* last, T value, cha
 
     if (classification == FP_NAN || classification == FP_INFINITE)
     {
-        const auto fd128 = boost::charconv::detail::ryu::float16_t_to_fd128(value);
-        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
-
-        if (num_chars > 0)
-        {
-            return { first + num_chars, std::errc() };
-        }
-        else
-        {
-            return {last, std::errc::value_too_large};
-        }
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
     }
 
     // Sanity check our bounds
