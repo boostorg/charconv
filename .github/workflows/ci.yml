@@ -117,6 +117,8 @@ jobs:
             os: ubuntu-22.04
             install:
               - g++-13-multilib
+            cxxflags:
+              - "-fexcess-precision=fast"
 
           # Linux, clang
           - toolset: clang
