@@ -646,7 +646,7 @@ static inline struct floating_decimal_128 float16_t_to_fd128(std::float16_t f) n
 {
     uint16_t bits = 0;
     std::memcpy(&bits, &f, sizeof(std::float16_t));
-    return generic_binary_to_decimal(bits, 11, 5, false);
+    return generic_binary_to_decimal(bits, 10, 5, false);
 }
 
 #endif
@@ -657,7 +657,7 @@ static inline struct floating_decimal_128 float16_t_to_fd128(std::bfloat16_t f) 
 {
     uint16_t bits = 0;
     std::memcpy(&bits, &f, sizeof(std::bfloat16_t));
-    return generic_binary_to_decimal(bits, 8, 8, false);
+    return generic_binary_to_decimal(bits, 7, 8, false);
 }
 
 #endif
