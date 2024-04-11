@@ -875,6 +875,71 @@ to_chars_result to_chars_float_impl(char* first, char* last, __float128 value, c
 
 #endif
 
+#if defined(BOOST_CHARCONV_HAS_FLOAT16) || defined(BOOST_CHARCONV_HAS_BRAINFLOAT16)
+
+template <typename T>
+to_chars_result to_chars_16_bit_float_impl(char* first, char* last, T value, chars_format fmt, int precision) noexcept
+{
+    const auto classification = std::fpclassify(value);
+
+    if (classification == FP_NAN || classification == FP_INFINITE)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float16_t_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+        else
+        {
+            return {last, std::errc::value_too_large};
+        }
+    }
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = boost::charconv::detail::get_real_precision<T>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::value_too_large};
+    }
+
+    if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float16_t_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+    }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+    }
+    else if (fmt == boost::charconv::chars_format::fixed)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float16_t_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars_fixed(fd128, first, last - first, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+        else if (num_chars == -static_cast<int>(std::errc::value_too_large))
+        {
+            return { last, std::errc::value_too_large };
+        }
+    }
+
+    // Fallback to printf methods
+    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+}
+
+#endif
+
 } // namespace detail
 } // namespace charconv
 } // namespace detail
