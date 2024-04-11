@@ -685,7 +685,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float16_t value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
+    return boost::charconv::detail::to_chars_16_bit_float_impl(first, last, value, fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float16_t value,
@@ -694,8 +694,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     if (precision < 0)
     {
         precision = 6;
+        return boost::charconv::detail::to_chars_16_bit_float_impl(first, last, value, fmt, precision);
     }
 
+    // If the precision is specified it is better to use our exisiting methods for float
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
@@ -773,7 +775,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
-    return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, -1);
+    return boost::charconv::detail::to_chars_16_bit_float_impl(first, last, value, fmt, -1);
 }
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::bfloat16_t value,
@@ -782,8 +784,10 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     if (precision < 0)
     {
         precision = 6;
+        return boost::charconv::detail::to_chars_16_bit_float_impl(first, last, value, fmt, precision);
     }
 
+    // If the precision is specified it is better to use our exisiting methods for float
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
