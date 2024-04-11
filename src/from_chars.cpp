@@ -347,9 +347,9 @@ namespace {
 
 // Adheres to the STL strictly as opposed to fixing the ERANGE problem (which pre-review was the library default behavior)
 template <typename T>
-boost::charconv::from_chars_result from_chars_strict_impl(const char *first, const char *last, T &value, boost::charconv::chars_format fmt) noexcept
+boost::charconv::from_chars_result from_chars_strict_impl(const char* first, const char* last, T& value, boost::charconv::chars_format fmt) noexcept
 {
-    T temp_value;
+    T temp_value {};
     const auto r = boost::charconv::from_chars_erange(first, last, temp_value, fmt);
 
     if (r)
