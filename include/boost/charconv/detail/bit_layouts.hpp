@@ -15,6 +15,26 @@
 
 namespace boost { namespace charconv { namespace detail {
 
+struct ieee754_binary16
+{
+    static constexpr int significand_bits = 11;
+    static constexpr int exponent_bits = 5;
+    static constexpr int min_exponent = -14;
+    static constexpr int max_exponent = 15;
+    static constexpr int exponent_bias = -15;
+    static constexpr int decimal_digits = 4;
+};
+
+struct brainfloat16
+{
+    static constexpr int significand_bits = 8;
+    static constexpr int exponent_bits = 8;
+    static constexpr int min_exponent = -126;
+    static constexpr int max_exponent = 127;
+    static constexpr int exponent_bias = -127;
+    static constexpr int decimal_digits = 3;
+};
+
 struct ieee754_binary32 
 {
     static constexpr int significand_bits = 23;
