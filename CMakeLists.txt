@@ -22,24 +22,20 @@ target_include_directories(boost_charconv PUBLIC include)
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles(config/has_float128.cpp QUADMATH_FOUND)
 
+target_link_libraries(boost_charconv
+  PUBLIC
+    Boost::config
+    Boost::assert
+    Boost::core
+)
+
 if(NOT QUADMATH_FOUND)
   message(STATUS "Boost.Charconv: quadmath support OFF")
   target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_NO_QUADMATH)
-  target_link_libraries(boost_charconv
-    PUBLIC
-      Boost::config
-      Boost::assert
-      Boost::core
-  )
 else()
   message(STATUS "Boost.Charconv: quadmath support ON")
-  target_link_libraries(boost_charconv
-    PUBLIC
-      Boost::config
-      Boost::assert
-      Boost::core
-      quadmath
-  )
+  target_compile_definitions(boost_charconv PUBLIC BOOST_CHARCONV_HAS_QUADMATH)
+  target_link_libraries(boost_charconv PUBLIC quadmath)
 endif()
 
 target_compile_features(boost_charconv PUBLIC cxx_std_11)

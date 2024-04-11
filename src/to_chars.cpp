@@ -4,6 +4,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
@@ -660,7 +661,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* l
 
 #endif
 
-#ifdef BOOST_CHARCONV_HAS_FLOAT128
+#ifdef BOOST_CHARCONV_HAS_QUADMATH
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, __float128 value, boost::charconv::chars_format fmt) noexcept
 {
@@ -747,7 +748,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
 }
 #endif
 
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_QUADMATH)
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, std::float128_t value,
                                                            boost::charconv::chars_format fmt) noexcept
