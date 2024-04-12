@@ -27,12 +27,12 @@ struct ieee754_binary16
 
 struct brainfloat16
 {
-    static constexpr int significand_bits = 8;
+    static constexpr int significand_bits = 7;
     static constexpr int exponent_bits = 8;
     static constexpr int min_exponent = -126;
     static constexpr int max_exponent = 127;
     static constexpr int exponent_bias = -127;
-    static constexpr int decimal_digits = 3;
+    static constexpr int decimal_digits = 4;
 };
 
 struct ieee754_binary32 

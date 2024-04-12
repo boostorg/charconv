@@ -307,6 +307,9 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
                         #if BOOST_CHARCONV_LDBL_BITS == 80
                         || std::is_same<Real, long double>::value
                         #endif
+                        #ifdef BOOST_CHARCONV_HAS_FLOAT16
+                        || std::is_same<Real, std::float16_t>::value
+                        #endif
                         ))
     {
         exponent += 2;
