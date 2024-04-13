@@ -229,6 +229,14 @@ int main()
     test_floating_point<double>();
     test_floating_point<long double>();
 
+    // TODO(mborland): Add in tests for float16_t and bfloat16_t
+    #ifdef BOOST_CHARCONV_HAS_FLOAT32
+    test_floating_point<std::float32_t>();
+    #endif
+    #ifdef BOOST_CHARCONV_HAS_FLOAT64
+    test_floating_point<std::float64_t>();
+    #endif
+
 #ifdef BOOST_CHARCONV_HAS_INT128
 
     test_integral<boost::int128_type>();
