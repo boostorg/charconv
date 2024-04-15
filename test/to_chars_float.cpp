@@ -206,7 +206,7 @@ void test_to_chars_hex_16(T v)
     *ptr++ = '0';
     *ptr++ = 'x';
 
-    auto r = boost::charconv::to_chars(ptr, ptr + sizeof(buffer), v, boost::charconv::chars_format::hex);
+    auto r = boost::charconv::to_chars(ptr, ptr + sizeof(buffer) - 2, v, boost::charconv::chars_format::hex);
     BOOST_TEST(r);
     *r.ptr = '\0';
 
