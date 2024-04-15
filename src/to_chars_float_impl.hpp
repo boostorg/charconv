@@ -364,24 +364,6 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Bounds check the exponent
-    #ifdef BOOST_CHARCONV_HAS_FLOAT16
-    BOOST_IF_CONSTEXPR (std::is_same<Real, std::float16_t>::value)
-    {
-        if (unbiased_exponent > 15)
-        {
-            unbiased_exponent -= 32;
-        }
-    }
-    #endif
-    #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
-    BOOST_IF_CONSTEXPR (std::is_same<Real, std::bfloat16_t>::value)
-    {
-        if (unbiased_exponent > 127)
-        {
-            unbiased_exponent -= 256;
-        }
-    }
-    #endif
     BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
     {
         if (unbiased_exponent > 127)
@@ -411,6 +393,24 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         }
         #endif
     }
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    else BOOST_IF_CONSTEXPR (std::is_same<Real, std::float16_t>::value)
+    {
+        if (unbiased_exponent > 15)
+        {
+            unbiased_exponent -= 32;
+        }
+    }
+    #endif
+    #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+    else BOOST_IF_CONSTEXPR (std::is_same<Real, std::bfloat16_t>::value)
+    {
+        if (unbiased_exponent > 127)
+        {
+            unbiased_exponent -= 256;
+        }
+    }
+    #endif
     else
     {
         while (unbiased_exponent > 16383)
