@@ -310,6 +310,9 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
                         #ifdef BOOST_CHARCONV_HAS_FLOAT16
                         || std::is_same<Real, std::float16_t>::value
                         #endif
+                        #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+                        || std::is_same<Real, std::bfloat16_t>::value
+                        #endif
                         ))
     {
         exponent += 2;
@@ -335,7 +338,11 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     const Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
 
     Unsigned_Integer aligned_significand;
-    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
+    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value
+                        #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+                        || std::is_same<Real, std::bfloat16_t>::value
+                        #endif
+                        )
     {
         aligned_significand = significand << 1;
     }
