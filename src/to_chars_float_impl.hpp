@@ -339,6 +339,12 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     {
         aligned_significand = significand << 1;
     }
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    else BOOST_IF_CONSTEXPR (std::is_same<Real, std::float16_t>::value)
+    {
+        aligned_significand = significand << 2; // 10/4 = 2.5 so shift two bits
+    }
+    #endif
     else
     {
         aligned_significand = significand;
