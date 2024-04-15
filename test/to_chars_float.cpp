@@ -16,6 +16,8 @@
 #include <string>
 #include <random>
 #include <iomanip>
+#include <sstream>
+#include <boost/core/detail/splitmix64.hpp>
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW
@@ -188,6 +190,30 @@ std::string format(int prec)
 {
     std::string format = "%." + std::to_string(prec) + "g";
     return format;
+}
+
+template <typename T>
+void test_to_chars_hex_16(T v)
+{
+    if (!std::isnormal(v))
+    {
+        return;
+    }
+
+    char buffer[256];
+    // Stringstream will write with leading 0x whereas we will not
+    auto ptr = buffer;
+    *ptr++ = '0';
+    *ptr++ = 'x';
+
+    auto r = boost::charconv::to_chars(ptr, ptr + sizeof(buffer), v, boost::charconv::chars_format::hex);
+    BOOST_TEST(r);
+    *r.ptr = '\0';
+
+    std::stringstream o_val;
+    o_val << std::hexfloat << v;
+
+    BOOST_TEST_CSTR_EQ(buffer, o_val.str().c_str());
 }
 
 int main()
@@ -1005,6 +1031,55 @@ int main()
     spot_check(1.7e-02, "1.7e-02", boost::charconv::chars_format::scientific);
     spot_check(1.7e-01, "1.7e-01", boost::charconv::chars_format::scientific);
     spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::scientific);
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    {
+        constexpr int N = 1024;
+        boost::detail::splitmix64 rng(42);
+
+        std::float16_t const small_q = std::pow(1.0F16, -16.0F16);
+        constexpr std::uint64_t divisor = UINT64_MAX / 16;
+
+        for( int i = 0; i < N; ++i )
+        {
+            std::float16_t w0 = static_cast<std::float16_t>( rng() / divisor );
+            test_to_chars_hex_16(w0);
+
+            std::float16_t w1 = static_cast<std::float16_t>( rng() / divisor ) * small_q;
+            test_to_chars_hex_16(w1);
+
+            std::float16_t w2 = (std::numeric_limits<std::float16_t>::max)() / static_cast<std::float16_t>( rng() / divisor );
+            test_to_chars_hex_16(w2);
+
+            std::float16_t w3 = (std::numeric_limits<std::float16_t>::min)() * static_cast<std::float16_t>( rng() / divisor );
+            test_to_chars_hex_16(w3);
+        }
+    }
+    #endif
+
+    #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+    {
+        constexpr int N = 1024;
+        boost::detail::splitmix64 rng(42);
+
+        std::bfloat16_t const small_q = std::pow(1.0BF16, -16.0BF16);
+
+        for( int i = 0; i < N; ++i )
+        {
+            std::bfloat16_t w0 = static_cast<std::bfloat16_t>( rng() );
+            test_to_chars_hex_16(w0);
+
+            std::bfloat16_t w1 = static_cast<std::bfloat16_t>( rng() ) * small_q;
+            test_to_chars_hex_16(w1);
+
+            std::bfloat16_t w2 = (std::numeric_limits<std::bfloat16_t>::max)() / static_cast<std::bfloat16_t>( rng() );
+            test_to_chars_hex_16(w2);
+
+            std::bfloat16_t w3 = (std::numeric_limits<std::bfloat16_t>::min)() * static_cast<std::bfloat16_t>( rng() );
+            test_to_chars_hex_16(w3);
+        }
+    }
+    #endif
 
     return boost::report_errors();
 }
