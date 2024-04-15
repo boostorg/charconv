@@ -507,7 +507,12 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         {
             --first;
         }
-        ++first;
+
+        // If we have removed everything get rid of the decimal point as well
+        if (*first != '.')
+        {
+            ++first;
+        }
     }
 
     // Print the exponent
