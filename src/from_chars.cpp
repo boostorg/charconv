@@ -143,10 +143,11 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
     {
         // Since we are using an interchange format the result could exceed the range of float16_t
         // update the return value or r.ec accordingly
-        if (f <= static_cast<float>(std::numeric_limits<std::float16_t>::max()) &&
-            f >= static_cast<float>(std::numeric_limits<std::float16_t>::lowest()))
+        auto temp = static_cast<std::float16_t>(f);
+
+        if (std::isinf(f) || !std::isinf(temp))
         {
-            value = static_cast<std::float16_t>(f);
+            value = temp;
         }
         else
         {
@@ -197,10 +198,11 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
     {
         // Since we are using an interchange format the result could exceed the range of float16_t
         // update the return value or r.ec accordingly
-        if (f <= static_cast<float>(std::numeric_limits<std::bfloat16_t>::max()) &&
-            f >= static_cast<float>(std::numeric_limits<std::bfloat16_t>::lowest()))
+        auto temp = static_cast<std::bfloat16_t>(f);
+
+        if (std::isinf(f) || !std::isinf(temp))
         {
-            value = static_cast<std::bfloat16_t>(f);
+            value = temp;
         }
         else
         {
