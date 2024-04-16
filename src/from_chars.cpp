@@ -138,11 +138,22 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, std::float16_t& value, boost::charconv::chars_format fmt) noexcept
 {
     float f;
-    const auto r = boost::charconv::from_chars_erange(first, last, f, fmt);
+    auto r = boost::charconv::from_chars_erange(first, last, f, fmt);
     if (r.ec == std::errc())
     {
-        value = static_cast<std::float16_t>(f);
+        // Since we are using an interchange format the result could exceed the range of float16_t
+        // update the return value or r.ec accordingly
+        if (f <= static_cast<float>(std::numeric_limits<std::float16_t>::max()) &&
+            f >= static_cast<float>(std::numeric_limits<std::float16_t>::lowest()))
+        {
+            value = static_cast<std::float16_t>(f);
+        }
+        else
+        {
+            r.ec = std::errc::result_out_of_range;
+        }
     }
+
     return r;
 }
 #endif
@@ -181,11 +192,22 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, std::bfloat16_t& value, boost::charconv::chars_format fmt) noexcept
 {
     float f;
-    const auto r = boost::charconv::from_chars_erange(first, last, f, fmt);
+    auto r = boost::charconv::from_chars_erange(first, last, f, fmt);
     if (r.ec == std::errc())
     {
-        value = static_cast<std::bfloat16_t>(f);
+        // Since we are using an interchange format the result could exceed the range of float16_t
+        // update the return value or r.ec accordingly
+        if (f <= static_cast<float>(std::numeric_limits<std::bfloat16_t>::max()) &&
+            f >= static_cast<float>(std::numeric_limits<std::bfloat16_t>::lowest()))
+        {
+            value = static_cast<std::bfloat16_t>(f);
+        }
+        else
+        {
+            r.ec = std::errc::result_out_of_range;
+        }
     }
+
     return r;
 }
 #endif
