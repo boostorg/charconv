@@ -1911,10 +1911,14 @@ int main()
     #ifdef BOOST_CHARCONV_HAS_FLOAT16
     test_16bit_overflow<std::float16_t>("3.40282e+38");  // float max
     test_16bit_overflow<std::float16_t>("-3.40282e+38"); // float lowest
+    spot_check_nan<std::float16_t>("nan");
+    spot_check_inf<std::float16_t>("INF");
     #endif
     #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
     test_16bit_overflow<std::bfloat16_t>("3.40282e+38");  // float max
     test_16bit_overflow<std::bfloat16_t>("-3.40282e+38"); // float lowest
+    spot_check_nan<std::bfloat16_t>("nan");
+    spot_check_inf<std::bfloat16_t>("INF");
     #endif
 
     return boost::report_errors();
