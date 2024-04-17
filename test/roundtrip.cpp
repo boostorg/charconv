@@ -347,6 +347,7 @@ template<typename FPType> int64_t Distance(FPType y, FPType x)
     return ToOrdinal(y) - ToOrdinal(x);
 }
 
+#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
 template <> void test_roundtrip<long double>(long double value)
 {
     char buffer[ 256 ];
@@ -381,6 +382,7 @@ template <> void test_roundtrip<long double>(long double value)
         // LCOV_EXCL_STOP
     }
 }
+#endif
 
 // floating point types, boundary values
 
@@ -601,7 +603,7 @@ int main()
     #endif
 
     // long double
-    #if !(BOOST_CHARCONV_LDBL_BITS == 128)
+    #if !(BOOST_CHARCONV_LDBL_BITS == 128) && !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
 
     {
         long double const ql = std::pow( 1.0L, -64 );
