@@ -510,6 +510,21 @@ void test_issue_48(const T val, const char* str, const std::ptrdiff_t expected_p
     }
 }
 
+// Values that are valid floats but should fail interchange to 16-bit types
+template <typename T>
+void test_16bit_overflow(const char* str)
+{
+    const char* last = str + std::strlen(str);
+    T from_val;
+    const auto r = boost::charconv::from_chars(str, last, from_val);
+    BOOST_TEST(r.ec == std::errc::result_out_of_range);
+
+    // Validation
+    float float_val;
+    const auto r2 = boost::charconv::from_chars(str, last, float_val);
+    BOOST_TEST(r2);
+}
+
 int main()
 {
     simple_integer_test<float>();
@@ -1892,6 +1907,19 @@ int main()
         spot_check_invalid_argument<long double>(" 1.23", fmt);
         spot_check_invalid_argument<long double>("  1.23", fmt);
     }
+
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    test_16bit_overflow<std::float16_t>("3.40282e+38");  // float max
+    test_16bit_overflow<std::float16_t>("-3.40282e+38"); // float lowest
+    spot_check_nan<std::float16_t>("nan");
+    spot_check_inf<std::float16_t>("INF");
+    #endif
+    #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+    test_16bit_overflow<std::bfloat16_t>("3.40282e+38");  // float max
+    test_16bit_overflow<std::bfloat16_t>("-3.40282e+38"); // float lowest
+    spot_check_nan<std::bfloat16_t>("nan");
+    spot_check_inf<std::bfloat16_t>("INF");
+    #endif
 
     return boost::report_errors();
 }
