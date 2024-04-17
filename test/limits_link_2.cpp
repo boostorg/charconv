@@ -29,7 +29,7 @@ void f2()
 
     test<float>();
     test<double>();
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     test<long double>();
     #endif
 

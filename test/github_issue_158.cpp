@@ -93,7 +93,7 @@ void test_values_with_negative_exp()
     BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000000099999999999999990753745222790");
 }
 
-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 void test_long_double_with_negative_exp()
 {
     char buffer[256];
@@ -409,7 +409,7 @@ void test_zero()
     BOOST_TEST_CSTR_EQ(buffer, "0");
 }
 
-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 void test_long_double_with_positive_exp()
 {
     char buffer[256];

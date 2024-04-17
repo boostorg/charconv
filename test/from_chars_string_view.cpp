@@ -120,7 +120,7 @@ int main()
     test_float<float, std::string>();
     test_float<double, std::string>();
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     test_float<long double>();
     test_float<long double, std::string>();
     #endif
@@ -130,7 +130,7 @@ int main()
     test_float<float, std::string_view>();
     test_float<double, std::string_view>();
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     test_float<long double, std::string_view>();
     #endif
 

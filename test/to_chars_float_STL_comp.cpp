@@ -212,7 +212,7 @@ int main()
     // General format
     random_test<float>();
     random_test<double>();
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     random_test<long double>();
     #endif
 
@@ -227,7 +227,7 @@ int main()
     // Scientific
     random_test<float>(boost::charconv::chars_format::scientific);
     random_test<double>(boost::charconv::chars_format::scientific);
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     random_test<long double>(boost::charconv::chars_format::scientific);
     #endif
     test_spot<double>(0.0, boost::charconv::chars_format::scientific);
@@ -242,7 +242,7 @@ int main()
     // Hex
     random_test<float>(boost::charconv::chars_format::hex);
     random_test<double>(boost::charconv::chars_format::hex);
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     random_test<long double>(boost::charconv::chars_format::hex);
     #endif
 
@@ -250,7 +250,7 @@ int main()
 
     random_test<float>(boost::charconv::chars_format::hex, -1e5F, 1e5F);
     random_test<double>(boost::charconv::chars_format::hex, -1e5, 1e5);
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     random_test<long double>(boost::charconv::chars_format::hex, -1e5L, 1e5L);
     #endif
 
@@ -277,7 +277,7 @@ int main()
     non_finite_test<float>(boost::charconv::chars_format::hex);
     non_finite_test<double>(boost::charconv::chars_format::hex);
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     non_finite_test<long double>();
     non_finite_test<long double>(boost::charconv::chars_format::scientific);
     non_finite_test<long double>(boost::charconv::chars_format::hex);
@@ -303,7 +303,7 @@ int main()
     test_spot<float>(3.3F);
     test_spot<double>(3.3);
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     test_spot<long double>(3.3L);
     #endif
 

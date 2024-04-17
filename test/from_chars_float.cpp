@@ -440,7 +440,7 @@ void test_issue_37()
         overflow_spot_value("1.0e+9999", HUGE_VAL);
         overflow_spot_value("-1.0e+9999", -HUGE_VAL);
     }
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     else
     {
         overflow_spot_value("1e99999", HUGE_VALL);
@@ -547,7 +547,7 @@ int main()
     odd_strings_test<float>();
     odd_strings_test<double>();
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     simple_integer_test<long double>();
     simple_hex_integer_test<long double>();
     simple_scientific_test<long double>();
@@ -1898,7 +1898,7 @@ int main()
         spot_check_invalid_argument<double>(" 1.23", fmt);
         spot_check_invalid_argument<double>("  1.23", fmt);
 
-        #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+        #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
         spot_check_nan<long double>("nan", fmt);
         spot_check_nan<long double>("-nan", fmt);
         spot_check_inf<long double>("inf", fmt);

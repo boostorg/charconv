@@ -82,7 +82,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float valu
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value,
                                              chars_format fmt = chars_format::general) noexcept;
 
-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
                                              chars_format fmt = chars_format::general) noexcept;
 #endif
@@ -92,7 +92,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float valu
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value, 
                                              chars_format fmt, int precision) noexcept;
 
-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
                                              chars_format fmt, int precision) noexcept;
 #endif

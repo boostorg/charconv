@@ -228,7 +228,7 @@ int main()
     test_floating_point<float>();
     test_floating_point<double>();
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     test_floating_point<long double>();
     #endif
 

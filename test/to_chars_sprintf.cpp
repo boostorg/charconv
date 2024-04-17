@@ -627,7 +627,7 @@ int main()
 
     // long double
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     {
         for( int i = 0; i < N; ++i )
         {

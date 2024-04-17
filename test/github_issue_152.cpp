@@ -229,7 +229,7 @@ int main()
     test_failed_values();
     #endif
 
-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     test_non_finite<long double>();
     test_non_finite_fixed_precision<long double>();
     test_min_buffer_size<long double>();
