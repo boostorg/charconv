@@ -30,16 +30,20 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
             boost::charconv::from_chars(c_data, c_data + size, val, format);
             boost::charconv::to_chars(buffer, buffer + sizeof(buffer), val, format);
 
+            #if BOOST_CHARCONV_LDBL_BITS == 64
             long double ld_val {};
             boost::charconv::from_chars(c_data, c_data + size, ld_val, format);
             boost::charconv::to_chars(buffer, buffer + sizeof(buffer), ld_val, format);
+            #endif
 
             // Also try with precisions
             for (int precision = -1; precision < 10; ++precision)
             {
                 boost::charconv::to_chars(buffer, buffer + sizeof(buffer), f_val, format, precision);
                 boost::charconv::to_chars(buffer, buffer + sizeof(buffer), val, format, precision);
+                #if BOOST_CHARCONV_LDBL_BITS == 64
                 boost::charconv::to_chars(buffer, buffer + sizeof(buffer), ld_val, format, precision);
+                #endif
             }
         }
     }
