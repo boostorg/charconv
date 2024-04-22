@@ -602,7 +602,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
 }
 
-#elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
+#elif !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
 
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
                                                            boost::charconv::chars_format fmt) noexcept
@@ -619,44 +619,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     }
 
     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
-}
-
-#else
-
-boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value,
-                                                            boost::charconv::chars_format fmt, int precision) noexcept
-{
-    if (std::isnan(value))
-    {
-        bool is_negative = false;
-        if (std::signbit(value))
-        {
-            is_negative = true;
-            *first++ = '-';
-        }
-
-        if (issignaling(value))
-        {
-            std::memcpy(first, "nan(snan)", 9);
-            return { first + 9 + static_cast<int>(is_negative), std::errc() };
-        }
-        else
-        {
-            if (is_negative)
-            {
-                std::memcpy(first, "nan(ind)", 8);
-                return { first + 9, std::errc() };
-            }
-            else
-            {
-                std::memcpy(first, "nan", 3);
-                return { first + 3, std::errc() };
-            }
-        }
-    }
-
-    // Fallback to printf
-    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
 }
 
 #endif

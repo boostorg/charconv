@@ -229,7 +229,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
     return r;
 }
 
-#else
+#elif !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
 
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -323,10 +323,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::cor
     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 
+#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
 }
+#endif
 
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
@@ -396,10 +398,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
     return from_chars_strict_impl(first, last, value, fmt);
 }
 
+#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     return from_chars_strict_impl(first, last, value, fmt);
 }
+#endif
 
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
@@ -453,10 +457,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 
+#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
 {
     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
 }
+#endif
 
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
