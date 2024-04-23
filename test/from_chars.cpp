@@ -195,6 +195,17 @@ void invalid_argument_test()
     auto r9 = boost::charconv::from_chars(buffer9, buffer9 + std::strlen(buffer9), v9);
     BOOST_TEST(r9);
     BOOST_TEST_EQ(v9, static_cast<T>(123));
+
+    // https://github.com/boostorg/charconv/issues/188
+    const char* buffer10 = "x";
+    T o;
+    auto r10 = boost::charconv::from_chars(buffer10, buffer10 + 1, o);
+    BOOST_TEST(r10.ec == std::errc::invalid_argument);
+
+    const char* buffer11 = "3x";
+    auto r11 = boost::charconv::from_chars(buffer11, buffer11 + 2, o);
+    BOOST_TEST(r11);
+    BOOST_TEST_EQ(o, static_cast<T>(3));
 }
 
 // No overflows, negative numbers, locales, etc.

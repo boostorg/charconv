@@ -185,7 +185,17 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     #endif
 
     {
-        std::ptrdiff_t i = 0;
+        // Check that the first character is valid before proceeding
+        const unsigned char first_digit = digit_from_char(*next);
+
+        if (first_digit >= unsigned_base)
+        {
+            return {first, std::errc::invalid_argument};
+        }
+
+        result = static_cast<Unsigned_Integer>(result * unsigned_base + first_digit);
+        ++next;
+        std::ptrdiff_t i = 1;
 
         for( ; i < nd && i < nc; ++i )
         {
