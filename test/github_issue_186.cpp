@@ -21,6 +21,28 @@ void force_overflow(T value)
 }
 
 template <typename T>
+void force_overflow_all_formats(T value)
+{
+    const auto formats = {boost::charconv::chars_format::general,
+                          boost::charconv::chars_format::fixed,
+                          boost::charconv::chars_format::scientific,
+                          boost::charconv::chars_format::hex};
+
+    for (const auto format : formats)
+    {
+        char buffer[20]; // Small enough it should encounter overflows
+
+        boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format);
+
+        // Also try with precisions
+        for (int precision = -1; precision < 1000; ++precision)
+        {
+            boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, format, precision);
+        }
+    }
+}
+
+template <typename T>
 void spot_check_result(T value, const char* string)
 {
     char buffer[21] {};
@@ -46,6 +68,8 @@ int main()
     force_overflow(66666666666666666666.0);
     force_overflow(66666666666666666666.0F);
     spot_check_result(66666666666666666666.0, "66666666666666663936");
+
+    force_overflow_all_formats(55555555095580.825555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555);
 
     return boost::report_errors();
 }
