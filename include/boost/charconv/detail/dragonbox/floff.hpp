@@ -2423,7 +2423,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
                                         uint_with_known_number_of_digits<2>{next_digits}, [&] {
                                             return static_cast<std::uint32_t>(prod) >=
                                                         (additional_static_data_holder::
-                                                            fractional_part_rounding_thresholds32[digits_in_the_second_segment - 1] & 0x7fffffff)
+                                                            fractional_part_rounding_thresholds32[digits_in_the_second_segment - 3] & UINT32_C(0x7fffffff))
                                                     || has_further_digits<1, 0, ExtendedCache>(significand, exp2_base, k, uconst1, uconst0);
                                         })) 
                                 {
