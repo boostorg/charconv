@@ -31,4 +31,5 @@ lib boost_charconv
 
   # usage-requirements
   : <link>shared:<define>BOOST_CHARCONV_DYN_LINK=1
+    <define>BOOST_CHARCONV_NO_LIB=1
 ;
