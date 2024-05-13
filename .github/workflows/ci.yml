@@ -21,6 +21,7 @@ env:
   GIT_FETCH_JOBS: 8
   NET_RETRY_COUNT: 5
   DEFAULT_BUILD_VARIANT: debug,release
+  B2_CI_VERSION: 1
 
 jobs:
   posix:
