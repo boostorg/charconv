@@ -16,6 +16,7 @@ project : requirements
     <toolset>gcc:<cxxflags>-Wconversion
     <toolset>gcc:<cxxflags>-Wundef
     <toolset>gcc:<cxxflags>-Wold-style-cast
+    <toolset>gcc:<cxxflags>-Woverflow
 
     <toolset>clang:<cxxflags>-Wsign-conversion
     <toolset>clang:<cxxflags>-Wconversion
