@@ -627,6 +627,7 @@ int main()
 
     // long double
 
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
     {
         for( int i = 0; i < N; ++i )
         {
@@ -665,6 +666,7 @@ int main()
 
         test_sprintf_bv_fp<long double>();
     }
+    #endif
 
     return boost::report_errors();
 }

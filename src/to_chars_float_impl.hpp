@@ -7,6 +7,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_FLOAT_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_FLOAT_IMPL_HPP
 
+#include "float128_impl.hpp"
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
@@ -38,7 +39,7 @@
 #include <iostream>
 #endif
 
-#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128) || defined(BOOST_CHARCONV_HAS_FLOAT128)
+#if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #  include <boost/charconv/detail/issignaling.hpp>
 #endif
@@ -50,7 +51,7 @@ namespace detail {
 template <typename Real>
 inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
 
-#if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128)
+#if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128) || defined(BOOST_CHARCONV_HAS_FLOAT16) || defined(BOOST_CHARCONV_HAS_BRAINFLOAT16)
 
 template <typename Real>
 inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept
@@ -262,7 +263,15 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     }
 
     // Extract the significand and the exponent
-    using type_layout = typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32,
+    using type_layout =
+        #ifdef BOOST_CHARCONV_HAS_FLOAT16
+        typename std::conditional<std::is_same<Real, std::float16_t>::value, ieee754_binary16,
+        #endif
+        #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+        typename std::conditional<std::is_same<Real, std::bfloat16_t>::value, brainfloat16,
+        #endif
+
+        typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32,
             typename std::conditional<std::is_same<Real, double>::value, ieee754_binary64,
                     #ifdef BOOST_CHARCONV_HAS_FLOAT128
                     typename std::conditional<std::is_same<Real, __float128>::value || BOOST_CHARCONV_LDBL_BITS == 128, ieee754_binary128, ieee754_binary80>::type
@@ -273,10 +282,19 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
                     #else
                     ieee754_binary64
                     #endif
-            >::type>::type;
+            >::type>::type
+        #ifdef BOOST_CHARCONV_HAS_FLOAT16
+        >::type
+        #endif
+        #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+        >::type
+        #endif
+        ;
 
-    using Unsigned_Integer = typename std::conditional<std::is_same<Real, float>::value, std::uint32_t,
-            typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, uint128>::type>::type;
+    using Unsigned_Integer =
+            typename std::conditional<sizeof(Real) == sizeof(std::uint16_t), std::uint16_t,
+            typename std::conditional<std::is_same<Real, float>::value, std::uint32_t,
+            typename std::conditional<std::is_same<Real, double>::value, std::uint64_t, uint128>::type>::type>::type;
 
 
     Unsigned_Integer uint_value {convert_value<Unsigned_Integer>(value)};
@@ -289,13 +307,26 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
                         #if BOOST_CHARCONV_LDBL_BITS == 80
                         || std::is_same<Real, long double>::value
                         #endif
+                        #ifdef BOOST_CHARCONV_HAS_FLOAT16
+                        || std::is_same<Real, std::float16_t>::value
+                        #endif
+                        #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+                        || std::is_same<Real, std::bfloat16_t>::value
+                        #endif
                         ))
     {
         exponent += 2;
     }
 
     // Align the significand to the hexit boundaries (i.e. divisible by 4)
-    constexpr auto hex_precision = std::is_same<Real, float>::value ? 6 :
+    constexpr auto hex_precision =
+                                      #ifdef BOOST_CHARCONV_HAS_FLOAT16
+                                      std::is_same<Real, std::float16_t>::value ? 3 :
+                                      #endif
+                                      #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+                                      std::is_same<Real, std::bfloat16_t>::value ? 2 :
+                                      #endif
+                                      std::is_same<Real, float>::value ? 6 :
                                       std::is_same<Real, double>::value ? 13
                                       #if BOOST_CHARCONV_LDBL_BITS == 80
                                       : std::is_same<Real, long double>::value ? 15
@@ -307,10 +338,20 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
     const Unsigned_Integer hex_mask = (static_cast<Unsigned_Integer>(1) << hex_bits) - 1;
 
     Unsigned_Integer aligned_significand;
-    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value)
+    BOOST_IF_CONSTEXPR (std::is_same<Real, float>::value
+                        #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+                        || std::is_same<Real, std::bfloat16_t>::value
+                        #endif
+                        )
     {
         aligned_significand = significand << 1;
     }
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    else BOOST_IF_CONSTEXPR (std::is_same<Real, std::float16_t>::value)
+    {
+        aligned_significand = significand << 2; // 10/4 = 2.5 so shift two bits
+    }
+    #endif
     else
     {
         aligned_significand = significand;
@@ -359,6 +400,24 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         }
         #endif
     }
+    #ifdef BOOST_CHARCONV_HAS_FLOAT16
+    else BOOST_IF_CONSTEXPR (std::is_same<Real, std::float16_t>::value)
+    {
+        if (unbiased_exponent > 15)
+        {
+            unbiased_exponent -= 32;
+        }
+    }
+    #endif
+    #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
+    else BOOST_IF_CONSTEXPR (std::is_same<Real, std::bfloat16_t>::value)
+    {
+        if (unbiased_exponent > 127)
+        {
+            unbiased_exponent -= 256;
+        }
+    }
+    #endif
     else
     {
         while (unbiased_exponent > 16383)
@@ -455,7 +514,12 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         {
             --first;
         }
-        ++first;
+
+        // If we have removed everything get rid of the decimal point as well
+        if (*first != '.')
+        {
+            ++first;
+        }
     }
 
     // Print the exponent
@@ -827,6 +891,61 @@ to_chars_result to_chars_float_impl(char* first, char* last, __float128 value, c
 
     first = original_first;
     // Fallback to printf
+    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+}
+
+#endif
+
+#if defined(BOOST_CHARCONV_HAS_FLOAT16) || defined(BOOST_CHARCONV_HAS_BRAINFLOAT16)
+
+template <typename T>
+to_chars_result to_chars_16_bit_float_impl(char* first, char* last, T value, chars_format fmt, int precision) noexcept
+{
+    const auto classification = std::fpclassify(value);
+
+    if (classification == FP_NAN || classification == FP_INFINITE)
+    {
+        return boost::charconv::detail::to_chars_nonfinite(first, last, value, classification);
+    }
+
+    // Sanity check our bounds
+    const std::ptrdiff_t buffer_size = last - first;
+    auto real_precision = boost::charconv::detail::get_real_precision<T>(precision);
+    if (buffer_size < real_precision || first > last)
+    {
+        return {last, std::errc::value_too_large};
+    }
+
+    if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::scientific)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float16_t_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars(fd128, first, last - first, fmt, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+    }
+    else if (fmt == boost::charconv::chars_format::hex)
+    {
+        return boost::charconv::detail::to_chars_hex(first, last, value, precision);
+    }
+    else if (fmt == boost::charconv::chars_format::fixed)
+    {
+        const auto fd128 = boost::charconv::detail::ryu::float16_t_to_fd128(value);
+        const auto num_chars = boost::charconv::detail::ryu::generic_to_chars_fixed(fd128, first, last - first, precision);
+
+        if (num_chars > 0)
+        {
+            return { first + num_chars, std::errc() };
+        }
+        else if (num_chars == -static_cast<int>(std::errc::value_too_large))
+        {
+            return { last, std::errc::value_too_large };
+        }
+    }
+
+    // Fallback to printf methods
     return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
 }
 
