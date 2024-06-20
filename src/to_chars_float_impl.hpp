@@ -650,7 +650,7 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         {
             const auto zeros_to_append {static_cast<std::size_t>(value_struct.exponent)};
 
-            if (zeros_to_append > (last - r.ptr))
+            if (zeros_to_append > static_cast<std::size_t>(last - r.ptr))
             {
                 return {last, std::errc::value_too_large};
             }
