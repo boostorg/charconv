@@ -558,6 +558,19 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         *first++ = '-';
     }
 
+    if (value_struct.significand == 0)
+    {
+        *first++ = '0';
+        if (precision > -1)
+        {
+            *first++ = '.';
+            std::memset(first, '0', static_cast<std::size_t>(precision));
+            first += precision;
+        }
+
+        return {first, std::errc()};
+    }
+
     int num_dig = 0;
     if (precision != -1)
     {

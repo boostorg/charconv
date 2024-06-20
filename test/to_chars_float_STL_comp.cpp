@@ -271,6 +271,8 @@ int main()
     fixed_test<double>();
     test_spot<double>(0.0, boost::charconv::chars_format::fixed);
     test_spot<double>(-0.0, boost::charconv::chars_format::fixed);
+    test_spot<double>(0.0, boost::charconv::chars_format::fixed, 10);
+    test_spot<double>(-0.0, boost::charconv::chars_format::fixed, 10);
     
     // Various non-finite values
     non_finite_test<float>();
