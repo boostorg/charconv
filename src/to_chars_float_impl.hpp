@@ -672,7 +672,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     // Unspecified precision so we always go with the shortest representation
     if (precision == -1)
     {
-        if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
+        if (fmt == boost::charconv::chars_format::general)
         {
             if (abs_value >= 1 && abs_value < max_fractional_value)
             {
@@ -694,6 +694,10 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         else if (fmt == boost::charconv::chars_format::scientific)
         {
             return boost::charconv::detail::dragonbox_to_chars(value, first, last, fmt);
+        }
+        else if (fmt == boost::charconv::chars_format::fixed)
+        {
+            return to_chars_fixed_impl(first, last, value, fmt, precision);
         }
     }
     else
