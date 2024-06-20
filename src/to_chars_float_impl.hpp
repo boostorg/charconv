@@ -617,6 +617,12 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
     // Insert leading 0s if needed before printing the significand 
     if (abs_value < 1)
     {
+        // Additional bounds check for inserted zeros
+        if (-value_struct.exponent - starting_num_digits + 2 > (last - first))
+        {
+            return {last, std::errc::value_too_large};
+        }
+
         std::memcpy(first, "0.", 2U);
         std::memset(first + 2, '0', -value_struct.exponent - starting_num_digits);
         first += 2 - value_struct.exponent - starting_num_digits;
@@ -643,6 +649,12 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         if (value_struct.exponent > 0)
         {
             const auto zeros_to_append {static_cast<std::size_t>(value_struct.exponent)};
+
+            if (zeros_to_append > (last - r.ptr))
+            {
+                return {last, std::errc::value_too_large};
+            }
+
             std::memset(r.ptr, '0', zeros_to_append);
             r.ptr += zeros_to_append;
         }
