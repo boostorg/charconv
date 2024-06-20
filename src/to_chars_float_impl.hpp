@@ -571,10 +571,10 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         return {first, std::errc()};
     }
 
-    int num_dig = 0;
+    const int starting_num_digits = num_digits(value_struct.significand);
+    int num_dig = starting_num_digits;
     if (precision != -1)
     {
-        num_dig = num_digits(value_struct.significand);
         while (num_dig > precision + 2)
         {
             value_struct.significand /= 10;
@@ -614,6 +614,14 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         return {last, std::errc::value_too_large};
     }
 
+    // Insert leading 0s if needed before printing the significand 
+    if (abs_value < 1)
+    {
+        std::memcpy(first, "0.", 2U);
+        std::memset(first + 2, '0', -value_struct.exponent - starting_num_digits);
+        first += 2 - value_struct.exponent - starting_num_digits;
+    }
+
     auto r = to_chars_integer_impl(first, last, value_struct.significand);
     if (r.ec != std::errc())
     {
@@ -637,32 +645,6 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
             const auto zeros_to_append {static_cast<std::size_t>(value_struct.exponent)};
             std::memset(r.ptr, '0', zeros_to_append);
             r.ptr += zeros_to_append;
-        }
-    }
-    else
-    {
-        #ifdef BOOST_CHARCONV_DEBUG_FIXED
-        std::cerr << std::setprecision(std::numeric_limits<Real>::digits10) << "Value: " << value
-                  << "\n  Buf: " << first
-                  << "\n  sig: " << value_struct.significand
-                  << "\n  exp: " << value_struct.exponent << std::endl;
-        #endif
-
-        const auto offset_bytes = static_cast<std::size_t>(-value_struct.exponent - num_dig);
-
-        std::memmove(first + 2 + static_cast<std::size_t>(value_struct.is_negative) + offset_bytes,
-                     first + static_cast<std::size_t>(value_struct.is_negative),
-                     static_cast<std::size_t>(-value_struct.exponent) - offset_bytes);
-
-        std::memcpy(first + static_cast<std::size_t>(value_struct.is_negative), "0.", 2U);
-        first += 2;
-        r.ptr += 2;
-
-        while (num_dig < -value_struct.exponent)
-        {
-            *first++ = '0';
-            ++num_dig;
-            ++r.ptr;
         }
     }
 
