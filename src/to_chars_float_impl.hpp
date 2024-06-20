@@ -618,10 +618,12 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
             ++r.ptr;
         }
 
-        while (std::fmod(abs_value, 10) == 0)
+        // Add additional zeros as needed
+        if (value_struct.exponent > 0)
         {
-            *r.ptr++ = '0';
-            abs_value /= 10;
+            const auto zeros_to_append {static_cast<std::size_t>(value_struct.exponent)};
+            std::memset(r.ptr, '0', zeros_to_append);
+            r.ptr += zeros_to_append;
         }
     }
     else
