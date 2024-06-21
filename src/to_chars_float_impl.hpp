@@ -648,7 +648,7 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         // Add additional zeros as needed
         if (value_struct.exponent > 0)
         {
-            const auto zeros_to_append {static_cast<std::size_t>(value_struct.exponent)};
+            const auto zeros_to_append = static_cast<std::size_t>(value_struct.exponent);
 
             if (zeros_to_append > static_cast<std::size_t>(last - r.ptr))
             {
