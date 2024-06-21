@@ -558,10 +558,23 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         *first++ = '-';
     }
 
-    int num_dig = 0;
+    if (value_struct.significand == 0)
+    {
+        *first++ = '0';
+        if (precision > -1)
+        {
+            *first++ = '.';
+            std::memset(first, '0', static_cast<std::size_t>(precision));
+            first += precision;
+        }
+
+        return {first, std::errc()};
+    }
+
+    const int starting_num_digits = num_digits(value_struct.significand);
+    int num_dig = starting_num_digits;
     if (precision != -1)
     {
-        num_dig = num_digits(value_struct.significand);
         while (num_dig > precision + 2)
         {
             value_struct.significand /= 10;
@@ -601,6 +614,20 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
         return {last, std::errc::value_too_large};
     }
 
+    // Insert leading 0s if needed before printing the significand 
+    if (abs_value < 1)
+    {
+        // Additional bounds check for inserted zeros
+        if (-value_struct.exponent - starting_num_digits + 2 > (last - first))
+        {
+            return {last, std::errc::value_too_large};
+        }
+
+        std::memcpy(first, "0.", 2U);
+        std::memset(first + 2, '0', -value_struct.exponent - starting_num_digits);
+        first += 2 - value_struct.exponent - starting_num_digits;
+    }
+
     auto r = to_chars_integer_impl(first, last, value_struct.significand);
     if (r.ec != std::errc())
     {
@@ -618,36 +645,18 @@ to_chars_result to_chars_fixed_impl(char* first, char* last, Real value, chars_f
             ++r.ptr;
         }
 
-        while (std::fmod(abs_value, 10) == 0)
+        // Add additional zeros as needed
+        if (value_struct.exponent > 0)
         {
-            *r.ptr++ = '0';
-            abs_value /= 10;
-        }
-    }
-    else
-    {
-        #ifdef BOOST_CHARCONV_DEBUG_FIXED
-        std::cerr << std::setprecision(std::numeric_limits<Real>::digits10) << "Value: " << value
-                  << "\n  Buf: " << first
-                  << "\n  sig: " << value_struct.significand
-                  << "\n  exp: " << value_struct.exponent << std::endl;
-        #endif
+            const auto zeros_to_append {static_cast<std::size_t>(value_struct.exponent)};
 
-        const auto offset_bytes = static_cast<std::size_t>(-value_struct.exponent - num_dig);
+            if (zeros_to_append > static_cast<std::size_t>(last - r.ptr))
+            {
+                return {last, std::errc::value_too_large};
+            }
 
-        std::memmove(first + 2 + static_cast<std::size_t>(value_struct.is_negative) + offset_bytes,
-                     first + static_cast<std::size_t>(value_struct.is_negative),
-                     static_cast<std::size_t>(-value_struct.exponent) - offset_bytes);
-
-        std::memcpy(first + static_cast<std::size_t>(value_struct.is_negative), "0.", 2U);
-        first += 2;
-        r.ptr += 2;
-
-        while (num_dig < -value_struct.exponent)
-        {
-            *first++ = '0';
-            ++num_dig;
-            ++r.ptr;
+            std::memset(r.ptr, '0', zeros_to_append);
+            r.ptr += zeros_to_append;
         }
     }
 
@@ -672,7 +681,7 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
     // Unspecified precision so we always go with the shortest representation
     if (precision == -1)
     {
-        if (fmt == boost::charconv::chars_format::general || fmt == boost::charconv::chars_format::fixed)
+        if (fmt == boost::charconv::chars_format::general)
         {
             if (abs_value >= 1 && abs_value < max_fractional_value)
             {
@@ -694,6 +703,10 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         else if (fmt == boost::charconv::chars_format::scientific)
         {
             return boost::charconv::detail::dragonbox_to_chars(value, first, last, fmt);
+        }
+        else if (fmt == boost::charconv::chars_format::fixed)
+        {
+            return to_chars_fixed_impl(first, last, value, fmt, precision);
         }
     }
     else

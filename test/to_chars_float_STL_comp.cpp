@@ -168,10 +168,13 @@ void fixed_test()
     std::mt19937_64 gen(42);
     std::uniform_real_distribution<T> dist(1, upper_bound);
 
-    for (std::size_t i = 0; i < 100'000; ++i)
+    for (std::size_t i = 0; i < 1000; ++i)
     {
-        test_spot(dist(gen), boost::charconv::chars_format::fixed);
-    }    
+        for (int prec = 0; prec < 100; ++prec)
+        {
+            test_spot(dist(gen), boost::charconv::chars_format::fixed, prec);
+        }
+    }
 }
 
 // Clang 16 (most recent at time of writing) only has integral from_chars implemented
@@ -268,6 +271,8 @@ int main()
     fixed_test<double>();
     test_spot<double>(0.0, boost::charconv::chars_format::fixed);
     test_spot<double>(-0.0, boost::charconv::chars_format::fixed);
+    test_spot<double>(0.0, boost::charconv::chars_format::fixed, 10);
+    test_spot<double>(-0.0, boost::charconv::chars_format::fixed, 10);
     
     // Various non-finite values
     non_finite_test<float>();
