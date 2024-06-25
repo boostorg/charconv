@@ -112,6 +112,14 @@ jobs:
             os: ubuntu-22.04
             install:
               - g++-12-multilib
+          - name: ASAN
+            toolset: gcc-12
+            cxxstd: "03,11,14,17,20,23"
+            address_model: 32,64
+            asan: 1
+            os: ubuntu-22.04
+            install:
+              - g++-12-multilib
           - toolset: gcc-13
             cxxstd: "03,11,14,17,20,23"
             address_model: 32,64
@@ -468,6 +476,10 @@ jobs:
             then
                 export UBSAN_OPTIONS="print_stacktrace=1"
                 B2_ARGS+=("cxxflags=-fsanitize=undefined -fno-sanitize-recover=undefined" "linkflags=-fsanitize=undefined -fuse-ld=gold" "define=UBSAN=1" "debug-symbols=on" "visibility=global")
+            fi
+            if [ -n "${{matrix.asan}}" ]
+            then
+                B2_ARGS+=("cxxflags=-fsanitize=address -fno-sanitize-recover=address" "linkflags=-fsanitize=address" "debug-symbols=on" "visibility=global")
             fi
             if [ -n "${{matrix.cxxflags}}" ]
             then
