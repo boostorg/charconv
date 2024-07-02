@@ -65,3 +65,4 @@ run github_issue_154.cpp ;
 run github_issue_158.cpp ;
 run github_issue_166.cpp ;
 run github_issue_186.cpp ;
+run github_issue_212.cpp ;
