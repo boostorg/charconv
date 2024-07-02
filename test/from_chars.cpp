@@ -13,6 +13,12 @@
 #include <cerrno>
 #include <utility>
 
+#if defined(__has_include)
+#  if __has_include(<string_view>)
+#    include <string_view>
+#  endif
+#endif
+
 #ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>
 void test_128bit_int()
@@ -206,6 +212,15 @@ void invalid_argument_test()
     auto r11 = boost::charconv::from_chars(buffer11, buffer11 + 2, o);
     BOOST_TEST(r11);
     BOOST_TEST_EQ(o, static_cast<T>(3));
+
+    // https://github.com/boostorg/charconv/issues/213
+    #if defined(__cpp_lib_string_view) && __cpp_lib_string_view >= 201606L
+    T segment_result {12};
+    std::string_view input{"/c"};
+    auto r12 = boost::charconv::from_chars(input.data(), input.data() + input.size(), segment_result);
+    BOOST_TEST(r12.ec == std::errc::invalid_argument);
+    BOOST_TEST_EQ(segment_result, static_cast<T>(12));
+    #endif
 }
 
 // No overflows, negative numbers, locales, etc.
@@ -272,6 +287,7 @@ int main()
     
     invalid_argument_test<int>();
     invalid_argument_test<unsigned>();
+    invalid_argument_test<std::uint16_t>();
 
     overflow_test<char>();
     overflow_test<int>();
