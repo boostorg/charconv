@@ -28,6 +28,7 @@ local linux_pipeline(name, image, environment, packages = "", sources = [], arch
         {
             name: "everything",
             image: image,
+            privileged: true,
             environment: environment,
             commands:
             [
@@ -195,6 +196,20 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
         "cppalliance/droneubuntu2304:1",
         { TOOLSET: 'gcc', COMPILER: 'g++-13', CXXSTD: '03,11,14,17,20,23', ADDRMD: '32,64', CXXFLAGS: "-fexcess-precision=fast", CXXSTDDIALECT: "gnu" } + asan,
         "g++-13-multilib",
+    ),
+
+    linux_pipeline(
+        "Linux 16.04 Clang 3.6",
+        "cppalliance/droneubuntu1604:1",
+        { TOOLSET: 'clang', COMPILER: 'clang++-3.6', CXXSTD: '03,11' },
+        "clang-3.6",
+    ),
+
+    linux_pipeline(
+        "Linux 16.04 Clang 3.7",
+        "cppalliance/droneubuntu1604:1",
+        { TOOLSET: 'clang', COMPILER: 'clang++-3.7', CXXSTD: '03,11' },
+        "clang-3.7",
     ),
 
     linux_pipeline(

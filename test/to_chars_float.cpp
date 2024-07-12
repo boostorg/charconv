@@ -124,10 +124,19 @@ void failing_ci_values()
 }
 
 template <typename T>
-void spot_check(T v, const std::string& str, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
+void spot_check(T v, const std::string& str, boost::charconv::chars_format fmt)
 {
     char buffer[256] {};
     const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), v, fmt);
+    BOOST_TEST(r.ec == std::errc());
+    BOOST_TEST_CSTR_EQ(buffer, str.c_str());
+}
+
+template <typename T>
+void spot_check(T v, const std::string& str, boost::charconv::chars_format fmt, int precision)
+{
+    char buffer[256] {};
+    const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), v, fmt, precision);
     BOOST_TEST(r.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer, str.c_str());
 }
@@ -226,6 +235,8 @@ int main()
     non_finite_values<double>(boost::charconv::chars_format::scientific, 2);
     non_finite_values<double>(boost::charconv::chars_format::hex);
     non_finite_values<double>(boost::charconv::chars_format::hex, 2);
+    non_finite_values<double>(boost::charconv::chars_format::fixed);
+    non_finite_values<double>(boost::charconv::chars_format::fixed, 2);
 
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57484
     #if !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 9 && defined(__i686__)) && !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
@@ -238,22 +249,22 @@ int main()
     failing_ci_values<double>();
 
     // Values from ryu tests
-    spot_check(1.0, "1");
-    spot_check(1.2, "1.2");
-    spot_check(1.23, "1.23");
-    spot_check(1.234, "1.234");
-    spot_check(1.2345, "1.2345");
-    spot_check(1.23456, "1.23456");
-    spot_check(1.234567, "1.234567");
-    spot_check(1.2345678, "1.2345678");
-    spot_check(1.23456789, "1.23456789");
-    spot_check(1.234567890, "1.23456789");
-    spot_check(1.2345678901, "1.2345678901");
-    spot_check(1.23456789012, "1.23456789012");
-    spot_check(1.234567890123, "1.234567890123");
-    spot_check(1.2345678901234, "1.2345678901234");
-    spot_check(1.23456789012345, "1.23456789012345");
-    spot_check(1.234567890123456, "1.234567890123456");
+    spot_check(1.0, "1", boost::charconv::chars_format::general);
+    spot_check(1.2, "1.2", boost::charconv::chars_format::general);
+    spot_check(1.23, "1.23", boost::charconv::chars_format::general);
+    spot_check(1.234, "1.234", boost::charconv::chars_format::general);
+    spot_check(1.2345, "1.2345", boost::charconv::chars_format::general);
+    spot_check(1.23456, "1.23456", boost::charconv::chars_format::general);
+    spot_check(1.234567, "1.234567", boost::charconv::chars_format::general);
+    spot_check(1.2345678, "1.2345678", boost::charconv::chars_format::general);
+    spot_check(1.23456789, "1.23456789", boost::charconv::chars_format::general);
+    spot_check(1.234567890, "1.23456789", boost::charconv::chars_format::general);
+    spot_check(1.2345678901, "1.2345678901", boost::charconv::chars_format::general);
+    spot_check(1.23456789012, "1.23456789012", boost::charconv::chars_format::general);
+    spot_check(1.234567890123, "1.234567890123", boost::charconv::chars_format::general);
+    spot_check(1.2345678901234, "1.2345678901234", boost::charconv::chars_format::general);
+    spot_check(1.23456789012345, "1.23456789012345", boost::charconv::chars_format::general);
+    spot_check(1.234567890123456, "1.234567890123456", boost::charconv::chars_format::general);
 
     spot_check(1.0, "1e+00", boost::charconv::chars_format::scientific);
     spot_check(1.2, "1.2e+00", boost::charconv::chars_format::scientific);
@@ -1031,6 +1042,11 @@ int main()
     spot_check(1.7e-02, "1.7e-02", boost::charconv::chars_format::scientific);
     spot_check(1.7e-01, "1.7e-01", boost::charconv::chars_format::scientific);
     spot_check(1.7e-00, "1.7e+00", boost::charconv::chars_format::scientific);
+
+    spot_check(0.0, "0", boost::charconv::chars_format::fixed);
+    spot_check(-0.0, "-0", boost::charconv::chars_format::fixed);
+    spot_check(0.0, "0.0000000000", boost::charconv::chars_format::fixed, 10);
+    spot_check(-0.0, "-0.0000000000", boost::charconv::chars_format::fixed, 10);
 
     #ifdef BOOST_CHARCONV_HAS_FLOAT16
     {
