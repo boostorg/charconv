@@ -8,7 +8,7 @@ import-search /boost/config/checks ;
 
 import config : requires ;
 
-project ;
+project : common-requirements <library>$(boost_dependencies) ;
 
 local SOURCES = from_chars.cpp to_chars.cpp ;
 
