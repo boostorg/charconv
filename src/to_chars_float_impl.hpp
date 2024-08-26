@@ -274,7 +274,15 @@ to_chars_result to_chars_hex(char* first, char* last, Real value, int precision)
         typename std::conditional<std::is_same<Real, float>::value, ieee754_binary32,
             typename std::conditional<std::is_same<Real, double>::value, ieee754_binary64,
                     #ifdef BOOST_CHARCONV_HAS_FLOAT128
-                    typename std::conditional<std::is_same<Real, __float128>::value || BOOST_CHARCONV_LDBL_BITS == 128, ieee754_binary128, ieee754_binary80>::type
+
+                    typename std::conditional<std::is_same<Real, __float128>::value || BOOST_CHARCONV_LDBL_BITS == 128, ieee754_binary128,
+                    #if defined(__ppc64__)
+                    ieee754_binary64
+                    #else
+                    ieee754_binary80
+                    #endif
+                    >::type
+
                     #elif BOOST_CHARCONV_LDBL_BITS == 128
                     ieee754_binary128
                     #elif BOOST_CHARCONV_LDBL_BITS == 80
