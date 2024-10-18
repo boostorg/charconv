@@ -363,6 +363,7 @@ static inline int copy_special_str(char* result, const std::ptrdiff_t result_siz
 
 static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
 {
+    const auto original_precsion = precision;
     if (v.exponent == fd128_exceptional_exponent)
     {
         return copy_special_str(result, result_size, v);
@@ -393,8 +394,15 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 
     if (v.exponent == 0)
     {
-        // Option 1: We need to do nothing
-        return current_len + static_cast<int>(v.sign);
+        // Option 1: We need to do nothing but insert 0s
+        if (precision != 0)
+        {
+            result[current_len++] = '.';
+            memset(result+current_len, '0', precision);
+            current_len += precision;
+            precision = 0;
+        }
+        result[current_len] = '\0';
     }
     else if (v.exponent > 0)
     {
