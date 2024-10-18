@@ -9,7 +9,6 @@
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 
 #include <boost/core/lightweight_test.hpp>
-#include <stdfloat>
 #include <string>
 
 template <typename T>
