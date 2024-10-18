@@ -421,10 +421,23 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         }
 
         memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
-        memcpy(result + current_len + v.exponent, ".", 1U);
+        const auto shift = result + current_len + v.exponent;
+        const auto shift_width = (shift - result) + 1;
+        memcpy(shift, ".", 1U);
         ++current_len;
-        precision -= current_len + v.exponent;
-        result += current_len + v.exponent + 1;
+        if (current_len - shift_width > precision)
+        {
+            current_len = static_cast<int>(shift_width) + precision;
+            precision = 0;
+            // Since we wrote additional characters into the buffer we need to add a null terminator,
+            // so they are not read
+            result[current_len] = '\0';
+        }
+        else
+        {
+            precision -= current_len + v.exponent;
+            result += current_len + v.exponent + 1;
+        }
     }
     else
     {
