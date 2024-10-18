@@ -394,7 +394,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
     if (v.exponent == 0)
     {
         // Option 1: We need to do nothing but insert 0s
-        if (precision != 0)
+        if (precision > 0)
         {
             result[current_len++] = '.';
             memset(result+current_len, '0', precision);
