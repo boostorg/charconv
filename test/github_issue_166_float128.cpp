@@ -6,7 +6,7 @@
 
 #include <boost/charconv.hpp>
 
-#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_QUADMATH)
+#ifdef BOOST_CHARCONV_HAS_QUADMATH
 
 #include <boost/core/lightweight_test.hpp>
 #include <stdfloat>
@@ -18,7 +18,7 @@ void test()
     constexpr T value = 3746.348756384763;
     constexpr int precision = 6;
 
-    char buffer[1024];
+    char buffer[1024] {};
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
     BOOST_TEST(result.ec == std::errc());
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(3746.348756));
@@ -30,7 +30,7 @@ void rounding()
     constexpr T value = 3746.348759784763;
     constexpr int precision = 6;
 
-    char buffer[1024];
+    char buffer[1024] {};
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
     BOOST_TEST(result.ec == std::errc());
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(3746.348760));
@@ -39,13 +39,13 @@ void rounding()
 template <typename T>
 void more_rounding()
 {
-    constexpr T value = 3746.9999999999999999;
+    constexpr T value = 3746.89999999999999999;
     constexpr int precision = 6;
 
     char buffer[1024] {};
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
     BOOST_TEST(result.ec == std::errc());
-    BOOST_TEST_EQ(std::string{buffer}, std::to_string(3747.000000));
+    BOOST_TEST_EQ(std::string{buffer}, std::to_string(3746.900000));
 }
 
 template <typename T>
@@ -54,7 +54,7 @@ void full_rounding_test()
     constexpr T value = 9999.999999999999999999;
     constexpr int precision = 6;
 
-    char buffer[1024];
+    char buffer[1024] {};
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
     BOOST_TEST(result.ec == std::errc());
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(10000.000000));
@@ -63,16 +63,16 @@ void full_rounding_test()
 int main()
 {
     test<__float128>();
-    test<std::float128_t>();
-
     rounding<__float128>();
-    rounding<std::float128_t>();
-
     more_rounding<__float128>();
-    more_rounding<std::float128_t>();
-
     full_rounding_test<__float128>();
+
+    #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+    test<std::float128_t>();
+    rounding<std::float128_t>();
+    more_rounding<std::float128_t>();
     full_rounding_test<std::float128_t>();
+    #endif
 
     return boost::report_errors();
 }
