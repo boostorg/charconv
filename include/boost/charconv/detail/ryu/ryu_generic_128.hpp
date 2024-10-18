@@ -432,7 +432,11 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         ++current_len;
         if (current_len - shift_width > precision)
         {
-            current_len = static_cast<int>(shift_width) + precision;
+            if (precision > 0)
+            {
+                current_len = static_cast<int>(shift_width) + precision;
+            }
+
             precision = 0;
             // Since we wrote additional characters into the buffer we need to add a null terminator,
             // so they are not read
@@ -528,7 +532,17 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         const int64_t exp = v.exponent + static_cast<int64_t>(olength);
         if (std::abs(exp) <= olength)
         {
-            return generic_to_chars_fixed(v, result, result_size, precision);
+            auto ptr = generic_to_chars_fixed(v, result, result_size, precision);
+            if (result[ptr - 1] == '0')
+            {
+                --ptr;
+                while (result[ptr] == '0')
+                {
+                    --ptr;
+                }
+                ++ptr;
+            }
+            return ptr;
         }
     }
 
