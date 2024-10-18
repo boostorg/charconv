@@ -6,7 +6,7 @@
 
 #include <boost/charconv.hpp>
 
-#ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+#if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_QUADMATH)
 
 #include <boost/core/lightweight_test.hpp>
 #include <stdfloat>
