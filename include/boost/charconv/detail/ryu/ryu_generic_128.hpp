@@ -363,7 +363,6 @@ static inline int copy_special_str(char* result, const std::ptrdiff_t result_siz
 
 static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
 {
-    const auto original_precsion = precision;
     if (v.exponent == fd128_exceptional_exponent)
     {
         return copy_special_str(result, result_size, v);
@@ -451,7 +450,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
                 {
                     if (result[current_spot] < '9')
                     {
-                        result[current_spot] = ++result[current_spot];
+                        result[current_spot] = static_cast<char>(static_cast<int>(result[current_spot]) + 1);
                         continue_rounding = false;
                     }
                     else
