@@ -8,10 +8,7 @@ import asciidoctor ;
 path-constant boostlook : ../../../tools/boostlook ;
 
 html charconv.html : charconv.adoc
-    : <asciidoctor-attribute>stylesheet=$(boostlook)/boostlook.css
-      <flags>"-r $(boostlook)/boostlook.rb"
-      <dependency>$(boostlook)/boostlook.css
-      <dependency>$(boostlook)/boostlook.rb
+    : <use>/boost/boostlook//boostlook
       <dependency>charconv-docinfo-footer.html
     ;
 
