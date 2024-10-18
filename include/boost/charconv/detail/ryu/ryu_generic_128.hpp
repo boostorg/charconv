@@ -401,7 +401,6 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             current_len += precision;
             precision = 0;
         }
-        result[current_len] = '\0';
     }
     else if (v.exponent > 0)
     {
@@ -494,7 +493,6 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 
         memset(result, '0', static_cast<std::size_t>(precision));
         current_len += precision;
-        result[current_len] = '\0';
     }
 
     return current_len + static_cast<int>(v.sign);

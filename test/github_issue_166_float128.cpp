@@ -18,8 +18,9 @@ void test()
     constexpr T value = 3746.348756384763;
     constexpr int precision = 6;
 
-    char buffer[1024] {};
+    char buffer[1024];
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
+    *result.ptr = '\0';
     BOOST_TEST(result.ec == std::errc());
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(3746.348756));
 }
@@ -30,8 +31,9 @@ void rounding()
     constexpr T value = 3746.348759784763;
     constexpr int precision = 6;
 
-    char buffer[1024] {};
+    char buffer[1024];
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
+    *result.ptr = '\0';
     BOOST_TEST(result.ec == std::errc());
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(3746.348760));
 }
@@ -42,8 +44,9 @@ void more_rounding()
     constexpr T value = 3746.89999999999999999;
     constexpr int precision = 6;
 
-    char buffer[1024] {};
+    char buffer[1024];
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
+    *result.ptr = '\0';
     BOOST_TEST(result.ec == std::errc());
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(3746.900000));
 }
@@ -54,8 +57,9 @@ void full_rounding_test()
     constexpr T value = 9999.999999999999999999;
     constexpr int precision = 6;
 
-    char buffer[1024] {};
+    char buffer[1024];
     const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
+    *result.ptr = '\0';
     BOOST_TEST(result.ec == std::errc());
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(10000.000000));
 }
