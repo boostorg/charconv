@@ -41,7 +41,7 @@ jobs:
       matrix:
         include:
           - { name: Collect coverage, coverage: yes,
-              compiler: gcc-13,     cxxstd: '23,23-gnu',          os: ubuntu-24.04, install: 'g++-13-multilib', address-model: '32,64' }
+              compiler: gcc-13,     cxxstd: '23,23-gnu', cxxflags: '-fexcess-precision=fast', os: ubuntu-24.04, install: 'g++-13-multilib', address-model: '32,64' }
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
@@ -167,6 +167,7 @@ jobs:
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
+          B2_CXXFLAGS: ${{matrix.cxxflags}}
           # More entries can be added in the same way, see the B2_ARGS assignment in ci/enforce.sh for the possible keys.
           # B2_DEFINES: ${{matrix.defines}}
           # Variables set here (to non-empty) will override the top-level environment variables, e.g.
