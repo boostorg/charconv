@@ -533,10 +533,10 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         if (std::abs(exp) <= olength)
         {
             auto ptr = generic_to_chars_fixed(v, result, result_size, precision);
-            if (result[ptr - 1] == '0')
+            if (ptr >= 1 && result[ptr - 1] == '0')
             {
                 --ptr;
-                while (result[ptr] == '0')
+                while (ptr > 0 && result[ptr] == '0')
                 {
                     --ptr;
                 }
