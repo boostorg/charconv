@@ -5,16 +5,13 @@
 // See: https://github.com/boostorg/charconv/issues/166
 
 #include <boost/charconv.hpp>
-
-#ifdef BOOST_CHARCONV_HAS_QUADMATH
-
 #include <boost/core/lightweight_test.hpp>
 #include <string>
 
 template <typename T>
 void test()
 {
-    constexpr T value = 3746.348756384763;
+    constexpr T value = 3746.348756384763L;
     constexpr int precision = 6;
 
     char buffer[1024];
@@ -27,7 +24,7 @@ void test()
 template <typename T>
 void rounding()
 {
-    constexpr T value = 3746.348759784763;
+    constexpr T value = 3746.348759784763L;
     constexpr int precision = 6;
 
     char buffer[1024];
@@ -40,7 +37,7 @@ void rounding()
 template <typename T>
 void more_rounding()
 {
-    constexpr T value = 3746.89999999999999999;
+    constexpr T value = 3746.89999999999999999L;
     constexpr int precision = 6;
 
     char buffer[1024];
@@ -53,7 +50,7 @@ void more_rounding()
 template <typename T>
 void full_rounding_test()
 {
-    constexpr T value = 9999.999999999999999999;
+    constexpr T value = 9999.999999999999999999L;
     constexpr int precision = 6;
 
     char buffer[1024];
@@ -65,10 +62,19 @@ void full_rounding_test()
 
 int main()
 {
+    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+    test<long double>();
+    rounding<long double>();
+    more_rounding<long double>();
+    full_rounding_test<long double>();
+    #endif
+
+    #ifdef BOOST_CHARCONV_HAS_QUADMATH
     test<__float128>();
     rounding<__float128>();
     more_rounding<__float128>();
     full_rounding_test<__float128>();
+    #endif
 
     #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
     test<std::float128_t>();
@@ -79,12 +85,3 @@ int main()
 
     return boost::report_errors();
 }
-
-#else
-
-int main()
-{
-    return 0;
-}
-
-#endif
