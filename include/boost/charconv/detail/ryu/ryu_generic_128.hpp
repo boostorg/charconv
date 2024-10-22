@@ -468,7 +468,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         }
         else
         {
-            precision -= current_len + v.exponent;
+            precision -= current_len - static_cast<int>(shift_width);
             result += current_len + v.exponent + 1;
         }
     }
