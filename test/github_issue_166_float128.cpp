@@ -76,7 +76,7 @@ int main()
     full_rounding_test<__float128>();
     #endif
 
-    #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
+    #if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_QUADMATH)
     test<std::float128_t>();
     rounding<std::float128_t>();
     more_rounding<std::float128_t>();
