@@ -62,7 +62,7 @@ void full_rounding_test()
 
 int main()
 {
-    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+    #if BOOST_CHARCONV_LDBL_BITS == 80
     test<long double>();
     rounding<long double>();
     more_rounding<long double>();
