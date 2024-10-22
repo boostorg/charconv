@@ -60,6 +60,19 @@ void full_rounding_test()
     BOOST_TEST_EQ(std::string{buffer}, std::to_string(10000.000000));
 }
 
+template <typename T>
+void test_zeros_path()
+{
+    constexpr T value = 123456789.000000L;
+    constexpr int precision = 6;
+
+    char buffer[1024];
+    const auto result = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
+    *result.ptr = '\0';
+    BOOST_TEST(result.ec == std::errc());
+    BOOST_TEST_EQ(std::string{buffer}, std::to_string(123456789.000000));
+}
+
 int main()
 {
     #if BOOST_CHARCONV_LDBL_BITS == 80
@@ -67,6 +80,7 @@ int main()
     rounding<long double>();
     more_rounding<long double>();
     full_rounding_test<long double>();
+    test_zeros_path<long double>();
     #endif
 
     #ifdef BOOST_CHARCONV_HAS_QUADMATH
@@ -74,6 +88,7 @@ int main()
     rounding<__float128>();
     more_rounding<__float128>();
     full_rounding_test<__float128>();
+    test_zeros_path<__float128>();
     #endif
 
     #if defined(BOOST_CHARCONV_HAS_STDFLOAT128) && defined(BOOST_CHARCONV_HAS_QUADMATH)
@@ -81,6 +96,7 @@ int main()
     rounding<std::float128_t>();
     more_rounding<std::float128_t>();
     full_rounding_test<std::float128_t>();
+    test_zeros_path<std::float128_t>();
     #endif
 
     return boost::report_errors();

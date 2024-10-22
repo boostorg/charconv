@@ -74,7 +74,7 @@ void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars
     if (r_stl.ec != std::errc())
     {
         // STL failed
-        return;
+        return; // LCOV_EXCL_LINE
     }
 
     const std::ptrdiff_t diff_boost = r_boost.ptr - buffer_boost;
