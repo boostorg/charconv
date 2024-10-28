@@ -50,7 +50,7 @@ void more_rounding()
 template <typename T>
 void further_rounding()
 {
-    const std::array<std::string, 8U> solutions {
+    const std::array<std::string, 8U> solutions = {{
         "3331.5",
         "3331.52",
         "3331.520",
@@ -59,7 +59,7 @@ void further_rounding()
         "3331.519894",
         "3331.5198945",
         "3331.51989448"
-    };
+    }};
 
     constexpr T value = 3331.519894481067353L;
 
