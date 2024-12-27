@@ -11,7 +11,6 @@
 #include <cstring>
 #include <cerrno>
 
-template <typename T>
 void test_integer()
 {
     std::uint64_t significand {};
@@ -40,8 +39,7 @@ void test_integer()
     BOOST_TEST(r3.ec == std::errc::invalid_argument);
 }
 
-template <typename T>
-void test_scientifc()
+void test_scientific()
 {
     std::uint64_t significand {};
     std::int64_t  exponent {};
@@ -102,7 +100,6 @@ void test_scientifc()
 
 }
 
-template <typename T>
 void test_hex_integer()
 {
     std::uint64_t significand {};
@@ -131,7 +128,6 @@ void test_hex_integer()
     BOOST_TEST(r3.ec == std::errc::invalid_argument);
 }
 
-template <typename T>
 void test_hex_scientific()
 {
     std::uint64_t significand {};
@@ -169,21 +165,10 @@ void test_hex_scientific()
 
 int main()
 {
-    test_integer<float>();
-    test_integer<double>();
-    test_integer<long double>();
-
-    test_scientifc<float>();
-    test_scientifc<double>();
-    test_scientifc<long double>();
-
-    test_hex_integer<float>();
-    test_hex_integer<double>();
-    test_hex_integer<long double>();
-
-    test_hex_scientific<float>();
-    test_hex_scientific<double>();
-    test_hex_scientific<long double>();
+    test_integer();
+    test_scientific();
+    test_hex_integer();
+    test_hex_scientific();
 
     return boost::report_errors();
 }
