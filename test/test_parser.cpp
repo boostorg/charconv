@@ -278,6 +278,34 @@ void test_ranges()
         BOOST_TEST_EQ(significand, 255u);
         BOOST_TEST_EQ(exponent, 127);
     }
+
+    for (const char* val : {
+            // Exponent too large
+            "255e128", "25.5e129", "2.55e130", ".255e131", "0.255e132",
+            // Too large significant and not enough space in exponent
+            "2551e127", "25.51e128", "2.551e129", ".2551e130", "0.2551e131",
+            // Too large significant, just enough space in exponent but rounding is out of range
+            "2559e126", "25.59e127", "2.559e128", ".2559e129", "0.2559e130",
+        }) {
+        auto r1 = boost::charconv::detail::parser(val, val + std::strlen(val), sign, significand, exponent);
+        BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+    }
+    {
+        // Exponent too large for any number
+        const char* val = "1e1234567890";
+        std::int64_t large_exponent{};
+        auto r1 = boost::charconv::detail::parser(val, val + std::strlen(val), sign, significand, large_exponent);
+        BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+    }
+    {
+        // Significant too large, no exponent and does not fit into the exponent
+        const std::string val1 = "255" + std::string(127, '1');
+        auto r1 = boost::charconv::detail::parser(val1.c_str(), val1.c_str() + val1.length(), sign, significand, exponent);
+        BOOST_TEST(r1.ec == std::errc::result_out_of_range);
+        const std::string val2(127 + 3, '1');
+        auto r2 = boost::charconv::detail::parser(val2.c_str(), val2.c_str() + val2.length(), sign, significand, exponent);
+        BOOST_TEST(r2.ec == std::errc::result_out_of_range);
+    }
 }
 
 int main()
