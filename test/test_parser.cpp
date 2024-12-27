@@ -230,6 +230,56 @@ void test_zeroes()
     }
 }
 
+void test_ranges()
+{
+    // Use small integer types to reduce input test string lengths
+    std::uint8_t significand{};
+    std::int8_t  exponent{};
+    bool sign{};
+
+    for (const char* val : {
+            // Maximum size/value for significant and exponent
+            "-255e127", "-25.5e128", "-2.55e129", "-.255e130", "-0.255e131",
+            // Too large significant but just enough space in exponent
+            "-2551e126", "-25.51e127", "-2.551e128", "-.2551e129", "-0.2551e130",
+            // Same as before but round up
+            "-2549e126", "-25.49e127", "-2.549e128", "-.2549e129", "-0.2549e130",
+        }) {
+        significand = 0;
+        exponent = 0;
+        sign = false;
+        auto r1 = boost::charconv::detail::parser(val, val + std::strlen(val), sign, significand, exponent);
+        BOOST_TEST(r1);
+        BOOST_TEST_EQ(sign, true);
+        BOOST_TEST_EQ(significand, 255u);
+        BOOST_TEST_EQ(exponent, 127);
+    }
+
+    {
+        significand = 0;
+        exponent = 0;
+        sign = false;
+        // Significant too large, no exponent and just fits into the exponent
+        const std::string val1 = "255" + std::string(127, '1');
+        auto r1 = boost::charconv::detail::parser(val1.c_str(), val1.c_str() + val1.length(), sign, significand, exponent);
+        BOOST_TEST(r1);
+        BOOST_TEST_EQ(sign, true);
+        BOOST_TEST_EQ(significand, 255u);
+        BOOST_TEST_EQ(exponent, 127);
+
+        significand = 0;
+        exponent = 0;
+        sign = false;
+        // Same as above but round up
+        const std::string val2 = "254" + std::string(127, '9');
+        auto r2 = boost::charconv::detail::parser(val1.c_str(), val2.c_str() + val2.length(), sign, significand, exponent);
+        BOOST_TEST(r2);
+        BOOST_TEST_EQ(sign, true);
+        BOOST_TEST_EQ(significand, 255u);
+        BOOST_TEST_EQ(exponent, 127);
+    }
+}
+
 int main()
 {
     test_integer();
@@ -238,5 +288,6 @@ int main()
     test_hex_scientific();
 
     test_zeroes();
+    test_ranges();
     return boost::report_errors();
 }
