@@ -211,6 +211,29 @@ void test_hex_scientific()
     BOOST_TEST_EQ(significand, UINT64_C(80427));
 }
 
+void test_zeroes()
+{
+    for (const char* val : {
+        "0", "00", "000", "0000",
+        "0.", "00.", "000.", "0000.",
+        "0.0", "00.0", "000.0", "0000.0",
+        "0e0", "00e0", "000e0", "0000e0",
+        "0.e0", "00.e0", "000.e0", "0000.e0",
+        "0.0e0", "00.0e0", "000.0e0", "0000.0e0",
+        }) {
+        // Use small integer type to reduce input test string lengths
+        std::uint8_t significand = 1;
+        std::int64_t exponent = 1;
+        bool sign = (std::strlen(val) % 2) == 0; // Different initial values
+
+        auto r1 = boost::charconv::detail::parser(val, val + std::strlen(val), sign, significand, exponent);
+        BOOST_TEST(r1);
+        BOOST_TEST_EQ(sign, false);
+        BOOST_TEST_EQ(significand, 0u);
+        BOOST_TEST_EQ(exponent, 0);
+    }
+}
+
 int main()
 {
     test_integer<float>();
@@ -229,5 +252,6 @@ int main()
     test_hex_scientific<double>();
     test_hex_scientific<long double>();
 
+    test_zeroes();
     return boost::report_errors();
 }
