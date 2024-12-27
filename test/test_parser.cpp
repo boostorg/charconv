@@ -66,6 +66,22 @@ void test_integer()
         BOOST_TEST_EQ(exponent, 0);
         BOOST_TEST_EQ(significand, max_sig_v);
     }
+
+    // Small significant type
+    std::uint8_t significand_8{};
+    exponent = 0;
+    sign = false;
+
+    const char* val3 = "255";
+    auto r5 = boost::charconv::detail::parser(val3, val3 + std::strlen(val3), sign, significand_8, exponent);
+    BOOST_TEST(r5);
+    BOOST_TEST_EQ(sign, false);
+    BOOST_TEST_EQ(exponent, 0);
+    BOOST_TEST_EQ(significand_8, 255);
+
+    const char* val4 = "256";
+    auto r6 = boost::charconv::detail::parser(val4, val4 + std::strlen(val4), sign, significand_8, exponent);
+    BOOST_TEST(r6.ec == std::errc::result_out_of_range);
 }
 
 template <typename T>
