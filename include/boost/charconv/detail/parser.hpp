@@ -252,6 +252,8 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
             if (next == last)
             {
+                significand = 0;
+                exponent = 0;
                 return {last, std::errc()};
             }
         }
@@ -365,6 +367,8 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
                 significand += 1;
             }
         }
+        else
+            significand = 0;
     }
     else
     {
