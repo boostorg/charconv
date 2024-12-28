@@ -364,7 +364,7 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
 
             if (round)
             {
-                significand += 1;
+                significand = static_cast<Unsigned_Integer>(significand + 1u);
             }
         }
         else
