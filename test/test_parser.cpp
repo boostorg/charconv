@@ -4,6 +4,7 @@
 
 #include <boost/charconv/detail/parser.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <boost/charconv/to_chars.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <type_traits>
@@ -38,6 +39,33 @@ void test_integer()
 
     auto r3 = boost::charconv::detail::parser(val2, val2 + std::strlen(val2), sign, significand, exponent, boost::charconv::chars_format::scientific);
     BOOST_TEST(r3.ec == std::errc::invalid_argument);
+
+    // Get the maximum value of the significant type
+    constexpr auto max_sig_v = std::numeric_limits<decltype(significand)>::max();
+    char max_sig_buf[boost::charconv::limits<decltype(significand)>::max_chars10 + 1u];
+    const auto r4 = boost::charconv::to_chars(max_sig_buf + 1, max_sig_buf + sizeof(max_sig_buf), max_sig_v);
+    if (BOOST_TEST(r4)) {
+
+        significand = 0;
+        exponent = 1;
+        sign = true;
+
+        auto r5 = boost::charconv::detail::parser(max_sig_buf + 1, r4.ptr, sign, significand, exponent);
+        BOOST_TEST(r5);
+        BOOST_TEST_EQ(sign, false);
+        BOOST_TEST_EQ(exponent, 0);
+        BOOST_TEST_EQ(significand, max_sig_v);
+
+        significand = 0;
+        exponent = 1;
+        sign = false;
+        max_sig_buf[0] = '-';
+        auto r6 = boost::charconv::detail::parser(max_sig_buf, r4.ptr, sign, significand, exponent);
+        BOOST_TEST(r6);
+        BOOST_TEST_EQ(sign, true);
+        BOOST_TEST_EQ(exponent, 0);
+        BOOST_TEST_EQ(significand, max_sig_v);
+    }
 }
 
 template <typename T>
