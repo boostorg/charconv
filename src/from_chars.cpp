@@ -3,6 +3,28 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+
+// Global module fragment with all required includes
+module;
+#include <cstdint> // for UINT64_C
+#include <climits> // for CHAR_BIT
+#include <cmath> // for HUGE_VAL
+#include <cerrno>
+#include <cfloat>
+#include <boost/config.hpp>
+#include <boost/assert.hpp>
+#include <boost/charconv/detail/config.hpp>
+#include "quadmath_header.hpp"
+
+// This is an implementation unit
+module boost.charconv;
+import std;
+import boost.core;
+
+#endif
+
+
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
 #ifndef _SCL_SECURE_NO_WARNINGS
 # define _SCL_SECURE_NO_WARNINGS
@@ -11,9 +33,18 @@
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
+// These headers are part of the implementation, and safe to include
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
+#if BOOST_CHARCONV_LDBL_BITS > 64
+#  include <boost/charconv/detail/private/compute_float80.hpp>
+#  ifndef BOOST_USE_MODULES
+#    include <boost/charconv/detail/emulated128.hpp>
+#  endif
+#endif
+
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <system_error>
@@ -22,11 +53,8 @@
 #include <cerrno>
 #include <cstring>
 #include <limits>
-
-#if BOOST_CHARCONV_LDBL_BITS > 64
-#  include <boost/charconv/detail/compute_float80.hpp>
-#  include <boost/charconv/detail/emulated128.hpp>
 #endif
+
 
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"

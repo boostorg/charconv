@@ -8,14 +8,17 @@
 #ifndef BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 #define BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
+#ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <boost/core/bit.hpp>
 #include <type_traits>
 #include <limits>
 #include <cstdint>
 #include <cassert>
 #include <cmath>
+#endif
+
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -825,7 +828,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator%=(uint128 v) noexcept
     return *this;
 }
 
-static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
+inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
 {
     // __emulu is not available on ARM https://learn.microsoft.com/en-us/cpp/intrinsics/emul-emulu?view=msvc-170
     #if defined(BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS) && !defined(_M_ARM)

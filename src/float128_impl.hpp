@@ -5,21 +5,22 @@
 #ifndef BOOST_CHARCONV_FLOAT128_IMPL_HPP
 #define BOOST_CHARCONV_FLOAT128_IMPL_HPP
 
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
-#include <boost/charconv/detail/compute_float80.hpp>
-#include <boost/charconv/detail/fallback_routines.hpp>
-#include <boost/charconv/detail/issignaling.hpp>
+#include <boost/charconv/detail/private/compute_float80.hpp>
+#include <boost/charconv/detail/private/fallback_routines.hpp>
+#include <boost/charconv/detail/private/issignaling.hpp>
+#ifndef BOOST_USE_MODULES
+#include "quadmath_header.hpp"
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/limits.hpp>
 #include <system_error>
 #include <cstring>
 #include <cstdint>
+#endif
+
 
 // Only add in float128 support if the build system says it can
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
-
-#include <quadmath.h>
-
 #define BOOST_CHARCONV_HAS_FLOAT128
 
 namespace boost {

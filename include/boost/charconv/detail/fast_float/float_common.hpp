@@ -9,6 +9,7 @@
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FLOAT_COMMON_HPP
 
 #include <boost/charconv/detail/fast_float/constexpr_feature_detect.hpp>
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/chars_format.hpp>
@@ -18,6 +19,7 @@
 #include <cstring>
 #include <type_traits>
 #include <system_error>
+#endif
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -37,7 +39,7 @@ using parse_options = parse_options_t<char>;
 
 }}}}
 
-#if BOOST_CHARCONV_FASTFLOAT_HAS_BIT_CAST
+#if BOOST_CHARCONV_FASTFLOAT_HAS_BIT_CAST && !defined(BOOST_USE_MODULES)
 #include <bit>
 #endif
 
@@ -288,23 +290,23 @@ struct binary_format_lookup_tables;
 template <typename T> struct binary_format : binary_format_lookup_tables<T> {
   using equiv_uint = typename std::conditional<sizeof(T) == 4, uint32_t, uint64_t>::type;
 
-  static inline constexpr int mantissa_explicit_bits();
-  static inline constexpr int minimum_exponent();
-  static inline constexpr int infinite_power();
-  static inline constexpr int sign_index();
-  static inline constexpr int min_exponent_fast_path(); // used when fegetround() == FE_TONEAREST
-  static inline constexpr int max_exponent_fast_path();
-  static inline constexpr int max_exponent_round_to_even();
-  static inline constexpr int min_exponent_round_to_even();
-  static inline constexpr uint64_t max_mantissa_fast_path(int64_t power);
-  static inline constexpr uint64_t max_mantissa_fast_path(); // used when fegetround() == FE_TONEAREST
-  static inline constexpr int largest_power_of_ten();
-  static inline constexpr int smallest_power_of_ten();
-  static inline constexpr T exact_power_of_ten(int64_t power);
-  static inline constexpr size_t max_digits();
-  static inline constexpr equiv_uint exponent_mask();
-  static inline constexpr equiv_uint mantissa_mask();
-  static inline constexpr equiv_uint hidden_bit_mask();
+  static constexpr int mantissa_explicit_bits();
+  static constexpr int minimum_exponent();
+  static constexpr int infinite_power();
+  static constexpr int sign_index();
+  static constexpr int min_exponent_fast_path(); // used when fegetround() == FE_TONEAREST
+  static constexpr int max_exponent_fast_path();
+  static constexpr int max_exponent_round_to_even();
+  static constexpr int min_exponent_round_to_even();
+  static constexpr uint64_t max_mantissa_fast_path(int64_t power);
+  static constexpr uint64_t max_mantissa_fast_path(); // used when fegetround() == FE_TONEAREST
+  static constexpr int largest_power_of_ten();
+  static constexpr int smallest_power_of_ten();
+  static constexpr T exact_power_of_ten(int64_t power);
+  static constexpr size_t max_digits();
+  static constexpr equiv_uint exponent_mask();
+  static constexpr equiv_uint mantissa_mask();
+  static constexpr equiv_uint hidden_bit_mask();
 };
 
 template <typename U>

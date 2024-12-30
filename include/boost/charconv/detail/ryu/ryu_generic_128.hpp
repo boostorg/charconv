@@ -7,9 +7,10 @@
 #define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 
 #include <boost/charconv/detail/ryu/generic_128.hpp>
+#include <boost/charconv/detail/private/bit_layouts.hpp>
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/to_chars.hpp>
 #include <cinttypes>
 #include <cstdio>
@@ -17,6 +18,7 @@
 
 #ifdef BOOST_CHARCONV_DEBUG
 #  include <iostream>
+#endif
 #endif
 
 namespace boost { namespace charconv { namespace detail { namespace ryu {
@@ -361,7 +363,7 @@ static inline int copy_special_str(char* result, const std::ptrdiff_t result_siz
     return -1;
 }
 
-static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
+static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const std::ptrdiff_t result_size, int precision) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -397,7 +399,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         if (precision > 0)
         {
             result[current_len++] = '.';
-            memset(result+current_len, '0', precision);
+            std::memset(result+current_len, '0', precision);
             current_len += precision;
             precision = 0;
         }
@@ -412,7 +414,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         }
 
         result = r.ptr;
-        memset(result, '0', static_cast<std::size_t>(v.exponent));
+        std::memset(result, '0', static_cast<std::size_t>(v.exponent));
         result += static_cast<std::size_t>(v.exponent);
         *result++ = '.';
         current_len += v.exponent + 1;
@@ -425,7 +427,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             return -static_cast<int>(std::errc::result_out_of_range);
         }
 
-        memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
+        std::memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
         const auto shift = result + current_len + v.exponent;
         const auto shift_width = (shift - result) + 1;
         memcpy(shift, ".", 1U);
@@ -480,9 +482,9 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             return -static_cast<int>(std::errc::value_too_large);
         }
 
-        memmove(result - v.exponent - current_len + 2, result, static_cast<std::size_t>(current_len));
+        std::memmove(result - v.exponent - current_len + 2, result, static_cast<std::size_t>(current_len));
         memcpy(result, "0.", 2U);
-        memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
+        std::memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
         precision -= current_len - 2;
         result += current_len;
@@ -495,7 +497,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             return -static_cast<int>(std::errc::result_out_of_range);
         }
 
-        memset(result, '0', static_cast<std::size_t>(precision));
+        std::memset(result, '0', static_cast<std::size_t>(precision));
         current_len += precision;
     }
 
@@ -509,7 +511,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 // Maximal char buffer requirement:
 // sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
-static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
+static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const std::ptrdiff_t result_size, 
                                    chars_format fmt = chars_format::general, int precision = -1) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)

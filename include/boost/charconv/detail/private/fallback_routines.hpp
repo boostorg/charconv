@@ -5,10 +5,11 @@
 #ifndef BOOST_FALLBACK_ROUTINES_HPP
 #define BOOST_FALLBACK_ROUTINES_HPP
 
-#include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/dragonbox/floff.hpp>
-#include <boost/charconv/detail/config.hpp>
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/from_chars_result.hpp>
+#include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
 #include <type_traits>
@@ -16,6 +17,7 @@
 #include <clocale>
 #include <cstring>
 #include <cstdio>
+#endif
 
 namespace boost {
 namespace charconv {

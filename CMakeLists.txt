@@ -3,7 +3,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
-cmake_minimum_required(VERSION 3.8...3.20)
+cmake_minimum_required(VERSION 3.8...3.31)
 
 project(boost_charconv VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
@@ -13,6 +13,11 @@ add_library(boost_charconv
 )
 
 add_library(Boost::charconv ALIAS boost_charconv)
+
+if (BOOST_USE_MODULES)
+  boost_set_cxx20_module_settings(boost_charconv)
+  target_sources(boost_charconv PUBLIC FILE_SET CXX_MODULES BASE_DIRS modules FILES modules/boost_charconv.cppm)
+endif()
 
 target_include_directories(boost_charconv PUBLIC include)
 

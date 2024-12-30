@@ -5,10 +5,13 @@
 #ifndef BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 #define BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 
-#include <boost/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/type_traits.hpp>
+#ifndef BOOST_USE_MODULES
+#include <boost/config.hpp>
 #include <type_traits>
+#endif
+
 
 // We are purposefully converting values here
 #ifdef BOOST_MSVC

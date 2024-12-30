@@ -10,12 +10,14 @@
 
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/charconv/detail/fast_float/fast_table.hpp>
+#ifndef BOOST_USE_MODULES
 #include <cfloat>
 #include <cinttypes>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#endif
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 

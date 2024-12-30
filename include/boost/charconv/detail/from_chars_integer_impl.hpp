@@ -6,11 +6,12 @@
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_INTEGER_IMPL_HPP
 
 #include <boost/charconv/detail/apply_sign.hpp>
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/type_traits.hpp>
 #include <boost/charconv/config.hpp>
+#ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <boost/config.hpp>
 #include <system_error>
 #include <type_traits>
@@ -19,6 +20,8 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
+#endif
+
 
 namespace boost { namespace charconv { namespace detail {
 

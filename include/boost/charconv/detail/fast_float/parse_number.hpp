@@ -12,11 +12,12 @@
 #include <boost/charconv/detail/fast_float/decimal_to_binary.hpp>
 #include <boost/charconv/detail/fast_float/digit_comparison.hpp>
 #include <boost/charconv/detail/fast_float/float_common.hpp>
-
+#ifndef BOOST_USE_MODULES
 #include <cmath>
 #include <cstring>
 #include <limits>
 #include <system_error>
+#endif
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 

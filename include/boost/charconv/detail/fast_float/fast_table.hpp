@@ -8,8 +8,12 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_TABLE_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_TABLE_HPP
 
+// TODO: this should be in src/
 #include <boost/charconv/detail/fast_float/float_common.hpp>
+#ifndef BOOST_USE_MODULES
 #include <cstdint>
+#endif
+
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 

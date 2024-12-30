@@ -5,9 +5,13 @@
 #ifndef BOOST_CHARCONV_LIMITS_HPP
 #define BOOST_CHARCONV_LIMITS_HPP
 
+#include <boost/config/modules.hpp>
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <limits>
 #include <type_traits>
+#endif
+
 
 namespace boost { namespace charconv { 
 
@@ -41,6 +45,7 @@ template<class T> struct is_uint128: std::false_type {};
 
 } // namespace detail
 
+BOOST_MODULE_EXPORT
 template<typename T> struct limits
 {
     BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars10 =

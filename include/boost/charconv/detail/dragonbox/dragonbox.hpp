@@ -22,11 +22,12 @@
 #ifndef BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
 #define BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
 
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/dragonbox/dragonbox_common.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/private/bit_layouts.hpp>
+#include <boost/charconv/detail/private/buffer_sizing.hpp>
+#ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/detail/buffer_sizing.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/core/bit.hpp>
@@ -34,6 +35,7 @@
 #include <limits>
 #include <cstdint>
 #include <cstring>
+#endif
 
 #ifdef BOOST_MSVC
 # pragma warning(push)

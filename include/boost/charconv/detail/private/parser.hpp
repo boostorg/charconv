@@ -5,18 +5,22 @@
 #ifndef BOOST_CHARCONV_DETAIL_PARSER_HPP
 #define BOOST_CHARCONV_DETAIL_PARSER_HPP
 
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/limits.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <boost/config/modules.hpp>
 #include <system_error>
 #include <type_traits>
 #include <limits>
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
+#endif
+
 
 #if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
 # pragma GCC diagnostic push

@@ -8,18 +8,19 @@
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_FLOAT_IMPL_HPP
 
 #include "float128_impl.hpp"
+#include <boost/charconv/detail/dragonbox/dragonbox.hpp>
+#include <boost/charconv/detail/dragonbox/floff.hpp>
+#include <boost/charconv/detail/private/buffer_sizing.hpp>
+#include <boost/charconv/detail/private/bit_layouts.hpp>
+#include <boost/charconv/detail/private/fallback_routines.hpp>
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/dragonbox/floff.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/charconv/detail/dragonbox/dragonbox.hpp>
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/detail/fallback_routines.hpp>
-#include <boost/charconv/detail/buffer_sizing.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <system_error>
@@ -38,10 +39,11 @@
 #include <iomanip>
 #include <iostream>
 #endif
+#endif
 
 #if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
-#  include <boost/charconv/detail/issignaling.hpp>
+#  include <boost/charconv/detail/private/issignaling.hpp>
 #endif
 
 namespace boost {
@@ -49,7 +51,7 @@ namespace charconv {
 namespace detail {
 
 template <typename Real>
-inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
+to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
 
 #if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128) || defined(BOOST_CHARCONV_HAS_FLOAT16) || defined(BOOST_CHARCONV_HAS_BRAINFLOAT16)
 

@@ -6,10 +6,12 @@
 #ifndef BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP
 #define BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP
 
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <cstdint>
+#endif
 
 #define BOOST_CHARCONV_POW5_TABLE_SIZE 56
 #define BOOST_CHARCONV_POW5_BITCOUNT 249

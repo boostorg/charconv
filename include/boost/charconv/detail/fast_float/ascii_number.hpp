@@ -9,10 +9,12 @@
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 
 #include <boost/charconv/detail/fast_float/float_common.hpp>
+#ifndef BOOST_USE_MODULES
 #include <cctype>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
+#endif
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -45,7 +47,7 @@ uint64_t read_u64(const char *chars) {
     return val;
   }
   uint64_t val;
-  ::memcpy(&val, chars, sizeof(uint64_t));
+  std::memcpy(&val, chars, sizeof(uint64_t));
 #if BOOST_CHARCONV_FASTFLOAT_IS_BIG_ENDIAN == 1
   // Need to read as-if the number was in little-endian order.
   val = byteswap(val);
@@ -67,7 +69,7 @@ void write_u64(uint8_t *chars, uint64_t val) {
   // Need to read as-if the number was in little-endian order.
   val = byteswap(val);
 #endif
-  ::memcpy(chars, &val, sizeof(uint64_t));
+  std::memcpy(chars, &val, sizeof(uint64_t));
 }
 
 // credit  @aqrit

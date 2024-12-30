@@ -8,11 +8,13 @@
 // https://stackoverflow.com/questions/1489830/efficient-way-to-determine-number-of-digits-in-an-integer?page=1&tab=scoredesc#tab-top
 // https://graphics.stanford.edu/~seander/bithacks.html
 
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <limits>
 #include <array>
 #include <cstdint>
+#endif
 
 namespace boost { namespace charconv { namespace detail {
 

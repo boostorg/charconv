@@ -9,10 +9,12 @@
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_BIGINT_HPP
 
 #include <boost/charconv/detail/fast_float/float_common.hpp>
+#ifndef BOOST_USE_MODULES
 #include <algorithm>
 #include <cstdint>
 #include <climits>
 #include <cstring>
+#endif
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 

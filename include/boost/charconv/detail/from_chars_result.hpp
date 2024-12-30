@@ -5,7 +5,10 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 
+#ifndef BOOST_USE_MODULES
 #include <system_error>
+#endif
+
 
 namespace boost { namespace charconv {
 

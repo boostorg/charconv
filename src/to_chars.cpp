@@ -4,8 +4,32 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+
+// Global module fragment with all required includes
+module;
+#include <cstdint> // for UINT64_C
+#include <climits> // for CHAR_BIT
+#include <cmath> // for HUGE_VAL
+#include <cerrno>
+#include <cfloat>
+#include <boost/config.hpp>
+#include <boost/assert.hpp>
+#include <boost/charconv/detail/config.hpp>
+#include "quadmath_header.hpp"
+
+// This is an implementation unit
+module boost.charconv;
+import std;
+import boost.core;
+
+#endif
+
+// These headers are part of the implementation, and safe to include
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
+
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <limits>
@@ -13,6 +37,8 @@
 #include <cstdio>
 #include <cstdint>
 #include <cmath>
+#endif
+
 
 namespace boost { namespace charconv { namespace detail { namespace to_chars_detail {
 

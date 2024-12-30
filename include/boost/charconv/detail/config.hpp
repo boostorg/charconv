@@ -5,9 +5,14 @@
 #ifndef BOOST_CHARCONV_DETAIL_CONFIG_HPP
 #define BOOST_CHARCONV_DETAIL_CONFIG_HPP
 
+// In modular builds, this header should only
+// be included from the global module fragment
 #include <boost/config.hpp>
-#include <type_traits>
 #include <cfloat>
+#include <climits>
+#ifndef BOOST_USE_MODULES
+#include <type_traits>
+#endif
 
 #include <boost/assert.hpp>
 #define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
@@ -167,7 +172,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 
 // Detection for C++23 fixed width floating point types
 // All of these types are optional so check for each of them individually
-#if (defined(_MSVC_LANG) && _MSVC_LANG > 202002L) || __cplusplus > 202002L
+#if !defined(BOOST_USE_MODULES) && ((defined(_MSVC_LANG) && _MSVC_LANG > 202002L) || __cplusplus > 202002L)
 #  if __has_include(<stdfloat>)
 #    include <stdfloat>
 #  endif
@@ -186,6 +191,18 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #endif
 #ifdef __STDCPP_BFLOAT16_T__
 #  define BOOST_CHARCONV_HAS_BRAINFLOAT16
+#endif
+
+// Detect long double and its number of bits
+#if LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
+#  define BOOST_CHARCONV_LDBL_BITS 80  // 80 bit long double (e.g. x86-64)
+#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
+#  define BOOST_CHARCONV_LDBL_BITS 128 // 128 bit long double (e.g. s390x, ppcle64) 
+#elif LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+#define BOOST_CHARCONV_LDBL_BITS 64 // 64 bit long double (double == long double on ARM)
+#else // Unsupported long double representation
+#  define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+#  define BOOST_CHARCONV_LDBL_BITS -1
 #endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP

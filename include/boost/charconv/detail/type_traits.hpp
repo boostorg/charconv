@@ -5,8 +5,10 @@
 #ifndef BOOST_CHARCONV_DETAIL_TYPE_TRAITS_HPP
 #define BOOST_CHARCONV_DETAIL_TYPE_TRAITS_HPP
 
+#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <type_traits>
+#endif
 
 namespace boost { namespace charconv { namespace detail {
 
