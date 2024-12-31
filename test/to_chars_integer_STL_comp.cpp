@@ -6,6 +6,13 @@
 
 #if !defined(BOOST_NO_CXX17_HDR_CHARCONV) && (!defined(__clang_major__) || (defined(__clang_major__) && __clang_major__ > 7))
 
+#ifdef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
+#include <boost/core/lightweight_test_macros.hpp>
+import std;
+import boost.charconv;
+import boost.core;
+#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <charconv>
@@ -19,6 +26,8 @@
 #include <random>
 #include <thread>
 #include <vector>
+#endif
+
 
 template <typename T>
 void stress_test_worker()
