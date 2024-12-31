@@ -3,6 +3,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/config.hpp>
+
+#ifdef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
+#include <boost/core/lightweight_test_macros.hpp>
+import std;
+import boost.core;
+import boost.charconv;
+#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
@@ -15,6 +24,8 @@
 #include <cstdint>
 #include <cfloat>
 #include <cmath>
+#endif
+
 
 int const N = 1024;
 
