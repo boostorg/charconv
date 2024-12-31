@@ -4,15 +4,26 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
+#ifdef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
+#include <boost/core/lightweight_test_macros.hpp>
+import std;
+import boost.charconv;
+import boost.core;
+#else
+#include <boost/charconv/limits.hpp>
+#include <boost/charconv/to_chars.hpp>
+#include <boost/charconv/from_chars.hpp>
+#include <boost/core/lightweight_test.hpp>
+#include <system_error>
+#include <limits>
+#include <string>
+#include <ostream>
+#endif
 
 #ifdef BOOST_HAS_INT128
 
-// We need to define these operator<< overloads before
-// including boost/core/lightweight_test.hpp, or they
-// won't be visible to BOOST_TEST_EQ
 // LCOV_EXCL_START
-
-#include <ostream>
 
 static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
 {
@@ -60,13 +71,7 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 
 #endif // #ifdef BOOST_HAS_INT128
 
-#include <boost/charconv/limits.hpp>
-#include <boost/charconv/to_chars.hpp>
-#include <boost/charconv/from_chars.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <limits>
-#include <string>
+
 
 void test_odr_use( int const* );
 
@@ -158,7 +163,7 @@ template<typename T> void test_floating_point( T value )
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value ))
+        if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST( v2 == value ))
         {
             // LCOV_EXCL_START
             std::cerr << " Value: " << value
@@ -185,7 +190,7 @@ template<typename T> void test_floating_point( T value )
         T v2 = 0;
         auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
 
-        if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST_EQ( v2, value ))
+        if (!BOOST_TEST(r2.ec == std::errc()) && BOOST_TEST( v2 == value ))
         {
             // LCOV_EXCL_START
             std::cerr << " Value: " << value
