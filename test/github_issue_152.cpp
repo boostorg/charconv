@@ -2,15 +2,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+import boost.charconv;
+#include <boost/core/lightweight_test_macros.hpp>
+#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
 #include <system_error>
 #include <limits>
 #include <random>
 #include <array>
 #include <cstdint>
 #include <iomanip>
+#endif
+
+#include <boost/config.hpp>
+#include <boost/charconv/detail/config.hpp>
+
 
 constexpr std::size_t N = 1024;
 static std::mt19937_64 rng(42);
