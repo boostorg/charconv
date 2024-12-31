@@ -2,14 +2,23 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/parser.hpp>
-#include <boost/charconv/chars_format.hpp>
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+#include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#else
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <type_traits>
 #include <cstdint>
 #include <cstring>
 #include <cerrno>
+#endif
+
+#include <boost/charconv/detail/private/parser.hpp>
+#include <boost/charconv/chars_format.hpp>
+
 
 template <typename T>
 void test_integer()
