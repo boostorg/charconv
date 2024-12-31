@@ -255,7 +255,7 @@ template<class T> void test_roundtrip( T value, boost::charconv::chars_format fm
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, fmt );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_EQ( v2, value ) && BOOST_TEST( r2.ptr == r.ptr) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) && BOOST_TEST( r2.ptr == r.ptr) )
     {
     }
     else
