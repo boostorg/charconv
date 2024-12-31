@@ -1,11 +1,6 @@
 module;
 
-#include <cstdint> // for UINT64_C
-#include <climits> // for CHAR_BIT
-#include <cfloat>
-#include <boost/config.hpp>
-#include <boost/assert.hpp>
-#include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
 
 export module boost.charconv;
 
