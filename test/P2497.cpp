@@ -2,6 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+import boost.charconv;
+#include <boost/core/lightweight_test_macros.hpp>
+#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
@@ -11,6 +17,8 @@
 #include <cstdint>
 #include <cerrno>
 #include <utility>
+#endif
+
 
 // No overflows, negative numbers, locales, etc.
 template <typename T>
