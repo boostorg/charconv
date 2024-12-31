@@ -2,16 +2,26 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+#include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#else
+#include <boost/core/lightweight_test.hpp>
+#include <limits>
+#include <iostream>
+#include <cstdint>
+#endif
+
+#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/config.hpp>
+#include <climits>
+
 
 #ifdef BOOST_HAS_INT128
 
-// We need to define these operator<< overloads before
-// including boost/core/lightweight_test.hpp, or they
-// won't be visible to BOOST_TEST_EQ
 // LCOV_EXCL_START
-
-#include <ostream>
 
 static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
 {
@@ -58,13 +68,6 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 // LCOV_EXCL_STOP
 
 #endif // #ifdef BOOST_HAS_INT128
-
-#include <boost/charconv/detail/emulated128.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <limits>
-#include <iostream>
-#include <climits>
-#include <cstdint>
 
 using boost::charconv::detail::uint128;
 using boost::charconv::detail::trivial_uint128;
