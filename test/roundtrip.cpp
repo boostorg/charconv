@@ -2,16 +2,33 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
 #include <boost/config.hpp>
+#include <boost/charconv/detail/config.hpp>
+#include <boost/core/lightweight_test_macros.hpp>
+#include <cstdint> // for INT64_C
+import std;
+import boost.charconv;
+import boost.core;
+#else
+#include <boost/config.hpp>
+#include <boost/charconv.hpp>
+#include <boost/core/lightweight_test.hpp>
+#include <boost/core/detail/splitmix64.hpp>
+#include <system_error>
+#include <iostream>
+#include <iomanip>
+#include <limits>
+#include <numeric>
+#include <cstdint>
+#include <cfloat>
+#include <cmath>
+#endif
+
 
 #ifdef BOOST_HAS_INT128
 
-// We need to define these operator<< overloads before
-// including boost/core/lightweight_test.hpp, or they
-// won't be visible to BOOST_TEST_EQ
 // LCOV_EXCL_START
-
-#include <ostream>
 
 static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
 {
@@ -58,18 +75,6 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 // LCOV_EXCL_STOP
 
 #endif // #ifdef BOOST_HAS_INT128
-
-#include <boost/charconv.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <boost/core/detail/splitmix64.hpp>
-#include <system_error>
-#include <iostream>
-#include <iomanip>
-#include <limits>
-#include <numeric>
-#include <cstdint>
-#include <cfloat>
-#include <cmath>
 
 int const N = 1024;
 
@@ -296,7 +301,7 @@ int64_t ToOrdinal(FPType x)
 
     //  Number of normal representable numbers for each exponent.
     static const auto
-            NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
+            NumbersPerExponent = static_cast<std::uint64_t>(std::scalbn(Radix-1, SignificandDigits-1));
 
     if (x == 0)
         return 0;
@@ -319,7 +324,7 @@ int64_t ToOrdinal(FPType x)
     /*  Start with the number of representable numbers in preceding normal
         exponent ranges.
     */
-    auto count = static_cast<int64_t>(static_cast<uint64_t>(exponent - MinimumExponent) * NumbersPerExponent);
+    auto count = static_cast<int64_t>(static_cast<std::uint64_t>(exponent - MinimumExponent) * NumbersPerExponent);
 
     /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
         number of representable numbers from 0 to x.  For normal numbers,
