@@ -7,8 +7,14 @@
 // https://en.cppreference.com/w/cpp/compiler_support/17
 #if (defined(__GNUC__) && __GNUC__ >= 11) || \
     ((defined(__clang__) && __clang_major__ >= 14 && !defined(__APPLE__)) || (defined(__clang__) && defined(__APPLE__) && __clang_major__ >= 16)) || \
-    (defined(_MSC_VER) && _MSC_VER >= 1924)
+    (defined(_MSC_VER) && _MSC_VER >= 1924) && !defined(BOOST_NO_CXX17_HDR_CHARCONV)
 
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+import boost.charconv;
+#include <boost/core/lightweight_test_macros.hpp>
+#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
@@ -22,6 +28,8 @@
 #include <cstring>
 #include <cstdint>
 #include <cerrno>
+#endif
+
 
 template <typename T>
 void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
