@@ -2,10 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+import boost.charconv;
+#include <boost/core/lightweight_test_macros.hpp>
+#else
 #include <boost/charconv.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <cstdio>
+#endif
+
+#include <cstdio> // stderr
 
 static boost::detail::splitmix64 rng;
 
