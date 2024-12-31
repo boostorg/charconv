@@ -2,10 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/emulated128.hpp>
+
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+#include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#else
 #include <boost/core/lightweight_test.hpp>
 #include <limits>
-#include <cstdint>
+#endif
+
+#include <boost/charconv/detail/emulated128.hpp>
+#include <cstdint> // Required by modular builds for UINT64_C
 
 void test128()
 {
