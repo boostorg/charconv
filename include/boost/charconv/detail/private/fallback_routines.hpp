@@ -11,6 +11,8 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/chars_format.hpp>
+#include <cerrno>
+#include <cmath>
 #endif
 #ifndef BOOST_USE_MODULES
 #include <system_error>
