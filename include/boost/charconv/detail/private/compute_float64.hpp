@@ -10,13 +10,13 @@
 #if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/config.hpp>
+#include <cmath>
+#include <cstdint>
 #endif
 #ifndef BOOST_USE_MODULES
 #include <boost/core/bit.hpp>
-#include <cstdint>
 #include <cfloat>
 #include <cstring>
-#include <cmath>
 #endif
 
 
