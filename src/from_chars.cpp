@@ -46,7 +46,7 @@ import boost.core;
 
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/from_chars.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/private/bit_layouts.hpp>
 #include <system_error>
 #include <string>
 #include <cstdlib>
