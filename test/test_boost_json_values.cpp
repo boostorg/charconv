@@ -7,6 +7,12 @@
 // See: https://github.com/boostorg/json/issues/599
 // See: https://github.com/boostorg/json/blob/develop/test/double.cpp
 
+#ifdef BOOST_USE_MODULES
+import std;
+import boost.core;
+import boost.charconv;
+#include <boost/core/lightweight_test_macros.hpp>
+#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
@@ -18,7 +24,11 @@
 #include <random>
 #include <type_traits>
 #include <cstring>
-#include <cinttypes>
+#endif
+
+#include <cinttypes> // PRId64
+#include <cstdio> // stderr
+
 
 template <typename T>
 void grind(const std::string& str, const T expected_value)
