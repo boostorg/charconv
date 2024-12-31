@@ -18,7 +18,7 @@
 #endif
 
 
-BOOST_MODULE_EXPORT namespace boost { namespace charconv {
+BOOST_CHARCONV_MODULE_EXPORT namespace boost { namespace charconv {
 
 // integer overloads
 

@@ -205,4 +205,12 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #  define BOOST_CHARCONV_LDBL_BITS -1
 #endif
 
+// Modules. Only use export when building the library,
+// since the headers might be included by tests even in modular builds.
+#if defined(BOOST_USE_MODULES) && defined(BOOST_CHARCONV_SOURCE)
+#  define BOOST_CHARCONV_MODULE_EXPORT export
+#else
+#  define BOOST_CHARCONV_MODULE_EXPORT
+#endif
+
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP

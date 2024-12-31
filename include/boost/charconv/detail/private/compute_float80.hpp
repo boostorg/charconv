@@ -9,13 +9,13 @@
 #if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/config.hpp>
+#include <cmath> // HUGE_VAL
 #endif
 #ifndef BOOST_USE_MODULES
 #include <system_error>
 #include <type_traits>
 #include <limits>
 #include <cstdint>
-#include <cmath>
 #include <climits>
 #include <cfloat>
 #ifdef BOOST_CHARCONV_DEBUG_FLOAT128

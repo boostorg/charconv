@@ -5,8 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP
 
-#include <boost/config/modules.hpp>
 #ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <system_error>
 #endif
 
@@ -15,7 +15,7 @@
 
 namespace boost { namespace charconv {
 
-BOOST_MODULE_EXPORT
+BOOST_CHARCONV_MODULE_EXPORT
 struct to_chars_result
 {
     char *ptr;
