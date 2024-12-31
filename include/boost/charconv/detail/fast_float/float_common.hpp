@@ -9,10 +9,12 @@
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FLOAT_COMMON_HPP
 
 #include <boost/charconv/detail/fast_float/constexpr_feature_detect.hpp>
-#ifndef BOOST_USE_MODULES
+#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/chars_format.hpp>
+#endif
+#ifndef BOOST_USE_MODULES
 #include <cfloat>
 #include <cstdint>
 #include <cassert>

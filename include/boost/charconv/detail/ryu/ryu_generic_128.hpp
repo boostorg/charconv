@@ -8,10 +8,12 @@
 
 #include <boost/charconv/detail/ryu/generic_128.hpp>
 #include <boost/charconv/detail/private/bit_layouts.hpp>
-#ifndef BOOST_USE_MODULES
+#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/to_chars.hpp>
+#endif
+#ifndef BOOST_USE_MODULES
 #include <cinttypes>
 #include <cstdio>
 #include <cstdint>

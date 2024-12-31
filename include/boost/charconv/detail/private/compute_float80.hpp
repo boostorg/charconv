@@ -6,9 +6,11 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 
 #include <boost/charconv/detail/private/bit_layouts.hpp>
-#ifndef BOOST_USE_MODULES
+#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/config.hpp>
+#endif
+#ifndef BOOST_USE_MODULES
 #include <system_error>
 #include <type_traits>
 #include <limits>

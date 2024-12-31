@@ -6,10 +6,12 @@
 #ifndef BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP
 #define BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP
 
-#ifndef BOOST_USE_MODULES
+#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#endif
+#ifndef BOOST_USE_MODULES
 #include <cstdint>
 #endif
 
