@@ -61,7 +61,7 @@ run P2497.cpp ;
 run github_issue_110.cpp ;
 run github_issue_122.cpp ;
 run from_chars_string_view.cpp ;
-run github_issue_152.cpp /boost/random//boost_random ;
+run github_issue_152.cpp ;
 run github_issue_152_float128.cpp : : : [ check-target-builds ../config//has_float128 "GCC libquadmath and __float128 support" : <library>"quadmath" ] ;
 run github_issue_154.cpp ;
 #run github_issue_156.cpp ;
