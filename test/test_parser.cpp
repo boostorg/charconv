@@ -66,6 +66,22 @@ void test_integer()
         BOOST_TEST_EQ(exponent, 0);
         BOOST_TEST_EQ(significand, max_sig_v);
     }
+
+    // Small significant type
+    std::uint8_t significand_8{};
+    exponent = 0;
+    sign = false;
+
+    const char* val3 = "255";
+    auto r5 = boost::charconv::detail::parser(val3, val3 + std::strlen(val3), sign, significand_8, exponent);
+    BOOST_TEST(r5);
+    BOOST_TEST_EQ(sign, false);
+    BOOST_TEST_EQ(exponent, 0);
+    BOOST_TEST_EQ(significand_8, 255);
+
+    const char* val4 = "256";
+    auto r6 = boost::charconv::detail::parser(val4, val4 + std::strlen(val4), sign, significand_8, exponent);
+    BOOST_TEST(r6.ec == std::errc::result_out_of_range);
 }
 
 template <typename T>
@@ -195,6 +211,29 @@ void test_hex_scientific()
     BOOST_TEST_EQ(significand, UINT64_C(80427));
 }
 
+void test_zeroes()
+{
+    for (const char* val : {
+        "0", "00", "000", "0000",
+        "0.", "00.", "000.", "0000.",
+        "0.0", "00.0", "000.0", "0000.0",
+        "0e0", "00e0", "000e0", "0000e0",
+        "0.e0", "00.e0", "000.e0", "0000.e0",
+        "0.0e0", "00.0e0", "000.0e0", "0000.0e0",
+        }) {
+        // Use small integer type to reduce input test string lengths
+        std::uint8_t significand = 1;
+        std::int64_t exponent = 1;
+        bool sign = (std::strlen(val) % 2) == 0; // Different initial values
+
+        auto r1 = boost::charconv::detail::parser(val, val + std::strlen(val), sign, significand, exponent);
+        BOOST_TEST(r1);
+        BOOST_TEST_EQ(sign, false);
+        BOOST_TEST_EQ(significand, 0u);
+        BOOST_TEST_EQ(exponent, 0);
+    }
+}
+
 int main()
 {
     test_integer<float>();
@@ -213,5 +252,6 @@ int main()
     test_hex_scientific<double>();
     test_hex_scientific<long double>();
 
+    test_zeroes();
     return boost::report_errors();
 }
