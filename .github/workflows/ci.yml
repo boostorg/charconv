@@ -490,6 +490,7 @@ jobs:
                 B2_ARGS+=("address-model=${{matrix.address_model}}")
             fi
             B2_ARGS+=("libs/$LIBRARY/test")
+            set -x
             ./b2 "${B2_ARGS[@]}"
 
   windows:
