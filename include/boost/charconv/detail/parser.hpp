@@ -72,7 +72,7 @@ typename std::enable_if<std::is_unsigned<Unsigned_Integer>::value &&
     std::uint64_t tmp_value;
     auto result = boost::charconv::detail::from_chars(first, last, tmp_value, base);
     if (result) {
-        if (tmp_value > std::numeric_limits<Unsigned_Integer>::max())
+        if (tmp_value > (std::numeric_limits<Unsigned_Integer>::max)())
             result.ec = std::errc::result_out_of_range;
         else
             value = static_cast<Unsigned_Integer>(tmp_value);
