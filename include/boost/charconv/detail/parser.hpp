@@ -306,7 +306,6 @@ inline from_chars_result parser(const char* first, const char* last, bool& sign,
             return {first, std::errc::invalid_argument};
         }
 
-        exponent = static_cast<Integer>(i - 1);
         std::size_t offset = i;
         bool round = false;
         // If more digits are present than representable in the significand of the target type
