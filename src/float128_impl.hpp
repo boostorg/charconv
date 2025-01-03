@@ -20,8 +20,6 @@
 
 #include <quadmath.h>
 
-#define BOOST_CHARCONV_HAS_FLOAT128
-
 namespace boost {
 namespace charconv {
 
@@ -354,6 +352,6 @@ inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128
 } //namespace charconv
 } //namespace boost
 
-#endif //BOOST_CHARCONV_HAS_FLOAT128
+#endif //BOOST_CHARCONV_HAS_QUADMATH
 
 #endif //BOOST_CHARCONV_FLOAT128_IMPL_HPP
