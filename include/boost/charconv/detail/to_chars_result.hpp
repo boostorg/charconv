@@ -6,7 +6,6 @@
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP
 
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
 #include <system_error>
 #endif
 

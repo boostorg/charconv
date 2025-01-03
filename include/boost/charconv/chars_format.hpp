@@ -5,10 +5,6 @@
 #ifndef BOOST_CHARCONV_CHARS_FORMAT_HPP
 #define BOOST_CHARCONV_CHARS_FORMAT_HPP
 
-#ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
-#endif
-
 namespace boost { namespace charconv {
 
 // Floating-point format for primitive numerical conversion

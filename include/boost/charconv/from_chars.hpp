@@ -10,7 +10,6 @@
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <boost/config/modules.hpp>
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <boost/core/detail/string_view.hpp>
