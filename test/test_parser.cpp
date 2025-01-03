@@ -40,7 +40,7 @@ void test_integer()
     BOOST_TEST(r3.ec == std::errc::invalid_argument);
 
     // Get the maximum value of the significant type
-    constexpr auto max_sig_v = std::numeric_limits<decltype(significand)>::max();
+    constexpr auto max_sig_v = (std::numeric_limits<decltype(significand)>::max)();
     char max_sig_buf[boost::charconv::limits<decltype(significand)>::max_chars10 + 1u];
     const auto r4 = boost::charconv::to_chars(max_sig_buf + 1, max_sig_buf + sizeof(max_sig_buf), max_sig_v);
     if (BOOST_TEST(r4)) {
