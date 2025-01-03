@@ -215,8 +215,8 @@ void test_memcpy()
 
 void test_limits()
 {
-    BOOST_TEST(std::numeric_limits<uint128>::min() == 0);
-    BOOST_TEST(std::numeric_limits<uint128>::max() == uint128(UINT64_MAX, UINT64_MAX));
+    BOOST_TEST((std::numeric_limits<uint128>::min)() == 0);
+    BOOST_TEST((std::numeric_limits<uint128>::max)() == uint128(UINT64_MAX, UINT64_MAX));
     BOOST_TEST(std::numeric_limits<uint128>::is_signed == false);
     BOOST_TEST(std::numeric_limits<uint128>::is_integer == true);
     BOOST_TEST(std::numeric_limits<uint128>::digits == CHAR_BIT * sizeof(std::uint64_t) * 2);
