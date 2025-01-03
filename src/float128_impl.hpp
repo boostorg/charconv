@@ -90,7 +90,7 @@ inline __float128 to_float128(Unsigned_Integer w) noexcept
 template <>
 inline __float128 to_float128<uint128>(uint128 w) noexcept
 {
-    return ldexp(static_cast<__float128>(w.high), 64) + static_cast<__float128>(w.low);
+    return ldexpq(static_cast<__float128>(w.high), 64) + static_cast<__float128>(w.low);
 }
 
 template <typename Unsigned_Integer, typename ArrayPtr>
