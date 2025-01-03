@@ -7,6 +7,7 @@
 #if defined(BOOST_CHARCONV_HAS_QUADMATH) && defined(BOOST_HAS_INT128)
 
 #include <ostream>
+#include <quadmath.h>
 
 #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
 #include <charconv>
@@ -85,13 +86,13 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
-#include <boost/charconv/detail/generate_nan.hpp>
 #include <boost/charconv/detail/issignaling.hpp>
 #include <limits>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <random>
+#include "../src/float128_impl.hpp"
 
 constexpr int N = 1024;
 static boost::detail::splitmix64 rng;
@@ -173,7 +174,7 @@ void test_roundtrip( T value )
     BOOST_TEST( r.ec == std::errc() );
 
     T v2 = 0;
-    auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2 );
+    auto r2 = boost::charconv::from_chars_erange( buffer, r.ptr, v2 );
 
     if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( std::abs(float_distance(v2, value)) <= 1 ) && BOOST_TEST( r2.ptr == r.ptr) )
     {
@@ -550,7 +551,7 @@ void random_roundtrip(boost::charconv::chars_format fmt = boost::charconv::chars
 void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt)
 {
     __float128 v {};
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    auto r = boost::charconv::from_chars_erange(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     if (!(BOOST_TEST(isnanq(v)) && BOOST_TEST(r)))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
@@ -560,7 +561,7 @@ void spot_check_nan(const std::string& buffer, boost::charconv::chars_format fmt
 void spot_check_inf(const std::string& buffer, boost::charconv::chars_format fmt)
 {
     __float128 v {};
-    auto r = boost::charconv::from_chars(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
+    auto r = boost::charconv::from_chars_erange(buffer.c_str(), buffer.c_str() + buffer.size(), v, fmt);
     if (!(BOOST_TEST(isinfq(v)) && BOOST_TEST(r)))
     {
         std::cerr << "Test failure for: " << buffer << " got: " << v << std::endl; // LCOV_EXCL_LINE
