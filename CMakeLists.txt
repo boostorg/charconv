@@ -15,8 +15,19 @@ add_library(boost_charconv
 add_library(Boost::charconv ALIAS boost_charconv)
 
 if (BOOST_USE_MODULES)
-  boost_set_cxx20_module_settings(boost_charconv)
   target_sources(boost_charconv PUBLIC FILE_SET CXX_MODULES BASE_DIRS modules FILES modules/boost_charconv.cppm)
+
+  # Enable and propagate C++23, import std, and the modules macro
+  target_compile_features(boost_charconv PUBLIC cxx_std_23)
+  set_target_properties(boost_charconv PROPERTIES CXX_MODULE_STD 1)
+  target_compile_definitions(boost_charconv PUBLIC BOOST_USE_MODULES)
+
+  # Silence warnings about includes in the purview
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(boost_charconv PRIVATE -Wno-include-angled-in-module-purview)
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(boost_charconv PRIVATE /wd5244)
+  endif()
 endif()
 
 target_include_directories(boost_charconv PUBLIC include)
