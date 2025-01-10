@@ -8,9 +8,9 @@
 #ifndef BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 #define BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
 #include <boost/core/bit.hpp>
 #include <type_traits>
 #include <limits>

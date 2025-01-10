@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
+#include <cfloat>
 
 #ifdef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
@@ -25,6 +26,7 @@ import boost.charconv;
 #include <cfloat>
 #include <cmath>
 #endif
+
 
 
 int const N = 1024;

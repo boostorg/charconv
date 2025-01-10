@@ -5,9 +5,9 @@
 #ifndef BOOST_CHARCONV_DETAIL_BUFFER_SIZING_HPP
 #define BOOST_CHARCONV_DETAIL_BUFFER_SIZING_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
 #include <type_traits>
 #endif
 

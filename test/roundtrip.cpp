@@ -21,9 +21,10 @@ import boost.core;
 #include <limits>
 #include <numeric>
 #include <cstdint>
-#include <cfloat>
 #include <cmath>
 #endif
+
+#include <cfloat>
 
 
 #ifdef BOOST_HAS_INT128

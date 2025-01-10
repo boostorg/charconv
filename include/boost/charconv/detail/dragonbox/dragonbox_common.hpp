@@ -24,11 +24,11 @@
 #ifndef BOOST_CHARCONV_DETAIL_DRAGONBOX_COMMON_HPP
 #define BOOST_CHARCONV_DETAIL_DRAGONBOX_COMMON_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/chars_format.hpp>
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
 #include <boost/core/bit.hpp>
 #include <type_traits>
 #include <limits>

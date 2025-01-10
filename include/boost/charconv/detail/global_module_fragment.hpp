@@ -16,5 +16,4 @@
 #include <boost/assert.hpp>
 #include <boost/charconv/detail/config.hpp>
 
-
 #endif

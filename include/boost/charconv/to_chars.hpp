@@ -11,10 +11,6 @@
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
-#ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
-#endif
-
 
 namespace boost {
 namespace charconv {

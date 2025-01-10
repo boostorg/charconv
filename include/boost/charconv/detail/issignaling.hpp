@@ -5,9 +5,9 @@
 #ifndef BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP
 #define BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
 #include <cstdint>
 #include <cstring>
 #endif

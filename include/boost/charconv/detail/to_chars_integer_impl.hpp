@@ -7,13 +7,13 @@
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_INTEGER_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_INTEGER_IMPL_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/apply_sign.hpp>
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
 #include <limits>
 #include <system_error>
 #include <type_traits>

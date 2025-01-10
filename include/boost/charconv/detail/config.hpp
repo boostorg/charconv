@@ -5,16 +5,14 @@
 #ifndef BOOST_CHARCONV_DETAIL_CONFIG_HPP
 #define BOOST_CHARCONV_DETAIL_CONFIG_HPP
 
-// In modular builds, this header should only
-// be included from the global module fragment
+#ifndef BOOST_USE_MODULES
 #include <boost/config.hpp>
+#include <type_traits>
 #include <cfloat>
 #include <climits>
-#ifndef BOOST_USE_MODULES
-#include <type_traits>
+#include <boost/assert.hpp>
 #endif
 
-#include <boost/assert.hpp>
 #define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
 #define BOOST_CHARCONV_ASSERT_MSG(expr, msg) BOOST_ASSERT_MSG(expr, msg)
 

@@ -5,10 +5,10 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
 #include <system_error>
 #include <type_traits>
 #include <limits>

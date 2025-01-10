@@ -23,6 +23,7 @@ import boost.core;
 #include <cerrno>
 #endif
 
+#include <climits>
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>
