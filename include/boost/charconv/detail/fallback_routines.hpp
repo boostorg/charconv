@@ -162,7 +162,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         #ifndef __INTEL_LLVM_COMPILER
         if (return_value == HUGE_VALF)
                 #else
-            if (return_value >= std::numeric_limits<T>::max())
+            if (return_value >= (std::numeric_limits<T>::max)())
                 #endif
         {
             r = {last, std::errc::result_out_of_range};
@@ -175,7 +175,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         #ifndef __INTEL_LLVM_COMPILER
         if (return_value == HUGE_VAL)
                 #else
-            if (return_value >= std::numeric_limits<T>::max())
+            if (return_value >= (std::numeric_limits<T>::max)())
                 #endif
         {
             r = {last, std::errc::result_out_of_range};
@@ -188,7 +188,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         #ifndef __INTEL_LLVM_COMPILER
         if (return_value == HUGE_VALL)
                 #else
-            if (return_value >= std::numeric_limits<T>::max())
+            if (return_value >= (std::numeric_limits<T>::max)())
                 #endif
         {
             r = {last, std::errc::result_out_of_range};

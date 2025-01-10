@@ -108,7 +108,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 #ifndef __INTEL_LLVM_COMPILER
                 if (return_val == HUGE_VALF || return_val == -HUGE_VALF)
                 #else
-                if (return_val >= std::numeric_limits<T>::max() || return_val <= std::numeric_limits<T>::lowest())
+                if (return_val >= (std::numeric_limits<T>::max)() || return_val <= std::numeric_limits<T>::lowest())
                 #endif
                 {
                     value = return_val;
@@ -129,7 +129,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 #ifndef __INTEL_LLVM_COMPILER
                 if (return_val == HUGE_VAL || return_val == -HUGE_VAL)
                 #else
-                if (return_val >= std::numeric_limits<T>::max() || return_val <= std::numeric_limits<T>::lowest())
+                if (return_val >= (std::numeric_limits<T>::max)() || return_val <= std::numeric_limits<T>::lowest())
                 #endif
                 {
                     value = return_val;
@@ -150,7 +150,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
                 #ifndef __INTEL_LLVM_COMPILER
                 if (return_val == HUGE_VALL || return_val == -HUGE_VALL)
                 #else
-                if (return_val >= std::numeric_limits<T>::max() || return_val <= std::numeric_limits<T>::lowest())
+                if (return_val >= (std::numeric_limits<T>::max)() || return_val <= std::numeric_limits<T>::lowest())
                 #endif
                 {
                     value = return_val;

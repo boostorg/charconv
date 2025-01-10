@@ -21,7 +21,6 @@
 
 // Only add in float128 support if the build system says it can
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
-#define BOOST_CHARCONV_HAS_FLOAT128
 
 namespace boost {
 namespace charconv {
@@ -93,7 +92,7 @@ inline __float128 to_float128(Unsigned_Integer w) noexcept
 template <>
 inline __float128 to_float128<uint128>(uint128 w) noexcept
 {
-    return ldexp(static_cast<__float128>(w.high), 64) + static_cast<__float128>(w.low);
+    return ldexpq(static_cast<__float128>(w.high), 64) + static_cast<__float128>(w.low);
 }
 
 template <typename Unsigned_Integer, typename ArrayPtr>
@@ -355,6 +354,6 @@ inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128
 } //namespace charconv
 } //namespace boost
 
-#endif //BOOST_CHARCONV_HAS_FLOAT128
+#endif //BOOST_CHARCONV_HAS_QUADMATH
 
 #endif //BOOST_CHARCONV_FLOAT128_IMPL_HPP
