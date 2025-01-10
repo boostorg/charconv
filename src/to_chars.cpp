@@ -8,10 +8,7 @@
 
 // Global module fragment with all required includes
 module;
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <cmath> // for HUGE_VAL
-#include <cerrno>
-#include "quadmath_header.hpp"
+#include "impl_macros.hpp"
 
 // This is an implementation unit
 module boost.charconv;
@@ -26,6 +23,7 @@ extern "C++" {
 }
 
 #ifndef BOOST_USE_MODULES
+// Public declarations already visible in modules
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <limits>

@@ -7,10 +7,7 @@
 
 // Global module fragment with all required includes
 module;
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <cmath> // for HUGE_VAL
-#include <cerrno>
-#include "quadmath_header.hpp"
+#include "impl_macros.hpp"
 
 // This is an implementation unit
 module boost.charconv;
