@@ -7,6 +7,8 @@ import std;
 import boost.core;
 import boost.charconv;
 #include <boost/core/lightweight_test_macros.hpp>
+#include <boost/config.hpp>
+#include <boost/charconv/detail/config.hpp>
 #else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
@@ -17,10 +19,6 @@ import boost.charconv;
 #include <cstdint>
 #include <iomanip>
 #endif
-
-#include <boost/config.hpp>
-#include <boost/charconv/detail/config.hpp>
-
 
 constexpr std::size_t N = 1024;
 static std::mt19937_64 rng(42);

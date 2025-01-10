@@ -6,16 +6,16 @@
 import std;
 import boost.core;
 #include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
+#include "../src/impl_macros.hpp"
 #else
 #include <boost/core/lightweight_test.hpp>
 #include <random>
 #include <limits>
 #endif
 
-#include <cmath>
 #include <boost/charconv/detail/compute_float64.hpp>
 #include <cstdint>
+#include <cmath>
 
 using boost::charconv::detail::compute_float64;
 

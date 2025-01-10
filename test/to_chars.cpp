@@ -7,8 +7,6 @@
 #include <boost/config.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/core/lightweight_test_macros.hpp>
-#include <version>
-#include <cstdint> // for UINT64_C
 import std;
 import boost.charconv;
 import boost.core;
@@ -23,7 +21,8 @@ import boost.core;
 #include <cerrno>
 #endif
 
-#include <climits>
+#include <climits> // for INT_MIN
+#include <cstdint> // for UINT64_C
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>

@@ -7,16 +7,14 @@
 import std;
 import boost.core;
 #include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
+#include "../src/impl_macros.hpp"
 #else
 #include <locale>
 #include <iostream>
+#include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #endif
 
-#include <cerrno>
-#include <cmath>
-#include <boost/charconv.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
 
 template <typename T>

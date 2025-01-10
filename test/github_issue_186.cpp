@@ -16,7 +16,6 @@ import boost.charconv;
 #include <string>
 #endif
 
-
 template <typename T>
 void force_overflow(T value)
 {

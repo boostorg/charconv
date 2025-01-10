@@ -9,12 +9,11 @@ import std;
 import boost.core;
 import boost.charconv;
 #include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/config.hpp>
 #else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #endif
-
-#include <boost/charconv/detail/config.hpp>
 
 int main()
 {
