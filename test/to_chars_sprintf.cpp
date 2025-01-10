@@ -3,9 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/config.hpp>
-#include <cfloat>
-
 #ifdef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <boost/core/lightweight_test_macros.hpp>
@@ -23,11 +20,11 @@ import boost.charconv;
 #include <iostream>
 #include <limits>
 #include <cstdint>
-#include <cfloat>
 #include <cmath>
 #endif
 
-
+#include <cfloat>
+#include <boost/config.hpp>
 
 int const N = 1024;
 
