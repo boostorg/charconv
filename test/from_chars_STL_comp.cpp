@@ -6,13 +6,6 @@
 
 #if !defined(BOOST_NO_CXX17_HDR_CHARCONV) && (!defined(__clang_major__) || (defined(__clang_major__) && __clang_major__ > 7))
 
-#ifdef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp>
-#include <boost/core/lightweight_test_macros.hpp>
-import std;
-import boost.core;
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <charconv>
@@ -22,8 +15,6 @@ import boost.charconv;
 #include <cstdint>
 #include <cerrno>
 #include <utility>
-#endif
-
 
 template <typename T>
 void test()
