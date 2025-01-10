@@ -10,9 +10,9 @@
 #include "float128_impl.hpp"
 #include <boost/charconv/detail/dragonbox/dragonbox.hpp>
 #include <boost/charconv/detail/dragonbox/floff.hpp>
-#include <boost/charconv/detail/private/buffer_sizing.hpp>
-#include <boost/charconv/detail/private/bit_layouts.hpp>
-#include <boost/charconv/detail/private/fallback_routines.hpp>
+#include <boost/charconv/detail/buffer_sizing.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
@@ -43,7 +43,7 @@
 
 #if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
 #  include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
-#  include <boost/charconv/detail/private/issignaling.hpp>
+#  include <boost/charconv/detail/issignaling.hpp>
 #endif
 
 namespace boost {

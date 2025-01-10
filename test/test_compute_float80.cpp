@@ -18,7 +18,7 @@ import boost.core;
 
 #include <cmath>
 #include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/detail/private/compute_float80.hpp>
+#include <boost/charconv/detail/compute_float80.hpp>
 #include <boost/charconv/detail/config.hpp>
 
 

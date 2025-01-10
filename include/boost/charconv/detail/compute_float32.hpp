@@ -5,7 +5,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 
-#include <boost/charconv/detail/private/compute_float64.hpp>
+#include <boost/charconv/detail/compute_float64.hpp>
 #ifndef BOOST_USE_MODULES
 #include <limits>
 #include <cstdint>

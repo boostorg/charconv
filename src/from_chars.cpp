@@ -33,14 +33,14 @@ extern "C++" {
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
 #if BOOST_CHARCONV_LDBL_BITS > 64
-#  include <boost/charconv/detail/private/compute_float80.hpp>
+#  include <boost/charconv/detail/compute_float80.hpp>
 #  include <boost/charconv/detail/emulated128.hpp>
 #endif
 }
 
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/from_chars.hpp>
-#include <boost/charconv/detail/private/bit_layouts.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <system_error>
 #include <string>
 #include <cstdlib>

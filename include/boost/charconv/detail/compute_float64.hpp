@@ -6,7 +6,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP
 
-#include <boost/charconv/detail/private/significand_tables.hpp>
+#include <boost/charconv/detail/significand_tables.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>

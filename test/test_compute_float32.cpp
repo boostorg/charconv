@@ -13,7 +13,7 @@ import boost.core;
 #endif
 
 #include <cmath>
-#include <boost/charconv/detail/private/compute_float32.hpp>
+#include <boost/charconv/detail/compute_float32.hpp>
 #include <cstdint>
 
 using boost::charconv::detail::compute_float32;

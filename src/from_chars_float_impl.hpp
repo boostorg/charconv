@@ -6,11 +6,11 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_FLOAT_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_FLOAT_IMPL_HPP
 
-#include <boost/charconv/detail/private/compute_float32.hpp>
-#include <boost/charconv/detail/private/compute_float64.hpp>
-#include <boost/charconv/detail/private/fallback_routines.hpp>
-#include <boost/charconv/detail/private/parser.hpp>
-#include <boost/charconv/detail/private/bit_layouts.hpp>
+#include <boost/charconv/detail/compute_float32.hpp>
+#include <boost/charconv/detail/compute_float64.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
+#include <boost/charconv/detail/parser.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
