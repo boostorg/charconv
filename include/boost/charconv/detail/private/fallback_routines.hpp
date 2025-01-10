@@ -6,15 +6,13 @@
 #define BOOST_FALLBACK_ROUTINES_HPP
 
 #include <boost/charconv/detail/dragonbox/floff.hpp>
-#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/from_chars_result.hpp>
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/chars_format.hpp>
+#ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <cerrno>
 #include <cmath>
-#endif
-#ifndef BOOST_USE_MODULES
 #include <system_error>
 #include <type_traits>
 #include <locale>

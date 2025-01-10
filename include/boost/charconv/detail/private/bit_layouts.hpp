@@ -5,11 +5,9 @@
 #ifndef BOOST_CHARCONV_DETAIL_BIT_LAYOUTS_HPP
 #define BOOST_CHARCONV_DETAIL_BIT_LAYOUTS_HPP
 
-#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#endif
 #ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <cstdint>
 #include <cfloat>
 #endif

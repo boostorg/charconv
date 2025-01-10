@@ -25,13 +25,11 @@
 #include <boost/charconv/detail/dragonbox/dragonbox_common.hpp>
 #include <boost/charconv/detail/private/bit_layouts.hpp>
 #include <boost/charconv/detail/private/buffer_sizing.hpp>
-#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
-#endif
 #ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <boost/core/bit.hpp>
 #include <type_traits>
 #include <limits>

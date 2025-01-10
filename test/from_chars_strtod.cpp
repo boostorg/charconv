@@ -16,6 +16,7 @@ import boost.core;
 #endif
 
 #include <cmath>
+#include <cerrno>
 #include "../src/from_chars_float_impl.hpp"
 
 

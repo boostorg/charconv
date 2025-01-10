@@ -44,7 +44,6 @@ template<class T> struct is_uint128: std::false_type {};
 
 } // namespace detail
 
-BOOST_CHARCONV_MODULE_EXPORT
 template<typename T> struct limits
 {
     BOOST_ATTRIBUTE_UNUSED static constexpr int max_chars10 =

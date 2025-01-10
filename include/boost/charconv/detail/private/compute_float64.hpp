@@ -7,16 +7,14 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP
 
 #include <boost/charconv/detail/private/significand_tables.hpp>
-#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
 #include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/detail/config.hpp>
-#include <cmath>
-#endif
 #ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <boost/core/bit.hpp>
 #include <cfloat>
 #include <cstring>
 #include <cstdint>
+#include <cmath>
 #endif
 
 

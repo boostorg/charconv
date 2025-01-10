@@ -5,15 +5,13 @@
 #ifndef BOOST_CHARCONV_DETAIL_PARSER_HPP
 #define BOOST_CHARCONV_DETAIL_PARSER_HPP
 
-#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
-#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/limits.hpp>
 #include <boost/charconv/chars_format.hpp>
-#endif
 #ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <system_error>
 #include <type_traits>
 #include <limits>

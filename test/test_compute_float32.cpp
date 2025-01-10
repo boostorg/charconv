@@ -10,9 +10,9 @@ import boost.core;
 #else
 #include <boost/core/lightweight_test.hpp>
 #include <limits>
-#include <cmath>
 #endif
 
+#include <cmath>
 #include <boost/charconv/detail/private/compute_float32.hpp>
 #include <cstdint>
 

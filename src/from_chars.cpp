@@ -7,14 +7,9 @@
 
 // Global module fragment with all required includes
 module;
-#include <cstdint> // for UINT64_C
-#include <climits> // for CHAR_BIT
+#include <boost/charconv/detail/global_module_fragment.hpp>
 #include <cmath> // for HUGE_VAL
 #include <cerrno>
-#include <cfloat>
-#include <boost/config.hpp>
-#include <boost/assert.hpp>
-#include <boost/charconv/detail/config.hpp>
 #include "quadmath_header.hpp"
 
 // This is an implementation unit
@@ -33,16 +28,15 @@ import boost.core;
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
-// These headers are part of the implementation, and safe to include
+extern "C++" {
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
 #if BOOST_CHARCONV_LDBL_BITS > 64
 #  include <boost/charconv/detail/private/compute_float80.hpp>
-#  ifndef BOOST_USE_MODULES
-#    include <boost/charconv/detail/emulated128.hpp>
-#  endif
+#  include <boost/charconv/detail/emulated128.hpp>
 #endif
+}
 
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/from_chars.hpp>
@@ -59,6 +53,8 @@ import boost.core;
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
+
+extern "C++" {
 
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -533,3 +529,5 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 #endif
+
+}

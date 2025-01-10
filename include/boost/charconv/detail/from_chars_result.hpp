@@ -6,7 +6,6 @@
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 
 #ifndef BOOST_USE_MODULES
-#include <boost/charconv/detail/config.hpp> // for BOOST_CHARCONV_MODULE_EXPORT
 #include <system_error>
 #endif
 
@@ -38,7 +37,7 @@ struct from_chars_result_t
 
     constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 };
-BOOST_CHARCONV_MODULE_EXPORT using from_chars_result = from_chars_result_t<char>;
+using from_chars_result = from_chars_result_t<char>;
 
 }} // Namespaces
 

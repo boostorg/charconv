@@ -8,14 +8,9 @@
 
 // Global module fragment with all required includes
 module;
-#include <cstdint> // for UINT64_C
-#include <climits> // for CHAR_BIT
+#include <boost/charconv/detail/global_module_fragment.hpp>
 #include <cmath> // for HUGE_VAL
 #include <cerrno>
-#include <cfloat>
-#include <boost/config.hpp>
-#include <boost/assert.hpp>
-#include <boost/charconv/detail/config.hpp>
 #include "quadmath_header.hpp"
 
 // This is an implementation unit
@@ -25,9 +20,10 @@ import boost.core;
 
 #endif
 
-// These headers are part of the implementation, and safe to include
+extern "C++" {
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
+}
 
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/to_chars.hpp>
@@ -575,6 +571,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
 }}}} // Namespaces
 
+extern "C++" {
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
@@ -779,3 +777,5 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
+
+}

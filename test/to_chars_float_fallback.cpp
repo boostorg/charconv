@@ -14,6 +14,8 @@ import boost.core;
 #include <cstdio>
 #endif
 
+#include <cerrno>
+#include <cmath>
 #include <boost/charconv/detail/private/fallback_routines.hpp>
 
 

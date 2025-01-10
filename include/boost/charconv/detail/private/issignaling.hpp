@@ -6,10 +6,8 @@
 #define BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP
 
 #include <boost/charconv/detail/private/bit_layouts.hpp>
-#if !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_SOURCE)
-#include <boost/charconv/detail/config.hpp>
-#endif
 #ifndef BOOST_USE_MODULES
+#include <boost/charconv/detail/config.hpp>
 #include <cstdint>
 #include <cstring>
 #endif
