@@ -8,6 +8,9 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#ifdef BOOST_CHARCONV_DEBUG_FLOAT128
+#include <boost/charconv/detail/to_chars_integer_impl.hpp>
+#endif
 #ifndef BOOST_USE_MODULES
 #include <system_error>
 #include <type_traits>
@@ -19,7 +22,6 @@
 #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
 #include <iostream>
 #include <iomanip>
-#include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #endif
 #endif
 
