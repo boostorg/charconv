@@ -5,8 +5,8 @@
 #ifndef BOOST_CHARCONV_LIMITS_HPP
 #define BOOST_CHARCONV_LIMITS_HPP
 
-#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
+#ifndef BOOST_USE_MODULES
 #include <limits>
 #include <type_traits>
 #endif

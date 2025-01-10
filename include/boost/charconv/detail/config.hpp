@@ -70,7 +70,9 @@
 
 // Inclue intrinsics if available
 #if defined(BOOST_MSVC)
-#  include <intrin.h>
+#  ifndef BOOST_USE_MODULES
+#    include <intrin.h>
+#  endif
 #  if defined(_WIN64)
 #    define BOOST_CHARCONV_HAS_MSVC_64BIT_INTRINSICS
 #  else

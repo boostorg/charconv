@@ -14,11 +14,15 @@
 #include <cfloat>
 #include <boost/config.hpp>
 #include <boost/assert.hpp>
+
 #ifdef __has_include
 #if __has_include(<version>)
 #include <version>
 #endif
 #endif
-#include <boost/charconv/detail/config.hpp>
+
+#if defined(BOOST_MSVC)
+#include <intrin.h>
+#endif
 
 #endif

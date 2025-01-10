@@ -5,8 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_MEMCPY_HPP
 #define BOOST_CHARCONV_DETAIL_MEMCPY_HPP
 
-#ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
+#ifndef BOOST_USE_MODULES
 #include <cstring>
 #include <cstdint>
 #endif
