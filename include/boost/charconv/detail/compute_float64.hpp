@@ -11,9 +11,9 @@
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
 #include <boost/core/bit.hpp>
+#include <cstdint>
 #include <cfloat>
 #include <cstring>
-#include <cstdint>
 #include <cmath>
 #endif
 

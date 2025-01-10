@@ -5,24 +5,23 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 
-#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/detail/config.hpp>
-#include <cmath> // HUGE_VAL
 #include <system_error>
 #include <type_traits>
 #include <limits>
 #include <cstdint>
+#include <cmath>
 #include <climits>
 #include <cfloat>
 #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
-#  include <boost/charconv/detail/to_chars_integer_impl.hpp>
-#  include <iostream>
-#  include <iomanip>
+#include <iostream>
+#include <iomanip>
+#include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #endif
 #endif
-
 
 namespace boost { namespace charconv { namespace detail {
 

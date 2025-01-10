@@ -530,4 +530,4 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
 }
 #endif
 
-}
+} // extern "C++"
