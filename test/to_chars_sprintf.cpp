@@ -4,10 +4,11 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
+#include <cfloat>
+#include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/core/lightweight_test_macros.hpp>
 import std;
 import boost.core;
 import boost.charconv;
@@ -22,11 +23,9 @@ import boost.charconv;
 #include <iostream>
 #include <limits>
 #include <cstdint>
+#include <cfloat>
 #include <cmath>
 #endif
-
-#include <cfloat>
-#include <boost/config.hpp>
 
 int const N = 1024;
 

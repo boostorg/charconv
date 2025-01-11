@@ -3,8 +3,8 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
 #include <boost/config.hpp>
+#include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>

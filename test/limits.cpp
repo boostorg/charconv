@@ -5,10 +5,10 @@
 
 #include <boost/config.hpp>
 #ifdef BOOST_USE_MODULES
+#include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/core/lightweight_test_macros.hpp>
 import std;
 import boost.charconv;
 import boost.core;

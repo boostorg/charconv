@@ -5,9 +5,15 @@
 #ifdef BOOST_USE_MODULES
 #include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv/detail/compute_float80.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 import std;
 import boost.core;
 #else
+#include <boost/charconv/detail/compute_float80.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <random>
 #include <limits>
@@ -16,11 +22,6 @@ import boost.core;
 #include <iostream>
 #include <iomanip>
 #endif
-
-#include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/detail/compute_float80.hpp>
-#include <boost/charconv/detail/config.hpp>
-
 
 // MSVC uses long double = double
 // Darwin sometimes uses double-double instead of long double

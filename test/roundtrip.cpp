@@ -4,11 +4,12 @@
 
 #include <boost/config.hpp>
 #ifdef BOOST_USE_MODULES
+#include <cstdint> // for INT64_C
+#include <cfloat>
+#include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/core/lightweight_test_macros.hpp>
-#include <cstdint> // for INT64_C
 import std;
 import boost.charconv;
 import boost.core;
@@ -23,9 +24,9 @@ import boost.core;
 #include <numeric>
 #include <cstdint>
 #include <cmath>
+#include <cfloat>
 #endif
 
-#include <cfloat>
 
 
 #ifdef BOOST_HAS_INT128

@@ -4,6 +4,8 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
+#include <climits> // for INT_MIN
+#include <cstdint> // for UINT64_C
 #include <boost/config.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/core/lightweight_test_macros.hpp>
@@ -20,9 +22,6 @@ import boost.core;
 #include <cstring>
 #include <cerrno>
 #endif
-
-#include <climits> // for INT_MIN
-#include <cstdint> // for UINT64_C
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>

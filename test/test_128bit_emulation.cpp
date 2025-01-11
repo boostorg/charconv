@@ -2,7 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/config.hpp>
 #ifdef BOOST_USE_MODULES
+#include <climits>
 #include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
@@ -14,11 +16,8 @@ import boost.core;
 #include <limits>
 #include <iostream>
 #include <cstdint>
-#endif
-
-#include <boost/config.hpp>
 #include <climits>
-
+#endif
 
 #ifdef BOOST_HAS_INT128
 

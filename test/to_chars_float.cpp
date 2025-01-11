@@ -15,7 +15,6 @@ import boost.charconv;
 #include <boost/charconv.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <boost/core/detail/splitmix64.hpp>
 #include <system_error>
 #include <type_traits>
 #include <limits>
@@ -27,8 +26,8 @@ import boost.charconv;
 #include <random>
 #include <iomanip>
 #include <sstream>
+#include <boost/core/detail/splitmix64.hpp>
 #endif
-
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW

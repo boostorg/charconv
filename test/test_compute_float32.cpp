@@ -3,18 +3,20 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
+#include <cstdint>
+#include <cmath>
 #include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv/detail/compute_float32.hpp>
 import std;
 import boost.core;
 #else
+#include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <limits>
-#endif
-
-#include <boost/charconv/detail/compute_float32.hpp>
-#include <cmath>
 #include <cstdint>
+#include <cmath>
+#endif
 
 using boost::charconv::detail::compute_float32;
 

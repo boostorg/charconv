@@ -3,8 +3,8 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
 #include <cstdint>
+#include <boost/core/lightweight_test_macros.hpp>
 import std;
 import boost.core;
 import boost.charconv;
@@ -15,8 +15,6 @@ import boost.charconv;
 #include <cstdint>
 #include <cstring>
 #endif
-
-
 
 template <typename T>
 void test()
