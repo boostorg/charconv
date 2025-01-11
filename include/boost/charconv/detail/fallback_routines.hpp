@@ -11,8 +11,6 @@
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
 #ifndef BOOST_USE_MODULES
-#include <cerrno>
-#include <cmath>
 #include <system_error>
 #include <type_traits>
 #include <locale>

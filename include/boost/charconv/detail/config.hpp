@@ -7,10 +7,9 @@
 
 #ifndef BOOST_USE_MODULES
 #include <boost/config.hpp>
+#include <boost/assert.hpp>
 #include <type_traits>
 #include <cfloat>
-#include <climits>
-#include <boost/assert.hpp>
 #endif
 
 #define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
@@ -191,18 +190,6 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #endif
 #ifdef __STDCPP_BFLOAT16_T__
 #  define BOOST_CHARCONV_HAS_BRAINFLOAT16
-#endif
-
-// Detect long double and its number of bits
-#if LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
-#  define BOOST_CHARCONV_LDBL_BITS 80  // 80 bit long double (e.g. x86-64)
-#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
-#  define BOOST_CHARCONV_LDBL_BITS 128 // 128 bit long double (e.g. s390x, ppcle64) 
-#elif LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
-#define BOOST_CHARCONV_LDBL_BITS 64 // 64 bit long double (double == long double on ARM)
-#else // Unsupported long double representation
-#  define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
-#  define BOOST_CHARCONV_LDBL_BITS -1
 #endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP

@@ -12,17 +12,17 @@
 #include <boost/charconv/detail/issignaling.hpp>
 #include <boost/charconv/limits.hpp>
 #ifndef BOOST_USE_MODULES
-#ifdef BOOST_CHARCONV_HAS_QUADMATH
-#include <quadmath.h>
-#endif
 #include <system_error>
 #include <cstring>
 #include <cstdint>
 #endif
 
-
 // Only add in float128 support if the build system says it can
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
+
+#ifndef BOOST_USE_MODULES
+#include <quadmath.h>
+#endif
 
 namespace boost {
 namespace charconv {

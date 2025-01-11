@@ -11,7 +11,6 @@
 #include <cstdint>
 #endif
 
-
 // The significand of a floating point number is often referred to as the mantissa.
 // Using the term mantissa is discouraged by IEEE 1516
 

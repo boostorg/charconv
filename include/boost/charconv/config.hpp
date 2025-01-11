@@ -11,7 +11,6 @@
 #include <climits>
 #endif
 
-
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
 

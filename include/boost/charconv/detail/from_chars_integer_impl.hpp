@@ -22,7 +22,6 @@
 #include <cstdint>
 #endif
 
-
 namespace boost { namespace charconv { namespace detail {
 
 BOOST_INLINE_CONSTEXPR unsigned char uchar_values[] =

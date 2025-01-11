@@ -9,7 +9,6 @@
 #include <system_error>
 #endif
 
-
 // 22.13.2, Primitive numerical output conversion
 
 namespace boost { namespace charconv {

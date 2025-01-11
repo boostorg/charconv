@@ -9,13 +9,13 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
 #ifndef BOOST_USE_MODULES
 #include <boost/core/detail/string_view.hpp>
 #include <system_error>
 #endif
-
 
 namespace boost { namespace charconv {
 

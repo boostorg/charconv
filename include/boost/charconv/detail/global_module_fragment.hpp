@@ -5,9 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_GLOBAL_MODULE_FRAGMENT_HPP
 #define BOOST_CHARCONV_DETAIL_GLOBAL_MODULE_FRAGMENT_HPP
 
-// Includes to be placed in the global module fragment.
-// Reused by tests that include headers with names
-// that are not exported from the module.
+// Contents of the global module fragment.
+// Used for all module units and in tests
 
 #include <cstdint> // for UINT64_C
 #include <climits> // for CHAR_BIT
