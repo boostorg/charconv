@@ -5,22 +5,19 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
-
-// Global module fragment with all required includes
 module;
-#include "impl_macros.hpp"
-
-// This is an implementation unit
-module boost.charconv;
-import std;
-import boost.core;
-
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv.hpp>
 #endif
 
-extern "C++" {
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
-}
+
+#ifdef BOOST_USE_MODULES
+// This is an implementation unit
+module boost.charconv;
+
+#endif
 
 #ifndef BOOST_USE_MODULES
 // Public declarations already visible in modules

@@ -8,10 +8,10 @@
 // See: https://github.com/boostorg/json/blob/develop/test/double.cpp
 
 #ifdef BOOST_USE_MODULES
+#include <boost/core/lightweight_test_macros.hpp>
 import std;
 import boost.core;
 import boost.charconv;
-#include <boost/core/lightweight_test_macros.hpp>
 #else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>

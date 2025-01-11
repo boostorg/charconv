@@ -3,10 +3,10 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
+#include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
 import std;
 import boost.core;
-#include <boost/core/lightweight_test_macros.hpp>
-#include "../src/impl_macros.hpp"
 #else
 #include <boost/core/lightweight_test.hpp>
 #include <limits>

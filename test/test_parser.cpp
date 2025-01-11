@@ -3,14 +3,16 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
+#include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv/detail/parser.hpp>
 import std;
 import boost.core;
 import boost.charconv;
-#include <boost/core/lightweight_test_macros.hpp>
-#include "../src/impl_macros.hpp"
 #else
 #include <boost/charconv/chars_format.hpp>
 #include <boost/charconv/to_chars.hpp>
+#include <boost/charconv/detail/parser.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <type_traits>
@@ -19,7 +21,6 @@ import boost.charconv;
 #include <cerrno>
 #endif
 
-#include <boost/charconv/detail/parser.hpp>
 
 
 void test_integer()

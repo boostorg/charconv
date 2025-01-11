@@ -4,6 +4,7 @@
 
 #ifdef BOOST_USE_MODULES
 #include <boost/config.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/core/lightweight_test_macros.hpp>
 #include <cstdint> // for INT64_C

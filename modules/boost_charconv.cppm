@@ -1,15 +1,9 @@
 module;
 
 #include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv.hpp>
 
 export module boost.charconv;
-
-import std;
-import boost.core;
-
-extern "C++" {
-#include <boost/charconv.hpp>
-}
 
 export namespace boost::charconv {
 

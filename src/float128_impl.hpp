@@ -12,7 +12,9 @@
 #include <boost/charconv/detail/issignaling.hpp>
 #include <boost/charconv/limits.hpp>
 #ifndef BOOST_USE_MODULES
-#include "quadmath_header.hpp"
+#ifdef BOOST_CHARCONV_HAS_QUADMATH
+#include <quadmath.h>
+#endif
 #include <system_error>
 #include <cstring>
 #include <cstdint>

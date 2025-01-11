@@ -4,17 +4,18 @@
 
 
 #ifdef BOOST_USE_MODULES
-import std;
-import boost.core;
 #include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <cstdint> // UINT64_C
+import std;
+import boost.core;
 #else
+#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <limits>
 #endif
 
-#include <boost/charconv/detail/emulated128.hpp>
-#include <cstdint> // Required by modular builds for UINT64_C
 
 void test128()
 {

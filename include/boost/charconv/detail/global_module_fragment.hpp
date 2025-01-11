@@ -12,6 +12,8 @@
 #include <cstdint> // for UINT64_C
 #include <climits> // for CHAR_BIT
 #include <cfloat>
+#include <cmath> // for HUGE_VAL
+#include <cerrno>
 #include <boost/config.hpp>
 #include <boost/assert.hpp>
 
@@ -24,5 +26,12 @@
 #if defined(BOOST_MSVC)
 #include <intrin.h>
 #endif
+
+#ifdef BOOST_CHARCONV_HAS_QUADMATH
+#include <quadmath.h>
+#endif
+
+import std;
+import boost.core;
 
 #endif

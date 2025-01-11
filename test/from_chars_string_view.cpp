@@ -3,14 +3,13 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 
-#include <boost/config.hpp>
-#include <boost/charconv/detail/config.hpp>
-
 #ifdef BOOST_USE_MODULES
+#include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv/detail/config.hpp>
 import std;
 import boost.core;
 import boost.charconv;
-#include <boost/core/lightweight_test_macros.hpp>
 #else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>

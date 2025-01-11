@@ -4,18 +4,10 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
-
-// Global module fragment with all required includes
 module;
-#include "impl_macros.hpp"
-
-// This is an implementation unit
-module boost.charconv;
-import std;
-import boost.core;
-
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv.hpp>
 #endif
-
 
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
 #ifndef _SCL_SECURE_NO_WARNINGS
@@ -25,7 +17,6 @@ import boost.core;
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
-extern "C++" {
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
@@ -33,7 +24,12 @@ extern "C++" {
 #  include <boost/charconv/detail/compute_float80.hpp>
 #  include <boost/charconv/detail/emulated128.hpp>
 #endif
-}
+
+#ifdef BOOST_USE_MODULES
+// This is an implementation unit
+module boost.charconv;
+#endif
+
 
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/from_chars.hpp>

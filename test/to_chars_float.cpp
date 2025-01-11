@@ -4,13 +4,15 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef BOOST_USE_MODULES
+#include <boost/core/lightweight_test_macros.hpp>
+#include <boost/charconv/detail/global_module_fragment.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
 import std;
 import boost.core;
 import boost.charconv;
-#include <boost/core/lightweight_test_macros.hpp>
-#include "../src/impl_macros.hpp"
 #else
 #include <boost/charconv.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <system_error>
@@ -26,7 +28,6 @@ import boost.charconv;
 #include <sstream>
 #endif
 
-#include <boost/charconv/detail/fallback_routines.hpp>
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW
