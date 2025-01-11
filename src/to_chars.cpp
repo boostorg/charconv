@@ -7,27 +7,22 @@
 #ifdef BOOST_USE_MODULES
 module;
 #include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv.hpp>
 #endif
 
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
-
-#ifdef BOOST_USE_MODULES
-// This is an implementation unit
-module boost.charconv;
-
-#endif
-
-#ifndef BOOST_USE_MODULES
-// Public declarations already visible in modules
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
+#ifndef BOOST_USE_MODULES
 #include <limits>
 #include <cstring>
 #include <cstdio>
 #include <cstdint>
 #include <cmath>
+#endif
+
+#ifdef BOOST_USE_MODULES
+module boost.charconv;
 #endif
 
 

@@ -6,7 +6,6 @@
 #ifdef BOOST_USE_MODULES
 module;
 #include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv.hpp>
 #endif
 
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
@@ -25,12 +24,6 @@ module;
 #  include <boost/charconv/detail/emulated128.hpp>
 #endif
 
-#ifdef BOOST_USE_MODULES
-// This is an implementation unit
-module boost.charconv;
-#endif
-
-
 #ifndef BOOST_USE_MODULES
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
@@ -40,6 +33,10 @@ module boost.charconv;
 #include <cerrno>
 #include <cstring>
 #include <limits>
+#endif
+
+#ifdef BOOST_USE_MODULES
+module boost.charconv;
 #endif
 
 
