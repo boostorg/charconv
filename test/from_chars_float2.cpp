@@ -4,7 +4,7 @@
 
 #ifdef BOOST_USE_MODULES
 #include <boost/core/lightweight_test_macros.hpp>
-#include <cstdio> // stderr
+#include <cstdio>
 import std;
 import boost.core;
 import boost.charconv;
@@ -12,8 +12,8 @@ import boost.charconv;
 #include <boost/charconv.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <cstdio>
 #endif
-
 
 static boost::detail::splitmix64 rng;
 

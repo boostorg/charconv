@@ -9,6 +9,8 @@
 
 #ifdef BOOST_USE_MODULES
 #include <boost/core/lightweight_test_macros.hpp>
+#include <cinttypes> // PRId64
+#include <cstdio> // stderr
 import std;
 import boost.core;
 import boost.charconv;
@@ -24,11 +26,8 @@ import boost.charconv;
 #include <random>
 #include <type_traits>
 #include <cstring>
+#include <cinttypes>
 #endif
-
-#include <cinttypes> // PRId64
-#include <cstdio> // stderr
-
 
 template <typename T>
 void grind(const std::string& str, const T expected_value)

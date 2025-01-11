@@ -2,17 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
 #include <boost/config.hpp>
+#ifdef BOOST_USE_MODULES
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/core/lightweight_test_macros.hpp>
 #include <cstdint> // for INT64_C
 import std;
 import boost.charconv;
 import boost.core;
 #else
-#include <boost/config.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>

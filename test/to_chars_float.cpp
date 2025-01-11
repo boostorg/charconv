@@ -7,6 +7,7 @@
 #include <boost/core/lightweight_test_macros.hpp>
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 import std;
 import boost.core;
 import boost.charconv;

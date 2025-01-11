@@ -17,7 +17,6 @@ import boost.core;
 #include <boost/core/lightweight_test.hpp>
 #endif
 
-
 template <typename T>
 void test()
 {

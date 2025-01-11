@@ -5,6 +5,7 @@
 #ifdef BOOST_USE_MODULES
 #include <boost/charconv/detail/global_module_fragment.hpp>
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/core/lightweight_test_macros.hpp>
 import std;
 import boost.core;
@@ -13,7 +14,6 @@ import boost.charconv;
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #endif
-
 
 template <typename T>
 void overflow_spot_value(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)

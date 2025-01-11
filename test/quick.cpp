@@ -13,7 +13,6 @@ import boost.charconv;
 #include <boost/charconv.hpp>
 #endif
 
-
 int main()
 {
     char buffer[ 32 ];
