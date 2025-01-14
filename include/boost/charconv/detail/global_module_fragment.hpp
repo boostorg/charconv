@@ -11,7 +11,7 @@
 #include <cstdint> // for UINT64_C
 #include <climits> // for CHAR_BIT
 #include <cfloat>
-#include <cmath> // for HUGE_VAL
+#include <math.h> // for HUGE_VAL
 #include <cerrno>
 #include <boost/config.hpp>
 #include <boost/assert.hpp>

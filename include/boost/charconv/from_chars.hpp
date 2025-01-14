@@ -8,6 +8,7 @@
 
 #if defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_SOURCE)
 
+#include <boost/charconv/detail/macros.hpp>
 import boost.charconv;
 
 #else

@@ -59,7 +59,7 @@ struct ieee754_binary64
 };
 
 // 80 bit long double (e.g. x86-64)
-#if LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
+#if BOOST_CHARCONV_LDBL_BITS == 80
 
 struct IEEEl2bits
 {
@@ -86,10 +86,8 @@ struct ieee754_binary80
     static constexpr int decimal_digits = 18;
 };
 
-#define BOOST_CHARCONV_LDBL_BITS 80
-
 // 128 bit long double (e.g. s390x, ppcle64)
-#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
+#elif BOOST_CHARCONV_LDBL_BITS == 128
 
 struct IEEEl2bits
 {
@@ -105,11 +103,9 @@ struct IEEEl2bits
     std::uint64_t mantissa_l : 64;
 #endif
 };
-
-#define BOOST_CHARCONV_LDBL_BITS 128
 
 // 64 bit long double (double == long double on ARM)
-#elif LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+#elif BOOST_CHARCONV_LDBL_BITS == 64
 
 struct IEEEl2bits
 {
@@ -126,11 +122,6 @@ struct IEEEl2bits
 #endif
 };
 
-#define BOOST_CHARCONV_LDBL_BITS 64
-
-#else // Unsupported long double representation
-#  define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
-#  define BOOST_CHARCONV_LDBL_BITS -1
 #endif
 
 struct IEEEbinary128

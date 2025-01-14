@@ -5,6 +5,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_CONFIG_HPP
 #define BOOST_CHARCONV_DETAIL_CONFIG_HPP
 
+#include <boost/charconv/detail/macros.hpp>
 #ifndef BOOST_USE_MODULES
 #include <boost/config.hpp>
 #include <boost/assert.hpp>
