@@ -7,9 +7,7 @@
 #define BOOST_CHARCONV_DETAIL_SIGNIFICAND_TABLES_HPP
 
 #include <boost/charconv/detail/config.hpp>
-#ifndef BOOST_USE_MODULES
-#include <cstdint>
-#endif
+#include <boost/config/std/cstdint.hpp>
 
 // The significand of a floating point number is often referred to as the mantissa.
 // Using the term mantissa is discouraged by IEEE 1516

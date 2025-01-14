@@ -6,20 +6,17 @@
 
 #ifdef BOOST_USE_MODULES
 module;
-#include <boost/charconv/detail/global_module_fragment.hpp>
 #endif
 
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
-#ifndef BOOST_USE_MODULES
-#include <limits>
-#include <cstring>
-#include <cstdio>
-#include <cstdint>
-#include <cmath>
-#endif
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
 
 #ifdef BOOST_USE_MODULES
 module boost.charconv;

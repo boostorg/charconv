@@ -7,9 +7,7 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
-#ifndef BOOST_USE_MODULES
-#include <type_traits>
-#endif
+#include <boost/config/std/type_traits.hpp>
 
 
 namespace boost {

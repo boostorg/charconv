@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstring>
 #endif
+#include <stdint.h> // UINT64_C
 
 
 namespace boost { namespace charconv { namespace detail {

@@ -13,12 +13,10 @@
 #include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
-#ifndef BOOST_USE_MODULES
 #include <boost/charconv/chars_format.hpp>
-#include <system_error>
-#include <cstdlib>
-#include <cmath>
-#endif
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 

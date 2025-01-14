@@ -13,21 +13,21 @@
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/apply_sign.hpp>
-#ifndef BOOST_USE_MODULES
 #include <boost/config.hpp>
-#include <limits>
-#include <system_error>
-#include <type_traits>
-#include <array>
-#include <limits>
-#include <utility>
-#include <cstring>
-#include <cstdio>
-#include <cerrno>
-#include <cstdint>
-#include <climits>
-#include <cmath>
-#endif
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/array.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/utility.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/climits.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <stdint.h> // UINT64_C
+#include <limits.h> // CHAR_BIT
 
 
 namespace boost { namespace charconv { namespace detail {

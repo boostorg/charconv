@@ -6,9 +6,7 @@
 #define BOOST_CHARCONV_DETAIL_TYPE_TRAITS_HPP
 
 #include <boost/charconv/detail/config.hpp>
-#ifndef BOOST_USE_MODULES
-#include <type_traits>
-#endif
+#include <boost/config/std/type_traits.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 

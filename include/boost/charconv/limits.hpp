@@ -13,10 +13,8 @@ import boost.charconv;
 #else
 
 #include <boost/charconv/detail/config.hpp>
-#ifndef BOOST_USE_MODULES
-#include <limits>
-#include <type_traits>
-#endif
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/type_traits.hpp>
 
 namespace boost { namespace charconv { 
 

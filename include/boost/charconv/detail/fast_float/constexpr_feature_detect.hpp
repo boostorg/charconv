@@ -8,11 +8,9 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_CONSTEXPR_FEATURE_DETECT_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_CONSTEXPR_FEATURE_DETECT_HPP
 
-#ifndef BOOST_USE_MODULES
 #ifdef __has_include
 #if __has_include(<version>)
 #include <version>
-#endif
 #endif
 #endif
 

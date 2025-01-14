@@ -11,16 +11,14 @@
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/type_traits.hpp>
 #include <boost/charconv/config.hpp>
-#ifndef BOOST_USE_MODULES
 #include <boost/config.hpp>
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cstdlib>
-#include <cerrno>
-#include <cstddef>
-#include <cstdint>
-#endif
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstddef.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 

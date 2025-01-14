@@ -6,10 +6,8 @@
 #define BOOST_CHARCONV_DETAIL_MEMCPY_HPP
 
 #include <boost/charconv/detail/config.hpp>
-#ifndef BOOST_USE_MODULES
-#include <cstring>
-#include <cstdint>
-#endif
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89689
 // GCC 10 added checks for length of memcpy which yields the following warning (converted to error with -Werror)

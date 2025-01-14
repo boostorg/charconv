@@ -11,14 +11,12 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/to_chars.hpp>
-#ifndef BOOST_USE_MODULES
-#include <cinttypes>
-#include <cstdio>
-#include <cstdint>
+#include <boost/config/std/cinttypes.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 #ifdef BOOST_CHARCONV_DEBUG
-#  include <iostream>
-#endif
+#  include <boost/config/std/iostream.hpp>
 #endif
 
 namespace boost { namespace charconv { namespace detail { namespace ryu {

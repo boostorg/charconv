@@ -11,14 +11,12 @@
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/limits.hpp>
 #include <boost/charconv/chars_format.hpp>
-#ifndef BOOST_USE_MODULES
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cerrno>
-#include <cstdint>
-#include <cstring>
-#endif
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
 
 #if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
 # pragma GCC diagnostic push

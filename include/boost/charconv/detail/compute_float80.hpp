@@ -8,22 +8,20 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/climits.hpp>
+#include <boost/config/std/cfloat.hpp>
+#include <math.h> // HUGE_VAL
 #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
 #endif
-#ifndef BOOST_USE_MODULES
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cstdint>
-#include <cmath>
-#include <climits>
-#include <cfloat>
-#ifdef BOOST_CHARCONV_DEBUG_FLOAT128
-#include <iostream>
-#include <iomanip>
-#endif
-#endif
+
 
 namespace boost { namespace charconv { namespace detail {
 

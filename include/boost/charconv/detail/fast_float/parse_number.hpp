@@ -12,12 +12,10 @@
 #include <boost/charconv/detail/fast_float/decimal_to_binary.hpp>
 #include <boost/charconv/detail/fast_float/digit_comparison.hpp>
 #include <boost/charconv/detail/fast_float/float_common.hpp>
-#ifndef BOOST_USE_MODULES
-#include <cmath>
-#include <cstring>
-#include <limits>
-#include <system_error>
-#endif
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/system_error.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -100,7 +98,7 @@ BOOST_FORCEINLINE bool rounds_to_nearest() noexcept {
   // https://lemire.me/blog/2022/11/16/a-fast-function-to-check-your-floating-point-rounding-mode/
   //
   // This function is meant to be equivalent to :
-  // prior: #include <cfenv>
+  // prior: #include <boost/config/std/cfenv.hpp>
   //  return fegetround() == FE_TONEAREST;
   // However, it is expected to be much faster than the fegetround()
   // function call.

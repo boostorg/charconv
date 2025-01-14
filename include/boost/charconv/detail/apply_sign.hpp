@@ -7,10 +7,8 @@
 
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/type_traits.hpp>
-#ifndef BOOST_USE_MODULES
 #include <boost/config.hpp>
-#include <type_traits>
-#endif
+#include <boost/config/std/type_traits.hpp>
 
 
 // We are purposefully converting values here

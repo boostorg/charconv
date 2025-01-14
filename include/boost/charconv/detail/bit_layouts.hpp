@@ -7,10 +7,8 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#ifndef BOOST_USE_MODULES
-#include <cstdint>
-#include <cfloat>
-#endif
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cfloat.hpp>
 
 
 // Layouts of floating point types as specified by IEEE 754

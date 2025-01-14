@@ -6,11 +6,10 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 
 #include <boost/charconv/detail/compute_float64.hpp>
-#ifndef BOOST_USE_MODULES
-#include <limits>
-#include <cstdint>
-#include <cmath>
-#endif
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <math.h> // HUGE_VAL
 
 namespace boost { namespace charconv { namespace detail {
 

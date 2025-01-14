@@ -5,7 +5,6 @@
 
 #ifdef BOOST_USE_MODULES
 module;
-#include <boost/charconv/detail/global_module_fragment.hpp>
 #endif
 
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
@@ -19,20 +18,17 @@ module;
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
+#include <boost/charconv/from_chars.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/limits.hpp>
 #if BOOST_CHARCONV_LDBL_BITS > 64
 #  include <boost/charconv/detail/compute_float80.hpp>
 #  include <boost/charconv/detail/emulated128.hpp>
-#endif
-
-#ifndef BOOST_USE_MODULES
-#include <boost/charconv/from_chars.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-#include <system_error>
-#include <string>
-#include <cstdlib>
-#include <cerrno>
-#include <cstring>
-#include <limits>
 #endif
 
 #ifdef BOOST_USE_MODULES

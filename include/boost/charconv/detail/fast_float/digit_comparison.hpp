@@ -11,12 +11,10 @@
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/charconv/detail/fast_float/bigint.hpp>
 #include <boost/charconv/detail/fast_float/ascii_number.hpp>
-#ifndef BOOST_USE_MODULES
-#include <algorithm>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
-#endif
+#include <boost/config/std/algorithm.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/iterator.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 

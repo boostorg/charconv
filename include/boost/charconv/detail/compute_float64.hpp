@@ -9,13 +9,13 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/significand_tables.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#ifndef BOOST_USE_MODULES
 #include <boost/core/bit.hpp>
-#include <cstdint>
-#include <cfloat>
-#include <cstring>
-#include <cmath>
-#endif
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cfloat.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <stdint.h> // UINT64_C
+#include <math.h> // HUGE_VAL
 
 
 namespace boost { namespace charconv { namespace detail { 

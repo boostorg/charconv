@@ -30,15 +30,13 @@
 #include <boost/charconv/detail/dragonbox/dragonbox_common.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
-#ifndef BOOST_USE_MODULES
 #include <boost/core/bit.hpp>
-#include <type_traits>
-#include <limits>
-#include <cstdint>
-#include <cstring>
-#include <cstddef>
-#include <climits>
-#endif
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstddef.hpp>
+#include <boost/config/std/climits.hpp>
+#include <stdint.h> // UINT64_C
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
