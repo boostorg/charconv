@@ -3,25 +3,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <climits> // for INT_MIN
-#include <cstdint> // for UINT64_C
-#include <boost/config.hpp>
-#include <boost/charconv/detail/config.hpp>
-#include <boost/core/lightweight_test_macros.hpp>
-import std;
-import boost.charconv;
-import boost.core;
-#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <string>
-#include <cstring>
-#include <cerrno>
-#endif
+#include "before_impl_headers.hpp"
+#include <boost/charconv/detail/config.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cerrno.hpp>
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>

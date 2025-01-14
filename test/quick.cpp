@@ -7,11 +7,7 @@
 #  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
-#ifdef BOOST_USE_MODULES
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
-#endif
 
 int main()
 {
