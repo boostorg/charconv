@@ -13,6 +13,8 @@
 #include <boost/config/std/string.hpp>
 #include <boost/config/std/cstring.hpp>
 #include <boost/config/std/cerrno.hpp>
+#include <stdint.h> // UINT64_C
+#include <limits.h> // INT_MIN
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 template <typename T>

@@ -2,7 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/config.hpp>
+
+#define BOOST_CHARCONV_SOURCE
+#include <boost/charconv/detail/issignaling.hpp>
+#include "../src/float128_impl.hpp"
+#undef BOOST_CHARCONV_SOURCE
+#include <boost/charconv.hpp>
+#include <boost/core/lightweight_test.hpp>
+#include <boost/core/detail/splitmix64.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/random.hpp>
 
 #if defined(BOOST_CHARCONV_HAS_QUADMATH) && defined(BOOST_HAS_INT128)
 
@@ -82,18 +94,6 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
     return os;
 }
 
-
-#include <boost/charconv.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <boost/core/detail/splitmix64.hpp>
-#include <boost/charconv/detail/issignaling.hpp>
-#include <boost/config/std/limits.hpp>
-#include <boost/config/std/iostream.hpp>
-#include <boost/config/std/iomanip.hpp>
-#include <boost/config/std/string.hpp>
-#include <boost/config/std/random.hpp>
-#include "before_impl_headers.hpp"
-#include "../src/float128_impl.hpp"
 
 constexpr int N = 1024;
 static boost::detail::splitmix64 rng;

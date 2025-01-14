@@ -8,7 +8,7 @@
 #include <boost/config/std/limits.hpp>
 #include <boost/config/std/iostream.hpp>
 #include <boost/config/std/cstdint.hpp>
-#include <boost/config/std/climits.hpp>
+#include <limits.h> // CHAR_BIT
 
 #ifdef BOOST_HAS_INT128
 

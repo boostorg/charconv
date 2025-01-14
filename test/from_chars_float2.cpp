@@ -5,7 +5,7 @@
 #include <boost/charconv.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <boost/config/std/cstdio.hpp>
+#include <cstdio> // stderr
 
 static boost::detail::splitmix64 rng;
 

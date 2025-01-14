@@ -18,7 +18,8 @@
 #include <boost/config/std/random.hpp>
 #include <boost/config/std/type_traits.hpp>
 #include <boost/config/std/cstring.hpp>
-#include <boost/config/std/cinttypes.hpp>
+#include <cinttypes>
+#include <cstdio> // stderr
 
 template <typename T>
 void grind(const std::string& str, const T expected_value)
