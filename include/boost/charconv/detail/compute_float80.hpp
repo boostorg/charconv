@@ -15,7 +15,6 @@
 #include <boost/config/std/cmath.hpp>
 #include <boost/config/std/climits.hpp>
 #include <boost/config/std/cfloat.hpp>
-#include <math.h> // HUGE_VAL
 #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/config/std/iostream.hpp>
@@ -96,7 +95,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
     else if (q > largest_power)
     {
         success = std::errc::result_out_of_range;
-        return negative ? -HUGE_VALL : HUGE_VALL;
+        return negative ? -std::numeric_limits<long double>::infinity() : std::numeric_limits<long double>::infinity();
     }
     else if (q < smallest_power)
     {

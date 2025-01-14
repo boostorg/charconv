@@ -15,7 +15,6 @@
 #include <boost/config/std/cstring.hpp>
 #include <boost/config/std/cmath.hpp>
 #include <stdint.h> // UINT64_C
-#include <math.h> // HUGE_VAL
 
 
 namespace boost { namespace charconv { namespace detail { 
@@ -98,7 +97,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     }
     else if (power > largest_power)
     {
-        return negative ? -HUGE_VAL : HUGE_VAL;
+        return negative ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity();
     }
 
     const std::uint64_t factor_significand = significands_table::significand_64[power - smallest_power];

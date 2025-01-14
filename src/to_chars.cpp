@@ -8,6 +8,7 @@
 module;
 #endif
 
+#include <math.h> // must be before import std
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
 #include <boost/charconv/to_chars.hpp>

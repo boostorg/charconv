@@ -7,10 +7,8 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#ifndef BOOST_USE_MODULES
-#include <cstdint>
-#include <cstring>
-#endif
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
 #include <stdint.h> // UINT64_C
 
 

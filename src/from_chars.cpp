@@ -15,6 +15,7 @@ module;
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
+#include <math.h> // must be before import std
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
@@ -83,7 +84,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_inf)
         value = sign ? -static_cast<__float128>(__builtin_inf()) : static_cast<__float128>(__builtin_inf());
         #else // Conversion from HUGE_VALL should work
-        value = sign ? -static_cast<__float128>(HUGE_VALL) : static_cast<__float128>(HUGE_VALL);
+        value = sign ? -static_cast<__float128>(std::numeric_limits<long double>::infinity()) : static_cast<__float128>(std::numeric_limits<long double>::infinity());
         #endif
 
         return r;
