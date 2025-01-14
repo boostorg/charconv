@@ -2,28 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include "../src/from_chars_float_impl.hpp"
-import std;
-import boost.core;
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
+#include "before_impl_headers.hpp"
 #include "../src/from_chars_float_impl.hpp"
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <limits>
-#include <cstdlib>
-#include <cstring>
-#include <cerrno>
-#include <cmath>
-#endif
-
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cmath.hpp>
 
 
 template <typename T>

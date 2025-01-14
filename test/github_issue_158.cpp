@@ -5,17 +5,8 @@
 //
 // See: https://github.com/cppalliance/charconv/issues/158
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/config.hpp>
-import std;
-import boost.core;
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#endif
 
 void test_values_with_negative_exp()
 {

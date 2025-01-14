@@ -3,31 +3,22 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/fallback_routines.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-import std;
-import boost.core;
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
+#include "before_impl_headers.hpp"
 #include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cstring>
-#include <cstdint>
-#include <cerrno>
-#include <utility>
-#include <string>
-#include <random>
-#include <iomanip>
-#include <sstream>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/utility.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/sstream.hpp>
 #include <boost/core/detail/splitmix64.hpp>
-#endif
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW

@@ -10,8 +10,8 @@
 #include <boost/config/std/system_error.hpp>
 #include <boost/config/std/type_traits.hpp>
 #include <boost/config/std/cstring.hpp>
-#include <cstdint>
-#include <cerrno>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cerrno.hpp>
 
 void test_integer()
 {

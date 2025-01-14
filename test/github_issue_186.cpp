@@ -4,17 +4,10 @@
 //
 // See: https://github.com/boostorg/charconv/issues/186
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-import std;
-import boost.core;
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <iostream>
-#include <string>
-#endif
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/string.hpp>
 
 template <typename T>
 void force_overflow(T value)

@@ -3,19 +3,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/fallback_routines.hpp>
-import std;
-import boost.core;
-#else
-#include <locale>
-#include <iostream>
-#include <boost/charconv.hpp>
-#include <boost/charconv/detail/fallback_routines.hpp>
+#include <boost/config/std/locale.hpp>
+#include <boost/config/std/iostream.hpp>
 #include <boost/core/lightweight_test.hpp>
-#endif
+#include <boost/charconv.hpp>
+#include "before_impl_headers.hpp"
+#include <boost/charconv/detail/fallback_routines.hpp>
 
 template <typename T>
 void test()

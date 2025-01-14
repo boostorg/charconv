@@ -2,19 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <cstdint>
-#include <boost/core/lightweight_test_macros.hpp>
-import std;
-import boost.core;
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <cstdint>
-#include <cstring>
-#endif
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
 
 template <typename T>
 void test()

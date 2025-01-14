@@ -6,7 +6,7 @@
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/config/std/limits.hpp>
-#include <cstdint>
+#include <boost/config/std/cstdint.hpp>
 #include <math.h>
 
 using boost::charconv::detail::compute_float32;

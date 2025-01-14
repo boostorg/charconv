@@ -3,26 +3,16 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 
-#ifdef BOOST_USE_MODULES
-#include <boost/config.hpp>
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-import std;
-import boost.core;
-import boost.charconv;
-#else
 #include <boost/charconv.hpp>
 #include <boost/config.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/string_view.hpp>
-#include <random>
-#include <string>
-#include <limits>
-#include <iomanip>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/iomanip.hpp>
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
-#  include <string_view>
-#endif
+#  include <boost/config/std/string_view.hpp>
 #endif
 
 
