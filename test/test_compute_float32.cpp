@@ -2,21 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <cstdint>
-#include <cmath>
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/compute_float32.hpp>
-import std;
-import boost.core;
-#else
+#include "before_impl_headers.hpp"
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <limits>
+#include <boost/config/std/limits.hpp>
 #include <cstdint>
-#include <cmath>
-#endif
+#include <math.h>
 
 using boost::charconv::detail::compute_float32;
 

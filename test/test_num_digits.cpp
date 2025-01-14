@@ -2,22 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/integer_search_trees.hpp>
-#include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/config.hpp>
-import std;
-import boost.core;
-#else
-#include <boost/charconv/detail/integer_search_trees.hpp>
-#include <boost/charconv/detail/emulated128.hpp>
-#include <boost/charconv/config.hpp>
+#include "before_impl_headers.hpp"
 #include <boost/core/lightweight_test.hpp>
-#include <type_traits>
-#include <limits>
-#endif
+#include <boost/charconv/detail/integer_search_trees.hpp>
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/charconv/config.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
 
 #if defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic push

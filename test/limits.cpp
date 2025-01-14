@@ -4,24 +4,14 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-import std;
-import boost.charconv;
-import boost.core;
-#else
 #include <boost/charconv/limits.hpp>
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <limits>
-#include <string>
-#include <ostream>
-#endif
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/ostream.hpp>
 
 #ifdef BOOST_HAS_INT128
 

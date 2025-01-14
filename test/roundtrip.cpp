@@ -3,30 +3,17 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
-#ifdef BOOST_USE_MODULES
-#include <cstdint> // for INT64_C
-#include <cfloat>
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
-import std;
-import boost.charconv;
-import boost.core;
-#else
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
-#include <system_error>
-#include <iostream>
-#include <iomanip>
-#include <limits>
-#include <numeric>
 #include <cstdint>
-#include <cmath>
-#include <cfloat>
-#endif
-
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/numeric.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/cfloat.hpp>
 
 
 #ifdef BOOST_HAS_INT128

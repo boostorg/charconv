@@ -5,8 +5,8 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include "before_impl_headers.hpp"
-#include <boost/charconv/detail/config.hpp>
+#include <cstdint>
+#include <climits>
 #include <boost/config/std/system_error.hpp>
 #include <boost/config/std/type_traits.hpp>
 #include <boost/config/std/limits.hpp>

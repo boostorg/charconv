@@ -2,19 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/emulated128.hpp>
-#include <cstdint> // UINT64_C
-import std;
-import boost.core;
-#else
-#include <boost/charconv/detail/emulated128.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <limits>
+#include "before_impl_headers.hpp"
+#include <boost/charconv/detail/emulated128.hpp>
+#include <boost/config/std/limits.hpp>
 #include <cstdint>
-#endif
 
 
 void test128()

@@ -2,24 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifdef BOOST_USE_MODULES
-#include <boost/core/lightweight_test_macros.hpp>
-#include <boost/charconv/detail/global_module_fragment.hpp>
-#include <boost/charconv/detail/parser.hpp>
-import std;
-import boost.core;
-import boost.charconv;
-#else
-#include <boost/charconv/detail/parser.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/charconv/to_chars.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <type_traits>
+#include "before_impl_headers.hpp"
+#include <boost/charconv/detail/parser.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/cstring.hpp>
 #include <cstdint>
-#include <cstring>
 #include <cerrno>
-#endif
 
 void test_integer()
 {
