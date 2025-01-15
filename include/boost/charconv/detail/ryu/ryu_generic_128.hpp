@@ -6,9 +6,10 @@
 #ifndef BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 #define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/ryu/generic_128.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
-#include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/to_chars.hpp>
 #include <boost/config/std/cinttypes.hpp>
@@ -354,7 +355,7 @@ static inline int copy_special_str(char* result, const std::ptrdiff_t result_siz
 
     if (result_size >= 3 + static_cast<std::ptrdiff_t>(fd.sign))
     {
-        memcpy(result, "inf", 3);
+        std::memcpy(result, "inf", 3);
         return static_cast<int>(fd.sign) + 3;
     }
 
@@ -428,7 +429,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         std::memmove(result + current_len + v.exponent + 1, result + current_len + v.exponent, static_cast<std::size_t>(-v.exponent));
         const auto shift = result + current_len + v.exponent;
         const auto shift_width = (shift - result) + 1;
-        memcpy(shift, ".", 1U);
+        std::memcpy(shift, ".", 1U);
         ++current_len;
         if (current_len - shift_width > precision)
         {
@@ -481,7 +482,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         }
 
         std::memmove(result - v.exponent - current_len + 2, result, static_cast<std::size_t>(current_len));
-        memcpy(result, "0.", 2U);
+        std::memcpy(result, "0.", 2U);
         std::memset(result + 2, '0', static_cast<std::size_t>(0 - v.exponent - current_len));
         current_len = -v.exponent + 2;
         precision -= current_len - 2;

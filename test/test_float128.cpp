@@ -3,10 +3,8 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 
-#define BOOST_CHARCONV_SOURCE
-#include <boost/charconv/detail/issignaling.hpp>
 #include "../src/float128_impl.hpp"
-#undef BOOST_CHARCONV_SOURCE
+#include <boost/charconv/detail/issignaling.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>

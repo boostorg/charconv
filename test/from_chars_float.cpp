@@ -2,10 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <math.h>
-#define BOOST_CHARCONV_SOURCE
+#include <math.h> // Needs to be before import std in modular builds
 #include "../src/from_chars_float_impl.hpp"
-#undef BOOST_CHARCONV_SOURCE
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/config/std/system_error.hpp>
