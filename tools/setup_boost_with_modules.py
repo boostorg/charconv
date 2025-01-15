@@ -13,6 +13,7 @@ def main():
         ('tools/cmake',         'https://github.com/anarthal/boost-cmake'),
         ('libs/assert',         'https://github.com/anarthal/assert'),
         ('libs/core',           'https://github.com/anarthal/core'),
+        ('libs/config',         'https://github.com/anarthal/config'),
         ('libs/throw_exception','https://github.com/anarthal/throw_exception'),
     ]
 
