@@ -3,7 +3,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/core/lightweight_test.hpp>
-#include "before_impl_headers.hpp"
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/config/std/limits.hpp>
 #include <cstdint>

@@ -2,8 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <math.h>
-#include "before_impl_headers.hpp"
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/config/std/limits.hpp>
@@ -21,7 +19,7 @@ inline void simple_test()
     BOOST_TEST_EQ(compute_float32(38, 1, false, success), 1e38F);
 
     // out of range
-    BOOST_TEST_EQ(compute_float32(310, 5, false, success), HUGE_VALF);
+    BOOST_TEST_EQ(compute_float32(310, 5, false, success), std::numeric_limits<float>::infinity());
     BOOST_TEST_EQ(compute_float32(-325, 5, false, success), 0.0F);
 
     // Composite
