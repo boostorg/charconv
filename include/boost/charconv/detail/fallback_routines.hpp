@@ -16,6 +16,7 @@
 #include <boost/config/std/clocale.hpp>
 #include <boost/config/std/cstring.hpp>
 #include <boost/config/std/cstdio.hpp>
+#include <cerrno>
 
 namespace boost {
 namespace charconv {

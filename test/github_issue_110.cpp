@@ -4,6 +4,7 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <boost/config/std/string.hpp>
 
 template <typename T>
 void overflow_spot_value(const std::string& buffer, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)
