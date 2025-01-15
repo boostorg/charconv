@@ -45,7 +45,7 @@ for local fuzzer in $(all_fuzzers)
     local seed_files = [ glob "$(seed_corpus)/*" ] ;
 
     # Create the output corpus directories
-    make $(corpus) : $(seed_files) : make-corpus : <dependency> $(.make-corpus-script) ;
+    make $(corpus) : $(seed_files) : make-corpus : <dependency>$(.make-corpus-script) ;
     make $(min_corpus) : : common.MkDir ;
 
     # Build the fuzzer
