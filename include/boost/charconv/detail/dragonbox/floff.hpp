@@ -1333,6 +1333,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
 
     auto buffer_size = static_cast<std::size_t>(last - first);
     auto buffer = first;
+    bool trailing_zeros_removed = false;
 
     BOOST_CHARCONV_ASSERT(precision >= 0);
     using namespace detail;
@@ -3849,6 +3850,7 @@ insert_decimal_dot:
         }
 
         // Remove trailing zeros.
+        trailing_zeros_removed = true;
         while (true)
         {
             auto prev = buffer - 1;
@@ -3903,7 +3905,16 @@ insert_decimal_dot:
             print_2_digits(static_cast<std::uint32_t>(decimal_exponent_normalized), buffer);
             buffer += 2;
         }
-    }    
+    }
+    else if (!trailing_zeros_removed && buffer - (decimal_dot_pos + 1) < precision)
+    {
+        // If we have fixed precision, and we don't have enough digits after the decimal yet
+        // insert a sufficient amount of zeros
+        const auto remaining_zeros = precision - (buffer - (decimal_dot_pos + 1));
+        BOOST_CHARCONV_ASSERT(remaining_zeros > 0);
+        std::memset(buffer, '0', static_cast<std::size_t>(remaining_zeros));
+        buffer += remaining_zeros;
+    }
 
     return {buffer, std::errc()};
 
