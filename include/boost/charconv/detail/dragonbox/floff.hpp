@@ -4018,9 +4018,10 @@ round_up_all_9s:
                 ++decimal_dot_pos;
             }
         }
-        else if (decimal_exponent_normalized == 0)
+        else if (decimal_exponent_normalized == 0 || remaining_digits == 1)
         {
             // For the case 0.99...9 -> 1.00...0, the rounded digit is one before the first digit written.
+            // This same case applies for 0.099 -> 0.10 in the precision = 2 instance
             // Note: decimal_exponent_normalized was negative before the increment (++decimal_exponent_normalized),
             //       so we already have printed "00" onto the buffer.
             //       Hence, --digit_starting_pos doesn't go more than the starting position of the buffer.
