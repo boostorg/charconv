@@ -13,6 +13,7 @@ void test(T value, int precision, const char* correct_result)
     char buffer[64] {};
     const auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), value, boost::charconv::chars_format::fixed, precision);
     BOOST_TEST_CSTR_EQ(buffer, correct_result);
+    BOOST_TEST(r);
 }
 
 int main()
