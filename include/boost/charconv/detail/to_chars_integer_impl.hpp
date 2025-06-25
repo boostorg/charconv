@@ -214,15 +214,13 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 // to extract the digits
 //
 // See: https://quuxplusone.github.io/blog/2019/02/28/is-int128-integral/
-template <typename Integer>
+#ifdef BOOST_CHARCONV_HAS_INT128
+template <typename Integer, typename Unsigned_Integer = boost::uint128_type>
+#else
+template <typename Integer, typename Unsigned_Integer = uint128>
+#endif
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, char* last, Integer value) noexcept
 {
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    using Unsigned_Integer = boost::uint128_type;
-    #else
-    using Unsigned_Integer = uint128;
-    #endif
-
     Unsigned_Integer unsigned_value {};
 
     const std::ptrdiff_t user_buffer_size = last - first;
