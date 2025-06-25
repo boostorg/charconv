@@ -232,8 +232,11 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     }
 
     // Strip the sign from the value and apply at the end after parsing if the type is signed
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_IF_CONSTEXPR (std::is_same<boost::int128_type, Integer>::value)
+    BOOST_IF_CONSTEXPR (std::numeric_limits<Integer>::is_signed
+                        #ifdef BOOST_CHARCONV_HAS_INT128
+                        || std::is_same<boost::int128_type, Integer>::value
+                        #endif
+                        )
     {
         if (value < 0)
         {
@@ -246,7 +249,6 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
         }
     }
     else
-    #endif
     {
         unsigned_value = static_cast<Unsigned_Integer>(value);
     }
