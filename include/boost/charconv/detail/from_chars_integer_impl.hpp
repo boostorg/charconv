@@ -93,7 +93,7 @@ constexpr unsigned char digit_from_char(char val) noexcept
 # pragma warning(push)
 # pragma warning(disable: 4146) // unary minus operator applied to unsigned type, result still unsigned
 # pragma warning(disable: 4189) // 'is_negative': local variable is initialized but not referenced
-
+# pragma warning(disable: 4127) // Conditional expression is constant (if constexpr pre-c++17)
 #elif defined(__clang__)
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wconstant-conversion"
@@ -186,8 +186,11 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         }
     }
 
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value)
+    BOOST_IF_CONSTEXPR ((std::numeric_limits<Integer>::is_signed && sizeof(Integer) == 16)
+                        #ifdef BOOST_CHARCONV_HAS_INT128
+                        || std::is_same<boost::int128_type, Integer>::value
+                        #endif
+                        )
     {
         overflow_value /= unsigned_base;
         max_digit %= unsigned_base;
@@ -200,7 +203,6 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         #endif
     }
     else
-    #endif
     {
         overflow_value /= unsigned_base;
         max_digit %= unsigned_base;
