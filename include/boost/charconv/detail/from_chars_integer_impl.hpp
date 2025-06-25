@@ -186,8 +186,11 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         }
     }
 
-    #ifdef BOOST_CHARCONV_HAS_INT128
-    BOOST_IF_CONSTEXPR (std::is_same<Integer, boost::int128_type>::value)
+    BOOST_IF_CONSTEXPR ((std::numeric_limits<Integer>::is_signed && sizeof(Integer) == 16)
+                        #ifdef BOOST_CHARCONV_HAS_INT128
+                        || std::is_same<boost::int128_type, Integer>::value
+                        #endif
+                        )
     {
         overflow_value /= unsigned_base;
         max_digit %= unsigned_base;
@@ -200,7 +203,6 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         #endif
     }
     else
-    #endif
     {
         overflow_value /= unsigned_base;
         max_digit %= unsigned_base;
