@@ -5,6 +5,12 @@
 #ifndef BOOST_CHARCONV_CHARS_FORMAT_HPP
 #define BOOST_CHARCONV_CHARS_FORMAT_HPP
 
+#if defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_SOURCE)
+
+import boost.charconv;
+
+#else
+
 namespace boost { namespace charconv {
 
 // Floating-point format for primitive numerical conversion
@@ -18,5 +24,7 @@ enum class chars_format : unsigned
 };
 
 }} // Namespaces
+
+#endif
 
 #endif // BOOST_CHARCONV_CHARS_FORMAT_HPP

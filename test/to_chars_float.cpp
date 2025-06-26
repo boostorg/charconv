@@ -3,21 +3,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
+#include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cstring>
-#include <cstdint>
-#include <cerrno>
-#include <utility>
-#include <string>
-#include <random>
-#include <iomanip>
-#include <sstream>
 #include <boost/core/detail/splitmix64.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/utility.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/sstream.hpp>
 
 // These numbers diverge from what the formatting is using printf
 // See: https://godbolt.org/z/zd34KcWMW
@@ -52,7 +52,7 @@ void integer_general_format()
     BOOST_TEST(r1.ec == std::errc());
     BOOST_TEST_CSTR_EQ(buffer1, "1217.2772861138403");
     T return_v1;
-    auto r1_return = boost::charconv::from_chars(buffer1, buffer1 + strlen(buffer1), return_v1);
+    auto r1_return = boost::charconv::from_chars(buffer1, buffer1 + std::strlen(buffer1), return_v1);
     BOOST_TEST(r1_return.ec == std::errc());
     BOOST_TEST_EQ(return_v1, v1);
 }

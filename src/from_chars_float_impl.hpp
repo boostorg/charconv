@@ -14,9 +14,9 @@
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <system_error>
-#include <cstdlib>
-#include <cmath>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -104,7 +104,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
             BOOST_IF_CONSTEXPR (std::is_same<T, float>::value)
             {
                 #ifndef __INTEL_LLVM_COMPILER
-                if (return_val == HUGE_VALF || return_val == -HUGE_VALF)
+                if (return_val == std::numeric_limits<float>::infinity() || return_val == -std::numeric_limits<float>::infinity())
                 #else
                 if (return_val >= (std::numeric_limits<T>::max)() || return_val <= std::numeric_limits<T>::lowest())
                 #endif
@@ -125,7 +125,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
             else BOOST_IF_CONSTEXPR (std::is_same<T, double>::value)
             {
                 #ifndef __INTEL_LLVM_COMPILER
-                if (return_val == HUGE_VAL || return_val == -HUGE_VAL)
+                if (return_val == std::numeric_limits<double>::infinity() || return_val == -std::numeric_limits<double>::infinity())
                 #else
                 if (return_val >= (std::numeric_limits<T>::max)() || return_val <= std::numeric_limits<T>::lowest())
                 #endif
@@ -146,7 +146,7 @@ from_chars_result from_chars_float_impl(const char* first, const char* last, T& 
             else BOOST_IF_CONSTEXPR (std::is_same<T, long double>::value)
             {
                 #ifndef __INTEL_LLVM_COMPILER
-                if (return_val == HUGE_VALL || return_val == -HUGE_VALL)
+                if (return_val == std::numeric_limits<long double>::infinity() || return_val == -std::numeric_limits<long double>::infinity())
                 #else
                 if (return_val >= (std::numeric_limits<T>::max)() || return_val <= std::numeric_limits<T>::lowest())
                 #endif
