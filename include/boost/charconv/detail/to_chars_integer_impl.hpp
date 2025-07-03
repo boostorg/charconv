@@ -384,7 +384,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         case 16:
             while (unsigned_value != 0)
             {
-                *end-- = digit_table[unsigned_value & 15U]; // 1<<4 - 1
+                *end-- = digit_table[static_cast<std::size_t>(unsigned_value & 15U)]; // 1<<4 - 1
                 unsigned_value >>= static_cast<Unsigned_Integer>(4);
             }
             break;
@@ -392,7 +392,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         case 32:
             while (unsigned_value != 0)
             {
-                *end-- = digit_table[unsigned_value & 31U]; // 1<<5 - 1
+                *end-- = digit_table[static_cast<std::size_t>(unsigned_value & 31U)]; // 1<<5 - 1
                 unsigned_value >>= static_cast<Unsigned_Integer>(5);
             }
             break;
@@ -400,7 +400,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
         default:
             while (unsigned_value != 0)
             {
-                *end-- = digit_table[unsigned_value % unsigned_base];
+                *end-- = digit_table[static_cast<std::size_t>(unsigned_value % unsigned_base)];
                 unsigned_value /= unsigned_base;
             }
             break;
