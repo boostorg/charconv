@@ -48,10 +48,10 @@ constexpr unsigned char digit_from_char(char val) noexcept
     return uchar_values[static_cast<unsigned char>(val)];
 }
 
-template <bool b>
+template <typename unused = void>
 struct log_2_table_holder_impl
 {
-    static constexpr double log_2_table[] =
+    static constexpr double log_2_table[37] =
     {
         0.0,
         0.0,
@@ -96,11 +96,11 @@ struct log_2_table_holder_impl
 #if (defined(BOOST_NO_CXX17_INLINE_VARIABLES) && (!defined(BOOST_MSVC) || BOOST_MSVC != 1900)) || \
 (defined(__clang_major__) && __clang_major__ == 5)
 
-template <bool b> constexpr double log_2_table_holder_impl<b>::log_2_table[];
+template <typename unused> constexpr double log_2_table_holder_impl<unused>::log_2_table[37];
 
 #endif
 
-using log_2_table_holder = log_2_table_holder_impl<true>;
+using log_2_table_holder = log_2_table_holder_impl<>;
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
