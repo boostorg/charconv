@@ -222,7 +222,7 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
     #if defined(BOOST_CHARCONV_HAS_INT128) && !defined(__GLIBCXX_TYPE_INT_N_0)
     constexpr std::ptrdiff_t nd_2 = std::is_same<Integer, boost::int128_type>::value ? 127 :
                                     std::is_same<Integer, boost::uint128_type>::value ? 128 :
-                                    std::numeric_limits<Integer>::digits10;
+                                    std::numeric_limits<Integer>::digits;
     #else
     constexpr std::ptrdiff_t nd_2 = std::numeric_limits<Integer>::digits;
     #endif
