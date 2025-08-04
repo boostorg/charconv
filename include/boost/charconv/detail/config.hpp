@@ -196,7 +196,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 #if (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) || defined(__PPC64LE__)) && (defined(__LONG_DOUBLE_IEEE128__) || LDBL_MANT_DIG == 113)
 
 #define BOOST_CHARCONV_LDBL_IS_FLOAT128
-static_assert(std::is_same<long double, __float128>::value, "__float128 should be an alias to long double. Please open an issue at: https://github.com/boostorg/charconv")
+static_assert(std::is_same<long double, __float128>::value, "__float128 should be an alias to long double. Please open an issue at: https://github.com/boostorg/charconv");
 
 #endif
 
