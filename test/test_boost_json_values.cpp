@@ -9,16 +9,17 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <vector>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <limits>
-#include <random>
-#include <type_traits>
-#include <cstring>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/vector.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/cstring.hpp>
 #include <cinttypes>
+#include <cstdio> // stderr
 
 template <typename T>
 void grind(const std::string& str, const T expected_value)

@@ -7,7 +7,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
-#include <climits>
+#include <boost/config/std/climits.hpp>
 
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html

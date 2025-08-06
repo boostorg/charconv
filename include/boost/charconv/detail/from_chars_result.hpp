@@ -5,7 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 
-#include <system_error>
+#include <boost/config/std/system_error.hpp>
+
 
 namespace boost { namespace charconv {
 

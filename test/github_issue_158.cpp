@@ -7,6 +7,7 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
+#include <boost/config/std/cstring.hpp>
 
 void test_values_with_negative_exp()
 {

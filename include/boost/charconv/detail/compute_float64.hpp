@@ -10,10 +10,12 @@
 #include <boost/charconv/detail/significand_tables.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/core/bit.hpp>
-#include <cstdint>
-#include <cfloat>
-#include <cstring>
-#include <cmath>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cfloat.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <stdint.h> // UINT64_C
+
 
 namespace boost { namespace charconv { namespace detail { 
 
@@ -95,7 +97,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
     }
     else if (power > largest_power)
     {
-        return negative ? -HUGE_VAL : HUGE_VAL;
+        return negative ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity();
     }
 
     const std::uint64_t factor_significand = significands_table::significand_64[power - smallest_power];

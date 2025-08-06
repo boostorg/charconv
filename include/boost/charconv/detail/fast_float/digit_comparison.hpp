@@ -11,10 +11,10 @@
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/charconv/detail/fast_float/bigint.hpp>
 #include <boost/charconv/detail/fast_float/ascii_number.hpp>
-#include <algorithm>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
+#include <boost/config/std/algorithm.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/iterator.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -165,7 +165,7 @@ BOOST_FORCEINLINE BOOST_CHARCONV_FASTFLOAT_CONSTEXPR20
 void skip_zeros(UC const * & first, UC const * last) noexcept {
   uint64_t val;
   while (!cpp20_and_in_constexpr() && std::distance(first, last) >= int_cmp_len<UC>()) {
-    ::memcpy(&val, first, sizeof(uint64_t));
+    std::memcpy(&val, first, sizeof(uint64_t));
     if (val != int_cmp_zeros<UC>()) {
       break;
     }
@@ -187,7 +187,7 @@ bool is_truncated(UC const * first, UC const * last) noexcept {
   // do 8-bit optimizations, can just compare to 8 literal 0s.
   uint64_t val;
   while (!cpp20_and_in_constexpr() && std::distance(first, last) >= int_cmp_len<UC>()) {
-    ::memcpy(&val, first, sizeof(uint64_t));
+    std::memcpy(&val, first, sizeof(uint64_t));
     if (val != int_cmp_zeros<UC>()) {
       return true;
     }

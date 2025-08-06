@@ -13,23 +13,27 @@
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/apply_sign.hpp>
-#include <limits>
-#include <system_error>
-#include <type_traits>
-#include <array>
-#include <limits>
-#include <utility>
-#include <cstring>
-#include <cstdio>
-#include <cerrno>
-#include <cstdint>
-#include <climits>
-#include <cmath>
+#include <boost/config.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/array.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/utility.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/climits.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <stdint.h> // UINT64_C
+#include <limits.h> // CHAR_BIT
+
 
 namespace boost { namespace charconv { namespace detail {
 
 
-static constexpr char radix_table[] = {
+BOOST_INLINE_CONSTEXPR char radix_table[] = {
         '0', '0', '0', '1', '0', '2', '0', '3', '0', '4',
         '0', '5', '0', '6', '0', '7', '0', '8', '0', '9',
         '1', '0', '1', '1', '1', '2', '1', '3', '1', '4',
@@ -52,7 +56,7 @@ static constexpr char radix_table[] = {
         '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'
 };
 
-static constexpr char digit_table[] = {
+BOOST_INLINE_CONSTEXPR char digit_table[] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',

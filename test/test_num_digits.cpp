@@ -2,12 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/config.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <type_traits>
-#include <limits>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
 
 #if defined(__GNUC__) && (__GNUC__ < 7)
 # pragma GCC diagnostic push
