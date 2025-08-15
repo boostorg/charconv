@@ -2,15 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/parser.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/charconv/to_chars.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <type_traits>
-#include <cstdint>
-#include <cstring>
-#include <cerrno>
+#include <boost/charconv/detail/parser.hpp>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cerrno.hpp>
 
 void test_integer()
 {

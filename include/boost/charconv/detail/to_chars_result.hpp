@@ -5,7 +5,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP
 
-#include <system_error>
+#include <boost/config/std/system_error.hpp>
 
 // 22.13.2, Primitive numerical output conversion
 

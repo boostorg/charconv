@@ -4,9 +4,9 @@
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/cstring.hpp>
 #include <cstdint>
-#include <cstring>
 
 template <typename T>
 void test()

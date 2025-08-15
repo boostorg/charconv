@@ -10,9 +10,10 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#include <limits>
-#include <array>
-#include <cstdint>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/array.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <stdint.h> // UINT64_C
 
 namespace boost { namespace charconv { namespace detail {
 

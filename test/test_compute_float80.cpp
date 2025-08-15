@@ -2,16 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
 #include <boost/charconv/detail/compute_float80.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <random>
-#include <limits>
-#include <cstdint>
-#include <cmath>
-#include <iostream>
-#include <iomanip>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
 
 // MSVC uses long double = double
 // Darwin sometimes uses double-double instead of long double
