@@ -53,6 +53,8 @@ int main()
     test_with_format<100>();
     test_with_format<boost::charconv::limits<double>::max_chars10>();
 
+    // The following match the behavior of GCC 15.2
+
     // 0.01 vs 1e-02
     test_smaller<20>(0.01, "0.01");
     test_smaller<100>(0.01, "0.01");
@@ -64,9 +66,14 @@ int main()
     test_smaller<boost::charconv::limits<double>::max_chars10>(0.001, "0.001");
 
     // 0.0001 vs 1e-04
-    test_smaller<20>(0.0001, "1e-04");
-    test_smaller<100>(0.0001, "1e-04");
-    test_smaller<boost::charconv::limits<double>::max_chars10>(0.0001, "1e-04");
+    test_smaller<20>(0.0001, "0.0001");
+    test_smaller<100>(0.0001, "0.0001");
+    test_smaller<boost::charconv::limits<double>::max_chars10>(0.0001, "0.0001");
+
+    // 0.00001 vs 1e-05
+    test_smaller<20>(0.00001, "1e-05");
+    test_smaller<100>(0.00001, "1e-05");
+    test_smaller<boost::charconv::limits<double>::max_chars10>(0.00001, "1e-05");
 
     return boost::report_errors();
 }
