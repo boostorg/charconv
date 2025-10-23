@@ -31,6 +31,18 @@ void test_with_format()
     }
 }
 
+template <std::size_t size>
+void test_smaller(const double value, const char* res)
+{
+    char buffer[size];
+    const auto r = boost::charconv::to_chars(buffer, buffer + size, value, boost::charconv::chars_format::general);
+    if (BOOST_TEST(r))
+    {
+        *r.ptr = '\0';
+        BOOST_TEST_CSTR_EQ(buffer, res);
+    }
+}
+
 int main()
 {
     test_no_format<20>();
@@ -40,6 +52,21 @@ int main()
     test_with_format<20>();
     test_with_format<100>();
     test_with_format<boost::charconv::limits<double>::max_chars10>();
+
+    // 0.01 vs 1e-02
+    test_smaller<20>(0.01, "0.01");
+    test_smaller<100>(0.01, "0.01");
+    test_smaller<boost::charconv::limits<double>::max_chars10>(0.01, "0.01");
+
+    // 0.001 vs 1e-03
+    test_smaller<20>(0.001, "0.001");
+    test_smaller<100>(0.001, "0.001");
+    test_smaller<boost::charconv::limits<double>::max_chars10>(0.001, "0.001");
+
+    // 0.0001 vs 1e-04
+    test_smaller<20>(0.0001, "1e-04");
+    test_smaller<100>(0.0001, "1e-04");
+    test_smaller<boost::charconv::limits<double>::max_chars10>(0.0001, "1e-04");
 
     return boost::report_errors();
 }
