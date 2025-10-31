@@ -7,13 +7,15 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <cstdint>
-#include <cstring>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <stdint.h> // UINT64_C
+
 
 namespace boost { namespace charconv { namespace detail {
 
 template <typename T>
-inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept;
+bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept;
 
 #if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_QUADMATH)
 

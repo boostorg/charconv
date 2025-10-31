@@ -29,12 +29,12 @@
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/core/bit.hpp>
-#include <type_traits>
-#include <limits>
-#include <cstdint>
-#include <cstring>
-#include <cstddef>
-#include <climits>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstddef.hpp>
+#include <stdint.h> // UINT64_C
+#include <limits.h> // CHAR_BIT
 
 namespace boost { namespace charconv { namespace detail {
 

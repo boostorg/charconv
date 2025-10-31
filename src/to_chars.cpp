@@ -4,15 +4,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+module;
+#endif
+
+#include <math.h> // must be before import std
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <limits>
-#include <cstring>
-#include <cstdio>
-#include <cstdint>
-#include <cmath>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
+
+#ifdef BOOST_USE_MODULES
+module boost.charconv;
+#endif
+
 
 namespace boost { namespace charconv { namespace detail { namespace to_chars_detail {
 
@@ -549,6 +559,8 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
 
 }}}} // Namespaces
 
+extern "C++" {
+
 boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, float value,
                                                            boost::charconv::chars_format fmt) noexcept
 {
@@ -753,3 +765,5 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<float>(value), fmt, precision);
 }
 #endif
+
+} // extern "C++"

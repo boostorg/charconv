@@ -7,7 +7,8 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
-#include <type_traits>
+#include <boost/config/std/type_traits.hpp>
+
 
 namespace boost {
 namespace charconv {

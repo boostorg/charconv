@@ -3,10 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <locale>
-#include <iostream>
-#include <boost/charconv.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
+#include <boost/charconv.hpp>
+#include <boost/config/std/locale.hpp>
+#include <boost/config/std/iostream.hpp>
 #include <boost/core/lightweight_test.hpp>
 
 template <typename T>

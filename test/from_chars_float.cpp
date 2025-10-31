@@ -2,18 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <math.h> // Needs to be before import std in modular builds
 #include "../src/from_chars_float_impl.hpp"
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <limits>
-#include <cstdlib>
-#include <cstring>
-#include <cerrno>
-#include <cmath>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cmath.hpp>
+
 
 template <typename T>
 void spot_value(const std::string& buffer, T expected_value, boost::charconv::chars_format fmt = boost::charconv::chars_format::general)

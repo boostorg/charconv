@@ -2,15 +2,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/config.hpp>
+
+#include "../src/float128_impl.hpp"
+#include <boost/charconv/detail/issignaling.hpp>
+#include <boost/charconv.hpp>
+#include <boost/core/lightweight_test.hpp>
+#include <boost/core/detail/splitmix64.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/random.hpp>
 
 #if defined(BOOST_CHARCONV_HAS_QUADMATH) && defined(BOOST_HAS_INT128)
 
-#include <ostream>
+#include <boost/config/std/ostream.hpp>
 #include <quadmath.h>
 
 #ifdef BOOST_CHARCONV_HAS_STDFLOAT128
-#include <charconv>
+#include <boost/config/std/charconv.hpp>
 
 std::ostream& operator<<( std::ostream& os, __float128 v )
 {
@@ -82,17 +92,6 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
     return os;
 }
 
-
-#include <boost/charconv.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <boost/core/detail/splitmix64.hpp>
-#include <boost/charconv/detail/issignaling.hpp>
-#include <limits>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <random>
-#include "../src/float128_impl.hpp"
 
 constexpr int N = 1024;
 static boost::detail::splitmix64 rng;

@@ -2,18 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+
 #include <boost/charconv.hpp>
 #include <boost/config.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/string_view.hpp>
-#include <random>
-#include <string>
-#include <limits>
-#include <iomanip>
-
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/iomanip.hpp>
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
-#  include <string_view>
+#  include <boost/config/std/string_view.hpp>
 #endif
+
 
 static std::mt19937_64 rng(42);
 constexpr std::size_t N = 1024;

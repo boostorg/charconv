@@ -10,12 +10,13 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <system_error>
-#include <type_traits>
-#include <locale>
-#include <clocale>
-#include <cstring>
-#include <cstdio>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/locale.hpp>
+#include <boost/config/std/clocale.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <cerrno>
 
 namespace boost {
 namespace charconv {
@@ -156,7 +157,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         return_value = std::strtof(buffer, &str_end);
 
         #ifndef __INTEL_LLVM_COMPILER
-        if (return_value == HUGE_VALF)
+        if (return_value == std::numeric_limits<float>::infinity())
                 #else
             if (return_value >= (std::numeric_limits<T>::max)())
                 #endif
@@ -169,7 +170,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         return_value = std::strtod(buffer, &str_end);
 
         #ifndef __INTEL_LLVM_COMPILER
-        if (return_value == HUGE_VAL)
+        if (return_value == std::numeric_limits<double>::infinity())
                 #else
             if (return_value >= (std::numeric_limits<T>::max)())
                 #endif
@@ -182,7 +183,7 @@ from_chars_result from_chars_strtod_impl(const char* first, const char* last, T&
         return_value = std::strtold(buffer, &str_end);
 
         #ifndef __INTEL_LLVM_COMPILER
-        if (return_value == HUGE_VALL)
+        if (return_value == std::numeric_limits<long double>::infinity())
                 #else
             if (return_value >= (std::numeric_limits<T>::max)())
                 #endif

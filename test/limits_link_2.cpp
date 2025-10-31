@@ -3,7 +3,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/limits.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
 
 void test_odr_use( int const* );
 

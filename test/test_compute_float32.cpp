@@ -4,9 +4,8 @@
 
 #include <boost/charconv/detail/compute_float32.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <limits>
-#include <cstdint>
-#include <cmath>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 using boost::charconv::detail::compute_float32;
 
@@ -20,7 +19,7 @@ inline void simple_test()
     BOOST_TEST_EQ(compute_float32(38, 1, false, success), 1e38F);
 
     // out of range
-    BOOST_TEST_EQ(compute_float32(310, 5, false, success), HUGE_VALF);
+    BOOST_TEST_EQ(compute_float32(310, 5, false, success), std::numeric_limits<float>::infinity());
     BOOST_TEST_EQ(compute_float32(-325, 5, false, success), 0.0F);
 
     // Composite

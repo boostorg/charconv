@@ -3,15 +3,22 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
+#include <boost/charconv.hpp>
+#include <boost/core/lightweight_test.hpp>
+#include <boost/core/detail/splitmix64.hpp>
+#include <cstdint>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/numeric.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/cfloat.hpp>
+
 
 #ifdef BOOST_HAS_INT128
 
-// We need to define these operator<< overloads before
-// including boost/core/lightweight_test.hpp, or they
-// won't be visible to BOOST_TEST_EQ
 // LCOV_EXCL_START
-
-#include <ostream>
 
 static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
 {
@@ -58,18 +65,6 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 // LCOV_EXCL_STOP
 
 #endif // #ifdef BOOST_HAS_INT128
-
-#include <boost/charconv.hpp>
-#include <boost/core/lightweight_test.hpp>
-#include <boost/core/detail/splitmix64.hpp>
-#include <system_error>
-#include <iostream>
-#include <iomanip>
-#include <limits>
-#include <numeric>
-#include <cstdint>
-#include <cfloat>
-#include <cmath>
 
 int const N = 1024;
 
@@ -250,7 +245,7 @@ template<class T> void test_roundtrip( T value, boost::charconv::chars_format fm
     T v2 = 0;
     auto r2 = boost::charconv::from_chars( buffer, r.ptr, v2, fmt );
 
-    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST_EQ( v2, value ) && BOOST_TEST( r2.ptr == r.ptr) )
+    if( BOOST_TEST( r2.ec == std::errc() ) && BOOST_TEST( v2 == value ) && BOOST_TEST( r2.ptr == r.ptr) )
     {
     }
     else
@@ -296,7 +291,7 @@ int64_t ToOrdinal(FPType x)
 
     //  Number of normal representable numbers for each exponent.
     static const auto
-            NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
+            NumbersPerExponent = static_cast<std::uint64_t>(std::scalbn(Radix-1, SignificandDigits-1));
 
     if (x == 0)
         return 0;
@@ -319,7 +314,7 @@ int64_t ToOrdinal(FPType x)
     /*  Start with the number of representable numbers in preceding normal
         exponent ranges.
     */
-    auto count = static_cast<int64_t>(static_cast<uint64_t>(exponent - MinimumExponent) * NumbersPerExponent);
+    auto count = static_cast<int64_t>(static_cast<std::uint64_t>(exponent - MinimumExponent) * NumbersPerExponent);
 
     /*  For subnormal numbers, fraction * radix ** SignificandDigits is the
         number of representable numbers from 0 to x.  For normal numbers,

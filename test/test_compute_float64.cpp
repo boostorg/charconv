@@ -4,10 +4,9 @@
 
 #include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <random>
-#include <limits>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/limits.hpp>
 #include <cstdint>
-#include <cmath>
 
 using boost::charconv::detail::compute_float64;
 
@@ -21,7 +20,7 @@ inline void simple_test()
     BOOST_TEST_EQ(compute_float64(308, 1, false, success), 1e308);
 
     // out of range
-    BOOST_TEST_EQ(compute_float64(310, 5, false, success), HUGE_VAL);
+    BOOST_TEST_EQ(compute_float64(310, 5, false, success), std::numeric_limits<double>::infinity());
     BOOST_TEST_EQ(compute_float64(-325, 5, false, success), 0);
 
     // Composite

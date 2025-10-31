@@ -6,9 +6,9 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 
 #include <boost/charconv/detail/compute_float64.hpp>
-#include <limits>
-#include <cstdint>
-#include <cmath>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -27,7 +27,7 @@ inline float compute_float32(std::int64_t power, std::uint64_t i, bool negative,
         if (d > static_cast<double>((std::numeric_limits<float>::max)()) ||
             d < static_cast<double>((std::numeric_limits<float>::lowest)()))
         {
-            return_val = negative ? -HUGE_VALF : HUGE_VALF;
+            return_val = negative ? -std::numeric_limits<float>::infinity() : std::numeric_limits<float>::infinity();
             success = false;
         }
         else
@@ -39,7 +39,7 @@ inline float compute_float32(std::int64_t power, std::uint64_t i, bool negative,
     {
         if (power > 38)
         {
-            return_val = negative ? -HUGE_VALF : HUGE_VALF;
+            return_val = negative ? -std::numeric_limits<float>::infinity() : std::numeric_limits<float>::infinity();
         }
         else
         {

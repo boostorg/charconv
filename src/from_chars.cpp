@@ -3,6 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+module;
+#endif
+
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
 #ifndef _SCL_SECURE_NO_WARNINGS
 # define _SCL_SECURE_NO_WARNINGS
@@ -11,26 +15,33 @@
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
+#include <math.h> // must be before import std
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <system_error>
-#include <string>
-#include <cstdlib>
-#include <cerrno>
-#include <cstring>
-#include <limits>
-
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/limits.hpp>
 #if BOOST_CHARCONV_LDBL_BITS > 64
 #  include <boost/charconv/detail/compute_float80.hpp>
 #  include <boost/charconv/detail/emulated128.hpp>
 #endif
 
+#ifdef BOOST_USE_MODULES
+module boost.charconv;
+#endif
+
+
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
+
+extern "C++" {
 
 boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, float& value, boost::charconv::chars_format fmt) noexcept
 {
@@ -73,7 +84,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
         #if BOOST_CHARCONV_HAS_BUILTIN(__builtin_inf)
         value = sign ? -static_cast<__float128>(__builtin_inf()) : static_cast<__float128>(__builtin_inf());
         #else // Conversion from HUGE_VALL should work
-        value = sign ? -static_cast<__float128>(HUGE_VALL) : static_cast<__float128>(HUGE_VALL);
+        value = sign ? -static_cast<__float128>(std::numeric_limits<long double>::infinity()) : static_cast<__float128>(std::numeric_limits<long double>::infinity());
         #endif
 
         return r;
@@ -505,3 +516,5 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
 }
 #endif
+
+} // extern "C++"

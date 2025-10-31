@@ -7,6 +7,13 @@
 #ifndef BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 #define BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 
+#if defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_SOURCE)
+
+#include <boost/charconv/detail/macros.hpp>
+import boost.charconv;
+
+#else
+
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/config.hpp>
@@ -143,5 +150,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, std::bfloa
 
 } // namespace charconv
 } // namespace boost
+
+#endif
 
 #endif // #ifndef BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED

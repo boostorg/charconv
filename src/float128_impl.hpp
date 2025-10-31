@@ -11,9 +11,9 @@
 #include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/charconv/detail/issignaling.hpp>
 #include <boost/charconv/limits.hpp>
-#include <system_error>
-#include <cstring>
-#include <cstdint>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 // Only add in float128 support if the build system says it can
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
