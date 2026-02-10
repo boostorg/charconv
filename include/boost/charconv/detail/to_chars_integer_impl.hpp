@@ -270,7 +270,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
     // If the value fits into 64 bits use the other method of processing
     if (converted_value < (std::numeric_limits<std::uint64_t>::max)())
     {
-        return to_chars_integer_impl(first, last, static_cast<std::uint64_t>(value));
+        return to_chars_integer_impl(first, last, static_cast<std::uint64_t>(converted_value));
     }
 
     constexpr std::uint32_t ten_9 = UINT32_C(1000000000);
