@@ -8,6 +8,11 @@
 
 #ifdef BOOST_CHARCONV_HAS_INT128
 
+#if defined(__GNUC__) && __GNUC__ == 12
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+
 #include <boost/core/lightweight_test.hpp>
 #include <string>
 #include <cstdlib>
