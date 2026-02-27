@@ -5,6 +5,17 @@
 #ifndef BOOST_CHARCONV_CHARS_FORMAT_HPP
 #define BOOST_CHARCONV_CHARS_FORMAT_HPP
 
+#if defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
+#ifndef BOOST_IN_MODULE_PURVIEW
+import boost.charconv;
+#ifndef BOOST_CHARCONV_CONSTEXPR
+#define BOOST_CHARCONV_CONSTEXPR constexpr
+#endif 
+#endif
+
+#else
+
 #include <boost/charconv/config.hpp>
 
 namespace boost { namespace charconv {
@@ -20,5 +31,7 @@ BOOST_CHARCONV_MODULE_EXPORT enum class chars_format : unsigned
 };
 
 }} // Namespaces
+
+#endif // defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_CHARS_FORMAT_HPP

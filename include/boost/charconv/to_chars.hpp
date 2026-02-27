@@ -7,6 +7,17 @@
 #ifndef BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 #define BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED
 
+#if defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
+#ifndef BOOST_IN_MODULE_PURVIEW
+import boost.charconv;
+#ifndef BOOST_CHARCONV_CONSTEXPR
+#define BOOST_CHARCONV_CONSTEXPR constexpr
+#endif 
+#endif
+
+#else
+
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/config.hpp>
@@ -143,5 +154,7 @@ BOOST_CHARCONV_MODULE_EXPORT BOOST_CHARCONV_DECL to_chars_result to_chars(char* 
 
 } // namespace charconv
 } // namespace boost
+
+#endif // defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // #ifndef BOOST_CHARCONV_TO_CHARS_HPP_INCLUDED

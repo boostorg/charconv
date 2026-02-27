@@ -5,6 +5,17 @@
 #ifndef BOOST_CHARCONV_LIMITS_HPP
 #define BOOST_CHARCONV_LIMITS_HPP
 
+#if defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
+#ifndef BOOST_IN_MODULE_PURVIEW
+import boost.charconv;
+#ifndef BOOST_CHARCONV_CONSTEXPR
+#define BOOST_CHARCONV_CONSTEXPR constexpr
+#endif 
+#endif
+
+#else
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/config/std/limits.hpp>
 #include <boost/config/std/type_traits.hpp>
@@ -93,5 +104,7 @@ template<typename T> BOOST_ATTRIBUTE_UNUSED constexpr int limits<T>::max_chars;
 #endif // defined(BOOST_NO_CXX17_INLINE_VARIABLES)
 
 }} // namespace boost::charconv
+
+#endif // defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_LIMITS_HPP

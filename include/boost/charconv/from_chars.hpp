@@ -6,6 +6,17 @@
 #ifndef BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
 #define BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
 
+#if defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
+#ifndef BOOST_IN_MODULE_PURVIEW
+import boost.charconv;
+#ifndef BOOST_CHARCONV_CONSTEXPR
+#define BOOST_CHARCONV_CONSTEXPR constexpr
+#endif 
+#endif
+
+#else
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/from_chars_integer_impl.hpp>
@@ -251,5 +262,7 @@ BOOST_CHARCONV_MODULE_EXPORT BOOST_CHARCONV_DECL from_chars_result from_chars(bo
 
 } // namespace charconv
 } // namespace boost
+
+#endif // defined(BOOST_USE_MODULES) && !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // #ifndef BOOST_CHARCONV_FROM_CHARS_HPP_INCLUDED
