@@ -13,10 +13,10 @@
 #include <boost/charconv/detail/fast_float/digit_comparison.hpp>
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 
-#include <cmath>
-#include <cstring>
-#include <limits>
-#include <system_error>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/system_error.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 

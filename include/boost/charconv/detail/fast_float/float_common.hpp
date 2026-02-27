@@ -12,12 +12,12 @@
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <cfloat>
-#include <cstdint>
-#include <cassert>
-#include <cstring>
-#include <type_traits>
-#include <system_error>
+#include <boost/config/std/cfloat.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cassert.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/system_error.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -38,7 +38,7 @@ using parse_options = parse_options_t<char>;
 }}}}
 
 #if BOOST_CHARCONV_FASTFLOAT_HAS_BIT_CAST
-#include <bit>
+#include <boost/config/std/bit.hpp>
 #endif
 
 #if (defined(__x86_64) || defined(__x86_64__) || defined(_M_X64)   \

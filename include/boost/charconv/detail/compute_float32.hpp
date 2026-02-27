@@ -6,9 +6,9 @@
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 
 #include <boost/charconv/detail/compute_float64.hpp>
-#include <limits>
-#include <cstdint>
-#include <cmath>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 

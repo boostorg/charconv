@@ -7,8 +7,8 @@
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <cstdint>
-#include <cstring>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 

@@ -1,3 +1,8 @@
+// Make the header safe to include from libraries supporting modules
+#if defined(BOOST_IN_MODULE_PURVIEW) && !defined(BOOST_CHARCONV_CONFIG_HPP_INCLUDED)
+#  error "Please #include <boost/charconv/config.hpp> in your module global fragment"
+#endif
+
 #ifndef BOOST_CHARCONV_CONFIG_HPP_INCLUDED
 #define BOOST_CHARCONV_CONFIG_HPP_INCLUDED
 
@@ -7,7 +12,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
-#include <climits>
+#include <boost/config/std/climits.hpp>
 
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
@@ -34,6 +39,13 @@
 
 #include <boost/config/auto_link.hpp>
 
+#endif
+
+// Modules
+#ifdef BOOST_USE_MODULES
+#  define BOOST_CHARCONV_MODULE_EXPORT export
+#else
+#  define BOOST_CHARCONV_MODULE_EXPORT
 #endif
 
 #endif // BOOST_CHARCONV_CONFIG_HPP_INCLUDED

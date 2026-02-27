@@ -10,10 +10,10 @@
 #include <boost/charconv/detail/significand_tables.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/core/bit.hpp>
-#include <cstdint>
-#include <cfloat>
-#include <cstring>
-#include <cmath>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cfloat.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail { 
 

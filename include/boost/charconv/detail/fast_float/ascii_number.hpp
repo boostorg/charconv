@@ -9,10 +9,10 @@
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 
 #include <boost/charconv/detail/fast_float/float_common.hpp>
-#include <cctype>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
+#include <boost/config/std/cctype.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/iterator.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 

@@ -10,12 +10,12 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <system_error>
-#include <type_traits>
-#include <locale>
-#include <clocale>
-#include <cstring>
-#include <cstdio>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/locale.hpp>
+#include <boost/config/std/clocale.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
 
 namespace boost {
 namespace charconv {

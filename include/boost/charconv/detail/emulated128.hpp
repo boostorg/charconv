@@ -11,11 +11,11 @@
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/core/bit.hpp>
-#include <type_traits>
-#include <limits>
-#include <cstdint>
-#include <cassert>
-#include <cmath>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cassert.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 

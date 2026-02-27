@@ -8,7 +8,7 @@
 #include <boost/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/type_traits.hpp>
-#include <type_traits>
+#include <boost/config/std/type_traits.hpp>
 
 // We are purposefully converting values here
 #ifdef BOOST_MSVC

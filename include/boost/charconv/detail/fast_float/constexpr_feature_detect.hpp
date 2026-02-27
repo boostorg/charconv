@@ -5,6 +5,11 @@
 //
 // Derivative of: https://github.com/fastfloat/fast_float
 
+// Make the header safe to include from libraries supporting modules
+#if defined(BOOST_IN_MODULE_PURVIEW) && !defined(BOOST_CHARCONV_DETAIL_FASTFLOAT_CONSTEXPR_FEATURE_DETECT_HPP)
+#  error "Please #include <boost/charconv/detail/fast_float/constexpr_feature_support.hpp> in your module global fragment"
+#endif
+
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_CONSTEXPR_FEATURE_DETECT_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_CONSTEXPR_FEATURE_DETECT_HPP
 
