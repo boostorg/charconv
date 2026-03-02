@@ -155,8 +155,8 @@ BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* firs
         else
         #endif
         {
-            overflow_value = (std::numeric_limits<Integer>::max)();
-            max_digit = (std::numeric_limits<Integer>::max)();
+            overflow_value = static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)());
+            max_digit = static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)());
         }
 
         if (is_negative)
