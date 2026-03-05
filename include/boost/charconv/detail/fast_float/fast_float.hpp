@@ -8,7 +8,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_FLOAT_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_FLOAT_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 

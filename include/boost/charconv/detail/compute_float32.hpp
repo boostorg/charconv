@@ -5,7 +5,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/compute_float64.hpp>
 #include <boost/config/std/limits.hpp>

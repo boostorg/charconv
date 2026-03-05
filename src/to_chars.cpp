@@ -9,26 +9,16 @@ module;
 #include <boost/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/detail/config.hpp>
+#include <boost/charconv/detail/disable_module_warnings.hpp>
 #include <cstdint>
 #include <climits>
 
-#ifdef BOOST_USE_MODULES
 module boost.charconv;
 import std;
 import boost.core;
+import :internal;
 
 #define BOOST_IN_MODULE_PURVIEW
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winclude-angled-in-module-purview"
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 5244)
-#endif
-#endif // BOOST_USE_MODULES
 
 #include "float128_impl.hpp"
 #include "to_chars_float_impl.hpp"

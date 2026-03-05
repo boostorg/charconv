@@ -5,7 +5,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>

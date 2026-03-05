@@ -15,7 +15,8 @@ add_library(boost_charconv
 add_library(Boost::charconv ALIAS boost_charconv)
 
 if (BOOST_USE_MODULES)
-  target_sources(boost_charconv PUBLIC FILE_SET CXX_MODULES BASE_DIRS modules FILES modules/boost_charconv.cppm)
+  target_sources(boost_charconv PUBLIC FILE_SET CXX_MODULES BASE_DIRS modules FILES modules/boost_charconv.cppm
+                                PRIVATE FILE_SET internal_unit TYPE CXX_MODULES BASE_DIRS src FILES src/internal.cppm)
 
   # Enable and propagate C++23, import std, and the modules macro
   target_compile_features(boost_charconv PUBLIC cxx_std_23)

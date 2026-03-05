@@ -8,7 +8,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_FLOAT_COMMON_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FLOAT_COMMON_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/fast_float/constexpr_feature_detect.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>

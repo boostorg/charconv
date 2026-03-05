@@ -5,7 +5,7 @@
 #ifndef BOOST_FALLBACK_ROUTINES_HPP
 #define BOOST_FALLBACK_ROUTINES_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/dragonbox/floff.hpp>

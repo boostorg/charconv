@@ -8,7 +8,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_PARSE_NUMBER_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_PARSE_NUMBER_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/fast_float/ascii_number.hpp>
 #include <boost/charconv/detail/fast_float/decimal_to_binary.hpp>

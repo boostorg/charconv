@@ -6,7 +6,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 #define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/ryu/generic_128.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>

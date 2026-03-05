@@ -8,7 +8,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/config/std/cctype.hpp>
