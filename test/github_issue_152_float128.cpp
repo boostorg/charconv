@@ -4,9 +4,10 @@
 
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 
+#include <quadmath.h>
+#include <math.h>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/config/std/ostream.hpp>
-#include <quadmath.h>
 
 std::ostream& operator<<( std::ostream& os, __float128 v )
 {
