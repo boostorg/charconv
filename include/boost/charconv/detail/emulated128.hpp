@@ -8,6 +8,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 #define BOOST_CHARCONV_DETAIL_EMULATED128_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/core/bit.hpp>
@@ -825,7 +827,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR uint128 &uint128::operator%=(uint128 v) noexcept
     return *this;
 }
 
-static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
+inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
 {
     // __emulu is not available on ARM https://learn.microsoft.com/en-us/cpp/intrinsics/emul-emulu?view=msvc-170
     #if defined(BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS) && !defined(_M_ARM)
@@ -1001,5 +1003,7 @@ struct numeric_limits<boost::charconv::detail::uint128>
 };
 
 } // Namespace std
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_EMULATED128_HPP

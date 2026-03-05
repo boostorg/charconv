@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 #define BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/type_traits.hpp>
@@ -46,5 +48,7 @@ constexpr Unsigned_Integer apply_sign(Unsigned_Integer val) noexcept
 #elif defined(__clang__)
 # pragma clang diagnostic pop
 #endif
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_APPLY_SIGN_HPP

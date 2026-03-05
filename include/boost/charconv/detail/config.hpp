@@ -12,7 +12,27 @@
 
 #include <boost/config.hpp>
 #include <boost/config/std/type_traits.hpp>
-#include <boost/config/std/cfloat.hpp>
+#include <cfloat>
+
+// Long double characteristics
+
+// 80 bit long double (e.g. x86-64)
+#if LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
+#  define BOOST_CHARCONV_LDBL_BITS 80
+
+// 128 bit long double (e.g. s390x, ppcle64)
+#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
+#  define BOOST_CHARCONV_LDBL_BITS 128
+
+// 64 bit long double (double == long double on ARM)
+#elif LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+#  define BOOST_CHARCONV_LDBL_BITS 64
+
+// Unsupported long double representation
+#  define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+#  define BOOST_CHARCONV_LDBL_BITS -1
+
+#endif // long double feature detection
 
 #include <boost/assert.hpp>
 #define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)

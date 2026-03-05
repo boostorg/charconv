@@ -5,7 +5,10 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/config/std/system_error.hpp>
+#include <boost/charconv/config.hpp>
 
 namespace boost { namespace charconv {
 
@@ -37,5 +40,7 @@ struct from_chars_result_t
 BOOST_CHARCONV_MODULE_EXPORT using from_chars_result = from_chars_result_t<char>;
 
 }} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP

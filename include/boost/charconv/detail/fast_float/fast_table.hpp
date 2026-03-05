@@ -8,6 +8,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_TABLE_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_TABLE_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/config/std/cstdint.hpp>
 
@@ -704,5 +706,7 @@ constexpr uint64_t powers_template<unused>::power_of_five_128[number_of_entries]
 using powers = powers_template<>;
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

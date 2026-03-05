@@ -24,6 +24,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FLOFF
 #define BOOST_CHARCONV_DETAIL_FLOFF
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
@@ -575,7 +577,7 @@ struct uint_with_known_number_of_digits<digits_, false>
 };
 
 template <typename HasFurtherDigits, typename... Args, typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-static BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
+BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
     std::uint32_t current_digits, std::uint32_t fractional_part,
     int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
     Args...) noexcept 
@@ -590,7 +592,7 @@ static BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
 
 template <typename HasFurtherDigits, typename... Args,
           typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-static BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
+BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
     std::uint32_t current_digits, std::uint32_t fractional_part,
     int remaining_digits_in_the_current_subsegment, HasFurtherDigits has_further_digits,
     Args... args) noexcept 
@@ -605,7 +607,7 @@ static BOOST_FORCEINLINE bool check_rounding_condition_inside_subsegment(
 
 template <typename HasFurtherDigits, typename... Args,
           typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-static BOOST_FORCEINLINE bool check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
+BOOST_FORCEINLINE bool check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                                      HasFurtherDigits has_further_digits, Args...) noexcept 
 {
     if (!next_bit) 
@@ -618,7 +620,7 @@ static BOOST_FORCEINLINE bool check_rounding_condition_with_next_bit(std::uint32
 
 template <typename HasFurtherDigits, typename... Args,
           typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-static BOOST_FORCEINLINE bool check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
+BOOST_FORCEINLINE bool check_rounding_condition_with_next_bit(std::uint32_t current_digits, bool next_bit,
                                                                      HasFurtherDigits has_further_digits, Args... args) noexcept 
 {
     if (!next_bit) 
@@ -631,7 +633,7 @@ static BOOST_FORCEINLINE bool check_rounding_condition_with_next_bit(std::uint32
 
 template <typename UintWithKnownDigits, typename HasFurtherDigits, typename... Args, 
           typename std::enable_if<std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-static BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
+BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
     std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
     HasFurtherDigits has_further_digits, Args...) noexcept 
 {
@@ -646,7 +648,7 @@ static BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_
 
 template <typename UintWithKnownDigits, typename HasFurtherDigits, typename... Args, 
           typename std::enable_if<!std::is_same<HasFurtherDigits, bool>::value, bool>::type = true>
-static BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
+BOOST_FORCEINLINE bool check_rounding_condition_subsegment_boundary_with_next_subsegment(
     std::uint32_t current_digits, UintWithKnownDigits next_subsegment,
     HasFurtherDigits has_further_digits, Args... args) noexcept 
 {
@@ -4052,5 +4054,7 @@ round_up_all_9s:
 #ifdef BOOST_MSVC
 # pragma warning(pop)
 #endif
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_FLOFF

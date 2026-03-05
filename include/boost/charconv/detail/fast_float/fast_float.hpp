@@ -8,6 +8,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_FLOAT_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FAST_FLOAT_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
@@ -45,4 +47,7 @@ from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last,
 
 }}}} // namespace fast_float
 #include <boost/charconv/detail/fast_float/parse_number.hpp>
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #endif // BOOST_CHARCONV_FASTFLOAT_FAST_FLOAT_H

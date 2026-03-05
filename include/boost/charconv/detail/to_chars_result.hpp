@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/config/std/system_error.hpp>
 
 // 22.13.2, Primitive numerical output conversion
@@ -30,5 +32,7 @@ BOOST_CHARCONV_MODULE_EXPORT struct to_chars_result
 };
 
 }} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif //BOOST_CHARCONV_DETAIL_TO_CHARS_RESULT_HPP

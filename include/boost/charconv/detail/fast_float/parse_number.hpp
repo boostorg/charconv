@@ -8,6 +8,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_PARSE_NUMBER_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_PARSE_NUMBER_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/fast_float/ascii_number.hpp>
 #include <boost/charconv/detail/fast_float/decimal_to_binary.hpp>
 #include <boost/charconv/detail/fast_float/digit_comparison.hpp>
@@ -243,5 +245,7 @@ from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last,
 }
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

@@ -5,6 +5,8 @@
 #ifndef BOOST_FALLBACK_ROUTINES_HPP
 #define BOOST_FALLBACK_ROUTINES_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/dragonbox/floff.hpp>
 #include <boost/charconv/detail/config.hpp>
@@ -241,5 +243,7 @@ inline from_chars_result from_chars_strtod(const char* first, const char* last, 
 } //namespace detail
 } //namespace charconv
 } //namespace boost
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif //BOOST_FALLBACK_ROUTINES_HPP

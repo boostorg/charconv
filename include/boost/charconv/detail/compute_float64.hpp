@@ -6,6 +6,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/significand_tables.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
@@ -197,5 +199,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
 }
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP

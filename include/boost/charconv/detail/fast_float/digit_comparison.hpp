@@ -8,6 +8,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_DIGIT_COMPARISON_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_DIGIT_COMPARISON_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/charconv/detail/fast_float/bigint.hpp>
 #include <boost/charconv/detail/fast_float/ascii_number.hpp>
@@ -438,5 +440,7 @@ adjusted_mantissa digit_comp(parsed_number_string_t<UC>& num, adjusted_mantissa 
 }
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

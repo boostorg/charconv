@@ -8,6 +8,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_FLOAT_COMMON_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_FLOAT_COMMON_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/fast_float/constexpr_feature_detect.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/detail/config.hpp>
@@ -288,23 +290,23 @@ struct binary_format_lookup_tables;
 template <typename T> struct binary_format : binary_format_lookup_tables<T> {
   using equiv_uint = typename std::conditional<sizeof(T) == 4, uint32_t, uint64_t>::type;
 
-  static inline constexpr int mantissa_explicit_bits();
-  static inline constexpr int minimum_exponent();
-  static inline constexpr int infinite_power();
-  static inline constexpr int sign_index();
-  static inline constexpr int min_exponent_fast_path(); // used when fegetround() == FE_TONEAREST
-  static inline constexpr int max_exponent_fast_path();
-  static inline constexpr int max_exponent_round_to_even();
-  static inline constexpr int min_exponent_round_to_even();
-  static inline constexpr uint64_t max_mantissa_fast_path(int64_t power);
-  static inline constexpr uint64_t max_mantissa_fast_path(); // used when fegetround() == FE_TONEAREST
-  static inline constexpr int largest_power_of_ten();
-  static inline constexpr int smallest_power_of_ten();
-  static inline constexpr T exact_power_of_ten(int64_t power);
-  static inline constexpr size_t max_digits();
-  static inline constexpr equiv_uint exponent_mask();
-  static inline constexpr equiv_uint mantissa_mask();
-  static inline constexpr equiv_uint hidden_bit_mask();
+  static inline constexpr int mantissa_explicit_bits(){}
+  static inline constexpr int minimum_exponent(){}
+  static inline constexpr int infinite_power(){}
+  static inline constexpr int sign_index(){}
+  static inline constexpr int min_exponent_fast_path(){} // used when fegetround() == FE_TONEARES{}
+  static inline constexpr int max_exponent_fast_path(){}
+  static inline constexpr int max_exponent_round_to_even(){}
+  static inline constexpr int min_exponent_round_to_even(){}
+  static inline constexpr uint64_t max_mantissa_fast_path(int64_t power){}
+  static inline constexpr uint64_t max_mantissa_fast_path(){} // used when fegetround() == FE_TONEARES{}
+  static inline constexpr int largest_power_of_ten(){}
+  static inline constexpr int smallest_power_of_ten(){}
+  static inline constexpr T exact_power_of_ten(int64_t power){}
+  static inline constexpr size_t max_digits(){}
+  static inline constexpr equiv_uint exponent_mask(){}
+  static inline constexpr equiv_uint mantissa_mask(){}
+  static inline constexpr equiv_uint hidden_bit_mask(){}
 };
 
 template <typename U>
@@ -562,18 +564,18 @@ inline constexpr bool is_space(uint8_t c) { return space_lut<>::value[c]; }
 #endif
 
 template<typename UC>
-static constexpr uint64_t int_cmp_zeros()
+constexpr uint64_t int_cmp_zeros()
 {
     static_assert((sizeof(UC) == 1) || (sizeof(UC) == 2) || (sizeof(UC) == 4), "Unsupported character size");
     return (sizeof(UC) == 1) ? 0x3030303030303030 : (sizeof(UC) == 2) ? (uint64_t(UC('0')) << 48 | uint64_t(UC('0')) << 32 | uint64_t(UC('0')) << 16 | UC('0')) : (uint64_t(UC('0')) << 32 | UC('0'));
 }
 template<typename UC>
-static constexpr int int_cmp_len()
+constexpr int int_cmp_len()
 {
     return sizeof(uint64_t) / sizeof(UC);
 }
 template<typename UC>
-static constexpr UC const * str_const_nan()
+constexpr UC const * str_const_nan()
 {
     return nullptr;
 }
@@ -598,7 +600,7 @@ constexpr char32_t const * str_const_nan<char32_t>()
     return U"nan";
 }
 template<typename UC>
-static constexpr UC const * str_const_inf()
+constexpr UC const * str_const_inf()
 {
     return nullptr;
 }
@@ -624,5 +626,7 @@ constexpr char32_t const * str_const_inf<char32_t>()
 }
 
 }}}} // namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

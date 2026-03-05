@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_INTEGER_SEARCH_TREES_HPP
 #define BOOST_CHARCONV_DETAIL_INTEGER_SEARCH_TREES_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 // https://stackoverflow.com/questions/1489830/efficient-way-to-determine-number-of-digits-in-an-integer?page=1&tab=scoredesc#tab-top
 // https://graphics.stanford.edu/~seander/bithacks.html
 
@@ -270,5 +272,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(boost::uint128_type x) noexcept
 #endif
 
 }}} // Namespace boost::charconv::detail
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_INTEGER_SEARCH_TREES_HPP

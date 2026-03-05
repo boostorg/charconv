@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP
 #define BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/config/std/cstdint.hpp>
@@ -13,7 +15,7 @@
 namespace boost { namespace charconv { namespace detail {
 
 template <typename T>
-inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept;
+inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept { static_assert(false); }
 
 #if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_QUADMATH)
 
@@ -81,5 +83,7 @@ inline bool issignaling<std::bfloat16_t> BOOST_PREVENT_MACRO_SUBSTITUTION (std::
 #endif
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_ISSIGNALING_HPP

@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_INTEGER_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_INTEGER_IMPL_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
@@ -331,5 +333,7 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first,
 }
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_FROM_CHARS_INTEGER_IMPL_HPP

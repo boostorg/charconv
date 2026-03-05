@@ -6,6 +6,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 #define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/ryu/generic_128.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/config.hpp>
@@ -32,7 +34,7 @@ struct floating_decimal_128
 };
 
 #ifdef BOOST_CHARCONV_DEBUG
-static char* s(unsigned_128_type v) {
+inline char* s(unsigned_128_type v) {
   int len = num_digits(v);
   char* b = static_cast<char*>(malloc((len + 1) * sizeof(char)));
   for (int i = 0; i < len; i++) {
@@ -45,7 +47,7 @@ static char* s(unsigned_128_type v) {
 }
 #endif
 
-static inline struct floating_decimal_128 generic_binary_to_decimal(
+inline struct floating_decimal_128 generic_binary_to_decimal(
         const unsigned_128_type bits,
         const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit) noexcept
 {
@@ -282,7 +284,7 @@ static inline struct floating_decimal_128 generic_binary_to_decimal(
     return {output, exp, ieeeSign};
 }
 
-static inline int copy_special_str(char* result, const std::ptrdiff_t result_size, const struct floating_decimal_128 fd) noexcept
+inline int copy_special_str(char* result, const std::ptrdiff_t result_size, const struct floating_decimal_128 fd) noexcept
 {
     if (fd.sign)
     {
@@ -361,7 +363,7 @@ static inline int copy_special_str(char* result, const std::ptrdiff_t result_siz
     return -1;
 }
 
-static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
+inline int generic_to_chars_fixed(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, int precision) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
     {
@@ -509,7 +511,7 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
 // Maximal char buffer requirement:
 // sign + mantissa digits + decimal dot + 'E' + exponent sign + exponent digits
 // = 1 + 39 + 1 + 1 + 1 + 10 = 53
-static inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
+inline int generic_to_chars(const struct floating_decimal_128 v, char* result, const ptrdiff_t result_size, 
                                    chars_format fmt = chars_format::general, int precision = -1) noexcept
 {
     if (v.exponent == fd128_exceptional_exponent)
@@ -678,7 +680,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
     return static_cast<int>(index);
 }
 
-static inline struct floating_decimal_128 float_to_fd128(float f) noexcept
+inline struct floating_decimal_128 float_to_fd128(float f) noexcept
 {
     static_assert(sizeof(float) == sizeof(uint32_t), "Float is not 32 bits");
     uint32_t bits = 0;
@@ -686,7 +688,7 @@ static inline struct floating_decimal_128 float_to_fd128(float f) noexcept
     return generic_binary_to_decimal(bits, 23, 8, false);
 }
 
-static inline struct floating_decimal_128 double_to_fd128(double d) noexcept
+inline struct floating_decimal_128 double_to_fd128(double d) noexcept
 {
     static_assert(sizeof(double) == sizeof(uint64_t), "Double is not 64 bits");
     uint64_t bits = 0;
@@ -698,7 +700,7 @@ static inline struct floating_decimal_128 double_to_fd128(double d) noexcept
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT16
 
-static inline struct floating_decimal_128 float16_t_to_fd128(std::float16_t f) noexcept
+inline struct floating_decimal_128 float16_t_to_fd128(std::float16_t f) noexcept
 {
     uint16_t bits = 0;
     std::memcpy(&bits, &f, sizeof(std::float16_t));
@@ -709,7 +711,7 @@ static inline struct floating_decimal_128 float16_t_to_fd128(std::float16_t f) n
 
 #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
 
-static inline struct floating_decimal_128 float16_t_to_fd128(std::bfloat16_t f) noexcept
+inline struct floating_decimal_128 float16_t_to_fd128(std::bfloat16_t f) noexcept
 {
     uint16_t bits = 0;
     std::memcpy(&bits, &f, sizeof(std::bfloat16_t));
@@ -720,7 +722,7 @@ static inline struct floating_decimal_128 float16_t_to_fd128(std::bfloat16_t f) 
 
 #if BOOST_CHARCONV_LDBL_BITS == 80
 
-static inline struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
+inline struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
     #ifdef BOOST_CHARCONV_HAS_INT128
     unsigned_128_type bits = 0;
@@ -744,7 +746,7 @@ static inline struct floating_decimal_128 long_double_to_fd128(long double d) no
 
 #elif BOOST_CHARCONV_LDBL_BITS == 128
 
-static inline struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
+inline struct floating_decimal_128 long_double_to_fd128(long double d) noexcept
 {
     unsigned_128_type bits = 0;
     std::memcpy(&bits, &d, sizeof(long double));
@@ -763,5 +765,7 @@ static inline struct floating_decimal_128 long_double_to_fd128(long double d) no
 #endif
 
 }}}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif //BOOST_RYU_GENERIC_128_HPP

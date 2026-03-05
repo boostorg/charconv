@@ -7,6 +7,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_TO_CHARS_INTEGER_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_TO_CHARS_INTEGER_IMPL_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/memcpy.hpp>
 #include <boost/charconv/detail/to_chars_result.hpp>
@@ -29,7 +31,7 @@
 namespace boost { namespace charconv { namespace detail {
 
 
-static constexpr char radix_table[] = {
+BOOST_INLINE_CONSTEXPR char radix_table[] = {
         '0', '0', '0', '1', '0', '2', '0', '3', '0', '4',
         '0', '5', '0', '6', '0', '7', '0', '8', '0', '9',
         '1', '0', '1', '1', '1', '2', '1', '3', '1', '4',
@@ -52,7 +54,7 @@ static constexpr char radix_table[] = {
         '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'
 };
 
-static constexpr char digit_table[] = {
+BOOST_INLINE_CONSTEXPR char digit_table[] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
@@ -455,5 +457,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars128(char* first, char* last, In
 #endif
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif //BOOST_CHARCONV_DETAIL_TO_CHARS_INTEGER_IMPL_HPP

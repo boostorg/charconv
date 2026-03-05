@@ -8,6 +8,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_DECIMAL_TO_BINARY_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_DECIMAL_TO_BINARY_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/charconv/detail/fast_float/fast_table.hpp>
 #include <boost/config/std/cfloat.hpp>
@@ -192,5 +194,7 @@ adjusted_mantissa compute_float(int64_t q, uint64_t w)  noexcept  {
 }
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

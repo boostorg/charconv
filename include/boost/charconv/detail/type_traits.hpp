@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_TYPE_TRAITS_HPP
 #define BOOST_CHARCONV_DETAIL_TYPE_TRAITS_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/config/std/type_traits.hpp>
 
@@ -63,5 +65,7 @@ struct make_signed<boost::uint128_type> { using type = boost::int128_type; };
 #endif
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif //BOOST_CHARCONV_DETAIL_TYPE_TRAITS_HPP

@@ -24,6 +24,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_DRAGONBOX_COMMON_HPP
 #define BOOST_CHARCONV_DETAIL_DRAGONBOX_COMMON_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
@@ -825,5 +827,7 @@ struct compressed_cache_detail
 };
 
 }}}
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_DRAGONBOX_COMMON_HPP

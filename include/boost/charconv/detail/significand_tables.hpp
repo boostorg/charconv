@@ -6,6 +6,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_SIGNIFICAND_TABLES_HPP
 #define BOOST_CHARCONV_DETAIL_SIGNIFICAND_TABLES_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/config/std/cstdint.hpp>
 
@@ -687,5 +689,7 @@ using significands_table = significand_template<true>;
 #endif
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_SIGNIFICAND_TABLES_HPP
