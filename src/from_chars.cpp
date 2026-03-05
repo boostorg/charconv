@@ -2,6 +2,7 @@
 // Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+module;
 
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
 #ifndef _SCL_SECURE_NO_WARNINGS
@@ -11,17 +12,42 @@
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
+#include <cmath>
+#include <boost/config.hpp>
+#include <boost/charconv/detail/config.hpp>
+#include <cstdint>
+
+
+#ifdef BOOST_USE_MODULES
+module boost.charconv;
+import std;
+import std.compat;
+import boost.core;
+
+#define BOOST_IN_MODULE_PURVIEW
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winclude-angled-in-module-purview"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 5244)
+#endif
+#endif // BOOST_USE_MODULES
+
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <system_error>
-#include <string>
-#include <cstdlib>
-#include <cerrno>
-#include <cstring>
-#include <limits>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/limits.hpp>
 
 #if BOOST_CHARCONV_LDBL_BITS > 64
 #  include <boost/charconv/detail/compute_float80.hpp>
