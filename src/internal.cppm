@@ -13,6 +13,7 @@ module;
 
 module boost.charconv:internal;
 import std;
+import std.compat;
 import boost.core;
 import boost.charconv;
 
@@ -20,8 +21,6 @@ import boost.charconv;
 #define BOOST_IN_MODULE_PURVIEW
 
 #include <boost/charconv/detail/compute_float80.hpp>
-#include <boost/charconv/detail/ryu/generic_128.hpp>
-#include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/charconv/detail/significand_tables.hpp>
 #include <boost/charconv/detail/compute_float64.hpp>

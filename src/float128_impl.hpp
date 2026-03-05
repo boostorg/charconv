@@ -70,7 +70,7 @@ inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d) noexc
 // fast_float
 // --------------------------------------------------------------------------------------------------------------------
 
-static constexpr __float128 powers_of_tenq[] = {
+BOOST_INLINE_CONSTEXPR __float128 powers_of_tenq[] = {
     1e0Q,  1e1Q,  1e2Q,  1e3Q,  1e4Q,  1e5Q,  1e6Q,
     1e7Q,  1e8Q,  1e9Q,  1e10Q, 1e11Q, 1e12Q, 1e13Q,
     1e14Q, 1e15Q, 1e16Q, 1e17Q, 1e18Q, 1e19Q, 1e20Q,

@@ -12,6 +12,7 @@ module;
 #include <boost/charconv/detail/disable_module_warnings.hpp>
 #include <cstdint>
 #include <climits>
+#include "quadmath_wrapper.hpp"
 
 module boost.charconv;
 import std;
@@ -40,7 +41,7 @@ namespace boost { namespace charconv { namespace detail { namespace to_chars_det
     // These "//"'s are to prevent clang-format to ruin this nice alignment.
     // Thanks to reddit user u/mcmcc:
     // https://www.reddit.com/r/cpp/comments/so3wx9/dragonbox_110_is_released_a_fast_floattostring/hw8z26r/?context=3
-    static constexpr char radix_100_head_table[] = {
+    BOOST_INLINE_CONSTEXPR char radix_100_head_table[] = {
         '0', '.', '1', '.', '2', '.', '3', '.', '4', '.', //
         '5', '.', '6', '.', '7', '.', '8', '.', '9', '.', //
         '1', '.', '1', '.', '1', '.', '1', '.', '1', '.', //

@@ -24,7 +24,7 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-static constexpr unsigned char uchar_values[] =
+BOOST_INLINE_CONSTEXPR unsigned char uchar_values[] =
      {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -44,7 +44,7 @@ static constexpr unsigned char uchar_values[] =
 
 static_assert(sizeof(uchar_values) == 256, "uchar_values should represent all 256 values of unsigned char");
 
-static constexpr double log_2_table[] =
+BOOST_INLINE_CONSTEXPR double log_2_table[] =
 {
     0.0,
     0.0,

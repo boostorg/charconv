@@ -6,7 +6,7 @@
 #ifndef BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 #define BOOST_CHARCONV_DETAIL_RYU_RYU_GENERIC_128_HPP
 
-#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #include <boost/charconv/detail/ryu/generic_128.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
@@ -23,8 +23,8 @@
 
 namespace boost { namespace charconv { namespace detail { namespace ryu {
 
-static constexpr int32_t fd128_exceptional_exponent = 0x7FFFFFFF;
-static constexpr unsigned_128_type one = 1;
+BOOST_INLINE_CONSTEXPR int32_t fd128_exceptional_exponent = 0x7FFFFFFF;
+BOOST_INLINE_CONSTEXPR unsigned_128_type one = 1;
 
 struct floating_decimal_128
 {

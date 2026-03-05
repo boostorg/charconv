@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <cstdio>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/config.hpp>
 
@@ -70,7 +71,6 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/config/std/numeric.hpp>
 #include <boost/config/std/cfloat.hpp>
 #include <boost/config/std/cmath.hpp>
-#include <cstdio>
 #include <climits>
 #include <cstdint>
 

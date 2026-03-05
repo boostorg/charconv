@@ -2,11 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/charconv/detail/config.hpp>
-#include <boost/config/std/ostream.hpp>
-
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 
+#include <boost/charconv/detail/config.hpp>
+#include <boost/config/std/ostream.hpp>
 #include <quadmath.h>
 
 std::ostream& operator<<( std::ostream& os, __float128 v )

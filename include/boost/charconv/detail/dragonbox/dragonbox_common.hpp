@@ -323,7 +323,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR Int compute_power(Int a, Int2 exp) noexcept
     return res;
 }
 
-static constexpr std::uint64_t power_of_10[] = {
+BOOST_INLINE_CONSTEXPR std::uint64_t power_of_10[] = {
     UINT64_C(1), UINT64_C(10), UINT64_C(100), UINT64_C(1000), UINT64_C(10000), 
     UINT64_C(100000), UINT64_C(1000000), UINT64_C(10000000), UINT64_C(100000000),
     UINT64_C(1000000000), UINT64_C(10000000000), UINT64_C(100000000000), UINT64_C(1000000000000),
@@ -383,9 +383,9 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int floor_log2(UInt n) noexcept
     return count;
 }
 
-static constexpr int floor_log10_pow2_min_exponent = -2620;
+BOOST_INLINE_CONSTEXPR int floor_log10_pow2_min_exponent = -2620;
 
-static constexpr int floor_log10_pow2_max_exponent = 2620;
+BOOST_INLINE_CONSTEXPR int floor_log10_pow2_max_exponent = 2620;
 
 constexpr int floor_log10_pow2(int e) noexcept
 {
@@ -395,9 +395,9 @@ constexpr int floor_log10_pow2(int e) noexcept
                     max_exponent(floor_log10_pow2_max_exponent)>(e);
 }
 
-static constexpr int floor_log2_pow10_min_exponent = -1233;
+BOOST_INLINE_CONSTEXPR int floor_log2_pow10_min_exponent = -1233;
 
-static constexpr int floor_log2_pow10_max_exponent = 1233;
+BOOST_INLINE_CONSTEXPR int floor_log2_pow10_max_exponent = 1233;
 
 constexpr int floor_log2_pow10(int e) noexcept 
 {
@@ -407,9 +407,9 @@ constexpr int floor_log2_pow10(int e) noexcept
                     max_exponent(floor_log2_pow10_max_exponent)>(e);
 }
 
-static constexpr int floor_log10_pow2_minus_log10_4_over_3_min_exponent = -2985;
+BOOST_INLINE_CONSTEXPR int floor_log10_pow2_minus_log10_4_over_3_min_exponent = -2985;
 
-static constexpr int floor_log10_pow2_minus_log10_4_over_3_max_exponent = 2936;
+BOOST_INLINE_CONSTEXPR int floor_log10_pow2_minus_log10_4_over_3_max_exponent = 2936;
 
 constexpr int floor_log10_pow2_minus_log10_4_over_3(int e) noexcept
 {
@@ -419,9 +419,9 @@ constexpr int floor_log10_pow2_minus_log10_4_over_3(int e) noexcept
                     max_exponent(floor_log10_pow2_minus_log10_4_over_3_max_exponent)>(e);
 }
 
-static constexpr int floor_log5_pow2_min_exponent = -1831;
+BOOST_INLINE_CONSTEXPR int floor_log5_pow2_min_exponent = -1831;
 
-static constexpr int floor_log5_pow2_max_exponent = 1831;
+BOOST_INLINE_CONSTEXPR int floor_log5_pow2_max_exponent = 1831;
 
 constexpr int floor_log5_pow2(int e) noexcept
 {
@@ -431,9 +431,9 @@ constexpr int floor_log5_pow2(int e) noexcept
                     max_exponent(floor_log5_pow2_max_exponent)>(e);
 }
 
-static constexpr int floor_log5_pow2_minus_log5_3_min_exponent = -3543;
+BOOST_INLINE_CONSTEXPR int floor_log5_pow2_minus_log5_3_min_exponent = -3543;
 
-static constexpr int floor_log5_pow2_minus_log5_3_max_exponent = 2427;
+BOOST_INLINE_CONSTEXPR int floor_log5_pow2_minus_log5_3_max_exponent = 2427;
 
 constexpr int floor_log5_pow2_minus_log5_3(int e) noexcept 
 {

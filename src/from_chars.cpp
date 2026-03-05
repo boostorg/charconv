@@ -17,6 +17,7 @@ module;
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/disable_module_warnings.hpp>
 #include <cstdint>
+#include "quadmath_wrapper.hpp"
 
 
 #ifdef BOOST_USE_MODULES

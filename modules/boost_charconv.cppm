@@ -23,4 +23,6 @@ import boost.core;
 #define BOOST_IN_MODULE_PURVIEW
 
 #include <boost/charconv.hpp>
+#include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
+#include <boost/charconv/detail/bit_layouts.hpp>
 
