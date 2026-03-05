@@ -14,9 +14,6 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-template <typename T>
-inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept { static_assert(false); }
-
 #if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_QUADMATH)
 
 struct words128
@@ -60,8 +57,7 @@ inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (T x) noexcept
 
 #ifdef BOOST_CHARCONV_HAS_FLOAT16
 
-template <>
-inline bool issignaling<std::float16_t> BOOST_PREVENT_MACRO_SUBSTITUTION (std::float16_t x) noexcept
+inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (std::float16_t x) noexcept
 {
     std::uint16_t bits;
     std::memcpy(&bits, &x, sizeof(std::uint16_t));
@@ -72,8 +68,7 @@ inline bool issignaling<std::float16_t> BOOST_PREVENT_MACRO_SUBSTITUTION (std::f
 
 #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
 
-template <>
-inline bool issignaling<std::bfloat16_t> BOOST_PREVENT_MACRO_SUBSTITUTION (std::bfloat16_t x) noexcept
+inline bool issignaling BOOST_PREVENT_MACRO_SUBSTITUTION (std::bfloat16_t x) noexcept
 {
     std::uint16_t bits;
     std::memcpy(&bits, &x, sizeof(std::uint16_t));

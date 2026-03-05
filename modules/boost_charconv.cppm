@@ -13,6 +13,9 @@ module;
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/disable_module_warnings.hpp>
 
+// TODO: remove this when gcc fixes https://gcc.gnu.org/bugzilla/show_bug.cgi?id=124309
+#include <boost/charconv/detail/fast_float/constexpr_feature_detect.hpp>
+
 export module boost.charconv;
 
 import std;
@@ -21,8 +24,19 @@ import boost.core;
 
 #define BOOST_CHARCONV_INTERFACE_UNIT
 #define BOOST_IN_MODULE_PURVIEW
+#define BOOST_CHARCONV_INTERNAL_PARTITION_UNIT
 
 #include <boost/charconv.hpp>
+
+// TODO: remove this when gcc fixes https://gcc.gnu.org/bugzilla/show_bug.cgi?id=124309
 #include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-
+#include <boost/charconv/detail/compute_float80.hpp>
+#include <boost/charconv/detail/fallback_routines.hpp>
+#include <boost/charconv/detail/significand_tables.hpp>
+#include <boost/charconv/detail/compute_float64.hpp>
+#include <boost/charconv/detail/issignaling.hpp>
+#include <boost/charconv/detail/fast_float/fast_float.hpp>
+#include <boost/charconv/detail/dragonbox/dragonbox.hpp>
+#include <boost/charconv/detail/compute_float32.hpp>
+#include <boost/charconv/detail/buffer_sizing.hpp>

@@ -12,12 +12,13 @@ module;
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
 
-#include <cmath>
+#include "quadmath_wrapper.hpp"
+#include <math.h>
+#include <cstdint>
+#include <cerrno>
 #include <boost/config.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/disable_module_warnings.hpp>
-#include <cstdint>
-#include "quadmath_wrapper.hpp"
 
 
 #ifdef BOOST_USE_MODULES
@@ -25,7 +26,6 @@ module boost.charconv;
 import std;
 import std.compat;
 import boost.core;
-import :internal;
 
 #define BOOST_IN_MODULE_PURVIEW
 #endif // BOOST_USE_MODULES

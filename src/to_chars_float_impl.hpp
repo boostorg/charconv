@@ -48,9 +48,6 @@ namespace boost {
 namespace charconv {
 namespace detail {
 
-template <typename Real>
-inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept { static_assert(false); }
-
 #if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128) || defined(BOOST_CHARCONV_HAS_FLOAT16) || defined(BOOST_CHARCONV_HAS_BRAINFLOAT16)
 
 template <typename Real>
@@ -129,8 +126,7 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
 # pragma GCC diagnostic ignored "-Wfloat-conversion"
 #endif
 
-template <>
-inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, __float128 value, int classification) noexcept
+inline to_chars_result to_chars_nonfinite(char* first, char* last, __float128 value, int classification) noexcept
 {
     std::ptrdiff_t offset {};
     std::ptrdiff_t buffer_size = last - first;

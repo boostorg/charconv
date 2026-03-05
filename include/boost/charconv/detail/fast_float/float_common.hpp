@@ -279,7 +279,7 @@ struct adjusted_mantissa {
 };
 
 // Bias so we can get the real exponent with an invalid adjusted_mantissa.
-constexpr static int32_t invalid_am_bias = -0x8000;
+BOOST_INLINE_CONSTEXPR int32_t invalid_am_bias = -0x8000;
 
 // used for binary_format_lookup_tables<T>::max_mantissa
 constexpr uint64_t constant_55555 = 5 * 5 * 5 * 5 * 5;
@@ -290,23 +290,23 @@ struct binary_format_lookup_tables;
 template <typename T> struct binary_format : binary_format_lookup_tables<T> {
   using equiv_uint = typename std::conditional<sizeof(T) == 4, uint32_t, uint64_t>::type;
 
-  static inline constexpr int mantissa_explicit_bits(){}
-  static inline constexpr int minimum_exponent(){}
-  static inline constexpr int infinite_power(){}
-  static inline constexpr int sign_index(){}
-  static inline constexpr int min_exponent_fast_path(){} // used when fegetround() == FE_TONEARES{}
-  static inline constexpr int max_exponent_fast_path(){}
-  static inline constexpr int max_exponent_round_to_even(){}
-  static inline constexpr int min_exponent_round_to_even(){}
-  static inline constexpr uint64_t max_mantissa_fast_path(int64_t power){}
-  static inline constexpr uint64_t max_mantissa_fast_path(){} // used when fegetround() == FE_TONEARES{}
-  static inline constexpr int largest_power_of_ten(){}
-  static inline constexpr int smallest_power_of_ten(){}
-  static inline constexpr T exact_power_of_ten(int64_t power){}
-  static inline constexpr size_t max_digits(){}
-  static inline constexpr equiv_uint exponent_mask(){}
-  static inline constexpr equiv_uint mantissa_mask(){}
-  static inline constexpr equiv_uint hidden_bit_mask(){}
+  static inline constexpr int mantissa_explicit_bits(){return {};}
+  static inline constexpr int minimum_exponent(){return {};}
+  static inline constexpr int infinite_power(){return {};}
+  static inline constexpr int sign_index(){return {};}
+  static inline constexpr int min_exponent_fast_path(){return {};} // used when fegetround() == FE_TONEARES{}
+  static inline constexpr int max_exponent_fast_path(){return {};}
+  static inline constexpr int max_exponent_round_to_even(){return {};}
+  static inline constexpr int min_exponent_round_to_even(){return {};}
+  static inline constexpr uint64_t max_mantissa_fast_path(int64_t power){return {};}
+  static inline constexpr uint64_t max_mantissa_fast_path(){return {};} // used when fegetround() == FE_TONEARES{}
+  static inline constexpr int largest_power_of_ten(){return {};}
+  static inline constexpr int smallest_power_of_ten(){return {};}
+  static inline constexpr T exact_power_of_ten(int64_t power){return {};}
+  static inline constexpr size_t max_digits(){return {};}
+  static inline constexpr equiv_uint exponent_mask(){return {};}
+  static inline constexpr equiv_uint mantissa_mask(){return {};}
+  static inline constexpr equiv_uint hidden_bit_mask(){return {};}
 };
 
 template <typename U>
