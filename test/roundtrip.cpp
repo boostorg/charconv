@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/config.hpp>
 
 #ifdef BOOST_HAS_INT128
@@ -11,7 +12,7 @@
 // won't be visible to BOOST_TEST_EQ
 // LCOV_EXCL_START
 
-#include <ostream>
+#include <boost/config/std/ostream.hpp>
 
 static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
 {
@@ -62,14 +63,16 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
-#include <system_error>
-#include <iostream>
-#include <iomanip>
-#include <limits>
-#include <numeric>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/numeric.hpp>
+#include <boost/config/std/cfloat.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <cstdio>
+#include <climits>
 #include <cstdint>
-#include <cfloat>
-#include <cmath>
 
 int const N = 1024;
 
@@ -296,7 +299,7 @@ int64_t ToOrdinal(FPType x)
 
     //  Number of normal representable numbers for each exponent.
     static const auto
-            NumbersPerExponent = static_cast<uint64_t>(scalbn(Radix-1, SignificandDigits-1));
+            NumbersPerExponent = static_cast<uint64_t>(std::scalbn(Radix-1, SignificandDigits-1));
 
     if (x == 0)
         return 0;

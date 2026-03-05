@@ -2,6 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+
+#include <boost/config/pragma_message.hpp>
+BOOST_PRAGMA_MESSAGE("This test targets an implementation detail, and is skipped when building with modules")
+int main() {}
+
+#else
+
 #include <boost/charconv/detail/parser.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/charconv/to_chars.hpp>
@@ -240,3 +248,5 @@ int main()
     test_zeroes();
     return boost::report_errors();
 }
+
+#endif

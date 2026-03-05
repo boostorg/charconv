@@ -2,6 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+
+#include <boost/config/pragma_message.hpp>
+BOOST_PRAGMA_MESSAGE("This test targets an implementation detail, and is skipped when building with modules")
+int main() {}
+
+#else
+
 #include "../src/from_chars_float_impl.hpp"
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
@@ -1930,3 +1938,5 @@ int main()
 
     return boost::report_errors();
 }
+
+#endif

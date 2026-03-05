@@ -2,15 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cstring>
-#include <cstdint>
-#include <cerrno>
-#include <utility>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/utility.hpp>
 
 // No overflows, negative numbers, locales, etc.
 template <typename T>

@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/charconv/detail/config.hpp>
-#include <ostream>
+#include <boost/config/std/ostream.hpp>
 
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 
@@ -27,11 +27,11 @@ std::ostream& operator<<( std::ostream& os, std::float128_t v )
 
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <limits>
-#include <random>
-#include <array>
-#include <cstdint>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/array.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 constexpr std::size_t N = 1024;
 static std::mt19937_64 rng(42);
