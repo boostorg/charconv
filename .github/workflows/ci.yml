@@ -769,7 +769,10 @@ jobs:
         run: ci/github/install.sh
 
       - name: Run tests
-        run: ci/build.sh
+        run: |
+          ./ci/build.sh
+          cd $BOOST_ROOT
+          python libs/charconv/tools/setup_boost_with_modules.py # Temporary
 
   posix-cmake-subdir-modules:
     strategy:
