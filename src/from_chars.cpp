@@ -2,7 +2,6 @@
 // Copyright 2023 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-module;
 
 // https://stackoverflow.com/questions/38060411/visual-studio-2015-wont-suppress-error-c4996
 #ifndef _SCL_SECURE_NO_WARNINGS
@@ -11,24 +10,6 @@ module;
 #ifndef NO_WARN_MBCS_MFC_DEPRECATION
 # define NO_WARN_MBCS_MFC_DEPRECATION
 #endif
-
-#include "quadmath_wrapper.hpp"
-#include <math.h>
-#include <cstdint>
-#include <cerrno>
-#include <boost/config.hpp>
-#include <boost/charconv/detail/config.hpp>
-#include <boost/charconv/detail/disable_module_warnings.hpp>
-
-
-#ifdef BOOST_USE_MODULES
-module boost.charconv;
-import std;
-import std.compat;
-import boost.core;
-
-#define BOOST_IN_MODULE_PURVIEW
-#endif // BOOST_USE_MODULES
 
 #include "float128_impl.hpp"
 #include "from_chars_float_impl.hpp"

@@ -7,9 +7,17 @@ cmake_minimum_required(VERSION 3.8...3.31)
 
 project(boost_charconv VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
+# We can't make source files conditionally module units.
+# In module builds, use cc files that include their respective cpp, plus the module infrastructure
+if (BOOST_USE_MODULES)
+  set(SOURCE_SUFFIX "cc")
+else()
+  set(SOURCE_SUFFIX "cpp")
+endif()
+
 add_library(boost_charconv
-  src/from_chars.cpp
-  src/to_chars.cpp
+  src/from_chars.${SOURCE_SUFFIX}
+  src/to_chars.${SOURCE_SUFFIX}
 )
 
 add_library(Boost::charconv ALIAS boost_charconv)
