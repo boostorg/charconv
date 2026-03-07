@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_FLOAT128_IMPL_HPP
 #define BOOST_CHARCONV_FLOAT128_IMPL_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #include <boost/charconv/detail/compute_float80.hpp>
@@ -353,5 +355,7 @@ inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128
 } //namespace boost
 
 #endif //BOOST_CHARCONV_HAS_QUADMATH
+
+#endif //!defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #endif //BOOST_CHARCONV_FLOAT128_IMPL_HPP
