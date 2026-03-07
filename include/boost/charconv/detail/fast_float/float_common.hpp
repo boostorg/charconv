@@ -298,11 +298,11 @@ template <typename T> struct binary_format : binary_format_lookup_tables<T> {
   static inline constexpr int max_exponent_fast_path(){return {};}
   static inline constexpr int max_exponent_round_to_even(){return {};}
   static inline constexpr int min_exponent_round_to_even(){return {};}
-  static inline constexpr uint64_t max_mantissa_fast_path(int64_t power){return {};}
+  static inline constexpr uint64_t max_mantissa_fast_path(int64_t /*power*/){return {};}
   static inline constexpr uint64_t max_mantissa_fast_path(){return {};} // used when fegetround() == FE_TONEARES{}
   static inline constexpr int largest_power_of_ten(){return {};}
   static inline constexpr int smallest_power_of_ten(){return {};}
-  static inline constexpr T exact_power_of_ten(int64_t power){return {};}
+  static inline constexpr T exact_power_of_ten(int64_t /*power*/){return {};}
   static inline constexpr size_t max_digits(){return {};}
   static inline constexpr equiv_uint exponent_mask(){return {};}
   static inline constexpr equiv_uint mantissa_mask(){return {};}
