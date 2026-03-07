@@ -22,21 +22,21 @@
 #include <boost/charconv/detail/buffer_sizing.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <system_error>
-#include <type_traits>
-#include <array>
-#include <limits>
-#include <utility>
-#include <cstring>
-#include <cstdio>
-#include <cerrno>
-#include <cstdint>
-#include <climits>
-#include <cmath>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/array.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/utility.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/climits.hpp>
+#include <boost/config/std/cmath.hpp>
 
 #ifdef BOOST_CHARCONV_DEBUG_FIXED
-#include <iomanip>
-#include <iostream>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/iostream.hpp>
 #endif
 
 #if (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
@@ -47,9 +47,6 @@
 namespace boost {
 namespace charconv {
 namespace detail {
-
-template <typename Real>
-inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, int classification) noexcept;
 
 #if BOOST_CHARCONV_LDBL_BITS == 128 || defined(BOOST_CHARCONV_HAS_STDFLOAT128) || defined(BOOST_CHARCONV_HAS_FLOAT16) || defined(BOOST_CHARCONV_HAS_BRAINFLOAT16)
 
@@ -129,8 +126,7 @@ inline to_chars_result to_chars_nonfinite(char* first, char* last, Real value, i
 # pragma GCC diagnostic ignored "-Wfloat-conversion"
 #endif
 
-template <>
-inline to_chars_result to_chars_nonfinite<__float128>(char* first, char* last, __float128 value, int classification) noexcept
+inline to_chars_result to_chars_nonfinite(char* first, char* last, __float128 value, int classification) noexcept
 {
     std::ptrdiff_t offset {};
     std::ptrdiff_t buffer_size = last - first;

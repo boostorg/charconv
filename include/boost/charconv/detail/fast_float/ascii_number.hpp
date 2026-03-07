@@ -8,11 +8,13 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
-#include <cctype>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
+#include <boost/config/std/cctype.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/iterator.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -284,5 +286,7 @@ parsed_number_string_t<UC> parse_number_string(UC const *p, UC const * pend, par
 }
 
 }}}} // namespace s
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

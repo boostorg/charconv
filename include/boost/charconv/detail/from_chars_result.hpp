@@ -5,13 +5,16 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP
 
-#include <system_error>
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
+#include <boost/config/std/system_error.hpp>
+#include <boost/charconv/config.hpp>
 
 namespace boost { namespace charconv {
 
 // 22.13.3, Primitive numerical input conversion
 
-template <typename UC>
+BOOST_CHARCONV_MODULE_EXPORT template <typename UC>
 struct from_chars_result_t
 {
     const UC* ptr;
@@ -34,8 +37,10 @@ struct from_chars_result_t
 
     constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 };
-using from_chars_result = from_chars_result_t<char>;
+BOOST_CHARCONV_MODULE_EXPORT using from_chars_result = from_chars_result_t<char>;
 
 }} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_FROM_CHARS_RESULT_HPP

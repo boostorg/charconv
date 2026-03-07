@@ -4,9 +4,10 @@
 //
 // See: https://github.com/boostorg/charconv/issues/166
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <string>
+#include <boost/config/std/string.hpp>
 
 template <typename T>
 void test()

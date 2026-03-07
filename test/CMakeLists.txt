@@ -6,8 +6,10 @@ include(BoostTestJamfile OPTIONAL RESULT_VARIABLE HAVE_BOOST_TEST)
 
 if(HAVE_BOOST_TEST)
 
-# https://crascit.com/2015/03/28/enabling-cxx11-in-cmake/
-set(CMAKE_CXX_EXTENSIONS OFF)
+if(BOOST_USE_MODULES)
+  set(CMAKE_CXX_MODULE_STD ON)
+endif()
+
 boost_test_jamfile(FILE Jamfile LINK_LIBRARIES Boost::charconv Boost::core Boost::assert)
 
 endif()

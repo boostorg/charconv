@@ -5,17 +5,19 @@
 #ifndef BOOST_FALLBACK_ROUTINES_HPP
 #define BOOST_FALLBACK_ROUTINES_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #include <boost/charconv/detail/dragonbox/floff.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <system_error>
-#include <type_traits>
-#include <locale>
-#include <clocale>
-#include <cstring>
-#include <cstdio>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/locale.hpp>
+#include <boost/config/std/clocale.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
 
 namespace boost {
 namespace charconv {
@@ -241,5 +243,7 @@ inline from_chars_result from_chars_strtod(const char* first, const char* last, 
 } //namespace detail
 } //namespace charconv
 } //namespace boost
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif //BOOST_FALLBACK_ROUTINES_HPP

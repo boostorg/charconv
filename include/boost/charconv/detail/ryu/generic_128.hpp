@@ -6,10 +6,12 @@
 #ifndef BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP
 #define BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#include <cstdint>
+#include <boost/config/std/cstdint.hpp>
 
 #define BOOST_CHARCONV_POW5_TABLE_SIZE 56
 #define BOOST_CHARCONV_POW5_BITCOUNT 249
@@ -383,13 +385,13 @@ using ryu_tables = ryu_tables_template<true>;
 #endif
 
 // Returns e == 0 ? 1 : ceil(log_2(5^e)); requires 0 <= e <= 32768.
-static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t pow5bits(const uint32_t e) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t pow5bits(const uint32_t e) noexcept
 {
     BOOST_CHARCONV_ASSERT(e <= 1 << 15);
     return static_cast<uint32_t>(((e * UINT64_C(163391164108059)) >> 46) + 1);
 }
 
-static BOOST_CHARCONV_CXX14_CONSTEXPR
+BOOST_CHARCONV_CXX14_CONSTEXPR
 void mul_128_256_shift(
         const uint64_t* const a, const uint64_t* const b,
         const uint32_t shift, const uint32_t corr,
@@ -452,7 +454,7 @@ void mul_128_256_shift(
 }
 
 // Computes 5^i in the form required by Ryu, and stores it in the given pointer.
-static BOOST_CXX14_CONSTEXPR void generic_computePow5(const uint32_t i, uint64_t* const result) noexcept
+BOOST_CXX14_CONSTEXPR void generic_computePow5(const uint32_t i, uint64_t* const result) noexcept
 {
     const uint32_t base = i / BOOST_CHARCONV_POW5_TABLE_SIZE;
     const uint32_t base2 = base * BOOST_CHARCONV_POW5_TABLE_SIZE;
@@ -475,7 +477,7 @@ static BOOST_CXX14_CONSTEXPR void generic_computePow5(const uint32_t i, uint64_t
 }
 
 // Computes 5^-i in the form required by Ryu, and stores it in the given pointer.
-static BOOST_CXX14_CONSTEXPR void generic_computeInvPow5(const uint32_t i, uint64_t* const result) noexcept
+BOOST_CXX14_CONSTEXPR void generic_computeInvPow5(const uint32_t i, uint64_t* const result) noexcept
 {
     const uint32_t base = (i + BOOST_CHARCONV_POW5_TABLE_SIZE - 1) / BOOST_CHARCONV_POW5_TABLE_SIZE;
     const uint32_t base2 = base * BOOST_CHARCONV_POW5_TABLE_SIZE;
@@ -497,7 +499,7 @@ static BOOST_CXX14_CONSTEXPR void generic_computeInvPow5(const uint32_t i, uint6
     }
 }
 
-static BOOST_CXX14_CONSTEXPR uint32_t pow5Factor(unsigned_128_type value) noexcept
+BOOST_CXX14_CONSTEXPR uint32_t pow5Factor(unsigned_128_type value) noexcept
 {
     for (uint32_t count = 0; value > 0; ++count)
     {
@@ -511,19 +513,19 @@ static BOOST_CXX14_CONSTEXPR uint32_t pow5Factor(unsigned_128_type value) noexce
 }
 
 // Returns true if value is divisible by 5^p.
-static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf5(const unsigned_128_type value, const uint32_t p) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf5(const unsigned_128_type value, const uint32_t p) noexcept
 {
     // I tried a case distinction on p, but there was no performance difference.
     return pow5Factor(value) >= p;
 }
 
 // Returns true if value is divisible by 2^p.
-static BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf2(const unsigned_128_type value, const uint32_t p) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR bool multipleOfPowerOf2(const unsigned_128_type value, const uint32_t p) noexcept
 {
     return (value & ((static_cast<unsigned_128_type>(1) << p) - 1)) == 0;
 }
 
-static BOOST_CHARCONV_CXX14_CONSTEXPR
+BOOST_CHARCONV_CXX14_CONSTEXPR
 unsigned_128_type mulShift(const unsigned_128_type m, const uint64_t* const mul, const int32_t j) noexcept
 {
     BOOST_CHARCONV_ASSERT(j > 128);
@@ -536,7 +538,7 @@ unsigned_128_type mulShift(const unsigned_128_type m, const uint64_t* const mul,
 }
 
 // Returns floor(log_10(2^e)).
-static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow2(const int32_t e) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow2(const int32_t e) noexcept
 {
     // The first value this approximation fails for is 2^1651 which is just greater than 10^297.
     BOOST_CHARCONV_ASSERT(e >= 0);
@@ -545,7 +547,7 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow2(const int32_t e) noexce
 }
 
 // Returns floor(log_10(5^e)).
-static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow5(const int32_t e) noexcept
+BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow5(const int32_t e) noexcept
 {
     // The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
     assert(e >= 0);
@@ -554,5 +556,7 @@ static BOOST_CHARCONV_CXX14_CONSTEXPR uint32_t log10Pow5(const int32_t e) noexce
 }
 
 }}}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_RYU_GENERIC_128_HPP

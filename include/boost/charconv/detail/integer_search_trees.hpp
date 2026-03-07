@@ -5,14 +5,16 @@
 #ifndef BOOST_CHARCONV_DETAIL_INTEGER_SEARCH_TREES_HPP
 #define BOOST_CHARCONV_DETAIL_INTEGER_SEARCH_TREES_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 // https://stackoverflow.com/questions/1489830/efficient-way-to-determine-number-of-digits-in-an-integer?page=1&tab=scoredesc#tab-top
 // https://graphics.stanford.edu/~seander/bithacks.html
 
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
-#include <limits>
-#include <array>
-#include <cstdint>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/array.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -191,7 +193,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(uint128 x) noexcept
 #endif
 
 #ifdef BOOST_CHARCONV_HAS_INT128
-static constexpr std::array<std::uint64_t, 20> powers_of_10 =
+BOOST_INLINE_CONSTEXPR std::array<std::uint64_t, 20> powers_of_10 =
 {{
     UINT64_C(1), UINT64_C(10), UINT64_C(100), UINT64_C(1000), UINT64_C(10000), UINT64_C(100000), UINT64_C(1000000), 
     UINT64_C(10000000), UINT64_C(100000000), UINT64_C(1000000000), UINT64_C(10000000000), UINT64_C(100000000000), 
@@ -270,5 +272,7 @@ BOOST_CHARCONV_CXX14_CONSTEXPR int num_digits(boost::uint128_type x) noexcept
 #endif
 
 }}} // Namespace boost::charconv::detail
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_INTEGER_SEARCH_TREES_HPP

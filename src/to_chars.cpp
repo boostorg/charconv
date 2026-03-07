@@ -8,11 +8,11 @@
 #include "to_chars_float_impl.hpp"
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/chars_format.hpp>
-#include <limits>
-#include <cstring>
-#include <cstdio>
-#include <cstdint>
-#include <cmath>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdio.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace to_chars_detail {
 

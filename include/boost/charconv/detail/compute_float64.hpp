@@ -6,18 +6,20 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/significand_tables.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/core/bit.hpp>
-#include <cstdint>
-#include <cfloat>
-#include <cstring>
-#include <cmath>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cfloat.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail { 
 
-static constexpr double powers_of_ten[] = {
+BOOST_INLINE_CONSTEXPR double powers_of_ten[] = {
     1e0,  1e1,  1e2,  1e3,  1e4,  1e5,  1e6,  1e7,  1e8,  1e9,  1e10, 1e11,
     1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21, 1e22
 };
@@ -197,5 +199,7 @@ inline double compute_float64(std::int64_t power, std::uint64_t i, bool negative
 }
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT64_HPP

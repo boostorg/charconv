@@ -8,11 +8,13 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_BIGINT_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_BIGINT_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
-#include <algorithm>
-#include <cstdint>
-#include <climits>
-#include <cstring>
+#include <boost/config/std/algorithm.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/climits.hpp>
+#include <boost/config/std/cstring.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -619,5 +621,7 @@ struct bigint : pow5_tables<> {
 };
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

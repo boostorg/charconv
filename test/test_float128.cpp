@@ -2,6 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#ifdef BOOST_USE_MODULES
+
+#include <boost/config/pragma_message.hpp>
+BOOST_PRAGMA_MESSAGE("This test targets an implementation detail, and is skipped when building with modules")
+int main() {}
+
+#else
+
 #include <boost/charconv/detail/config.hpp>
 
 #if defined(BOOST_CHARCONV_HAS_QUADMATH) && defined(BOOST_HAS_INT128)
@@ -87,11 +95,11 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/charconv/detail/issignaling.hpp>
-#include <limits>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <random>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/random.hpp>
 #include "../src/float128_impl.hpp"
 
 constexpr int N = 1024;
@@ -841,5 +849,7 @@ int main()
 {
     return 0;
 }
+
+#endif
 
 #endif

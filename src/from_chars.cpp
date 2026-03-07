@@ -16,12 +16,12 @@
 #include <boost/charconv/detail/fast_float/fast_float.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <system_error>
-#include <string>
-#include <cstdlib>
-#include <cerrno>
-#include <cstring>
-#include <limits>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/limits.hpp>
 
 #if BOOST_CHARCONV_LDBL_BITS > 64
 #  include <boost/charconv/detail/compute_float80.hpp>

@@ -2,12 +2,38 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+// Make this header safe to include in our purview
+#if defined(BOOST_IN_MODULE_PURVIEW) && !defined(BOOST_CHARCONV_DETAIL_CONFIG_HPP)
+#  error "Please #include <boost/charconv/detail/config.hpp> in your module global fragment"
+#endif
+
 #ifndef BOOST_CHARCONV_DETAIL_CONFIG_HPP
 #define BOOST_CHARCONV_DETAIL_CONFIG_HPP
 
 #include <boost/config.hpp>
-#include <type_traits>
+#include <boost/config/std/type_traits.hpp>
 #include <cfloat>
+
+// Long double characteristics
+
+// 80 bit long double (e.g. x86-64)
+#if LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384
+#  define BOOST_CHARCONV_LDBL_BITS 80
+
+// 128 bit long double (e.g. s390x, ppcle64)
+#elif LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384
+#  define BOOST_CHARCONV_LDBL_BITS 128
+
+// 64 bit long double (double == long double on ARM)
+#elif LDBL_MANT_DIG == 53 && LDBL_MAX_EXP == 1024
+#  define BOOST_CHARCONV_LDBL_BITS 64
+
+// Unsupported long double representation
+#else
+#  define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+#  define BOOST_CHARCONV_LDBL_BITS -1
+
+#endif // long double feature detection
 
 #include <boost/assert.hpp>
 #define BOOST_CHARCONV_ASSERT(expr) BOOST_ASSERT(expr)
@@ -169,7 +195,7 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 // All of these types are optional so check for each of them individually
 #if (defined(_MSVC_LANG) && _MSVC_LANG > 202002L) || __cplusplus > 202002L
 #  if __has_include(<stdfloat>)
-#    include <stdfloat>
+#    include <boost/config/std/stdfloat.hpp>
 #  endif
 #endif
 #ifdef __STDCPP_FLOAT16_T__

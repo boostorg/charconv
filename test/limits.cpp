@@ -3,6 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/config.hpp>
 
 #ifdef BOOST_HAS_INT128
@@ -12,7 +13,7 @@
 // won't be visible to BOOST_TEST_EQ
 // LCOV_EXCL_START
 
-#include <ostream>
+#include <boost/config/std/ostream.hpp>
 
 static char* mini_to_chars( char (&buffer)[ 64 ], boost::uint128_type v )
 {
@@ -64,9 +65,9 @@ std::ostream& operator<<( std::ostream& os, boost::int128_type v )
 #include <boost/charconv/to_chars.hpp>
 #include <boost/charconv/from_chars.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <limits>
-#include <string>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/string.hpp>
 
 void test_odr_use( int const* );
 

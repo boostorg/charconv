@@ -8,18 +8,20 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_DIGIT_COMPARISON_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_DIGIT_COMPARISON_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/charconv/detail/fast_float/bigint.hpp>
 #include <boost/charconv/detail/fast_float/ascii_number.hpp>
-#include <algorithm>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
+#include <boost/config/std/algorithm.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/iterator.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
 // 1e0 to 1e19
-constexpr static uint64_t powers_of_ten_uint64[] = {
+BOOST_INLINE_CONSTEXPR uint64_t powers_of_ten_uint64[] = {
     1UL, 10UL, 100UL, 1000UL, 10000UL, 100000UL, 1000000UL, 10000000UL, 100000000UL,
     1000000000UL, 10000000000UL, 100000000000UL, 1000000000000UL, 10000000000000UL,
     100000000000000UL, 1000000000000000UL, 10000000000000000UL, 100000000000000000UL,
@@ -438,5 +440,7 @@ adjusted_mantissa digit_comp(parsed_number_string_t<UC>& num, adjusted_mantissa 
 }
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

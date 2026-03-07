@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/limits.hpp>
-#include <boost/charconv/detail/bit_layouts.hpp>
 
 void test_odr_use( int const* );
 

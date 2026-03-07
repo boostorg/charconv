@@ -5,20 +5,22 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/emulated128.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cstdint>
-#include <cmath>
-#include <climits>
-#include <cfloat>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/climits.hpp>
+#include <boost/config/std/cfloat.hpp>
 
 #ifdef BOOST_CHARCONV_DEBUG_FLOAT128
-#include <iostream>
-#include <iomanip>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/iomanip.hpp>
 #include <boost/charconv/detail/to_chars_integer_impl.hpp>
 #endif
 
@@ -26,7 +28,7 @@ namespace boost { namespace charconv { namespace detail {
 
 #if BOOST_CHARCONV_LDBL_BITS > 64
 
-static constexpr long double powers_of_ten_ld[] = {
+BOOST_INLINE_CONSTEXPR long double powers_of_ten_ld[] = {
     1e0L,  1e1L,  1e2L,  1e3L,  1e4L,  1e5L,  1e6L,
     1e7L,  1e8L,  1e9L,  1e10L, 1e11L, 1e12L, 1e13L,
     1e14L, 1e15L, 1e16L, 1e17L, 1e18L, 1e19L, 1e20L,
@@ -110,5 +112,7 @@ inline ResultType compute_float80(std::int64_t q, Unsigned_Integer w, bool negat
 #endif // BOOST_CHARCONV_LDBL_BITS > 64
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT80_HPP

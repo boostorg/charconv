@@ -5,9 +5,11 @@
 #ifndef BOOST_CHARCONV_DETAIL_MEMCPY_HPP
 #define BOOST_CHARCONV_DETAIL_MEMCPY_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
-#include <cstring>
-#include <cstdint>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89689
 // GCC 10 added checks for length of memcpy which yields the following warning (converted to error with -Werror)
@@ -74,5 +76,7 @@ inline void* memcpy(void* dest, const void* src, std::size_t count)
 #ifdef BOOST_CHARCONV_STRINGOP_OVERFLOW_DISABLED
 #  pragma GCC diagnostic pop
 #endif
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_MEMCPY_HPP

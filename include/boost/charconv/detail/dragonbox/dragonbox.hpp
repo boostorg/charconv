@@ -22,6 +22,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
 #define BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/dragonbox/dragonbox_common.hpp>
 #include <boost/charconv/detail/bit_layouts.hpp>
@@ -30,10 +32,10 @@
 #include <boost/charconv/detail/to_chars_result.hpp>
 #include <boost/charconv/chars_format.hpp>
 #include <boost/core/bit.hpp>
-#include <type_traits>
-#include <limits>
-#include <cstdint>
-#include <cstring>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstring.hpp>
 
 #ifdef BOOST_MSVC
 # pragma warning(push)
@@ -2748,5 +2750,7 @@ to_chars_result dragonbox_to_chars(Float x, char* first, char* last, chars_forma
 #ifdef BOOST_MSVC
 # pragma warning(pop)
 #endif
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_DRAGONBOX_HPP

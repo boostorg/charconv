@@ -2,11 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <cstdint>
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <cstdint>
-#include <cstring>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/cstring.hpp>
 
 template <typename T>
 void test()

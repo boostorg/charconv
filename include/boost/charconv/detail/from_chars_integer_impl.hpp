@@ -5,6 +5,8 @@
 #ifndef BOOST_CHARCONV_DETAIL_FROM_CHARS_INTEGER_IMPL_HPP
 #define BOOST_CHARCONV_DETAIL_FROM_CHARS_INTEGER_IMPL_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
+
 #include <boost/charconv/detail/apply_sign.hpp>
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/from_chars_result.hpp>
@@ -12,17 +14,17 @@
 #include <boost/charconv/detail/type_traits.hpp>
 #include <boost/charconv/config.hpp>
 #include <boost/config.hpp>
-#include <system_error>
-#include <type_traits>
-#include <limits>
-#include <cstdlib>
-#include <cerrno>
-#include <cstddef>
-#include <cstdint>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cerrno.hpp>
+#include <boost/config/std/cstddef.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 
-static constexpr unsigned char uchar_values[] =
+BOOST_INLINE_CONSTEXPR unsigned char uchar_values[] =
      {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -42,7 +44,7 @@ static constexpr unsigned char uchar_values[] =
 
 static_assert(sizeof(uchar_values) == 256, "uchar_values should represent all 256 values of unsigned char");
 
-static constexpr double log_2_table[] =
+BOOST_INLINE_CONSTEXPR double log_2_table[] =
 {
     0.0,
     0.0,
@@ -331,5 +333,7 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first,
 }
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || !defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_FROM_CHARS_INTEGER_IMPL_HPP

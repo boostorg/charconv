@@ -4,6 +4,7 @@
 //
 // See: https://github.com/cppalliance/int128/issues/320
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv.hpp>
 
 #ifdef BOOST_CHARCONV_HAS_INT128
@@ -14,8 +15,8 @@
 #endif
 
 #include <boost/core/lightweight_test.hpp>
-#include <string>
-#include <cstdlib>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/cstdlib.hpp>
 
 void toChars(char* ptr, char* ptrEnd, boost::int128_type i128)
 {

@@ -5,20 +5,22 @@
 #ifndef BOOST_CHARCONV_FLOAT128_IMPL_HPP
 #define BOOST_CHARCONV_FLOAT128_IMPL_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/ryu/ryu_generic_128.hpp>
 #include <boost/charconv/detail/compute_float80.hpp>
 #include <boost/charconv/detail/fallback_routines.hpp>
 #include <boost/charconv/detail/issignaling.hpp>
 #include <boost/charconv/limits.hpp>
-#include <system_error>
-#include <cstring>
-#include <cstdint>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
 
 // Only add in float128 support if the build system says it can
 #ifdef BOOST_CHARCONV_HAS_QUADMATH
 
-#include <quadmath.h>
+#include "quadmath_wrapper.hpp"
 
 namespace boost {
 namespace charconv {
@@ -70,7 +72,7 @@ inline struct floating_decimal_128 stdfloat128_to_fd128(std::float128_t d) noexc
 // fast_float
 // --------------------------------------------------------------------------------------------------------------------
 
-static constexpr __float128 powers_of_tenq[] = {
+BOOST_INLINE_CONSTEXPR __float128 powers_of_tenq[] = {
     1e0Q,  1e1Q,  1e2Q,  1e3Q,  1e4Q,  1e5Q,  1e6Q,
     1e7Q,  1e8Q,  1e9Q,  1e10Q, 1e11Q, 1e12Q, 1e13Q,
     1e14Q, 1e15Q, 1e16Q, 1e17Q, 1e18Q, 1e19Q, 1e20Q,
@@ -353,5 +355,7 @@ inline bool issignaling<__float128> BOOST_PREVENT_MACRO_SUBSTITUTION (__float128
 } //namespace boost
 
 #endif //BOOST_CHARCONV_HAS_QUADMATH
+
+#endif //!defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
 
 #endif //BOOST_CHARCONV_FLOAT128_IMPL_HPP

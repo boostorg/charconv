@@ -5,9 +5,11 @@
 #ifndef BOOST_CHARCONV_DETAIL_BUFFER_SIZING_HPP
 #define BOOST_CHARCONV_DETAIL_BUFFER_SIZING_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/config.hpp>
 #include <boost/charconv/detail/integer_search_trees.hpp>
-#include <type_traits>
+#include <boost/config/std/type_traits.hpp>
 
 namespace boost {
 namespace charconv {
@@ -68,5 +70,7 @@ inline int total_buffer_length(int real_precision, Int exp, bool signed_value)
 } //namespace detail
 } //namespace charconv
 } //namespace boost
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif //BOOST_CHARCONV_DETAIL_BUFFER_SIZING_HPP

@@ -4,10 +4,11 @@
 //
 // See: https://github.com/cppalliance/charconv/issues/156
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <random>
-#include <iostream>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/iostream.hpp>
 
 #ifdef BOOST_CHARCONV_HAS_BRAINFLOAT16
 

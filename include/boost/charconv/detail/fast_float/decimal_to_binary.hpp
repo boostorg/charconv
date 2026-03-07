@@ -8,14 +8,16 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_DECIMAL_TO_BINARY_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_DECIMAL_TO_BINARY_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 #include <boost/charconv/detail/fast_float/fast_table.hpp>
-#include <cfloat>
-#include <cinttypes>
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
+#include <boost/config/std/cfloat.hpp>
+#include <boost/config/std/cinttypes.hpp>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cstdlib.hpp>
+#include <boost/config/std/cstring.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -192,5 +194,7 @@ adjusted_mantissa compute_float(int64_t q, uint64_t w)  noexcept  {
 }
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

@@ -8,15 +8,17 @@
 #ifndef BOOST_CHARCONV_DETAIL_FASTFLOAT_PARSE_NUMBER_HPP
 #define BOOST_CHARCONV_DETAIL_FASTFLOAT_PARSE_NUMBER_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/fast_float/ascii_number.hpp>
 #include <boost/charconv/detail/fast_float/decimal_to_binary.hpp>
 #include <boost/charconv/detail/fast_float/digit_comparison.hpp>
 #include <boost/charconv/detail/fast_float/float_common.hpp>
 
-#include <cmath>
-#include <cstring>
-#include <limits>
-#include <system_error>
+#include <boost/config/std/cmath.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/system_error.hpp>
 
 namespace boost { namespace charconv { namespace detail { namespace fast_float {
 
@@ -243,5 +245,7 @@ from_chars_result_t<UC> from_chars_advanced(UC const * first, UC const * last,
 }
 
 }}}} // namespace fast_float
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif

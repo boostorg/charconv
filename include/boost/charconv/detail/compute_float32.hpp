@@ -5,10 +5,12 @@
 #ifndef BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 #define BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP
 
+#if !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERNAL_PARTITION_UNIT)
+
 #include <boost/charconv/detail/compute_float64.hpp>
-#include <limits>
-#include <cstdint>
-#include <cmath>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cmath.hpp>
 
 namespace boost { namespace charconv { namespace detail {
 
@@ -51,5 +53,7 @@ inline float compute_float32(std::int64_t power, std::uint64_t i, bool negative,
 }
 
 }}} // Namespaces
+
+#endif // !defined(BOOST_USE_MODULES) || defined(BOOST_CHARCONV_INTERFACE_UNIT)
 
 #endif // BOOST_CHARCONV_DETAIL_COMPUTE_FLOAT32_HPP

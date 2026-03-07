@@ -9,19 +9,20 @@
     ((defined(__clang__) && __clang_major__ >= 14 && !defined(__APPLE__)) || (defined(__clang__) && defined(__APPLE__) && __clang_major__ >= 16)) || \
     (defined(_MSC_VER) && _MSC_VER >= 1924)
 
+#include <boost/charconv/detail/config.hpp>
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <system_error>
-#include <charconv>
-#include <type_traits>
-#include <limits>
-#include <random>
-#include <string>
-#include <iomanip>
-#include <iostream>
-#include <cstring>
-#include <cstdint>
-#include <cerrno>
+#include <boost/config/std/system_error.hpp>
+#include <boost/config/std/charconv.hpp>
+#include <boost/config/std/type_traits.hpp>
+#include <boost/config/std/limits.hpp>
+#include <boost/config/std/random.hpp>
+#include <boost/config/std/string.hpp>
+#include <boost/config/std/iomanip.hpp>
+#include <boost/config/std/iostream.hpp>
+#include <boost/config/std/cstring.hpp>
+#include <boost/config/std/cstdint.hpp>
+#include <boost/config/std/cerrno.hpp>
 
 template <typename T>
 void test_spot(T val, boost::charconv::chars_format fmt = boost::charconv::chars_format::general, int precision = -1)
