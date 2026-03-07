@@ -29,6 +29,7 @@
 #  define BOOST_CHARCONV_LDBL_BITS 64
 
 // Unsupported long double representation
+#else
 #  define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
 #  define BOOST_CHARCONV_LDBL_BITS -1
 
