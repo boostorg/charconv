@@ -20,3 +20,15 @@ run test_from_chars_long.cu ;
 run test_from_chars_unsigned_long.cu ;
 run test_from_chars_long_long.cu ;
 run test_from_chars_unsigned_long_long.cu ;
+
+run test_from_chars_bases_char.cu ;
+run test_from_chars_bases_signed_char.cu ;
+run test_from_chars_bases_unsigned_char.cu ;
+run test_from_chars_bases_short.cu ;
+run test_from_chars_bases_unsigned_short.cu ;
+run test_from_chars_bases_int.cu ;
+run test_from_chars_bases_unsigned_int.cu ;
+run test_from_chars_bases_long.cu ;
+run test_from_chars_bases_unsigned_long.cu ;
+run test_from_chars_bases_long_long.cu ;
+run test_from_chars_bases_unsigned_long_long.cu ;
