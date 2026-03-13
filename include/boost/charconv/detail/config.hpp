@@ -201,5 +201,10 @@ static_assert(std::is_same<long double, __float128>::value, "__float128 should b
 
 #endif
 
+#ifdef __NVCC__
+#  define BOOST_CHARCONV_HOST_DEVICE __host__ __device__
+#else
+#  define BOOST_CHARCONV_HOST_DEVICE
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
