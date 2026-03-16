@@ -137,6 +137,27 @@ BOOST_CHARCONV_HOST_DEVICE constexpr unsigned char digit_from_char(const char va
 
 #endif
 
+#ifdef __NVCC__
+
+template <typename T>
+__host__ __device__ constexpr T get_max_value()
+{
+    using UT = typename std::make_unsigned<T>::type;
+    return std::is_signed<T>::value
+        ? static_cast<T>(static_cast<UT>(-1) >> 1)
+        : static_cast<T>(static_cast<UT>(-1));
+}
+
+#else
+
+template <typename T>
+constexpr T get_max_value()
+{
+    return (std::numeric_limits<T>::max)();
+}
+
+#endif
+
 template <typename Integer, typename Unsigned_Integer>
 BOOST_CHARCONV_HOST_DEVICE BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* first, const char* last, Integer& value, int base) noexcept
 {
@@ -226,8 +247,8 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CXX14_CONSTEXPR from_chars_result from_chars_in
         else
         #endif
         {
-            overflow_value = static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)());
-            max_digit = static_cast<Unsigned_Integer>((std::numeric_limits<Integer>::max)());
+            overflow_value = static_cast<Unsigned_Integer>(get_max_value<Integer>());
+            max_digit = static_cast<Unsigned_Integer>(get_max_value<Integer>());
         }
 
         if (is_negative)
@@ -252,8 +273,8 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CXX14_CONSTEXPR from_chars_result from_chars_in
         else
         #endif
         {
-            overflow_value = (std::numeric_limits<Unsigned_Integer>::max)();
-            max_digit = (std::numeric_limits<Unsigned_Integer>::max)();
+            overflow_value = get_max_value<Unsigned_Integer>();
+            max_digit = get_max_value<Unsigned_Integer>();
         }
     }
 
