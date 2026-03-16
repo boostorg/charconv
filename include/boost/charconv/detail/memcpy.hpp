@@ -25,6 +25,22 @@
 
 namespace boost { namespace charconv { namespace detail {
 
+#ifdef __NVCC__
+
+__host__ __device__ constexpr char* memcpy(char* dest, const char* src, std::size_t count)
+{
+    for (std::size_t i = 0; i < count; ++i)
+    {
+        *(dest + i) = *(src + i);
+    }
+
+    return dest;
+}
+
+#define BOOST_CHARCONV_CONSTEXPR constexpr
+
+#else
+
 #if !defined(BOOST_CHARCONV_NO_CONSTEXPR_DETECTION) && defined(BOOST_CXX14_CONSTEXPR)
 
 #define BOOST_CHARCONV_CONSTEXPR constexpr
@@ -68,6 +84,8 @@ inline void* memcpy(void* dest, const void* src, std::size_t count)
 }
 
 #endif
+
+#endif // NVCC
 
 }}} // Namespace boost::charconv::detail
 
