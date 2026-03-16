@@ -771,7 +771,9 @@ jobs:
     strategy:
       fail-fast: false
 
-    runs-on: gpu-runner-1
+    # Only in cppa mirror
+    # runs-on: gpu-runner-1
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: Jimver/cuda-toolkit@v0.2.25
@@ -820,7 +822,8 @@ jobs:
         run: |
           cd ../boost-root/__build__
           cmake --build . --target tests -j $(nproc)
-      - name: Run tests
-        run: |
-          cd ../boost-root/__build__
-          ctest --output-on-failure --no-tests=error
+      # Only runs in cppa mirror
+      #- name: Run tests
+      #  run: |
+      #    cd ../boost-root/__build__
+      #    ctest --output-on-failure --no-tests=error
