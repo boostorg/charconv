@@ -37,6 +37,8 @@ __host__ __device__ constexpr char* memcpy(char* dest, const char* src, std::siz
     return dest;
 }
 
+#define BOOST_CHARCONV_CONSTEXPR constexpr
+
 #else
 
 #if !defined(BOOST_CHARCONV_NO_CONSTEXPR_DETECTION) && defined(BOOST_CXX14_CONSTEXPR)
