@@ -61,8 +61,6 @@ static constexpr char digit_table[] = {
         'u', 'v', 'w', 'x', 'y', 'z'
 };
 
-#endif
-
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
 BOOST_CHARCONV_CONSTEXPR char* decompose32(std::uint32_t value, char* buffer) noexcept
@@ -304,6 +302,8 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     return {first + converted_value_digits, std::errc()};
 }
+
+#endif // __NVCC__
 
 // Conversion warning from shift operators with unsigned char
 #if defined(__GNUC__) && __GNUC__ >= 5
