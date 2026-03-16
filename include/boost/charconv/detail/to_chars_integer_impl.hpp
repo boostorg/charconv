@@ -52,12 +52,16 @@ static constexpr char radix_table[] = {
         '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'
 };
 
+#ifndef __NVCC_
+
 static constexpr char digit_table[] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
         'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
         'u', 'v', 'w', 'x', 'y', 'z'
 };
+
+#endif
 
 // See: https://jk-jeon.github.io/posts/2022/02/jeaiii-algorithm/
 // https://arxiv.org/abs/2101.11408
@@ -313,8 +317,19 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 // All other bases
 // Use a simple lookup table to put together the Integer in character form
 template <typename Integer, typename Unsigned_Integer>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
+BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
+    #ifdef __NVCC__
+
+    constexpr char digit_table[] = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+        'u', 'v', 'w', 'x', 'y', 'z'
+    };
+
+    #endif
+
     if (!((first <= last) && (base >= 2 && base <= 36)))
     {
         return {last, std::errc::invalid_argument};
@@ -381,6 +396,18 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
             }
             break;
 
+        #ifdef __NVCC__
+
+        case 10:
+            while (unsigned_value != static_cast<Unsigned_Integer>(0))
+            {
+                *end-- = static_cast<char>(zero + (unsigned_value % 10U));
+                unsigned_value /= 10U;
+            }
+            break;
+
+        #endif
+
         case 16:
             while (unsigned_value != static_cast<Unsigned_Integer>(0))
             {
@@ -430,13 +457,18 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char
 #endif
 
 template <typename Integer>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int(char* first, char* last, Integer value, int base = 10) noexcept
+BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int(char* first, char* last, Integer value, int base = 10) noexcept
 {
     using Unsigned_Integer = typename std::make_unsigned<Integer>::type;
+
+    // The specialized base 10 path requires lookup tables and memcpy
+    // On device, we instead use the trivial divide and mod to avoid these
+    #ifndef __NVCC__
     if (base == 10)
     {
         return to_chars_integer_impl(first, last, value);
     }
+    #endif
 
     return to_chars_integer_impl<Integer, Unsigned_Integer>(first, last, value, base);
 }
