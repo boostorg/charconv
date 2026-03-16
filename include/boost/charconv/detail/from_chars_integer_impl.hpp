@@ -396,10 +396,12 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first,
 }
 #endif
 
+#ifndef __NVCC__
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, uint128& value, int base = 10) noexcept
 {
     return from_chars_integer_impl<uint128, uint128>(first, last, value, base);
 }
+#endif
 
 }}} // Namespaces
 
