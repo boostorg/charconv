@@ -20,7 +20,7 @@
 #endif
 
 // Use 128-bit integers and suppress warnings for using extensions
-#if defined(BOOST_HAS_INT128)
+#if defined(BOOST_HAS_INT128) && !defined(__NVCC__)
 #  define BOOST_CHARCONV_HAS_INT128
 #  define BOOST_CHARCONV_INT128_MAX  static_cast<boost::int128_type>((static_cast<boost::uint128_type>(1) << 127) - 1)
 #  define BOOST_CHARCONV_INT128_MIN  (-BOOST_CHARCONV_INT128_MAX - 1)
@@ -201,5 +201,10 @@ static_assert(std::is_same<long double, __float128>::value, "__float128 should b
 
 #endif
 
+#ifdef __NVCC__
+#  define BOOST_CHARCONV_HOST_DEVICE __host__ __device__
+#else
+#  define BOOST_CHARCONV_HOST_DEVICE
+#endif
 
 #endif // BOOST_CHARCONV_DETAIL_CONFIG_HPP
