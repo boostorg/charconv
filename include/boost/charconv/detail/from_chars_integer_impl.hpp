@@ -22,7 +22,7 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-#ifndef __NVCC__
+#if !(defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__))
 
 static constexpr unsigned char uchar_values[] =
      {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -90,7 +90,7 @@ static constexpr double log_2_table[] =
 // Convert characters for 0-9, A-Z, a-z to 0-35. Anything else is 255
 BOOST_CHARCONV_HOST_DEVICE constexpr unsigned char digit_from_char(const char val) noexcept
 {
-    #ifdef __NVCC__
+    #if defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)
 
     constexpr unsigned char uchar_values[] =
     {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -137,7 +137,7 @@ BOOST_CHARCONV_HOST_DEVICE constexpr unsigned char digit_from_char(const char va
 
 #endif
 
-#ifdef __NVCC__
+#if defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)
 
 template <typename T>
 __host__ __device__ constexpr T get_max_value()
@@ -161,7 +161,7 @@ constexpr T get_max_value()
 template <typename Integer, typename Unsigned_Integer>
 BOOST_CHARCONV_HOST_DEVICE BOOST_CXX14_CONSTEXPR from_chars_result from_chars_integer_impl(const char* first, const char* last, Integer& value, int base) noexcept
 {
-    #ifdef __NVCC__
+    #if defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)
 
     constexpr double log_2_table[] =
     {
@@ -417,7 +417,7 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first,
 }
 #endif
 
-#ifndef __NVCC__
+#if !(defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__))
 BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars128(const char* first, const char* last, uint128& value, int base = 10) noexcept
 {
     return from_chars_integer_impl<uint128, uint128>(first, last, value, base);

@@ -52,7 +52,7 @@ static constexpr char radix_table[] = {
         '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'
 };
 
-#ifndef __NVCC__
+#if !(defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__))
 
 static constexpr char digit_table[] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -319,7 +319,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 template <typename Integer, typename Unsigned_Integer>
 BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_integer_impl(char* first, char* last, Integer value, int base) noexcept
 {
-    #ifdef __NVCC__
+    #if defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)
 
     constexpr char digit_table[] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -396,7 +396,7 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int
             }
             break;
 
-        #ifdef __NVCC__
+        #if defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)
 
         case 10:
             while (unsigned_value != static_cast<Unsigned_Integer>(0))
@@ -463,7 +463,7 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int
 
     // The specialized base 10 path requires lookup tables and memcpy
     // On device, we instead use the trivial divide and mod to avoid these
-    #ifndef __NVCC__
+    #if !(defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__))
     if (base == 10)
     {
         return to_chars_integer_impl(first, last, value);
