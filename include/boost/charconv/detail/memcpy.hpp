@@ -25,7 +25,7 @@
 
 namespace boost { namespace charconv { namespace detail {
 
-#ifdef __NVCC__
+#if defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)
 
 __host__ __device__ constexpr char* memcpy(char* dest, const char* src, std::size_t count)
 {
