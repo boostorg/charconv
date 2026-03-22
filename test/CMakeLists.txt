@@ -16,7 +16,7 @@ if(HAVE_BOOST_TEST)
         enable_language(CUDA)
         set(CMAKE_CUDA_EXTENSIONS OFF)
 
-        boost_test_jamfile(FILE cuda_jamfile LINK_LIBRARIES Boost::charconv Boost::core Boost::assert ${CUDA_LIBRARIES} INCLUDE_DIRECTORIES ${CUDA_INCLUDE_DIRS} )
+        boost_test_jamfile(FILE cuda_jamfile LINK_LIBRARIES Boost::charconv Boost::core Boost::assert ${CUDA_LIBRARIES} COMPILE_DEFINITIONS BOOST_CHARCONV_ENABLE_CUDA=1 INCLUDE_DIRECTORIES ${CUDA_INCLUDE_DIRS} )
 
     else()
 
