@@ -9,6 +9,7 @@
 #include <random>
 #include <limits>
 #include <cstring>
+#include <array>
 #include <boost/charconv/to_chars.hpp>
 #include "cuda_managed_ptr.hpp"
 #include "stopwatch.hpp"
@@ -81,23 +82,23 @@ int main(void)
     }
 
     // Verify that the result vector is correct
-    std::vector<char[BUF_SIZE]> results;
+    std::vector<std::array<char, BUF_SIZE>> results;
     std::vector<int> result_lengths;
     results.reserve(numElements);
     result_lengths.reserve(numElements);
     w.reset();
     for (int i = 0; i < numElements; ++i)
     {
-        char buf[BUF_SIZE];
-        auto res = boost::charconv::to_chars(buf, buf + BUF_SIZE, input_vector[i]);
+        std::array<char, BUF_SIZE> buf;
+        auto res = boost::charconv::to_chars(buf.data(), buf.data() + BUF_SIZE, input_vector[i]);
         results.push_back(buf);
-        result_lengths.push_back(static_cast<int>(res.ptr - buf));
+        result_lengths.push_back(static_cast<int>(res.ptr - buf.data()));
     }
     double t = w.elapsed();
 
     for (int i = 0; i < numElements; ++i)
     {
-        auto cpu_buf = results[i];
+        auto cpu_buf = results[i].data();
         int cpu_len = result_lengths[i];
         int gpu_len = output_lengths[i];
         const char* gpu_buf = &output_strings[i * BUF_SIZE];
