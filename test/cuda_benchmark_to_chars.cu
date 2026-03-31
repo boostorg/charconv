@@ -81,12 +81,24 @@ int main(void)
     }
 
     // Verify that the result vector is correct
+    std::vector<char[BUF_SIZE]> results;
+    std::vector<int> result_lengths;
+    results.reserve(numElements);
+    result_lengths.reserve(numElements);
     w.reset();
-    for(int i = 0; i < numElements; ++i)
+    for (int i = 0; i < numElements; ++i)
     {
-        char cpu_buf[BUF_SIZE];
-        auto cpu_res = boost::charconv::to_chars(cpu_buf, cpu_buf + BUF_SIZE, input_vector[i]);
-        int cpu_len = static_cast<int>(cpu_res.ptr - cpu_buf);
+        char buf[BUF_SIZE];
+        auto res = boost::charconv::to_chars(buf, buf + BUF_SIZE, input_vector[i]);
+        results.push_back(buf);
+        result_lengths.push_back(static_cast<int>(res.ptr - buf));
+    }
+    double t = w.elapsed();
+
+    for (int i = 0; i < numElements; ++i)
+    {
+        auto cpu_buf = results[i];
+        int cpu_len = result_lengths[i];
         int gpu_len = output_lengths[i];
         const char* gpu_buf = &output_strings[i * BUF_SIZE];
 
@@ -96,7 +108,6 @@ int main(void)
             return EXIT_FAILURE;
         }
     }
-    double t = w.elapsed();
 
     std::cout << "Test PASSED, normal calculation time: " << t << "s" << std::endl;
     std::cout << "Done\n";
