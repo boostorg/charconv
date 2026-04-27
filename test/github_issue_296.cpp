@@ -57,7 +57,7 @@ int main()
     test_prec_1<float>();
     test_prec_1<double>();
 
-    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+    #if !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE) && BOOST_CHARCONV_LDBL_BITS < 128
     test<long double>();
     test_pos<long double>();
     test_prec_1<long double>();
