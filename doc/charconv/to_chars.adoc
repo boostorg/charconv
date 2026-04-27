@@ -25,12 +25,12 @@ struct to_chars_result
     char* ptr;
     std::errc ec;
 
-    friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept; = default;
-    constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
+    BOOST_CHARCONV_HOST_DEVICE friend constexpr bool operator==(const to_chars_result& lhs, const to_chars_result& rhs) noexcept; = default;
+    BOOST_CHARCONV_HOST_DEVICE constexpr explicit operator bool() const noexcept { return ec == std::errc{}; }
 };
 
 template <typename Integral>
-BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integral value, int base = 10) noexcept;
+BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars(char* first, char* last, Integral value, int base = 10) noexcept;
 
 template <typename Integral>
 BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars<bool>(char* first, char* last, Integral value, int base) noexcept = delete;
@@ -71,6 +71,7 @@ See <<chars_format overview>> for description.
 ** compiled using `-std=c++14` or newer 
 ** using a compiler with `\__builtin_ is_constant_evaluated`
 * These functions have been tested to support `\__int128` and `unsigned __int128`
+* When compiling with NVCC, (e.g., `BOOST_CHARCONV_HOST_DEVICE` defined as `pass:[__host__ __device__]`), these functions are available for use on CPU and GPU.
 
 === Usage notes for to_chars for floating point types
 * The following will be returned when handling different values of `NaN`
