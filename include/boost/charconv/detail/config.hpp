@@ -197,7 +197,11 @@ static_assert((BOOST_CHARCONV_ENDIAN_BIG_BYTE || BOOST_CHARCONV_ENDIAN_LITTLE_BY
 
 #define BOOST_CHARCONV_LDBL_IS_FLOAT128
 #define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+// This identity holds only on GCC. clang keeps long double and __float128 as distinct types
+// even when both are IEEE binary128, and does not expose __float128 without -mfloat128.
+#if defined(__GNUC__) && !defined(__clang__)
 static_assert(std::is_same<long double, __float128>::value, "__float128 should be an alias to long double. Please open an issue at: https://github.com/boostorg/charconv");
+#endif
 
 #endif
 
