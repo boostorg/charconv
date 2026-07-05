@@ -57,7 +57,7 @@ struct from_chars_result
 template <typename Integral>
 BOOST_CXX14_CONSTEXPR from_chars_result from_chars(const char* first, const char* last, Integral& value, int base = 10) noexcept;
 
-template<>
+template <>
 BOOST_CXX14_CONSTEXPR from_chars_result from_chars<bool>(const char* first, const char* last, bool& value, int base) noexcept = delete;
 
 template <typename Real>
