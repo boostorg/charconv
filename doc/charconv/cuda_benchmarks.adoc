@@ -20,7 +20,7 @@ run_cuda_to_chars<<<blocks, threads>>>(input, output, numElements);
 time_point device_end;
 
 time_point host_begin;
-for (int i = 0; i < num_Elements, ++i)
+for (int i = 0; i < num_Elements; ++i)
 {
     uint32_t value;
     boost::charconv::from_chars(input, input + sizeof(input), value);
