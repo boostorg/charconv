@@ -25,6 +25,10 @@ if(HAVE_BOOST_TEST)
         set(CMAKE_CXX_COMPILER "icpx")
         set(CMAKE_C_COMPILER "icx")
 
+        # -fsycl must be on the link line too (it bundles the device image); COMPILE_OPTIONS
+        # only reaches the compile step, so add it to the linker flags as well.
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsycl")
+
         boost_test_jamfile(FILE sycl_jamfile LINK_LIBRARIES Boost::charconv Boost::core Boost::assert sycl COMPILE_DEFINITIONS BOOST_CHARCONV_ENABLE_SYCL=1 COMPILE_OPTIONS -fsycl )
 
     else()
