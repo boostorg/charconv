@@ -1,0 +1,61 @@
+# Copyright 2026 Matt Borland
+# Distributed under the Boost Software License, Version 1.0.
+# https://www.boost.org/LICENSE_1_0.txt
+
+import testing ;
+import ../../config/checks/config : requires ;
+
+project : requirements
+    [ requires cxx14_decltype_auto cxx14_generic_lambdas cxx14_return_type_deduction cxx14_variable_templates cxx14_constexpr ]
+    ;
+
+run test_to_chars_char_sycl.cpp ;
+run test_to_chars_signed_char_sycl.cpp ;
+run test_to_chars_unsigned_char_sycl.cpp ;
+run test_to_chars_short_sycl.cpp ;
+run test_to_chars_unsigned_short_sycl.cpp ;
+run test_to_chars_int_sycl.cpp ;
+run test_to_chars_unsigned_int_sycl.cpp ;
+run test_to_chars_long_sycl.cpp ;
+run test_to_chars_unsigned_long_sycl.cpp ;
+run test_to_chars_long_long_sycl.cpp ;
+run test_to_chars_unsigned_long_long_sycl.cpp ;
+
+run test_to_chars_bases_char_sycl.cpp ;
+run test_to_chars_bases_signed_char_sycl.cpp ;
+run test_to_chars_bases_unsigned_char_sycl.cpp ;
+run test_to_chars_bases_short_sycl.cpp ;
+run test_to_chars_bases_unsigned_short_sycl.cpp ;
+run test_to_chars_bases_int_sycl.cpp ;
+run test_to_chars_bases_unsigned_int_sycl.cpp ;
+run test_to_chars_bases_long_sycl.cpp ;
+run test_to_chars_bases_unsigned_long_sycl.cpp ;
+run test_to_chars_bases_long_long_sycl.cpp ;
+run test_to_chars_bases_unsigned_long_long_sycl.cpp ;
+
+run test_from_chars_char_sycl.cpp ;
+run test_from_chars_signed_char_sycl.cpp ;
+run test_from_chars_unsigned_char_sycl.cpp ;
+run test_from_chars_short_sycl.cpp ;
+run test_from_chars_unsigned_short_sycl.cpp ;
+run test_from_chars_int_sycl.cpp ;
+run test_from_chars_unsigned_int_sycl.cpp ;
+run test_from_chars_long_sycl.cpp ;
+run test_from_chars_unsigned_long_sycl.cpp ;
+run test_from_chars_long_long_sycl.cpp ;
+run test_from_chars_unsigned_long_long_sycl.cpp ;
+
+run test_from_chars_bases_char_sycl.cpp ;
+run test_from_chars_bases_signed_char_sycl.cpp ;
+run test_from_chars_bases_unsigned_char_sycl.cpp ;
+run test_from_chars_bases_short_sycl.cpp ;
+run test_from_chars_bases_unsigned_short_sycl.cpp ;
+run test_from_chars_bases_int_sycl.cpp ;
+run test_from_chars_bases_unsigned_int_sycl.cpp ;
+run test_from_chars_bases_long_sycl.cpp ;
+run test_from_chars_bases_unsigned_long_sycl.cpp ;
+run test_from_chars_bases_long_long_sycl.cpp ;
+run test_from_chars_bases_unsigned_long_long_sycl.cpp ;
+
+run test_num_digits_uint32_sycl.cpp ;
+run test_num_digits_uint64_sycl.cpp ;

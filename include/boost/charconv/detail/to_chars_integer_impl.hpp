@@ -343,8 +343,8 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int
 
     Unsigned_Integer unsigned_value {};
     const auto unsigned_base = static_cast<Unsigned_Integer>(base);
-
-    BOOST_IF_CONSTEXPR (std::is_signed<Integer>::value)
+    
+    BOOST_IF_CONSTEXPR (std::numeric_limits<Integer>::is_signed)
     {
         if (value < static_cast<Integer>(0))
         {
