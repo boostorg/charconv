@@ -19,8 +19,10 @@
 #  define BOOST_CHARCONV_DEBUG_ASSERT(expr)
 #endif
 
-// Use 128-bit integers and suppress warnings for using extensions
-#if defined(BOOST_HAS_INT128) && !(defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__))
+// Use 128-bit integers and suppress warnings for using extensions.
+// The CUDA and SYCL device paths do not use the builtin 128-bit integer (the SYCL spir64
+// target has none, and the CUDA path is kept portable), so the emulated uint128 is used there.
+#if defined(BOOST_HAS_INT128) && !(defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)) && !defined(BOOST_CHARCONV_ENABLE_SYCL)
 #  define BOOST_CHARCONV_HAS_INT128
 #  define BOOST_CHARCONV_INT128_MAX  static_cast<boost::int128_type>((static_cast<boost::uint128_type>(1) << 127) - 1)
 #  define BOOST_CHARCONV_INT128_MIN  (-BOOST_CHARCONV_INT128_MAX - 1)
@@ -205,8 +207,12 @@ static_assert(std::is_same<long double, __float128>::value, "__float128 should b
 
 #endif
 
+// Device function markers. CUDA uses __host__ __device__; SYCL uses SYCL_EXTERNAL and is
+// opt-in via BOOST_CHARCONV_ENABLE_SYCL (define it, and include <sycl/sycl.hpp> beforehand).
 #if defined(BOOST_CHARCONV_ENABLE_CUDA) && defined(__CUDACC__)
 #  define BOOST_CHARCONV_HOST_DEVICE __host__ __device__
+#elif defined(BOOST_CHARCONV_ENABLE_SYCL)
+#  define BOOST_CHARCONV_HOST_DEVICE SYCL_EXTERNAL
 #else
 #  define BOOST_CHARCONV_HOST_DEVICE
 #endif
