@@ -42,6 +42,14 @@ IMPORTANT: libquadmath is only available on supported platforms (e.g. Linux with
 This library has partial support for CUDA which can be enabled during compilation with `BOOST_CHARCONV_ENABLE_CUDA`.
 Functions with `BOOST_CHARCONV_HOST_DEVICE` in their signature can be run on both host and device, all others are strictly run on host.
 
+[#enable_sycl_]
+== SYCL Support
+
+This library also has partial support for SYCL, which can be enabled during compilation with `BOOST_CHARCONV_ENABLE_SYCL`.
+Unlike CUDA it is fully opt-in: define the macro and include `<sycl/sycl.hpp>` before any Boost.Charconv header so that `SYCL_EXTERNAL` is available.
+The same functions carrying `BOOST_CHARCONV_HOST_DEVICE` can then be run on both host and device.
+On the SYCL device the builtin 128-bit integer type is not used (the spir64 target has none), so the emulated 128-bit implementation is used instead.
+
 == Dependencies
 
 This library depends on: Boost.Assert, Boost.Config, Boost.Core, and optionally libquadmath (see above).
