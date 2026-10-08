@@ -20,11 +20,21 @@ static void test(const double value, const boost::charconv::chars_format fmt, co
     BOOST_TEST_CSTR_EQ(buffer, expected);
 }
 
+// One rounding point in floff, four ways: below half, a tie after an odd digit, above half, a tie after an even digit
 static void test_examples()
 {
-    test(59547781175.354644775390625, boost::charconv::chars_format::fixed, 14, "59547781175.35464477539062");
-    test(59547781175.354644775390625, boost::charconv::chars_format::scientific, 24, "5.954778117535464477539062e+10");
-    test(-202364179515.495880126953125, boost::charconv::chars_format::fixed, 14, "-202364179515.49588012695312");
+    const auto fixed = boost::charconv::chars_format::fixed;
+    const auto scientific = boost::charconv::chars_format::scientific;
+
+    test(102414767595.7294464111328125, fixed, 14, "102414767595.72944641113281");
+    test(102414767595.7294464111328125, scientific, 25, "1.0241476759572944641113281e+11");
+    test(137924605214.933197021484375, fixed, 14, "137924605214.93319702148438");
+    test(137924605214.933197021484375, scientific, 25, "1.3792460521493319702148438e+11");
+    test(76209358548.4597625732421875, fixed, 14, "76209358548.45976257324219");
+    test(76209358548.4597625732421875, scientific, 24, "7.620935854845976257324219e+10");
+    test(59547781175.354644775390625, fixed, 14, "59547781175.35464477539062");
+    test(59547781175.354644775390625, scientific, 24, "5.954778117535464477539062e+10");
+    test(-202364179515.495880126953125, fixed, 14, "-202364179515.49588012695312");
 }
 
 // A positive decimal number: all its digits, and how many of them come before the decimal point
