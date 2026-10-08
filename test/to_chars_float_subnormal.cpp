@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <initializer_list>
 #include <random>
 
 static void test(const double value, const boost::charconv::chars_format fmt, const int precision, const char* expected)
@@ -40,7 +41,7 @@ static void test_random_subnormals()
     std::mt19937_64 rng(42);
     for (int i {}; i < 100000; ++i)
     {
-        const auto bits {(rng() & ((UINT64_C(1) << 52U) - 1U)) >> (rng() % 52U)};
+        const std::uint64_t bits = (rng() & ((UINT64_C(1) << 52U) - 1U)) >> (rng() % 52U);
         if (bits == 0U)
         {
             continue;
