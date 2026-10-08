@@ -105,7 +105,20 @@ static std::string as_scientific(const decimal_digits& number, const std::size_t
            (exponent < 10 ? "0" : "") + std::to_string(exponent);
 }
 
-// m / 2^j has exactly j fractional digits, the last one 5, so printing it one digit shorter is an exact tie
+// m / 2^j with an odd m has exactly j fractional digits, the last one 5, so one digit shorter is an exact tie
+static void test_tie(const std::uint64_t m, const int j)
+{
+    const double value {std::ldexp(static_cast<double>(m), -j)};
+
+    decimal_digits expected = exact_digits(m, static_cast<std::size_t>(j));
+    const std::size_t significant {expected.digits.size() - 1};
+    round_off_half(expected);
+
+    test(value, boost::charconv::chars_format::fixed, j - 1, as_fixed(expected).c_str());
+    test(value, boost::charconv::chars_format::scientific, static_cast<int>(significant) - 1,
+         as_scientific(expected, significant).c_str());
+}
+
 static void test_random_ties()
 {
     std::mt19937_64 rng(42);
@@ -113,15 +126,16 @@ static void test_random_ties()
     {
         const std::uint64_t m {(rng() >> 11) | (UINT64_C(1) << 52) | 1};
         const int j {1 + static_cast<int>(rng() % 52)};
-        const double value {std::ldexp(static_cast<double>(m), -j)};
+        test_tie(m, j);
+    }
+}
 
-        decimal_digits expected = exact_digits(m, static_cast<std::size_t>(j));
-        const std::size_t significant {expected.digits.size() - 1};
-        round_off_half(expected);
-
-        test(value, boost::charconv::chars_format::fixed, j - 1, as_fixed(expected).c_str());
-        test(value, boost::charconv::chars_format::scientific, static_cast<int>(significant) - 1,
-             as_scientific(expected, significant).c_str());
+// Ties that round all nines up into a new digit need m = 2 * 10^k - 1 and j = 1, which no random m above 2^52 is
+static void test_carry_ties()
+{
+    for (std::uint64_t m {199}; m < (UINT64_C(1) << 53); m = m * 10 + 9)
+    {
+        test_tie(m, 1);
     }
 }
 
@@ -129,6 +143,7 @@ int main()
 {
     test_examples();
     test_random_ties();
+    test_carry_ties();
 
     return boost::report_errors();
 }
