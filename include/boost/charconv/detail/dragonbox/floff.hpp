@@ -2479,7 +2479,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
 
                             if (check_rounding_condition_with_next_bit(
                                     current_digits, segment_boundary_rounding_bit,
-                                    has_further_digits<0, 1, ExtendedCache>(significand, exp2_base, k, uconst0, uconst1)))
+                                    has_further_digits<0, 0, ExtendedCache>(significand, exp2_base, k, uconst0, uconst0)))
                             {
                                 goto round_up_two_digits;
                             }
