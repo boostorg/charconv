@@ -66,12 +66,12 @@ static void test_random()
     std::mt19937_64 rng(42);
     for (int i {}; i < 20000; ++i)
     {
-        auto bits {rng()};
+        std::uint64_t bits = rng();
         if (i % 2 == 1)
         {
             bits = (bits & ((UINT64_C(1) << 52U) - 1U)) >> (rng() % 52U);
         }
-        const auto value {from_bits(bits)};
+        const double value = from_bits(bits);
         if (value != value || value - value != 0 || value == 0)
         {
             continue;
