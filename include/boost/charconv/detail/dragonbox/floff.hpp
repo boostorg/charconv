@@ -1476,6 +1476,8 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
     constexpr int kappa = 2;
     int k = kappa - log::floor_log10_pow2(e);
     std::uint32_t current_digits {};
+    // The digits current_digits holds when rounding it up carries; the parity of remaining_digits does not always tell
+    int carried_digit_count {};
     char* const buffer_starting_pos = buffer;
     char* decimal_dot_pos = buffer; // decimal_dot_pos == buffer_starting_pos indicates that there should be no decimal dot.
     int decimal_exponent_normalized {};
@@ -2780,7 +2782,8 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
 
                             BOOST_CHARCONV_ASSERT(remaining_digits >= 3);
 
-                            if (remaining_digits > 4)
+                            // The second subsegment can have 7 digits, so 3 or 5 may be left after the first ones
+                            for (int i = 0; i < (remaining_digits - 3) / 2; ++i)
                             {
                                 prod = static_cast<std::uint32_t>(prod) * UINT64_C(100);
                                 print_2_digits(static_cast<std::uint32_t>(prod >> 32), buffer);
@@ -3924,6 +3927,7 @@ round_up:
     round_up_one_digit:
         if (++current_digits == 10)
         {
+            carried_digit_count = 1;
             goto round_up_all_9s;
         }
 
@@ -3934,6 +3938,7 @@ round_up:
     round_up_two_digits:
         if (++current_digits == 100)
         {
+            carried_digit_count = 2;
             goto round_up_all_9s;
         }
 
@@ -3958,7 +3963,7 @@ print_last_digits:
 
 round_up_all_9s:
     char* first_9_pos = buffer;
-    buffer += (2 - (remaining_digits & 1));
+    buffer += carried_digit_count;
     
     // Find the starting position of printed digits.
     char* digit_starting_pos = [&] {
@@ -3978,7 +3983,7 @@ round_up_all_9s:
         if (*(first_9_pos - 1) != '9')
         {
             ++*(first_9_pos - 1);
-            if ((remaining_digits & 1) != 0)
+            if (carried_digit_count == 1)
             {
                 *first_9_pos = '0';
             }
