@@ -1509,7 +1509,7 @@ BOOST_CHARCONV_SAFEBUFFERS to_chars_result floff(const double x, int precision, 
 
         int first_segment_length = 19;
         auto first_segment_aligned = first_segment; // Aligned to have 19 digits.
-        while (first_segment_aligned < UINT64_C(10000000000000000))
+        while (first_segment_aligned < UINT64_C(100000000000000000))
         {
             first_segment_aligned *= 100;
             first_segment_length -= 2;
