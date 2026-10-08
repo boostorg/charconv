@@ -76,3 +76,4 @@ run github_issue_280.cpp ;
 run github_issue_282.cpp ;
 run github_issue_int128_320.cpp ;
 run github_issue_296.cpp ;
+run to_chars_float_subnormal.cpp ;
