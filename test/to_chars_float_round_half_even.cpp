@@ -52,14 +52,14 @@ static void multiply_by_5(std::string& digits)
 }
 
 // m / 2^j written out exactly, as the digits of m * 5^j with the last j after the decimal point
-static decimal_digits exact_digits(const std::uint64_t m, const int j)
+static decimal_digits exact_digits(const std::uint64_t m, const std::size_t j)
 {
     decimal_digits number {std::to_string(m), 0U};
-    for (int k {0}; k < j; ++k)
+    for (std::size_t k {0}; k < j; ++k)
     {
         multiply_by_5(number.digits);
     }
-    number.integer_digits = number.digits.size() - static_cast<std::size_t>(j);
+    number.integer_digits = number.digits.size() - j;
     return number;
 }
 
@@ -115,7 +115,7 @@ static void test_random_ties()
         const int j {1 + static_cast<int>(rng() % 52)};
         const double value {std::ldexp(static_cast<double>(m), -j)};
 
-        decimal_digits expected = exact_digits(m, j);
+        decimal_digits expected = exact_digits(m, static_cast<std::size_t>(j));
         const std::size_t significant {expected.digits.size() - 1};
         round_off_half(expected);
 
