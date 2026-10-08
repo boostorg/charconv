@@ -5,10 +5,10 @@
 #include <boost/charconv.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
-#include <cstdio>
-#include <cstring>
 #include <random>
+#include <string>
 
 static void test(const double value, const boost::charconv::chars_format fmt, const int precision, const char* expected)
 {
@@ -24,10 +24,88 @@ static void test_examples()
 {
     test(59547781175.354644775390625, boost::charconv::chars_format::fixed, 14, "59547781175.35464477539062");
     test(59547781175.354644775390625, boost::charconv::chars_format::scientific, 24, "5.954778117535464477539062e+10");
-    test(-202364179515.495880126953125,boost::charconv::chars_format::fixed, 14, "-202364179515.49588012695312");
+    test(-202364179515.495880126953125, boost::charconv::chars_format::fixed, 14, "-202364179515.49588012695312");
 }
 
-// m / 2^j has exactly j fractional digits, the last one 5, so dropping it is an exact tie
+// A positive decimal number: all its digits, and how many of them come before the decimal point
+struct decimal_digits
+{
+    std::string digits;
+    std::size_t integer_digits;
+};
+
+static void multiply_by_5(std::string& digits)
+{
+    int carry {0};
+    std::size_t i {digits.size()};
+    while (i > 0)
+    {
+        --i;
+        const int product {(digits[i] - '0') * 5 + carry};
+        digits[i] = static_cast<char>('0' + product % 10);
+        carry = product / 10;
+    }
+    if (carry != 0)
+    {
+        digits.insert(digits.begin(), static_cast<char>('0' + carry));
+    }
+}
+
+// m / 2^j written out exactly, as the digits of m * 5^j with the last j after the decimal point
+static decimal_digits exact_digits(const std::uint64_t m, const int j)
+{
+    decimal_digits number {std::to_string(m), 0U};
+    for (int k {0}; k < j; ++k)
+    {
+        multiply_by_5(number.digits);
+    }
+    number.integer_digits = number.digits.size() - static_cast<std::size_t>(j);
+    return number;
+}
+
+// Drops the last digit, an exact 5, and rounds half to even, which not every C runtime's printf does
+static void round_off_half(decimal_digits& number)
+{
+    number.digits.pop_back();
+    if ((number.digits.back() - '0') % 2 == 0)
+    {
+        return;
+    }
+    std::size_t i {number.digits.size()};
+    while (i > 0)
+    {
+        --i;
+        if (number.digits[i] != '9')
+        {
+            ++number.digits[i];
+            return;
+        }
+        number.digits[i] = '0';
+    }
+    // All nines carry into a new leading digit: 99.95 rounds to 100.0
+    number.digits.insert(number.digits.begin(), '1');
+    ++number.integer_digits;
+}
+
+static std::string as_fixed(const decimal_digits& number)
+{
+    std::string text {number.digits.substr(0, number.integer_digits)};
+    if (number.digits.size() > number.integer_digits)
+    {
+        text += '.' + number.digits.substr(number.integer_digits);
+    }
+    return text;
+}
+
+// The first significant digits of number in %e form; number is at least 1, so the exponent is never negative
+static std::string as_scientific(const decimal_digits& number, const std::size_t significant)
+{
+    const std::size_t exponent {number.integer_digits - 1};
+    return number.digits.substr(0, 1) + '.' + number.digits.substr(1, significant - 1) + "e+" +
+           (exponent < 10 ? "0" : "") + std::to_string(exponent);
+}
+
+// m / 2^j has exactly j fractional digits, the last one 5, so printing it one digit shorter is an exact tie
 static void test_random_ties()
 {
     std::mt19937_64 rng(42);
@@ -37,16 +115,13 @@ static void test_random_ties()
         const int j {1 + static_cast<int>(rng() % 52)};
         const double value {std::ldexp(static_cast<double>(m), -j)};
 
-        char exact[128];
-        std::snprintf(exact, sizeof(exact), "%.*f", j, value);
-        const int digits {static_cast<int>(std::strlen(exact)) - 1};
+        decimal_digits expected = exact_digits(m, j);
+        const std::size_t significant {expected.digits.size() - 1};
+        round_off_half(expected);
 
-        char expected[128];
-        std::snprintf(expected, sizeof(expected), "%.*f", j - 1, value);
-        test(value, boost::charconv::chars_format::fixed, j - 1, expected);
-
-        std::snprintf(expected, sizeof(expected), "%.*e", digits - 2, value);
-        test(value, boost::charconv::chars_format::scientific, digits - 2, expected);
+        test(value, boost::charconv::chars_format::fixed, j - 1, as_fixed(expected).c_str());
+        test(value, boost::charconv::chars_format::scientific, static_cast<int>(significant) - 1,
+             as_scientific(expected, significant).c_str());
     }
 }
 
