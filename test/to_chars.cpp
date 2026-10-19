@@ -189,6 +189,25 @@ void negative_empty_range_tests()
 }
 
 template <typename T>
+void zero_empty_range_tests()
+{
+    for (int base = 2; base <= 36; ++base)
+    {
+        char buffer[2] = {'#', '#'};
+        auto r1 = boost::charconv::to_chars(buffer, buffer, static_cast<T>(0), base);
+        BOOST_TEST(r1.ec == std::errc::value_too_large);
+        BOOST_TEST(r1.ptr == buffer);
+        BOOST_TEST_EQ(buffer[0], '#');
+
+        auto r2 = boost::charconv::to_chars(buffer, buffer + 1, static_cast<T>(0), base);
+        BOOST_TEST(r2.ec == std::errc());
+        BOOST_TEST(r2.ptr == buffer + 1);
+        BOOST_TEST_EQ(buffer[0], '0');
+        BOOST_TEST_EQ(buffer[1], '#');
+    }
+}
+
+template <typename T>
 void base_two_tests()
 {
     char buffer1[64] {};
@@ -324,6 +343,11 @@ int main()
     negative_empty_range_tests<int>();
     negative_empty_range_tests<long long>();
 
+    zero_empty_range_tests<int>();
+    zero_empty_range_tests<unsigned>();
+    zero_empty_range_tests<long long>();
+    zero_empty_range_tests<unsigned long long>();
+
     // Resulted in off by one errors from random number generation
     // Consistently one larger with 10 digit numbers
     off_by_one_tests(1159137169);
@@ -345,6 +369,8 @@ int main()
     #ifdef BOOST_CHARCONV_HAS_INT128
     test_128bit_int<boost::int128_type>();
     test_128bit_int<boost::uint128_type>();
+    zero_empty_range_tests<boost::int128_type>();
+    zero_empty_range_tests<boost::uint128_type>();
     #endif
 
     return boost::report_errors();
