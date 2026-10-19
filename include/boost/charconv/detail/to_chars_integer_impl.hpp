@@ -348,6 +348,11 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int
     {
         if (value < static_cast<Integer>(0))
         {
+            if (first == last)
+            {
+                return {last, std::errc::value_too_large};
+            }
+
             *first++ = '-';
             unsigned_value = static_cast<Unsigned_Integer>(detail::apply_sign(value));
         }
