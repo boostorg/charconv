@@ -225,6 +225,21 @@ void test_to_chars_hex_16(T v)
     BOOST_TEST_CSTR_EQ(buffer, o_val.str().c_str());
 }
 
+void long_double_negative_empty_range_tests()
+{
+    char buffer[1] = {'#'};
+
+    auto r1 = boost::charconv::to_chars(buffer, buffer, -std::numeric_limits<long double>::infinity());
+    BOOST_TEST(r1.ec == std::errc::value_too_large);
+    BOOST_TEST(r1.ptr == buffer);
+    BOOST_TEST_EQ(buffer[0], '#');
+
+    auto r2 = boost::charconv::to_chars(buffer, buffer, -std::numeric_limits<long double>::quiet_NaN());
+    BOOST_TEST(r2.ec == std::errc::value_too_large);
+    BOOST_TEST(r2.ptr == buffer);
+    BOOST_TEST_EQ(buffer[0], '#');
+}
+
 int main()
 {
     printf_divergence<double>();
@@ -241,6 +256,7 @@ int main()
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57484
     #if !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 9 && defined(__i686__)) && !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
     non_finite_values<long double>();
+    long_double_negative_empty_range_tests();
     #endif
 
     fixed_values<float>();

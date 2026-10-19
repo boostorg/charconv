@@ -176,6 +176,19 @@ void overflow_tests()
 }
 
 template <typename T>
+void negative_empty_range_tests()
+{
+    for (int base = 2; base <= 36; ++base)
+    {
+        char buffer[1] = {'#'};
+        auto r = boost::charconv::to_chars(buffer, buffer, static_cast<T>(-1), base);
+        BOOST_TEST(r.ec == std::errc::value_too_large);
+        BOOST_TEST(r.ptr == buffer);
+        BOOST_TEST_EQ(buffer[0], '#');
+    }
+}
+
+template <typename T>
 void base_two_tests()
 {
     char buffer1[64] {};
@@ -307,6 +320,9 @@ int main()
     base_30_tests<long>();
 
     overflow_tests<int>();
+
+    negative_empty_range_tests<int>();
+    negative_empty_range_tests<long long>();
 
     // Resulted in off by one errors from random number generation
     // Consistently one larger with 10 digit numbers

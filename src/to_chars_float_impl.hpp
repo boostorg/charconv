@@ -778,6 +778,12 @@ to_chars_result to_chars_float_impl(char* first, char* last, long double value, 
 {
     static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
 
+    // Sanity check our bounds
+    if (first >= last)
+    {
+        return {last, std::errc::value_too_large};
+    }
+
     const auto classification = std::fpclassify(value);
     #if BOOST_CHARCONV_LDBL_BITS == 128
     if (classification == FP_NAN || classification == FP_INFINITE)
