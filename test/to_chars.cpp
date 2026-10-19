@@ -83,6 +83,26 @@ void test_128bit_int()
         BOOST_TEST(v10 == v11);
     }
 }
+
+// The sign needs room too when the value does not fit in 64 bits
+void test_128bit_negative_room(boost::int128_type value, const char* expected)
+{
+    const auto len = static_cast<std::ptrdiff_t>(std::strlen(expected));
+
+    char buffer[64];
+    std::memset(buffer, '#', sizeof(buffer));
+    auto r1 = boost::charconv::to_chars(buffer, buffer + len - 1, value);
+    BOOST_TEST(r1.ec == std::errc::value_too_large);
+    BOOST_TEST(r1.ptr == buffer + len - 1);
+    BOOST_TEST_EQ(buffer[len - 1], '#');
+
+    std::memset(buffer, '#', sizeof(buffer));
+    auto r2 = boost::charconv::to_chars(buffer, buffer + len, value);
+    BOOST_TEST(r2.ec == std::errc());
+    BOOST_TEST(r2.ptr == buffer + len);
+    BOOST_TEST(!std::memcmp(buffer, expected, static_cast<std::size_t>(len)));
+    BOOST_TEST_EQ(buffer[len], '#');
+}
 #endif
 
 template <typename T>
@@ -371,6 +391,13 @@ int main()
     test_128bit_int<boost::uint128_type>();
     zero_empty_range_tests<boost::int128_type>();
     zero_empty_range_tests<boost::uint128_type>();
+
+    // -(10^20): 21 digits plus the sign
+    test_128bit_negative_room(-static_cast<boost::int128_type>(UINT64_C(10000000000)) * UINT64_C(10000000000),
+                              "-100000000000000000000");
+    // INT128_MIN: 39 digits plus the sign
+    test_128bit_negative_room(static_cast<boost::int128_type>(static_cast<boost::uint128_type>(1) << 127),
+                              "-170141183460469231731687303715884105728");
     #endif
 
     return boost::report_errors();
