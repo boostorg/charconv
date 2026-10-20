@@ -271,6 +271,26 @@ void general_max_precision_tests()
     }
 }
 
+template <typename T>
+void negative_zero_range_tests(boost::charconv::chars_format fmt, const char* expected)
+{
+    const auto len = static_cast<std::ptrdiff_t>(std::strlen(expected));
+
+    char buffer[8];
+    std::memset(buffer, '#', sizeof(buffer));
+    auto r1 = boost::charconv::to_chars(buffer, buffer + len - 1, static_cast<T>(-0.0), fmt);
+    BOOST_TEST(r1.ec == std::errc::value_too_large);
+    BOOST_TEST(r1.ptr == buffer + len - 1);
+    BOOST_TEST_EQ(buffer[len - 1], '#');
+
+    std::memset(buffer, '#', sizeof(buffer));
+    auto r2 = boost::charconv::to_chars(buffer, buffer + len, static_cast<T>(-0.0), fmt);
+    BOOST_TEST(r2.ec == std::errc());
+    BOOST_TEST(r2.ptr == buffer + len);
+    BOOST_TEST(!std::memcmp(buffer, expected, static_cast<std::size_t>(len)));
+    BOOST_TEST_EQ(buffer[len], '#');
+}
+
 int main()
 {
     printf_divergence<double>();
@@ -291,6 +311,11 @@ int main()
     #endif
 
     general_max_precision_tests();
+
+    negative_zero_range_tests<float>(boost::charconv::chars_format::general, "-0");
+    negative_zero_range_tests<float>(boost::charconv::chars_format::scientific, "-0e+00");
+    negative_zero_range_tests<double>(boost::charconv::chars_format::general, "-0");
+    negative_zero_range_tests<double>(boost::charconv::chars_format::scientific, "-0e+00");
 
     fixed_values<float>();
     fixed_values<double>();
