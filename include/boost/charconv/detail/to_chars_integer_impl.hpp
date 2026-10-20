@@ -259,7 +259,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     const int converted_value_digits = num_digits(converted_value);
 
-    if (converted_value_digits > user_buffer_size)
+    if (converted_value_digits > user_buffer_size - static_cast<std::ptrdiff_t>(is_negative))
     {
         return {last, std::errc::value_too_large};
     }
