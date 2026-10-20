@@ -17,6 +17,7 @@
 #include <random>
 #include <iomanip>
 #include <sstream>
+#include <cstdio>
 #include <boost/core/detail/splitmix64.hpp>
 
 // These numbers diverge from what the formatting is using printf
@@ -240,6 +241,36 @@ void long_double_negative_empty_range_tests()
     BOOST_TEST_EQ(buffer[0], '#');
 }
 
+// General format with a precision at or above the longest exact output:
+// sign, "0." and three zeros before the digits in fixed, or a three digit
+// exponent in scientific
+template <typename T>
+void general_max_precision_test(T v, int precision)
+{
+    static char buffer[2000];
+    static char expected[2000];
+    auto r = boost::charconv::to_chars(buffer, buffer + sizeof(buffer), v, boost::charconv::chars_format::general, precision);
+    const int n = std::snprintf(expected, sizeof(expected), "%.*g", precision, static_cast<double>(v));
+    BOOST_TEST(r.ec == std::errc());
+    BOOST_TEST_EQ(std::string(buffer, r.ptr), std::string(expected, static_cast<std::size_t>(n)));
+}
+
+void general_max_precision_tests()
+{
+    for (const int precision : {112, 113, 200})
+    {
+        general_max_precision_test(-1.4182e-38F, precision);
+        general_max_precision_test(-2.1484e-4F, precision);
+        general_max_precision_test(-std::numeric_limits<float>::denorm_min(), precision);
+    }
+    for (const int precision : {767, 768, 1000})
+    {
+        general_max_precision_test(-1.5e-300, precision);
+        general_max_precision_test(-2.5e-4, precision);
+        general_max_precision_test(-std::numeric_limits<double>::denorm_min(), precision);
+    }
+}
+
 int main()
 {
     printf_divergence<double>();
@@ -258,6 +289,8 @@ int main()
     non_finite_values<long double>();
     long_double_negative_empty_range_tests();
     #endif
+
+    general_max_precision_tests();
 
     fixed_values<float>();
     fixed_values<double>();
