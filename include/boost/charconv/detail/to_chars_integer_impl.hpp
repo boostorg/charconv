@@ -259,7 +259,7 @@ BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_128integer_impl(char* first, c
 
     const int converted_value_digits = num_digits(converted_value);
 
-    if (converted_value_digits > user_buffer_size)
+    if (converted_value_digits > user_buffer_size - static_cast<std::ptrdiff_t>(is_negative))
     {
         return {last, std::errc::value_too_large};
     }
@@ -337,6 +337,11 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int
 
     if (value == static_cast<Integer>(0))
     {
+        if (first == last)
+        {
+            return {last, std::errc::value_too_large};
+        }
+
         *first++ = '0';
         return {first, std::errc()};
     }
@@ -348,6 +353,11 @@ BOOST_CHARCONV_HOST_DEVICE BOOST_CHARCONV_CONSTEXPR to_chars_result to_chars_int
     {
         if (value < static_cast<Integer>(0))
         {
+            if (first == last)
+            {
+                return {last, std::errc::value_too_large};
+            }
+
             *first++ = '-';
             unsigned_value = static_cast<Unsigned_Integer>(detail::apply_sign(value));
         }

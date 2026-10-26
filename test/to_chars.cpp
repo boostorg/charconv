@@ -83,6 +83,26 @@ void test_128bit_int()
         BOOST_TEST(v10 == v11);
     }
 }
+
+// The sign needs room too when the value does not fit in 64 bits
+void test_128bit_negative_room(boost::int128_type value, const char* expected)
+{
+    const auto len = static_cast<std::ptrdiff_t>(std::strlen(expected));
+
+    char buffer[64];
+    std::memset(buffer, '#', sizeof(buffer));
+    auto r1 = boost::charconv::to_chars(buffer, buffer + len - 1, value);
+    BOOST_TEST(r1.ec == std::errc::value_too_large);
+    BOOST_TEST(r1.ptr == buffer + len - 1);
+    BOOST_TEST_EQ(buffer[len - 1], '#');
+
+    std::memset(buffer, '#', sizeof(buffer));
+    auto r2 = boost::charconv::to_chars(buffer, buffer + len, value);
+    BOOST_TEST(r2.ec == std::errc());
+    BOOST_TEST(r2.ptr == buffer + len);
+    BOOST_TEST(!std::memcmp(buffer, expected, static_cast<std::size_t>(len)));
+    BOOST_TEST_EQ(buffer[len], '#');
+}
 #endif
 
 template <typename T>
@@ -173,6 +193,38 @@ void overflow_tests()
     T v2 = static_cast<T>(12341234);
     auto r2 = boost::charconv::to_chars(buffer2, buffer2 + sizeof(buffer2) - 1, v2);
     BOOST_TEST(r2.ec == std::errc::value_too_large);
+}
+
+template <typename T>
+void negative_empty_range_tests()
+{
+    for (int base = 2; base <= 36; ++base)
+    {
+        char buffer[1] = {'#'};
+        auto r = boost::charconv::to_chars(buffer, buffer, static_cast<T>(-1), base);
+        BOOST_TEST(r.ec == std::errc::value_too_large);
+        BOOST_TEST(r.ptr == buffer);
+        BOOST_TEST_EQ(buffer[0], '#');
+    }
+}
+
+template <typename T>
+void zero_empty_range_tests()
+{
+    for (int base = 2; base <= 36; ++base)
+    {
+        char buffer[2] = {'#', '#'};
+        auto r1 = boost::charconv::to_chars(buffer, buffer, static_cast<T>(0), base);
+        BOOST_TEST(r1.ec == std::errc::value_too_large);
+        BOOST_TEST(r1.ptr == buffer);
+        BOOST_TEST_EQ(buffer[0], '#');
+
+        auto r2 = boost::charconv::to_chars(buffer, buffer + 1, static_cast<T>(0), base);
+        BOOST_TEST(r2.ec == std::errc());
+        BOOST_TEST(r2.ptr == buffer + 1);
+        BOOST_TEST_EQ(buffer[0], '0');
+        BOOST_TEST_EQ(buffer[1], '#');
+    }
 }
 
 template <typename T>
@@ -308,6 +360,14 @@ int main()
 
     overflow_tests<int>();
 
+    negative_empty_range_tests<int>();
+    negative_empty_range_tests<long long>();
+
+    zero_empty_range_tests<int>();
+    zero_empty_range_tests<unsigned>();
+    zero_empty_range_tests<long long>();
+    zero_empty_range_tests<unsigned long long>();
+
     // Resulted in off by one errors from random number generation
     // Consistently one larger with 10 digit numbers
     off_by_one_tests(1159137169);
@@ -329,6 +389,15 @@ int main()
     #ifdef BOOST_CHARCONV_HAS_INT128
     test_128bit_int<boost::int128_type>();
     test_128bit_int<boost::uint128_type>();
+    zero_empty_range_tests<boost::int128_type>();
+    zero_empty_range_tests<boost::uint128_type>();
+
+    // -(10^20): 21 digits plus the sign
+    test_128bit_negative_room(-static_cast<boost::int128_type>(UINT64_C(10000000000)) * UINT64_C(10000000000),
+                              "-100000000000000000000");
+    // INT128_MIN: 39 digits plus the sign
+    test_128bit_negative_room(static_cast<boost::int128_type>(static_cast<boost::uint128_type>(1) << 127),
+                              "-170141183460469231731687303715884105728");
     #endif
 
     return boost::report_errors();

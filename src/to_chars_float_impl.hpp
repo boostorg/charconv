@@ -720,8 +720,11 @@ to_chars_result to_chars_float_impl(char* first, char* last, Real value, chars_f
         {
             if (fmt == boost::charconv::chars_format::general)
             {
-                constexpr int max_output_length = std::is_same<Real, double>::value ? 773 : 117;
                 constexpr int max_precision = std::is_same<Real, double>::value ? 767 : 112;
+                // The longest output is "-0.000" or "-d." and "e-308" around
+                // max_precision digits; floff writes digits in blocks, so
+                // leave some room after
+                constexpr int max_output_length = max_precision + 16;
                 // We remove trailing zeros, so precision > max_precision is same as precision == max_precision.
                 if (precision > max_precision)
                 {
@@ -777,6 +780,12 @@ template <>
 to_chars_result to_chars_float_impl(char* first, char* last, long double value, chars_format fmt, int precision) noexcept
 {
     static_assert(std::numeric_limits<long double>::is_iec559, "Long double must be IEEE 754 compliant");
+
+    // Sanity check our bounds
+    if (first >= last)
+    {
+        return {last, std::errc::value_too_large};
+    }
 
     const auto classification = std::fpclassify(value);
     #if BOOST_CHARCONV_LDBL_BITS == 128

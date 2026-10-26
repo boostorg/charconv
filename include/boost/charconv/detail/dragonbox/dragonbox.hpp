@@ -2593,11 +2593,16 @@ namespace to_chars_detail {
             {
                 if (fmt != chars_format::scientific)
                 {
+                    if (buffer == last)
+                    {
+                        return {last, std::errc::value_too_large};
+                    }
+
                     std::memcpy(buffer, "0", 1); // NOLINT: Specifically not null-terminated
                     return {buffer + 1, std::errc()};
                 }
 
-                if (buffer_size >= 5)
+                if (last - buffer >= 5)
                 {
                     std::memcpy(buffer, "0e+00", 5); // NOLINT: Specifically not null-terminated
                     return {buffer + 5, std::errc()};
