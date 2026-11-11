@@ -206,7 +206,7 @@ jobs:
 
           - toolset: clang
             cxxstd: "03,11,14,17,20,2b"
-            os: macos-14
+            os: macos-26
           - toolset: clang
             cxxstd: "03,11,14,17,20,2b"
             os: macos-15
@@ -478,7 +478,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-          - os: macos-14
+          - os: macos-26
           - os: macos-15
 
     runs-on: ${{matrix.os}}
@@ -525,7 +525,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-          - os: macos-14
+          - os: macos-26
           - os: macos-15
 
     runs-on: ${{matrix.os}}
@@ -582,7 +582,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-          - os: macos-14
+          - os: macos-26
           - os: macos-15
 
     runs-on: ${{matrix.os}}
