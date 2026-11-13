@@ -478,6 +478,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
+          - os: ubuntu-26.04
           - os: macos-26
           - os: macos-15
 
@@ -525,6 +526,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
+          - os: ubuntu-26.04
           - os: macos-26
           - os: macos-15
 
@@ -582,6 +584,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
+          - os: ubuntu-26.04
           - os: macos-26
           - os: macos-15
 
