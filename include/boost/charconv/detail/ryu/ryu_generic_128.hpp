@@ -396,6 +396,12 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
         // Option 1: We need to do nothing but insert 0s
         if (precision > 0)
         {
+            const auto current_size = static_cast<ptrdiff_t>(current_len) + static_cast<ptrdiff_t>(v.sign);
+            if (current_size >= result_size || static_cast<ptrdiff_t>(precision) > result_size - current_size - 1)
+            {
+                return -static_cast<int>(std::errc::value_too_large);
+            }
+
             result[current_len++] = '.';
             memset(result+current_len, '0', static_cast<size_t>(precision));
             current_len += precision;
