@@ -81,6 +81,17 @@ void spot_check_invalid_argument(const std::string& buffer, boost::charconv::cha
     BOOST_TEST(r.ec == std::errc::invalid_argument);
 }
 
+template <typename T>
+void test_empty_hex_range()
+{
+    const char buffer[] = "-19E";
+    T value = static_cast<T>(5.0L);
+    const auto r = boost::charconv::from_chars(buffer, buffer, value, boost::charconv::chars_format::hex);
+    BOOST_TEST(r.ec == std::errc::invalid_argument);
+    BOOST_TEST_EQ(r.ptr, buffer);
+    BOOST_TEST_EQ(value, static_cast<T>(5.0L));
+}
+
 void fc (const std::string& s)
 {
     char* str_end;
@@ -541,6 +552,9 @@ int main()
     simple_hex_scientific_test<float>();
     simple_hex_scientific_test<double>();
 
+    test_empty_hex_range<float>();
+    test_empty_hex_range<double>();
+
     dot_position_test<float>();
     dot_position_test<double>();
 
@@ -552,6 +566,7 @@ int main()
     simple_hex_integer_test<long double>();
     simple_scientific_test<long double>();
     simple_hex_scientific_test<long double>();
+    test_empty_hex_range<long double>();
     zero_test<long double>();
     test_issue_37<long double>();
     #endif
