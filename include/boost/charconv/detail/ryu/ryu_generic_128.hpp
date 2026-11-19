@@ -447,15 +447,18 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
             const auto round_val = result[current_len];
             result[current_len] = '\0';
 
-            // More complicated rounding situations like 9999.999999 are already handled,
-            // so we don't need to worry about rounding past the decimal point
             if (round_val >= '5')
             {
                 auto current_spot = current_len - 1;
                 bool continue_rounding = true;
-                while (result[current_spot] != '.' && continue_rounding)
+                while (current_spot >= 0 && continue_rounding)
                 {
-                    if (result[current_spot] < '9')
+                    if (result[current_spot] == '.')
+                    {
+                        --current_spot;
+                        continue;
+                    }
+                    else if (result[current_spot] < '9')
                     {
                         result[current_spot] = static_cast<char>(static_cast<int>(result[current_spot]) + 1);
                         continue_rounding = false;
@@ -463,11 +466,21 @@ static inline int generic_to_chars_fixed(const struct floating_decimal_128 v, ch
                     else
                     {
                         result[current_spot] = '0';
-                        continue_rounding = true;
                     }
                     --current_spot;
                 }
-                BOOST_CHARCONV_ASSERT(!continue_rounding);
+
+                if (continue_rounding)
+                {
+                    if (current_len + 1 + static_cast<int>(v.sign) > result_size)
+                    {
+                        return -static_cast<int>(std::errc::value_too_large);
+                    }
+
+                    memmove(result + 1, result, static_cast<std::size_t>(current_len));
+                    result[0] = '1';
+                    ++current_len;
+                }
             }
         }
         else
@@ -537,14 +550,26 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         if (std::abs(exp) <= olength)
         {
             auto ptr = generic_to_chars_fixed(v, result, result_size, precision);
+            if (ptr > 0 && precision > 0)
+            {
+                const char* dot = static_cast<const char*>(std::memchr(result, '.', static_cast<std::size_t>(ptr)));
+                const auto integer_digits = static_cast<int>((dot == nullptr ? result + ptr : dot) - result) - static_cast<int>(v.sign);
+                if (integer_digits > precision)
+                {
+                    return generic_to_chars(v, result, result_size, chars_format::scientific, precision - 1);
+                }
+            }
             if (ptr >= 1 && result[ptr - 1] == '0')
             {
                 --ptr;
-                while (ptr > 0 && result[ptr] == '0')
+                while (ptr > 0 && result[ptr - 1] == '0')
                 {
                     --ptr;
                 }
-                ++ptr;
+                if (ptr > 0 && result[ptr - 1] == '.')
+                {
+                    --ptr;
+                }
             }
             return ptr;
         }
@@ -586,39 +611,54 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
         ++index;
     }
 
+    bool increment_exponent = false;
+
     // Reset the index to where the required precision should be
     if (precision != -1)
     {
         if (static_cast<size_t>(precision) < index)
         {
+            size_t round_index;
             if (fmt != chars_format::scientific)
             {
-                index = static_cast<size_t>(precision) + 1 + static_cast<size_t>(v.sign); // Precision is number of characters not just the decimal portion
+                round_index = static_cast<size_t>(precision) + 1 + static_cast<size_t>(v.sign); // Precision is number of characters not just the decimal portion
+                index = precision == 1 ? 1 + static_cast<size_t>(v.sign) : round_index;
             }
             else
             {
-                index = static_cast<size_t>(precision) + 2 + static_cast<size_t>(v.sign); // In scientific format the precision is just the decimal places
+                round_index = static_cast<size_t>(precision) + 2 + static_cast<size_t>(v.sign); // In scientific format the precision is just the decimal places
+                index = precision == 0 ? 1 + static_cast<size_t>(v.sign) : round_index;
             }
 
             // Now we need to see if we need to round
-            if (result[index] >= '5' && index < olength + 1 + static_cast<size_t>(v.sign))
+            if (result[round_index] >= '5' && round_index < olength + 1 + static_cast<size_t>(v.sign))
             {
-                bool continue_rounding = false;
-                auto current_index = index;
-                do
+                bool continue_rounding = true;
+                auto current_index = round_index;
+                const auto first_digit = static_cast<size_t>(v.sign);
+                while (continue_rounding && current_index > first_digit)
                 {
                     --current_index;
-                    if (result[current_index] == '9')
+                    if (result[current_index] == '.')
                     {
-                        continue_rounding = true;
+                        continue;
+                    }
+                    else if (result[current_index] == '9')
+                    {
                         result[current_index] = '0';
                     }
                     else
                     {
-                        continue_rounding = false;
                         result[current_index] = static_cast<char>(result[current_index] + static_cast<char>(1));
+                        continue_rounding = false;
                     }
-                } while (continue_rounding && current_index > 2);
+                }
+
+                if (continue_rounding)
+                {
+                    result[first_digit] = '1';
+                    increment_exponent = true;
+                }
             }
 
             // If the last digit is a zero than overwrite that as well, but not in scientific formatting
@@ -647,7 +687,7 @@ static inline int generic_to_chars(const struct floating_decimal_128 v, char* re
 
     // Print the exponent.
     result[index++] = 'e';
-    int32_t exp = v.exponent + static_cast<int32_t>(olength) - 1;
+    int32_t exp = v.exponent + static_cast<int32_t>(olength) - 1 + static_cast<int32_t>(increment_exponent);
     if (exp < 0)
     {
         result[index++] = '-';
