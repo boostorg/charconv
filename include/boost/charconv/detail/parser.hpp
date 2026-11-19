@@ -83,7 +83,7 @@ typename std::enable_if<std::is_unsigned<Unsigned_Integer>::value &&
 template <typename Unsigned_Integer, typename Integer>
 inline from_chars_result parser(const char* first, const char* last, bool& sign, Unsigned_Integer& significand, Integer& exponent, chars_format fmt = chars_format::general) noexcept
 {
-    if (first > last)
+    if (first >= last)
     {
         return {first, std::errc::invalid_argument};
     }
