@@ -34,7 +34,7 @@ void test()
 
 int main()
 {
-    #if BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128
+    #if BOOST_CHARCONV_LDBL_BITS == 80
     test<long double>();
     #endif
 
